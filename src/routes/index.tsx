@@ -1,24 +1,105 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Coffee, QrCode, ShieldCheck, ClipboardList } from "lucide-react";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <main className="min-h-screen">
+      <header className="max-w-6xl mx-auto px-6 pt-10 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="panel-warm w-12 h-12 rounded-full flex items-center justify-center">
+            <Coffee className="w-6 h-6 text-caramel-bright" />
+          </div>
+          <div>
+            <div className="font-display text-2xl font-bold gold-text tracking-wide">KOB</div>
+            <div className="text-[10px] uppercase tracking-[0.25em] text-cream-dim">Coffee Coupon Co.</div>
+          </div>
+        </div>
+        <nav className="flex gap-2">
+          <Link to="/auth" className="btn-ghost-brass px-4 py-2 text-sm">Staff Login</Link>
+          <Link to="/scan" className="btn-brass px-4 py-2 text-sm">Scan a Branch</Link>
+        </nav>
+      </header>
+
+      <section className="max-w-6xl mx-auto px-6 pt-20 pb-16 grid md:grid-cols-2 gap-12 items-center">
+        <div>
+          <div className="inline-flex items-center gap-2 engraved px-3 py-1.5 text-xs uppercase tracking-[0.2em] text-cream-dim mb-6">
+            <span className="w-1.5 h-1.5 rounded-full bg-caramel"></span>
+            Premium Subscription System
+          </div>
+          <h1 className="text-5xl md:text-6xl font-bold leading-[1.05] mb-6">
+            A daily cup, <br />
+            <span className="gold-text">served on subscription.</span>
+          </h1>
+          <p className="text-cream-dim text-lg leading-relaxed mb-8 max-w-lg">
+            KOB lets specialty coffee shops sell daily coffee coupons tied to a phone number.
+            Customers scan, choose their brew, and the cashier approves — no plastic cards, no fuss.
+          </p>
+          <div className="flex gap-3 flex-wrap">
+            <Link to="/scan" className="btn-brass px-6 py-3.5 inline-flex items-center gap-2">
+              <QrCode className="w-4 h-4" /> Try the Customer Flow
+            </Link>
+            <Link to="/auth" className="btn-ghost-brass px-6 py-3.5 inline-flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4" /> Staff Dashboard
+            </Link>
+          </div>
+        </div>
+
+        <div className="panel-warm p-8 relative overflow-hidden">
+          <div className="absolute top-6 left-1/2 -translate-x-1/2 flex gap-3 pointer-events-none">
+            <span className="steam block w-1.5 h-6 rounded-full bg-cream/40" style={{ animationDelay: "0s" }} />
+            <span className="steam block w-1.5 h-8 rounded-full bg-cream/30" style={{ animationDelay: "0.6s" }} />
+            <span className="steam block w-1.5 h-6 rounded-full bg-cream/40" style={{ animationDelay: "1.2s" }} />
+          </div>
+          <div className="mt-16 engraved p-6">
+            <div className="text-xs uppercase tracking-[0.25em] text-cream-dim mb-2">Today's Coupon</div>
+            <div className="flex items-baseline justify-between">
+              <div className="font-display text-3xl font-bold text-cream">Flat White</div>
+              <div className="gold-text font-mono text-lg">#0428</div>
+            </div>
+            <div className="hairline-divider my-4" />
+            <div className="flex justify-between text-sm">
+              <span className="text-cream-dim">Branch</span>
+              <span className="text-cream">Downtown</span>
+            </div>
+            <div className="flex justify-between text-sm mt-1.5">
+              <span className="text-cream-dim">Remaining</span>
+              <span className="text-caramel-bright font-semibold">27 / 30 days</span>
+            </div>
+          </div>
+          <div className="mt-5 grid grid-cols-3 gap-2">
+            {["Approved", "Pending", "Roasted"].map((s, i) => (
+              <div key={i} className="engraved px-2 py-3 text-center">
+                <div className="text-[10px] uppercase tracking-widest text-cream-dim">{s}</div>
+                <div className="gold-text font-display text-xl font-bold mt-0.5">{[128, 3, 964][i]}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="max-w-6xl mx-auto px-6 pb-24 grid md:grid-cols-3 gap-6">
+        {[
+          { icon: QrCode, title: "Scan the branch code", body: "Customers tap in without accounts — just their phone number." },
+          { icon: Coffee, title: "Pick today's brew", body: "Every subscription drink is one tap away, in Arabic or English." },
+          { icon: ClipboardList, title: "Cashier approves", body: "The barista confirms and the day is marked used — instantly." },
+        ].map((f, i) => (
+          <div key={i} className="panel p-6">
+            <div className="engraved w-11 h-11 rounded-full flex items-center justify-center mb-4">
+              <f.icon className="w-5 h-5 text-caramel-bright" />
+            </div>
+            <h3 className="text-xl font-semibold text-cream mb-1.5">{f.title}</h3>
+            <p className="text-cream-dim text-sm leading-relaxed">{f.body}</p>
+          </div>
+        ))}
+      </section>
+
+      <footer className="max-w-6xl mx-auto px-6 pb-10 text-center text-xs text-cream-dim tracking-widest uppercase">
+        KOB · Est. 2026 · Brewed with care
+      </footer>
+    </main>
   );
 }
