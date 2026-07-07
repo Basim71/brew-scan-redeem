@@ -3,7 +3,8 @@ import { useEffect, useState, useCallback } from "react";
 import { Coffee, Check, X, LogOut, RefreshCw, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRole } from "@/lib/use-auth";
-import { StatusPill, timeAgo, FullScreenLoader } from "@/lib/ui";
+import { StatusPill, FullScreenLoader } from "@/lib/ui";
+import { useI18n, LanguageSwitcher } from "@/lib/i18n";
 
 export const Route = createFileRoute("/cashier")({
   head: () => ({ meta: [{ title: "Cashier · KOB" }, { name: "description", content: "KOB cashier order approval console." }, { name: "robots", content: "noindex" }] }),
@@ -18,6 +19,7 @@ type Order = {
 function CashierPage() {
   const nav = useNavigate();
   const { session, role, branchId, ready } = useRole();
+  const { t, fmtNum, timeAgo } = useI18n();
   const [orders, setOrders] = useState<Order[]>([]);
   const [branchName, setBranchName] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -66,9 +68,9 @@ function CashierPage() {
     return (
       <main className="min-h-screen flex items-center justify-center p-6">
         <div className="panel-warm p-8 max-w-md text-center">
-          <h1 className="font-display text-2xl font-bold text-cream mb-2">No branch assigned</h1>
-          <p className="text-cream-dim text-sm mb-6">Ask an admin to assign your account to a branch.</p>
-          <button onClick={() => supabase.auth.signOut().then(() => nav({ to: "/auth" }))} className="btn-ghost-brass px-5 py-2.5">Sign out</button>
+          <h1 className="font-display text-2xl font-bold text-cream mb-2">{t("no_branch_h")}</h1>
+          <p className="text-cream-dim text-sm mb-6">{t("no_branch_b")}</p>
+          <button onClick={() => supabase.auth.signOut().then(() => nav({ to: "/auth" }))} className="btn-ghost-brass px-5 py-2.5">{t("signOut")}</button>
         </div>
       </main>
     );
@@ -84,11 +86,11 @@ function CashierPage() {
 
         <div className="panel-warm p-6 mb-6">
           <div className="flex items-baseline justify-between mb-4">
-            <h2 className="font-display text-2xl font-bold text-cream">Pending Orders</h2>
-            <span className="engraved px-3 py-1 font-mono gold-text text-sm">{pending.length}</span>
+            <h2 className="font-display text-2xl font-bold text-cream">{t("pending_orders")}</h2>
+            <span className="engraved px-3 py-1 font-mono gold-text text-sm">{fmtNum(pending.length)}</span>
           </div>
           {pending.length === 0 ? (
-            <div className="engraved p-8 text-center text-cream-dim text-sm">All caught up. The queue is empty.</div>
+            <div className="engraved p-8 text-center text-cream-dim text-sm">{t("empty_queue")}</div>
           ) : (
             <div className="space-y-3">
               {pending.map((o) => (
@@ -101,16 +103,16 @@ function CashierPage() {
                       <div className="font-display text-xl font-semibold text-cream">{o.coffee_name}</div>
                       <div className="text-xs text-cream-dim font-mono">{o.subscription?.phone} · {o.subscription?.customer_name ?? "—"}</div>
                       <div className="text-[10px] uppercase tracking-widest text-cream-dim mt-1">
-                        {o.subscription ? `${o.subscription.days_total - o.subscription.days_used}/${o.subscription.days_total} left` : ""} · {timeAgo(o.created_at)}
+                        {o.subscription ? t("of_left", { left: fmtNum(o.subscription.days_total - o.subscription.days_used), total: fmtNum(o.subscription.days_total) }) : ""} · {timeAgo(o.created_at)}
                       </div>
                     </div>
                   </div>
                   <div className="flex gap-2">
                     <button disabled={busyId === o.id} onClick={() => decide(o.id, "rejected")}
-                      className="btn-ghost-brass px-4 py-2.5 flex items-center gap-1.5"><X className="w-4 h-4" />Reject</button>
+                      className="btn-ghost-brass px-4 py-2.5 flex items-center gap-1.5"><X className="w-4 h-4" />{t("btn_reject")}</button>
                     <button disabled={busyId === o.id} onClick={() => decide(o.id, "approved")}
                       className="btn-brass px-5 py-2.5 flex items-center gap-1.5">
-                      {busyId === o.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}Approve
+                      {busyId === o.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}{t("btn_approve")}
                     </button>
                   </div>
                 </div>
@@ -120,15 +122,15 @@ function CashierPage() {
         </div>
 
         <div className="panel p-6">
-          <h2 className="font-display text-xl font-bold text-cream mb-4">Recent</h2>
+          <h2 className="font-display text-xl font-bold text-cream mb-4">{t("recent")}</h2>
           <div className="engraved">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-[10px] uppercase tracking-widest text-cream-dim">
-                  <th className="text-left px-4 py-3">Coffee</th>
-                  <th className="text-left px-4 py-3">Phone</th>
-                  <th className="text-left px-4 py-3">Status</th>
-                  <th className="text-right px-4 py-3">When</th>
+                  <th className="text-start px-4 py-3">{t("col_coffee")}</th>
+                  <th className="text-start px-4 py-3">{t("col_phone")}</th>
+                  <th className="text-start px-4 py-3">{t("col_status")}</th>
+                  <th className="text-end px-4 py-3">{t("col_when")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -137,11 +139,11 @@ function CashierPage() {
                     <td className="px-4 py-3 text-cream">{o.coffee_name}</td>
                     <td className="px-4 py-3 font-mono text-cream-dim text-xs">{o.subscription?.phone ?? ""}</td>
                     <td className="px-4 py-3"><StatusPill s={o.status} /></td>
-                    <td className="px-4 py-3 text-right text-cream-dim">{timeAgo(o.created_at)}</td>
+                    <td className="px-4 py-3 text-end text-cream-dim">{timeAgo(o.created_at)}</td>
                   </tr>
                 ))}
                 {recent.length === 0 && (
-                  <tr><td colSpan={4} className="text-center text-cream-dim py-6">No orders yet.</td></tr>
+                  <tr><td colSpan={4} className="text-center text-cream-dim py-6">{t("empty_orders")}</td></tr>
                 )}
               </tbody>
             </table>
@@ -153,18 +155,20 @@ function CashierPage() {
 }
 
 function TopBar({ branchName, onSignOut, onRefresh, loading }: { branchName: string; onSignOut: () => void; onRefresh: () => void; loading: boolean }) {
+  const { t } = useI18n();
   return (
     <div className="flex items-center justify-between mb-6">
       <Link to="/" className="flex items-center gap-3">
         <div className="panel-warm w-11 h-11 rounded-full flex items-center justify-center"><Coffee className="w-5 h-5 text-caramel-bright" /></div>
         <div>
-          <div className="font-display font-bold gold-text tracking-wide">KOB · Cashier</div>
+          <div className="font-display font-bold gold-text tracking-wide">{t("cashier_title")}</div>
           <div className="text-[10px] uppercase tracking-widest text-cream-dim">{branchName}</div>
         </div>
       </Link>
       <div className="flex gap-2">
+        <LanguageSwitcher />
         <button onClick={onRefresh} className="btn-ghost-brass px-3 py-2"><RefreshCw className={"w-4 h-4 " + (loading ? "animate-spin" : "")} /></button>
-        <button onClick={onSignOut} className="btn-ghost-brass px-3 py-2 flex items-center gap-1.5"><LogOut className="w-4 h-4" /><span className="text-sm hidden sm:inline">Sign out</span></button>
+        <button onClick={onSignOut} className="btn-ghost-brass px-3 py-2 flex items-center gap-1.5"><LogOut className="w-4 h-4" /><span className="text-sm hidden sm:inline">{t("signOut")}</span></button>
       </div>
     </div>
   );
