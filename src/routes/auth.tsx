@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Coffee, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRole } from "@/lib/use-auth";
+import { useI18n, LanguageSwitcher } from "@/lib/i18n";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Staff Sign In · KOB" }, { name: "description", content: "Sign in to the KOB admin or cashier dashboard." }] }),
@@ -12,6 +13,7 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const navigate = useNavigate();
   const { session, role, ready } = useRole();
+  const { t } = useI18n();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -53,31 +55,34 @@ function AuthPage() {
   return (
     <main className="min-h-screen flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-        <Link to="/" className="flex items-center justify-center gap-2 mb-6 text-cream-dim hover:text-caramel-bright">
-          <Coffee className="w-5 h-5" />
-          <span className="font-display text-xl gold-text font-bold tracking-wider">KOB</span>
-        </Link>
+        <div className="flex items-center justify-between mb-6">
+          <Link to="/" className="flex items-center gap-2 text-cream-dim hover:text-caramel-bright">
+            <Coffee className="w-5 h-5" />
+            <span className="font-display text-xl gold-text font-bold tracking-wider">KOB</span>
+          </Link>
+          <LanguageSwitcher />
+        </div>
 
         <div className="panel-warm p-8">
           <h1 className="font-display text-3xl font-bold text-cream mb-1">
-            {mode === "signin" ? "Welcome back" : "Create account"}
+            {mode === "signin" ? t("welcomeBack") : t("createAccountHeading")}
           </h1>
           <p className="text-sm text-cream-dim mb-6">
-            {mode === "signin" ? "Sign in to your KOB staff dashboard." : "New admin or cashier account."}
+            {mode === "signin" ? t("signInSubtitle") : t("signUpSubtitle")}
           </p>
 
           <form onSubmit={submit} className="space-y-4">
             {mode === "signup" && (
-              <Field label="Full name">
+              <Field label={t("fullName")}>
                 <input required value={fullName} onChange={(e) => setFullName(e.target.value)}
                   className="inset-well w-full px-4 py-3 outline-none focus:ring-2 focus:ring-caramel/60" />
               </Field>
             )}
-            <Field label="Email">
+            <Field label={t("email")}>
               <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                 className="inset-well w-full px-4 py-3 outline-none focus:ring-2 focus:ring-caramel/60" />
             </Field>
-            <Field label="Password">
+            <Field label={t("password")}>
               <input required type="password" minLength={6} value={password} onChange={(e) => setPassword(e.target.value)}
                 className="inset-well w-full px-4 py-3 outline-none focus:ring-2 focus:ring-caramel/60" />
             </Field>
@@ -86,19 +91,20 @@ function AuthPage() {
 
             <button disabled={busy} className="btn-brass w-full py-3.5 flex items-center justify-center gap-2">
               {busy && <Loader2 className="w-4 h-4 animate-spin" />}
-              {mode === "signin" ? "Sign In" : "Create Account"}
+              {mode === "signin" ? t("signIn") : t("createAccount")}
             </button>
           </form>
 
           <div className="hairline-divider my-6" />
           <button onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
             className="w-full text-sm text-cream-dim hover:text-caramel-bright">
-            {mode === "signin" ? "New here? Create an account" : "Already have an account? Sign in"}
+            {mode === "signin" ? t("newHere") : t("haveAccount")}
           </button>
         </div>
 
         <p className="text-center text-xs text-cream-dim mt-6">
-          Customers don't need an account — <Link to="/scan" className="text-caramel-bright underline">go to scan</Link>.
+          {t("customersHint").replace(t("goToScan") + ".", "")}
+          <Link to="/scan" className="text-caramel-bright underline">{t("goToScan")}</Link>.
         </p>
       </div>
     </main>
