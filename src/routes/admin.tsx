@@ -22,7 +22,9 @@ function AdminPage() {
   useEffect(() => {
     if (!ready) return;
     if (!session) { nav({ to: "/auth" }); return; }
-    if (role !== "admin") { nav({ to: role === "cashier" ? "/cashier" : "/" }); return; }
+    if (role === "admin") return;
+    if (role === "cashier") { nav({ to: "/cashier" }); return; }
+    supabase.auth.signOut().then(() => nav({ to: "/auth" }));
   }, [ready, session, role, nav]);
 
   if (!ready || role !== "admin") return <FullScreenLoader />;
