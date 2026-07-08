@@ -241,3 +241,8 @@ function BackBtn({ onClick, label }: { onClick: () => void; label: string }) {
     </button>
   );
 }
+
+function daysBetween(a: string, b: string) {
+  const ms = new Date(b).getTime() - new Date(a).getTime();
+  return Math.max(0, Math.floor(ms / 86400000));
+}
