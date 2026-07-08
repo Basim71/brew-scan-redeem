@@ -30,7 +30,9 @@ function CashierPage() {
   useEffect(() => {
     if (!ready) return;
     if (!session) { nav({ to: "/auth" }); return; }
-    if (role !== "cashier") { nav({ to: role === "admin" ? "/admin" : "/" }); return; }
+    if (role === "cashier") return;
+    if (role === "admin") { nav({ to: "/admin" }); return; }
+    supabase.auth.signOut().then(() => nav({ to: "/auth" }));
   }, [ready, session, role, nav]);
 
   const load = useCallback(async () => {
