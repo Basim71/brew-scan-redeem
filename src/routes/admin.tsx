@@ -77,11 +77,11 @@ function Overview() {
   const [recent, setRecent] = useState<any[]>([]);
   const load = useCallback(async () => {
     const [s, b, p, a, o] = await Promise.all([
-      supabase.from("subscriptions").select("*", { count: "exact", head: true }).eq("active", true),
+      supabase.from("subscriptions").select("*", { count: "exact", head: true }).eq("status", "active"),
       supabase.from("branches").select("*", { count: "exact", head: true }),
       supabase.from("orders").select("*", { count: "exact", head: true }).eq("status", "pending"),
       supabase.from("orders").select("*", { count: "exact", head: true }).eq("status", "approved"),
-      supabase.from("orders").select("id, coffee_name, status, created_at, branch:branches(name)").order("created_at", { ascending: false }).limit(10),
+      supabase.from("orders").select("id, status, created_at, branch:branches(name_en), drink:drink_types(name_en)").order("created_at", { ascending: false }).limit(10),
     ]);
     setStats({ subs: s.count ?? 0, branches: b.count ?? 0, pending: p.count ?? 0, approved: a.count ?? 0 });
     setRecent(o.data ?? []);
@@ -112,8 +112,8 @@ function Overview() {
             </tr></thead>
             <tbody>{recent.map((r) => (
               <tr key={r.id} className="border-t border-[oklch(0.08_0.02_40)]">
-                <td className="px-4 py-3 text-cream">{r.coffee_name}</td>
-                <td className="px-4 py-3 text-cream-dim">{r.branch?.name}</td>
+                <td className="px-4 py-3 text-cream">{r.drink?.name_en ?? "—"}</td>
+                <td className="px-4 py-3 text-cream-dim">{r.branch?.name_en ?? ""}</td>
                 <td className="px-4 py-3"><StatusPill s={r.status} /></td>
                 <td className="px-4 py-3 text-end text-cream-dim">{timeAgo(r.created_at)}</td>
               </tr>))}
@@ -128,54 +128,33 @@ function Overview() {
 
 /* ---------------- SUBSCRIPTIONS ---------------- */
 function SubsTab() {
-  const { t, fmtNum } = useI18n();
+  const { t } = useI18n();
   const [rows, setRows] = useState<any[]>([]);
-  const [form, setForm] = useState({ phone: "", customer_name: "", plan_name: "30-Day Coffee Pass", days_total: 30 });
-  const [busy, setBusy] = useState(false);
-  const load = () => supabase.from("subscriptions").select("*").order("created_at", { ascending: false }).limit(100).then(({ data }) => setRows(data ?? []));
+  const load = () => supabase.from("subscriptions")
+    .select("*, customer:customers(name,phone), plan:plans(name,duration_days), branch:branches(name_en)")
+    .order("created_at", { ascending: false }).limit(100)
+    .then(({ data }) => setRows(data ?? []));
   useEffect(() => { load(); }, []);
-
-  async function create(e: React.FormEvent) {
-    e.preventDefault();
-    setBusy(true);
-    await supabase.from("subscriptions").insert({ ...form, days_total: Number(form.days_total), expires_at: new Date(Date.now() + Number(form.days_total) * 86400000).toISOString() });
-    setBusy(false);
-    setForm({ phone: "", customer_name: "", plan_name: "30-Day Coffee Pass", days_total: 30 });
-    load();
-  }
 
   return (
     <>
-      <div className="panel-warm p-6 mb-6">
-        <h3 className="font-display text-xl font-bold text-cream mb-4">{t("new_sub")}</h3>
-        <form onSubmit={create} className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
-          <FInput label={t("f_phone")} value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} required />
-          <FInput label={t("f_customer")} value={form.customer_name} onChange={(v) => setForm({ ...form, customer_name: v })} />
-          <FInput label={t("f_plan")} value={form.plan_name} onChange={(v) => setForm({ ...form, plan_name: v })} required />
-          <FInput label={t("f_days")} type="number" value={String(form.days_total)} onChange={(v) => setForm({ ...form, days_total: Number(v) })} required />
-          <button disabled={busy} className="btn-brass py-3 flex items-center justify-center gap-2">
-            {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}{t("btn_create")}
-          </button>
-        </form>
-      </div>
       <div className="panel p-6">
         <h3 className="font-display text-xl font-bold text-cream mb-4">{t("all_subs")}</h3>
         <div className="engraved overflow-x-auto">
           <table className="w-full text-sm">
             <thead><tr className="text-[10px] uppercase tracking-widest text-cream-dim">
               <th className="text-start px-4 py-3">{t("col_phone")}</th><th className="text-start px-4 py-3">{t("col_customer")}</th><th className="text-start px-4 py-3">{t("col_plan")}</th>
-              <th className="text-end px-4 py-3">{t("col_used")}</th><th className="text-end px-4 py-3">{t("col_total")}</th><th className="text-end px-4 py-3">{t("col_status")}</th>
+              <th className="text-start px-4 py-3">{t("col_branch")}</th><th className="text-end px-4 py-3">{t("col_status")}</th>
             </tr></thead>
             <tbody>{rows.map((r) => (
               <tr key={r.id} className="border-t border-[oklch(0.08_0.02_40)]">
-                <td className="px-4 py-3 font-mono text-cream">{r.phone}</td>
-                <td className="px-4 py-3 text-cream-dim">{r.customer_name ?? "—"}</td>
-                <td className="px-4 py-3 text-cream">{r.plan_name}</td>
-                <td className="px-4 py-3 text-end gold-text font-mono">{fmtNum(r.days_used)}</td>
-                <td className="px-4 py-3 text-end text-cream-dim font-mono">{fmtNum(r.days_total)}</td>
-                <td className="px-4 py-3 text-end"><StatusPill s={r.active ? "active" : "inactive"} /></td>
+                <td className="px-4 py-3 font-mono text-cream">{r.customer?.phone ?? ""}</td>
+                <td className="px-4 py-3 text-cream-dim">{r.customer?.name ?? "—"}</td>
+                <td className="px-4 py-3 text-cream">{r.plan?.name ?? ""}</td>
+                <td className="px-4 py-3 text-cream-dim">{r.branch?.name_en ?? ""}</td>
+                <td className="px-4 py-3 text-end"><StatusPill s={r.status} /></td>
               </tr>))}
-              {rows.length === 0 && <tr><td colSpan={6} className="text-center py-6 text-cream-dim">{t("empty_subs")}</td></tr>}
+              {rows.length === 0 && <tr><td colSpan={5} className="text-center py-6 text-cream-dim">{t("empty_subs")}</td></tr>}
             </tbody>
           </table>
         </div>
@@ -188,16 +167,16 @@ function SubsTab() {
 function BranchesTab() {
   const { t } = useI18n();
   const [rows, setRows] = useState<any[]>([]);
-  const [form, setForm] = useState({ name: "", code: "", address: "" });
+  const [form, setForm] = useState({ name_en: "", name_ar: "", address_en: "" });
   const [busy, setBusy] = useState(false);
-  const load = () => supabase.from("branches").select("*").order("name").then(({ data }) => setRows(data ?? []));
+  const load = () => supabase.from("branches").select("*").order("name_en").then(({ data }) => setRows(data ?? []));
   useEffect(() => { load(); }, []);
 
   async function create(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    await supabase.from("branches").insert({ ...form, code: form.code.toUpperCase() });
-    setBusy(false); setForm({ name: "", code: "", address: "" }); load();
+    await supabase.from("branches").insert({ ...form });
+    setBusy(false); setForm({ name_en: "", name_ar: "", address_en: "" }); load();
   }
 
   return (
@@ -205,9 +184,9 @@ function BranchesTab() {
       <div className="panel-warm p-6 mb-6">
         <h3 className="font-display text-xl font-bold text-cream mb-4">{t("new_branch")}</h3>
         <form onSubmit={create} className="grid sm:grid-cols-4 gap-3 items-end">
-          <FInput label={t("f_name")} value={form.name} onChange={(v) => setForm({ ...form, name: v })} required />
-          <FInput label={t("f_code")} value={form.code} onChange={(v) => setForm({ ...form, code: v })} required />
-          <FInput label={t("f_address")} value={form.address} onChange={(v) => setForm({ ...form, address: v })} />
+          <FInput label={t("f_name") + " (EN)"} value={form.name_en} onChange={(v) => setForm({ ...form, name_en: v })} required />
+          <FInput label={t("f_name") + " (AR)"} value={form.name_ar} onChange={(v) => setForm({ ...form, name_ar: v })} required />
+          <FInput label={t("f_address")} value={form.address_en} onChange={(v) => setForm({ ...form, address_en: v })} />
           <button disabled={busy} className="btn-brass py-3 flex items-center justify-center gap-2">
             {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}{t("btn_create")}
           </button>
@@ -217,12 +196,12 @@ function BranchesTab() {
         {rows.map((b) => (
           <div key={b.id} className="panel p-5">
             <div className="flex justify-between items-baseline">
-              <div className="font-display text-xl font-bold text-cream">{b.name}</div>
-              <div className="engraved px-2 py-1 font-mono gold-text text-xs">{b.code}</div>
+              <div className="font-display text-xl font-bold text-cream">{b.name_en}</div>
+              <div className="engraved px-2 py-1 gold-text text-xs">{b.name_ar}</div>
             </div>
-            <div className="text-cream-dim text-sm mt-1">{b.address ?? ""}</div>
+            <div className="text-cream-dim text-sm mt-1">{b.address_en ?? ""}</div>
             <div className="hairline-divider my-3" />
-            <a href={`/scan?code=${encodeURIComponent(b.code)}`} className="btn-ghost-brass block text-center text-xs py-2">{t("open_scan_link")}</a>
+            <a href={`/scan?branch=${encodeURIComponent(b.id)}`} className="btn-ghost-brass block text-center text-xs py-2">{t("open_scan_link")}</a>
           </div>
         ))}
         {rows.length === 0 && <div className="panel p-6 text-center text-cream-dim col-span-full">{t("empty_branches")}</div>}
@@ -241,8 +220,8 @@ function StaffTab() {
   const [msg, setMsg] = useState<string | null>(null);
   const load = async () => {
     const [{ data: r }, { data: b }] = await Promise.all([
-      supabase.from("user_roles").select("id, user_id, role, branch_id, branch:branches(name)").order("created_at", { ascending: false }),
-      supabase.from("branches").select("id, name").order("name"),
+      supabase.from("user_roles").select("id, user_id, role, branch_id, branch:branches(name_en)").order("created_at", { ascending: false }),
+      supabase.from("branches").select("id, name_en").order("name_en"),
     ]);
     setUsers(r ?? []); setBranches(b ?? []);
   };
@@ -268,7 +247,7 @@ function StaffTab() {
           <FSelect label={t("f_role")} value={form.role} onChange={(v) => setForm({ ...form, role: v })}
             options={[{ v: "cashier", l: t("role_cashier") }, { v: "admin", l: t("role_admin") }]} />
           <FSelect label={t("f_branch")} value={form.branch_id} onChange={(v) => setForm({ ...form, branch_id: v })}
-            options={[{ v: "", l: "—" }, ...branches.map((b) => ({ v: b.id, l: b.name }))]} />
+            options={[{ v: "", l: "—" }, ...branches.map((b) => ({ v: b.id, l: b.name_en }))]} />
           <button disabled={busy} className="btn-brass py-3 flex items-center justify-center gap-2">
             {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}{t("btn_assign")}
           </button>
@@ -286,7 +265,7 @@ function StaffTab() {
               <tr key={u.id} className="border-t border-[oklch(0.08_0.02_40)]">
                 <td className="px-4 py-3 font-mono text-xs text-cream-dim">{u.user_id}</td>
                 <td className="px-4 py-3"><StatusPill s={u.role} /></td>
-                <td className="px-4 py-3 text-cream">{u.branch?.name ?? "—"}</td>
+                <td className="px-4 py-3 text-cream">{u.branch?.name_en ?? "—"}</td>
               </tr>))}
               {users.length === 0 && <tr><td colSpan={3} className="text-center py-6 text-cream-dim">{t("empty_roles")}</td></tr>}
             </tbody>
