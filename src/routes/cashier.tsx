@@ -12,8 +12,10 @@ export const Route = createFileRoute("/cashier")({
 });
 
 type Order = {
-  id: string; coffee_name: string; language: string; status: string; created_at: string;
-  subscription: { phone: string; customer_name: string | null; days_total: number; days_used: number } | null;
+  id: string; status: string; created_at: string; order_date: string;
+  drink: { name_en: string; name_ar: string } | null;
+  customer: { name: string; phone: string } | null;
+  subscription: { id: string; end_date: string; plan: { name: string; duration_days: number } | null } | null;
 };
 
 function CashierPage() {
@@ -35,14 +37,14 @@ function CashierPage() {
     if (!branchId) return;
     setLoading(true);
     const [{ data: b }, { data: o }] = await Promise.all([
-      supabase.from("branches").select("name").eq("id", branchId).maybeSingle(),
+      supabase.from("branches").select("name_en,name_ar").eq("id", branchId).maybeSingle(),
       supabase.from("orders")
-        .select("id, coffee_name, language, status, created_at, subscription:subscriptions(phone, customer_name, days_total, days_used)")
+        .select("id, status, created_at, order_date, drink:drink_types(name_en,name_ar), customer:customers(name,phone), subscription:subscriptions(id, end_date, plan:plans(name,duration_days))")
         .eq("branch_id", branchId)
         .order("created_at", { ascending: false })
         .limit(50),
     ]);
-    if (b) setBranchName(b.name);
+    if (b) setBranchName((b as { name_en: string }).name_en);
     setOrders((o as any) ?? []);
     setLoading(false);
   }, [branchId]);
@@ -100,10 +102,10 @@ function CashierPage() {
                       <Coffee className="w-6 h-6 text-caramel-bright" />
                     </div>
                     <div>
-                      <div className="font-display text-xl font-semibold text-cream">{o.coffee_name}</div>
-                      <div className="text-xs text-cream-dim font-mono">{o.subscription?.phone} · {o.subscription?.customer_name ?? "—"}</div>
+                      <div className="font-display text-xl font-semibold text-cream">{o.drink?.name_en ?? "—"}</div>
+                      <div className="text-xs text-cream-dim font-mono">{o.customer?.phone} · {o.customer?.name ?? "—"}</div>
                       <div className="text-[10px] uppercase tracking-widest text-cream-dim mt-1">
-                        {o.subscription ? t("of_left", { left: fmtNum(o.subscription.days_total - o.subscription.days_used), total: fmtNum(o.subscription.days_total) }) : ""} · {timeAgo(o.created_at)}
+                        {o.subscription?.plan?.name ?? ""} · {timeAgo(o.created_at)}
                       </div>
                     </div>
                   </div>
@@ -136,8 +138,8 @@ function CashierPage() {
               <tbody>
                 {recent.map((o) => (
                   <tr key={o.id} className="border-t border-[oklch(0.08_0.02_40)]">
-                    <td className="px-4 py-3 text-cream">{o.coffee_name}</td>
-                    <td className="px-4 py-3 font-mono text-cream-dim text-xs">{o.subscription?.phone ?? ""}</td>
+                    <td className="px-4 py-3 text-cream">{o.drink?.name_en ?? "—"}</td>
+                    <td className="px-4 py-3 font-mono text-cream-dim text-xs">{o.customer?.phone ?? ""}</td>
                     <td className="px-4 py-3"><StatusPill s={o.status} /></td>
                     <td className="px-4 py-3 text-end text-cream-dim">{timeAgo(o.created_at)}</td>
                   </tr>

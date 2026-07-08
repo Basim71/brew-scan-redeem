@@ -16,31 +16,8 @@ export type Database = {
     Tables: {
       branches: {
         Row: {
-          address: string | null
-          code: string
-          created_at: string
-          id: string
-          name: string
-        }
-        Insert: {
-          address?: string | null
-          code: string
-          created_at?: string
-          id?: string
-          name: string
-        }
-        Update: {
-          address?: string | null
-          code?: string
-          created_at?: string
-          id?: string
-          name?: string
-        }
-        Relationships: []
-      }
-      coffee_options: {
-        Row: {
-          branch_id: string
+          address_ar: string | null
+          address_en: string | null
           created_at: string
           id: string
           is_active: boolean
@@ -48,7 +25,8 @@ export type Database = {
           name_en: string
         }
         Insert: {
-          branch_id: string
+          address_ar?: string | null
+          address_en?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
@@ -56,57 +34,149 @@ export type Database = {
           name_en: string
         }
         Update: {
-          branch_id?: string
+          address_ar?: string | null
+          address_en?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
           name_ar?: string
           name_en?: string
         }
+        Relationships: []
+      }
+      coupons: {
+        Row: {
+          branch_id: string | null
+          code: string
+          created_at: string
+          id: string
+          plan_id: string
+          price: number
+          sold_at: string | null
+          status: Database["public"]["Enums"]["coupon_status"]
+        }
+        Insert: {
+          branch_id?: string | null
+          code: string
+          created_at?: string
+          id?: string
+          plan_id: string
+          price: number
+          sold_at?: string | null
+          status?: Database["public"]["Enums"]["coupon_status"]
+        }
+        Update: {
+          branch_id?: string | null
+          code?: string
+          created_at?: string
+          id?: string
+          plan_id?: string
+          price?: number
+          sold_at?: string | null
+          status?: Database["public"]["Enums"]["coupon_status"]
+        }
         Relationships: [
           {
-            foreignKeyName: "coffee_options_branch_id_fkey"
+            foreignKeyName: "coupons_branch_id_fkey"
             columns: ["branch_id"]
             isOneToOne: false
             referencedRelation: "branches"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "coupons_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      customers: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          phone: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          phone: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          phone?: string
+        }
+        Relationships: []
+      }
+      drink_types: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name_ar: string
+          name_en: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name_ar: string
+          name_en: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name_ar?: string
+          name_en?: string
+        }
+        Relationships: []
       }
       orders: {
         Row: {
           approved_at: string | null
-          approved_by: string | null
           branch_id: string
-          coffee_name: string
-          coffee_option_id: string | null
+          cashier_id: string | null
           created_at: string
+          customer_id: string
+          drink_type_id: string
           id: string
-          language: string
+          order_date: string
+          rejected_at: string | null
+          requested_at: string
           status: Database["public"]["Enums"]["order_status"]
           subscription_id: string
         }
         Insert: {
           approved_at?: string | null
-          approved_by?: string | null
           branch_id: string
-          coffee_name: string
-          coffee_option_id?: string | null
+          cashier_id?: string | null
           created_at?: string
+          customer_id: string
+          drink_type_id: string
           id?: string
-          language?: string
+          order_date?: string
+          rejected_at?: string | null
+          requested_at?: string
           status?: Database["public"]["Enums"]["order_status"]
           subscription_id: string
         }
         Update: {
           approved_at?: string | null
-          approved_by?: string | null
           branch_id?: string
-          coffee_name?: string
-          coffee_option_id?: string | null
+          cashier_id?: string | null
           created_at?: string
+          customer_id?: string
+          drink_type_id?: string
           id?: string
-          language?: string
+          order_date?: string
+          rejected_at?: string | null
+          requested_at?: string
           status?: Database["public"]["Enums"]["order_status"]
           subscription_id?: string
         }
@@ -119,10 +189,17 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "orders_coffee_option_id_fkey"
-            columns: ["coffee_option_id"]
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
             isOneToOne: false
-            referencedRelation: "coffee_options"
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_drink_type_id_fkey"
+            columns: ["drink_type_id"]
+            isOneToOne: false
+            referencedRelation: "drink_types"
             referencedColumns: ["id"]
           },
           {
@@ -134,65 +211,129 @@ export type Database = {
           },
         ]
       }
-      profiles: {
+      plans: {
         Row: {
           created_at: string
+          duration_days: number
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+        }
+        Insert: {
+          created_at?: string
+          duration_days: number
+          id?: string
+          is_active?: boolean
+          name: string
+          price: number
+        }
+        Update: {
+          created_at?: string
+          duration_days?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          branch_id: string | null
+          created_at: string
+          email: string | null
           full_name: string | null
           id: string
         }
         Insert: {
+          branch_id?: string | null
           created_at?: string
+          email?: string | null
           full_name?: string | null
           id: string
         }
         Update: {
+          branch_id?: string | null
           created_at?: string
+          email?: string | null
           full_name?: string | null
           id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscriptions: {
         Row: {
-          active: boolean
+          branch_id: string
+          coupon_id: string
           created_at: string
-          customer_name: string | null
-          days_total: number
-          days_used: number
-          expires_at: string | null
+          customer_id: string
+          end_date: string
           id: string
-          phone: string
-          plan_name: string
-          starts_at: string
-          updated_at: string
+          plan_id: string
+          start_date: string
+          status: Database["public"]["Enums"]["subscription_status"]
         }
         Insert: {
-          active?: boolean
+          branch_id: string
+          coupon_id: string
           created_at?: string
-          customer_name?: string | null
-          days_total?: number
-          days_used?: number
-          expires_at?: string | null
+          customer_id: string
+          end_date: string
           id?: string
-          phone: string
-          plan_name?: string
-          starts_at?: string
-          updated_at?: string
+          plan_id: string
+          start_date?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
         }
         Update: {
-          active?: boolean
+          branch_id?: string
+          coupon_id?: string
           created_at?: string
-          customer_name?: string | null
-          days_total?: number
-          days_used?: number
-          expires_at?: string | null
+          customer_id?: string
+          end_date?: string
           id?: string
-          phone?: string
-          plan_name?: string
-          starts_at?: string
-          updated_at?: string
+          plan_id?: string
+          start_date?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: true
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -216,15 +357,7 @@ export type Database = {
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_roles_branch_id_fkey"
-            columns: ["branch_id"]
-            isOneToOne: false
-            referencedRelation: "branches"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {
@@ -242,7 +375,9 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "cashier"
+      coupon_status: "available" | "sold" | "expired"
       order_status: "pending" | "approved" | "rejected"
+      subscription_status: "active" | "expired" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -371,7 +506,9 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "cashier"],
+      coupon_status: ["available", "sold", "expired"],
       order_status: ["pending", "approved", "rejected"],
+      subscription_status: ["active", "expired", "cancelled"],
     },
   },
 } as const

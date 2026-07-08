@@ -6,13 +6,15 @@ import { useI18n, LanguageSwitcher } from "@/lib/i18n";
 
 type Step = "branch" | "language" | "phone" | "menu" | "waiting";
 
-type Branch = { id: string; name: string; code: string };
+type Branch = { id: string; name_en: string; name_ar: string };
+type Plan = { id: string; name: string; duration_days: number };
 type Subscription = {
-  id: string; phone: string; customer_name: string | null;
-  plan_name: string; days_total: number; days_used: number;
-  active: boolean; expires_at: string | null;
+  id: string; customer_id: string; plan_id: string; branch_id: string;
+  start_date: string; end_date: string; status: string;
+  plan: Plan | null;
 };
-type Coffee = { id: string; name_en: string; name_ar: string; is_active: boolean };
+type Customer = { id: string; name: string; phone: string };
+type Drink = { id: string; name_en: string; name_ar: string; is_active: boolean };
 
 export const Route = createFileRoute("/scan")({
   head: () => ({ meta: [{ title: "Scan · KOB" }, { name: "description", content: "Scan a KOB branch, choose today's coffee, and send your order." }] }),
@@ -26,20 +28,22 @@ function ScanPage() {
   const [branch, setBranch] = useState<Branch | null>(null);
   const [phone, setPhone] = useState("");
   const [sub, setSub] = useState<Subscription | null>(null);
-  const [coffees, setCoffees] = useState<Coffee[]>([]);
+  const [customer, setCustomer] = useState<Customer | null>(null);
+  const [usedToday, setUsedToday] = useState(0);
+  const [drinks, setDrinks] = useState<Drink[]>([]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [orderStatus, setOrderStatus] = useState<"pending" | "approved" | "rejected">("pending");
 
   useEffect(() => {
-    supabase.from("branches").select("id,name,code").order("name").then(({ data }) => {
+    supabase.from("branches").select("id,name_en,name_ar").eq("is_active", true).order("name_en").then(({ data }) => {
       const list = (data ?? []) as Branch[];
       setBranches(list);
       const url = new URL(window.location.href);
-      const code = url.searchParams.get("code");
-      if (code) {
-        const b = list.find((x) => x.code === code);
+      const id = url.searchParams.get("branch");
+      if (id) {
+        const b = list.find((x) => x.id === id);
         if (b) { setBranch(b); setStep("language"); }
       }
     });
@@ -47,8 +51,8 @@ function ScanPage() {
 
   useEffect(() => {
     if (!branch) return;
-    supabase.from("coffee_options").select("id,name_en,name_ar,is_active").eq("branch_id", branch.id).eq("is_active", true)
-      .then(({ data }) => setCoffees((data ?? []) as Coffee[]));
+    supabase.from("drink_types").select("id,name_en,name_ar,is_active").eq("is_active", true)
+      .then(({ data }) => setDrinks((data ?? []) as Drink[]));
   }, [branch]);
 
   // Poll order status
@@ -63,25 +67,39 @@ function ScanPage() {
 
   async function lookup() {
     setBusy(true); setErr(null);
-    const { data } = await supabase.from("subscriptions").select("*").eq("phone", phone.trim()).eq("active", true).order("created_at", { ascending: false }).limit(1).maybeSingle();
+    const { data: c } = await supabase.from("customers").select("*").eq("phone", phone.trim()).maybeSingle();
+    if (!c) { setBusy(false); setErr(t("noSub")); return; }
+    const { data: s } = await supabase.from("subscriptions")
+      .select("*, plan:plans(id,name,duration_days)")
+      .eq("customer_id", c.id).eq("status", "active")
+      .order("created_at", { ascending: false }).limit(1).maybeSingle();
+    if (!s) { setBusy(false); setErr(t("noSub")); return; }
+    const today = new Date().toISOString().slice(0, 10);
+    const { count } = await supabase.from("orders")
+      .select("*", { count: "exact", head: true })
+      .eq("subscription_id", s.id).eq("order_date", today).eq("status", "approved");
     setBusy(false);
-    if (!data) { setErr(t("noSub")); return; }
-    setSub(data as Subscription); setStep("menu");
+    setCustomer(c as Customer);
+    setSub(s as unknown as Subscription);
+    setUsedToday(count ?? 0);
+    setStep("menu");
   }
 
-  async function sendOrder(c: Coffee) {
-    if (!sub || !branch) return;
+  async function sendOrder(d: Drink) {
+    if (!sub || !branch || !customer) return;
     setBusy(true);
     const { data, error } = await supabase.from("orders").insert({
-      subscription_id: sub.id, branch_id: branch.id, coffee_option_id: c.id,
-      coffee_name: lang === "ar" ? c.name_ar : c.name_en, language: lang,
+      subscription_id: sub.id, customer_id: customer.id,
+      branch_id: branch.id, drink_type_id: d.id,
     }).select("id").single();
     setBusy(false);
     if (error || !data) { setErr(error?.message ?? "Failed"); return; }
     setOrderId(data.id); setOrderStatus("pending"); setStep("waiting");
   }
 
-  const daysLeft = sub ? sub.days_total - sub.days_used : 0;
+  const totalDays = sub?.plan?.duration_days ?? 0;
+  const daysLeft = Math.max(0, totalDays - (sub ? daysBetween(sub.start_date, new Date().toISOString().slice(0, 10)) : 0));
+  const canOrder = !!sub && sub.status === "active" && usedToday === 0;
 
   return (
     <main dir={dir} className="min-h-screen py-8 px-4 flex flex-col items-center">
@@ -102,8 +120,7 @@ function ScanPage() {
               {branches.map((b) => (
                 <button key={b.id} onClick={() => { setBranch(b); setStep("language"); }}
                   className="btn-ghost-brass w-full px-4 py-4 text-left flex justify-between items-center">
-                  <span className="font-semibold text-cream">{b.name}</span>
-                  <span className="font-mono text-xs text-cream-dim">{b.code}</span>
+                  <span className="font-semibold text-cream">{lang === "ar" ? b.name_ar : b.name_en}</span>
                 </button>
               ))}
               {branches.length === 0 && <div className="engraved p-4 text-sm text-cream-dim text-center">{t("empty_branches")}</div>}
@@ -115,7 +132,7 @@ function ScanPage() {
         {step === "language" && branch && (
           <div className="panel-warm p-7">
             <BackBtn onClick={() => setStep("branch")} label={t("back")} />
-            <div className="engraved px-3 py-2 mb-5 text-xs uppercase tracking-widest text-cream-dim text-center">{branch.name}</div>
+            <div className="engraved px-3 py-2 mb-5 text-xs uppercase tracking-widest text-cream-dim text-center">{lang === "ar" ? branch.name_ar : branch.name_en}</div>
             <h1 className="font-display text-2xl font-bold text-cream mb-6 text-center">{t("pickLang")}</h1>
             <div className="grid grid-cols-2 gap-3">
               <button onClick={() => { setLang("en"); setStep("phone"); }} className="btn-brass py-5 font-display text-xl">English</button>
@@ -128,7 +145,7 @@ function ScanPage() {
         {step === "phone" && branch && (
           <div className="panel-warm p-7">
             <BackBtn onClick={() => setStep("language")} label={t("back")} />
-            <div className="engraved px-3 py-2 mb-5 text-xs uppercase tracking-widest text-cream-dim text-center">{branch.name}</div>
+            <div className="engraved px-3 py-2 mb-5 text-xs uppercase tracking-widest text-cream-dim text-center">{lang === "ar" ? branch.name_ar : branch.name_en}</div>
             <h1 className="font-display text-2xl font-bold text-cream mb-1 text-center">{t("enterPhone")}</h1>
             <p className="text-sm text-cream-dim mb-5 text-center">{t("tagline")}</p>
             <form onSubmit={(e) => { e.preventDefault(); lookup(); }} className="space-y-4">
@@ -151,31 +168,31 @@ function ScanPage() {
               <BackBtn onClick={() => setStep("phone")} label={t("back")} />
               <div className="engraved p-4">
                 <div className="text-[10px] uppercase tracking-[0.25em] text-cream-dim mb-1">{t("planLabel")}</div>
-                <div className="font-display text-2xl font-bold text-cream">{sub.plan_name}</div>
+                <div className="font-display text-2xl font-bold text-cream">{sub.plan?.name ?? "—"}</div>
                 <div className="hairline-divider my-3" />
                 <div className="flex justify-between text-sm">
-                  <span className="text-cream-dim">{t("branchLabel")}</span><span className="text-cream">{branch.name}</span>
+                  <span className="text-cream-dim">{t("branchLabel")}</span><span className="text-cream">{lang === "ar" ? branch.name_ar : branch.name_en}</span>
                 </div>
                 <div className="flex justify-between items-baseline mt-2">
                   <span className="text-sm text-cream-dim">{t("remainingLabel")}</span>
-                  <span className="font-display gold-text text-3xl font-bold">{fmtNum(daysLeft)}<span className="text-sm text-cream-dim font-sans"> / {fmtNum(sub.days_total)}</span></span>
+                  <span className="font-display gold-text text-3xl font-bold">{fmtNum(daysLeft)}<span className="text-sm text-cream-dim font-sans"> / {fmtNum(totalDays)}</span></span>
                 </div>
               </div>
             </div>
             <div className="panel p-6">
               <h2 className="font-display text-xl font-bold text-cream mb-4">{t("pickCoffee")}</h2>
               <div className="grid grid-cols-2 gap-3">
-                {coffees.map((c) => (
-                  <button key={c.id} disabled={busy || daysLeft <= 0} onClick={() => sendOrder(c)}
+                {drinks.map((d) => (
+                  <button key={d.id} disabled={busy || !canOrder} onClick={() => sendOrder(d)}
                     className="engraved p-4 text-center hover:brightness-110 transition disabled:opacity-40">
                     <Coffee className="w-6 h-6 mx-auto mb-2 text-caramel-bright" />
                     <div className="font-display text-lg font-semibold text-cream">
-                      {lang === "ar" ? c.name_ar : c.name_en}
+                      {lang === "ar" ? d.name_ar : d.name_en}
                     </div>
                   </button>
                 ))}
               </div>
-              {daysLeft <= 0 && <div className="mt-4 engraved p-3 text-sm text-center text-cream-dim">{t("empty_days")}</div>}
+              {!canOrder && <div className="mt-4 engraved p-3 text-sm text-center text-cream-dim">{t("empty_days")}</div>}
             </div>
           </>
         )}
@@ -223,4 +240,9 @@ function BackBtn({ onClick, label }: { onClick: () => void; label: string }) {
       <ArrowLeft className="w-3.5 h-3.5" /> {label}
     </button>
   );
+}
+
+function daysBetween(a: string, b: string) {
+  const ms = new Date(b).getTime() - new Date(a).getTime();
+  return Math.max(0, Math.floor(ms / 86400000));
 }
