@@ -13,7 +13,7 @@ type Subscription = {
   start_date: string; end_date: string; status: string;
   plan: Plan | null;
 };
-type Customer = { id: string; name: string; phone: string };
+type Customer = { id: string; name: string };
 type Drink = { id: string; name_en: string; name_ar: string; is_active: boolean };
 
 export const Route = createFileRoute("/scan")({
@@ -59,42 +59,34 @@ function ScanPage() {
   useEffect(() => {
     if (!orderId) return;
     const int = setInterval(async () => {
-      const { data } = await supabase.from("orders").select("status").eq("id", orderId).maybeSingle();
-      if (data?.status && data.status !== orderStatus) setOrderStatus(data.status as any);
+      const { data } = await supabase.rpc("scan_order_status", { _order_id: orderId });
+      if (data && data !== orderStatus) setOrderStatus(data as any);
     }, 2000);
     return () => clearInterval(int);
   }, [orderId, orderStatus]);
 
   async function lookup() {
     setBusy(true); setErr(null);
-    const { data: c } = await supabase.from("customers").select("*").eq("phone", phone.trim()).maybeSingle();
-    if (!c) { setBusy(false); setErr(t("noSub")); return; }
-    const { data: s } = await supabase.from("subscriptions")
-      .select("*, plan:plans(id,name,duration_days)")
-      .eq("customer_id", c.id).eq("status", "active")
-      .order("created_at", { ascending: false }).limit(1).maybeSingle();
-    if (!s) { setBusy(false); setErr(t("noSub")); return; }
-    const today = new Date().toISOString().slice(0, 10);
-    const { count } = await supabase.from("orders")
-      .select("*", { count: "exact", head: true })
-      .eq("subscription_id", s.id).eq("order_date", today).eq("status", "approved");
+    if (!branch) { setBusy(false); return; }
+    const { data, error } = await supabase.rpc("scan_lookup", { _phone: phone.trim(), _branch_id: branch.id });
     setBusy(false);
-    setCustomer(c as Customer);
-    setSub(s as unknown as Subscription);
-    setUsedToday(count ?? 0);
+    const payload = data as { found: boolean; customer?: Customer; subscription?: Subscription; used_today?: number } | null;
+    if (error || !payload?.found) { setErr(t("noSub")); return; }
+    setCustomer(payload.customer!);
+    setSub(payload.subscription!);
+    setUsedToday(payload.used_today ?? 0);
     setStep("menu");
   }
 
   async function sendOrder(d: Drink) {
     if (!sub || !branch || !customer) return;
     setBusy(true);
-    const { data, error } = await supabase.from("orders").insert({
-      subscription_id: sub.id, customer_id: customer.id,
-      branch_id: branch.id, drink_type_id: d.id,
-    }).select("id").single();
+    const { data, error } = await supabase.rpc("scan_submit_order", {
+      _phone: phone.trim(), _branch_id: branch.id, _drink_type_id: d.id,
+    });
     setBusy(false);
     if (error || !data) { setErr(error?.message ?? "Failed"); return; }
-    setOrderId(data.id); setOrderStatus("pending"); setStep("waiting");
+    setOrderId(data as string); setOrderStatus("pending"); setStep("waiting");
   }
 
   const totalDays = sub?.plan?.duration_days ?? 0;

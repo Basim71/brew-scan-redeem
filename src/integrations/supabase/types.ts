@@ -372,6 +372,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      scan_lookup: {
+        Args: { _branch_id: string; _phone: string }
+        Returns: Json
+      }
+      scan_order_status: { Args: { _order_id: string }; Returns: string }
+      scan_submit_order: {
+        Args: { _branch_id: string; _drink_type_id: string; _phone: string }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "cashier"
