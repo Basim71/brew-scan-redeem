@@ -26,6 +26,7 @@ const dict = {
     haveAccount: "Already have an account? Sign in",
     customersHint: "Customers don't need an account — go to scan.",
     goToScan: "go to scan",
+    staffOnlyNotice: "Staff access only. Cashier accounts are created by an admin.",
 
     // landing
     heroBadge: "Premium Subscription System",
