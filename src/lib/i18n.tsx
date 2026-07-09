@@ -26,6 +26,7 @@ const dict = {
     haveAccount: "Already have an account? Sign in",
     customersHint: "Customers don't need an account — go to scan.",
     goToScan: "go to scan",
+    staffOnlyNotice: "Staff access only. Cashier accounts are created by an admin.",
 
     // landing
     heroBadge: "Premium Subscription System",
@@ -171,6 +172,7 @@ const dict = {
     haveAccount: "لديك حساب؟ سجّل الدخول",
     customersHint: "لا يحتاج العملاء إلى حساب — انتقل إلى المسح.",
     goToScan: "انتقل إلى المسح",
+    staffOnlyNotice: "الدخول للموظفين فقط. حسابات الكاشير يتم إنشاؤها من قبل المسؤول.",
 
     heroBadge: "نظام اشتراك متميز",
     heroTitleA: "قهوتك اليومية،",
