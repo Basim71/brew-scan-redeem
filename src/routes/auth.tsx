@@ -6,7 +6,7 @@ import { useRole } from "@/lib/use-auth";
 import { useI18n, LanguageSwitcher } from "@/lib/i18n";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Staff Sign In · KOB" }, { name: "description", content: "Sign in to the KOB admin or cashier dashboard." }] }),
+  head: () => ({ meta: [{ title: "Staff Sign In · KOB" }, { name: "description", content: "Sign in to the KOB admin or cashier dashboard." }, { name: "robots", content: "noindex" }] }),
   component: AuthPage,
 });
 
@@ -14,10 +14,8 @@ function AuthPage() {
   const navigate = useNavigate();
   const { session, role, ready } = useRole();
   const { t } = useI18n();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -32,19 +30,8 @@ function AuthPage() {
     e.preventDefault();
     setBusy(true); setErr(null);
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email, password,
-          options: {
-            emailRedirectTo: window.location.origin + "/auth",
-            data: { full_name: fullName },
-          },
-        });
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-      }
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
     } catch (e: any) {
       setErr(e.message ?? "Something went wrong");
     } finally {
@@ -65,19 +52,13 @@ function AuthPage() {
 
         <div className="panel-warm p-8">
           <h1 className="font-display text-3xl font-bold text-cream mb-1">
-            {mode === "signin" ? t("welcomeBack") : t("createAccountHeading")}
+            {t("welcomeBack")}
           </h1>
           <p className="text-sm text-cream-dim mb-6">
-            {mode === "signin" ? t("signInSubtitle") : t("signUpSubtitle")}
+            {t("signInSubtitle")}
           </p>
 
           <form onSubmit={submit} className="space-y-4">
-            {mode === "signup" && (
-              <Field label={t("fullName")}>
-                <input required value={fullName} onChange={(e) => setFullName(e.target.value)}
-                  className="inset-well w-full px-4 py-3 outline-none focus:ring-2 focus:ring-caramel/60" />
-              </Field>
-            )}
             <Field label={t("email")}>
               <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                 className="inset-well w-full px-4 py-3 outline-none focus:ring-2 focus:ring-caramel/60" />
@@ -91,15 +72,14 @@ function AuthPage() {
 
             <button disabled={busy} className="btn-brass w-full py-3.5 flex items-center justify-center gap-2">
               {busy && <Loader2 className="w-4 h-4 animate-spin" />}
-              {mode === "signin" ? t("signIn") : t("createAccount")}
+              {t("signIn")}
             </button>
           </form>
 
           <div className="hairline-divider my-6" />
-          <button onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-            className="w-full text-sm text-cream-dim hover:text-caramel-bright">
-            {mode === "signin" ? t("newHere") : t("haveAccount")}
-          </button>
+          <p className="text-center text-xs text-cream-dim leading-relaxed">
+            {t("staffOnlyNotice")}
+          </p>
         </div>
 
         <p className="text-center text-xs text-cream-dim mt-6">
