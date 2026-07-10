@@ -17,6 +17,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CashierIndexRouteImport } from './routes/cashier.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as CashierSellCouponRouteImport } from './routes/cashier.sell-coupon'
 import { Route as AdminSellCouponRouteImport } from './routes/admin.sell-coupon'
 import { Route as AdminPlansRouteImport } from './routes/admin.plans'
 import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
@@ -61,6 +62,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const CashierSellCouponRoute = CashierSellCouponRouteImport.update({
+  id: '/sell-coupon',
+  path: '/sell-coupon',
+  getParentRoute: () => CashierRoute,
+} as any)
 const AdminSellCouponRoute = AdminSellCouponRouteImport.update({
   id: '/sell-coupon',
   path: '/sell-coupon',
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/sell-coupon': typeof AdminSellCouponRoute
+  '/cashier/sell-coupon': typeof CashierSellCouponRoute
   '/admin/': typeof AdminIndexRoute
   '/cashier/': typeof CashierIndexRoute
 }
@@ -98,6 +105,7 @@ export interface FileRoutesByTo {
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/sell-coupon': typeof AdminSellCouponRoute
+  '/cashier/sell-coupon': typeof CashierSellCouponRoute
   '/admin': typeof AdminIndexRoute
   '/cashier': typeof CashierIndexRoute
 }
@@ -112,6 +120,7 @@ export interface FileRoutesById {
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/sell-coupon': typeof AdminSellCouponRoute
+  '/cashier/sell-coupon': typeof CashierSellCouponRoute
   '/admin/': typeof AdminIndexRoute
   '/cashier/': typeof CashierIndexRoute
 }
@@ -127,6 +136,7 @@ export interface FileRouteTypes {
     | '/admin/coupons'
     | '/admin/plans'
     | '/admin/sell-coupon'
+    | '/cashier/sell-coupon'
     | '/admin/'
     | '/cashier/'
   fileRoutesByTo: FileRoutesByTo
@@ -138,6 +148,7 @@ export interface FileRouteTypes {
     | '/admin/coupons'
     | '/admin/plans'
     | '/admin/sell-coupon'
+    | '/cashier/sell-coupon'
     | '/admin'
     | '/cashier'
   id:
@@ -151,6 +162,7 @@ export interface FileRouteTypes {
     | '/admin/coupons'
     | '/admin/plans'
     | '/admin/sell-coupon'
+    | '/cashier/sell-coupon'
     | '/admin/'
     | '/cashier/'
   fileRoutesById: FileRoutesById
@@ -222,6 +234,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/cashier/sell-coupon': {
+      id: '/cashier/sell-coupon'
+      path: '/sell-coupon'
+      fullPath: '/cashier/sell-coupon'
+      preLoaderRoute: typeof CashierSellCouponRouteImport
+      parentRoute: typeof CashierRoute
+    }
     '/admin/sell-coupon': {
       id: '/admin/sell-coupon'
       path: '/sell-coupon'
@@ -263,10 +282,12 @@ const AdminRouteChildren: AdminRouteChildren = {
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface CashierRouteChildren {
+  CashierSellCouponRoute: typeof CashierSellCouponRoute
   CashierIndexRoute: typeof CashierIndexRoute
 }
 
 const CashierRouteChildren: CashierRouteChildren = {
+  CashierSellCouponRoute: CashierSellCouponRoute,
   CashierIndexRoute: CashierIndexRoute,
 }
 
