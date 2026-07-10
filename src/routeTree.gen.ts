@@ -15,6 +15,7 @@ import { Route as CashierRouteImport } from './routes/cashier'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CashierIndexRouteImport } from './routes/cashier.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminSellCouponRouteImport } from './routes/admin.sell-coupon'
 import { Route as AdminPlansRouteImport } from './routes/admin.plans'
@@ -50,6 +51,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CashierIndexRoute = CashierIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CashierRoute,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -75,37 +81,39 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
-  '/cashier': typeof CashierRoute
+  '/cashier': typeof CashierRouteWithChildren
   '/scan': typeof ScanRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/sell-coupon': typeof AdminSellCouponRoute
   '/admin/': typeof AdminIndexRoute
+  '/cashier/': typeof CashierIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/cashier': typeof CashierRoute
   '/scan': typeof ScanRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/sell-coupon': typeof AdminSellCouponRoute
   '/admin': typeof AdminIndexRoute
+  '/cashier': typeof CashierIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
-  '/cashier': typeof CashierRoute
+  '/cashier': typeof CashierRouteWithChildren
   '/scan': typeof ScanRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/sell-coupon': typeof AdminSellCouponRoute
   '/admin/': typeof AdminIndexRoute
+  '/cashier/': typeof CashierIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -120,17 +128,18 @@ export interface FileRouteTypes {
     | '/admin/plans'
     | '/admin/sell-coupon'
     | '/admin/'
+    | '/cashier/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
-    | '/cashier'
     | '/scan'
     | '/sitemap.xml'
     | '/admin/coupons'
     | '/admin/plans'
     | '/admin/sell-coupon'
     | '/admin'
+    | '/cashier'
   id:
     | '__root__'
     | '/'
@@ -143,13 +152,14 @@ export interface FileRouteTypes {
     | '/admin/plans'
     | '/admin/sell-coupon'
     | '/admin/'
+    | '/cashier/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
-  CashierRoute: typeof CashierRoute
+  CashierRoute: typeof CashierRouteWithChildren
   ScanRoute: typeof ScanRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
@@ -198,6 +208,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cashier/': {
+      id: '/cashier/'
+      path: '/'
+      fullPath: '/cashier/'
+      preLoaderRoute: typeof CashierIndexRouteImport
+      parentRoute: typeof CashierRoute
+    }
     '/admin/': {
       id: '/admin/'
       path: '/'
@@ -245,11 +262,22 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface CashierRouteChildren {
+  CashierIndexRoute: typeof CashierIndexRoute
+}
+
+const CashierRouteChildren: CashierRouteChildren = {
+  CashierIndexRoute: CashierIndexRoute,
+}
+
+const CashierRouteWithChildren =
+  CashierRoute._addFileChildren(CashierRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
-  CashierRoute: CashierRoute,
+  CashierRoute: CashierRouteWithChildren,
   ScanRoute: ScanRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
