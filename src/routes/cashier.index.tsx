@@ -6,7 +6,7 @@ import { useRole } from "@/lib/use-auth";
 import { StatusPill, FullScreenLoader } from "@/lib/ui";
 import { useI18n, LanguageSwitcher } from "@/lib/i18n";
 
-export const Route = createFileRoute("/cashier")({
+export const Route = createFileRoute("/cashier/")({
   head: () => ({ meta: [{ title: "Cashier · KOB" }, { name: "description", content: "KOB cashier order approval console." }, { name: "robots", content: "noindex" }] }),
   component: CashierPage,
 });

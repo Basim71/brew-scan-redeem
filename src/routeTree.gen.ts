@@ -11,10 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ScanRouteImport } from './routes/scan'
-import { Route as CashierRouteImport } from './routes/cashier'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CashierIndexRouteImport } from './routes/cashier.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminSellCouponRouteImport } from './routes/admin.sell-coupon'
 import { Route as AdminPlansRouteImport } from './routes/admin.plans'
@@ -30,11 +30,6 @@ const ScanRoute = ScanRouteImport.update({
   path: '/scan',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CashierRoute = CashierRouteImport.update({
-  id: '/cashier',
-  path: '/cashier',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -48,6 +43,11 @@ const AdminRoute = AdminRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CashierIndexRoute = CashierIndexRouteImport.update({
+  id: '/cashier/',
+  path: '/cashier/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -75,37 +75,37 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
-  '/cashier': typeof CashierRoute
   '/scan': typeof ScanRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/sell-coupon': typeof AdminSellCouponRoute
   '/admin/': typeof AdminIndexRoute
+  '/cashier/': typeof CashierIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/cashier': typeof CashierRoute
   '/scan': typeof ScanRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/sell-coupon': typeof AdminSellCouponRoute
   '/admin': typeof AdminIndexRoute
+  '/cashier': typeof CashierIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
-  '/cashier': typeof CashierRoute
   '/scan': typeof ScanRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/sell-coupon': typeof AdminSellCouponRoute
   '/admin/': typeof AdminIndexRoute
+  '/cashier/': typeof CashierIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -113,45 +113,45 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
-    | '/cashier'
     | '/scan'
     | '/sitemap.xml'
     | '/admin/coupons'
     | '/admin/plans'
     | '/admin/sell-coupon'
     | '/admin/'
+    | '/cashier/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
-    | '/cashier'
     | '/scan'
     | '/sitemap.xml'
     | '/admin/coupons'
     | '/admin/plans'
     | '/admin/sell-coupon'
     | '/admin'
+    | '/cashier'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/auth'
-    | '/cashier'
     | '/scan'
     | '/sitemap.xml'
     | '/admin/coupons'
     | '/admin/plans'
     | '/admin/sell-coupon'
     | '/admin/'
+    | '/cashier/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
-  CashierRoute: typeof CashierRoute
   ScanRoute: typeof ScanRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  CashierIndexRoute: typeof CashierIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -168,13 +168,6 @@ declare module '@tanstack/react-router' {
       path: '/scan'
       fullPath: '/scan'
       preLoaderRoute: typeof ScanRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cashier': {
-      id: '/cashier'
-      path: '/cashier'
-      fullPath: '/cashier'
-      preLoaderRoute: typeof CashierRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -196,6 +189,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cashier/': {
+      id: '/cashier/'
+      path: '/cashier'
+      fullPath: '/cashier/'
+      preLoaderRoute: typeof CashierIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -249,9 +249,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
-  CashierRoute: CashierRoute,
   ScanRoute: ScanRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  CashierIndexRoute: CashierIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
