@@ -17,6 +17,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminPlansRouteImport } from './routes/admin.plans'
+import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -58,6 +59,11 @@ const AdminPlansRoute = AdminPlansRouteImport.update({
   path: '/plans',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCouponsRoute = AdminCouponsRouteImport.update({
+  id: '/coupons',
+  path: '/coupons',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/cashier': typeof CashierRoute
   '/scan': typeof ScanRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/coupons': typeof AdminCouponsRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/cashier': typeof CashierRoute
   '/scan': typeof ScanRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/coupons': typeof AdminCouponsRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin': typeof AdminIndexRoute
 }
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/cashier': typeof CashierRoute
   '/scan': typeof ScanRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/coupons': typeof AdminCouponsRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/cashier'
     | '/scan'
     | '/sitemap.xml'
+    | '/admin/coupons'
     | '/admin/plans'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/cashier'
     | '/scan'
     | '/sitemap.xml'
+    | '/admin/coupons'
     | '/admin/plans'
     | '/admin'
   id:
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/cashier'
     | '/scan'
     | '/sitemap.xml'
+    | '/admin/coupons'
     | '/admin/plans'
     | '/admin/'
   fileRoutesById: FileRoutesById
@@ -188,15 +200,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPlansRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/coupons': {
+      id: '/admin/coupons'
+      path: '/coupons'
+      fullPath: '/admin/coupons'
+      preLoaderRoute: typeof AdminCouponsRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
+  AdminCouponsRoute: typeof AdminCouponsRoute
   AdminPlansRoute: typeof AdminPlansRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminCouponsRoute: AdminCouponsRoute,
   AdminPlansRoute: AdminPlansRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
