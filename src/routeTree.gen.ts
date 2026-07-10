@@ -14,7 +14,6 @@ import { Route as ScanRouteImport } from './routes/scan'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as CashierIndexRouteImport } from './routes/cashier.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminSellCouponRouteImport } from './routes/admin.sell-coupon'
 import { Route as AdminPlansRouteImport } from './routes/admin.plans'
@@ -43,11 +42,6 @@ const AdminRoute = AdminRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CashierIndexRoute = CashierIndexRouteImport.update({
-  id: '/cashier/',
-  path: '/cashier/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -81,7 +75,6 @@ export interface FileRoutesByFullPath {
   '/admin/plans': typeof AdminPlansRoute
   '/admin/sell-coupon': typeof AdminSellCouponRoute
   '/admin/': typeof AdminIndexRoute
-  '/cashier/': typeof CashierIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -92,7 +85,6 @@ export interface FileRoutesByTo {
   '/admin/plans': typeof AdminPlansRoute
   '/admin/sell-coupon': typeof AdminSellCouponRoute
   '/admin': typeof AdminIndexRoute
-  '/cashier': typeof CashierIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -105,7 +97,6 @@ export interface FileRoutesById {
   '/admin/plans': typeof AdminPlansRoute
   '/admin/sell-coupon': typeof AdminSellCouponRoute
   '/admin/': typeof AdminIndexRoute
-  '/cashier/': typeof CashierIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -119,7 +110,6 @@ export interface FileRouteTypes {
     | '/admin/plans'
     | '/admin/sell-coupon'
     | '/admin/'
-    | '/cashier/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -130,7 +120,6 @@ export interface FileRouteTypes {
     | '/admin/plans'
     | '/admin/sell-coupon'
     | '/admin'
-    | '/cashier'
   id:
     | '__root__'
     | '/'
@@ -142,7 +131,6 @@ export interface FileRouteTypes {
     | '/admin/plans'
     | '/admin/sell-coupon'
     | '/admin/'
-    | '/cashier/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -151,7 +139,6 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ScanRoute: typeof ScanRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  CashierIndexRoute: typeof CashierIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -189,13 +176,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cashier/': {
-      id: '/cashier/'
-      path: '/cashier'
-      fullPath: '/cashier/'
-      preLoaderRoute: typeof CashierIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -251,7 +231,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ScanRoute: ScanRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  CashierIndexRoute: CashierIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
