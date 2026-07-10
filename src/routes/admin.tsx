@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Coffee, LogOut, LayoutDashboard, Boxes, Ticket } from "lucide-react";
+import { Coffee, LogOut, LayoutDashboard, Boxes, Ticket, ShoppingCart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRole } from "@/lib/use-auth";
 import { FullScreenLoader } from "@/lib/ui";
@@ -49,6 +49,7 @@ function AdminLayout() {
           <NavTab to="/admin" icon={<LayoutDashboard className="w-4 h-4" />} label={t("nav_dashboard")} exact />
           <NavTab to="/admin/plans" icon={<Boxes className="w-4 h-4" />} label={t("nav_plans")} />
           <NavTab to="/admin/coupons" icon={<Ticket className="w-4 h-4" />} label={t("nav_coupons")} />
+          <NavTab to="/admin/sell-coupon" icon={<ShoppingCart className="w-4 h-4" />} label={t("nav_sell_coupon")} />
         </div>
 
         <Outlet />
