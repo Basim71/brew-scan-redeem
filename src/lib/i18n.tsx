@@ -240,6 +240,42 @@ const dict = {
     plans_confirm_deactivate_body: "\"{name}\" will be hidden from new sales but existing subscriptions keep working.",
     plans_confirm_activate_title: "Activate this plan?",
     plans_confirm_activate_body: "\"{name}\" will be available for new sales again.",
+    home_story_beginning: "The beginning",
+home_story_subscription_title: "Your daily subscription...",
+home_story_subscription_body:
+  "Every cup begins with a smart, simple, premium subscription card.",
+
+home_story_transform: "Transformation",
+home_story_beans_title: "The card becomes coffee beans",
+home_story_beans_body:
+  "As you scroll, the subscription card gently breaks apart into coffee beans.",
+
+home_story_grinding: "Grinding",
+home_story_grinder_title: "Beans enter the grinder",
+home_story_grinder_body:
+  "The beans enter the grinder and become rich coffee powder.",
+
+home_story_brewing: "Brewing",
+home_story_machine_title: "Powder enters the machine",
+home_story_machine_body:
+  "The brewing begins, with warm steam filling the scene.",
+
+home_story_daily_cup: "The daily cup",
+home_story_final_title: "From your subscription to your daily cup",
+home_story_final_body:
+  "The ending is not a button — it is a finished cup served to the customer.",
+
+home_card_label: "Premium Subscription",
+home_card_title: "Daily Coffee",
+home_card_plan: "Plan",
+home_card_duration: "Duration",
+home_card_duration_value: "30 Days",
+home_card_daily: "One cup every day",
+
+home_beans_caption: "Subscription turns into beans",
+home_grinder_title: "KOB Grinder",
+home_grinder_subtitle: "Premium Blend",
+home_served: "Served",
   },
   ar: {
     brand_tag: "شركة كوبونات القهوة",
@@ -464,6 +500,42 @@ const dict = {
     plans_confirm_deactivate_body: "سيتم إخفاء \"{name}\" من المبيعات الجديدة، مع استمرار الاشتراكات الحالية.",
     plans_confirm_activate_title: "تفعيل هذه الخطة؟",
     plans_confirm_activate_body: "ستكون \"{name}\" متاحة للبيع من جديد.",
+    home_story_beginning: "بداية الرحلة",
+home_story_subscription_title: "اشتراكك اليومي...",
+home_story_subscription_body:
+  "كل كوب يبدأ من بطاقة اشتراك ذكية، بسيطة، وفاخرة.",
+
+home_story_transform: "التحوّل",
+home_story_beans_title: "الكرت يتحول إلى حبوب بن",
+home_story_beans_body:
+  "مع التمرير، يتفكك كرت الاشتراك بهدوء ويتحوّل إلى بداية القهوة.",
+
+home_story_grinding: "الطحن",
+home_story_grinder_title: "الحبوب تدخل المطحنة",
+home_story_grinder_body:
+  "تبدأ الحبوب رحلتها داخل المطحنة لتتحول إلى بودرة غنية.",
+
+home_story_brewing: "التحضير",
+home_story_machine_title: "البودرة تدخل ماكينة القهوة",
+home_story_machine_body:
+  "التحضير يبدأ، والبخار الدافئ يملأ المشهد.",
+
+home_story_daily_cup: "الكوب اليومي",
+home_story_final_title: "من اشتراكك... إلى كوبك اليومي",
+home_story_final_body:
+  "النهاية ليست زرًا، بل كوب قهوة جاهز يُقدّم للعميل.",
+
+home_card_label: "اشتراك مميز",
+home_card_title: "قهوة يومية",
+home_card_plan: "الخطة",
+home_card_duration: "المدة",
+home_card_duration_value: "٣٠ يوم",
+home_card_daily: "كوب واحد كل يوم",
+
+home_beans_caption: "الاشتراك يتحول إلى حبوب بن",
+home_grinder_title: "مطحنة KOB",
+home_grinder_subtitle: "خلطة مميزة",
+home_served: "تم التقديم",
   },
 } as const;
 
