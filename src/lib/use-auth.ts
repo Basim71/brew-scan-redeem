@@ -69,11 +69,6 @@ export function useRole(): UseRoleResult {
     async function loadRole() {
       if (loading) return;
 
-      /*
-        مهم جدًا:
-        كل مرة تتغير session لازم نخلي ready = false
-        عشان صفحة /auth ما تحكم قبل ما يخلص جلب الدور.
-      */
       setReady(false);
       setError(null);
 
@@ -113,5 +108,11 @@ export function useRole(): UseRoleResult {
     };
   }, [session?.user?.id, loading]);
 
-  return { session, role, branchId, ready, error };
+  return {
+    session,
+    role,
+    branchId,
+    ready,
+    error,
+  };
 }
