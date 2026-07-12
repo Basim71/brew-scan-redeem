@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { Coffee, Loader2 } from "lucide-react";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useRole } from "@/lib/use-auth";
 import { useI18n, LanguageSwitcher } from "@/lib/i18n";
@@ -22,7 +23,7 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { session, role, ready } = useRole();
+  const { session, role, ready, error: roleError } = useRole();
   const { t } = useI18n();
 
   const [email, setEmail] = useState("");
@@ -34,6 +35,7 @@ function AuthPage() {
 
   useEffect(() => {
     if (!ready) return;
+
     if (!session) {
       setCheckingRole(false);
       return;
@@ -51,17 +53,14 @@ function AuthPage() {
       return;
     }
 
-    /*
-      مهم:
-      لا نسوي navigate("/") هنا.
-      لأن role ممكن يتأخر أو RLS يمنع قراءته.
-      نخلي المستخدم في صفحة الدخول ونوضح المشكلة.
-    */
     setCheckingRole(false);
+
     setErr(
-      "تم تسجيل الدخول، لكن لم يتم العثور على صلاحية لهذا الحساب. تأكد من وجود role في جدول user_roles أو من سياسات RLS.",
+      roleError
+        ? `Role read error: ${roleError}`
+        : "تم تسجيل الدخول، لكن لم يتم العثور على صلاحية لهذا الحساب. تأكد من وجود role في جدول user_roles أو من سياسات RLS.",
     );
-  }, [ready, session, role, navigate]);
+  }, [ready, session, role, roleError, navigate]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -83,7 +82,7 @@ function AuthPage() {
       /*
         لا نحول هنا مباشرة.
         useRole هو المسؤول عن قراءة session + role
-        ثم التحويل إلى /admin أو /cashier.
+        وبعدها التحويل إلى /admin أو /cashier.
       */
     } catch (e: any) {
       setCheckingRole(false);
@@ -93,7 +92,7 @@ function AuthPage() {
     }
   }
 
-  const isLoading = busy || checkingRole || (session && ready && !role);
+  const isLoading = busy || checkingRole || (!!session && !ready);
 
   return (
     <main className="min-h-screen flex items-center justify-center px-4 py-12">
@@ -152,6 +151,7 @@ function AuthPage() {
             )}
 
             <button
+              type="submit"
               disabled={isLoading}
               className="btn-brass w-full py-3.5 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
             >
