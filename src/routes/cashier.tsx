@@ -11,13 +11,16 @@ import {
 } from "react";
 import {
   Coffee,
-  LayoutDashboard,
+  Inbox,
   LogOut,
   ShoppingCart,
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
-import { LanguageSwitcher, useI18n } from "@/lib/i18n";
+import {
+  LanguageSwitcher,
+  useI18n,
+} from "@/lib/i18n";
 import { FullScreenLoader } from "@/lib/ui";
 import { useRole } from "@/lib/use-auth";
 
@@ -29,7 +32,8 @@ export const Route = createFileRoute("/cashier")({
       },
       {
         name: "description",
-        content: "KOB cashier order approval console.",
+        content:
+          "KOB cashier order approval console.",
       },
       {
         name: "robots",
@@ -53,7 +57,8 @@ function CashierLayout() {
 
   const { t } = useI18n();
 
-  const [branchName, setBranchName] = useState("");
+  const [branchName, setBranchName] =
+    useState("");
 
   useEffect(() => {
     if (!ready) {
@@ -80,11 +85,13 @@ function CashierLayout() {
       return;
     }
 
-    void supabase.auth.signOut().then(() => {
-      navigate({
-        to: "/auth",
+    void supabase.auth
+      .signOut()
+      .then(() => {
+        navigate({
+          to: "/auth",
+        });
       });
-    });
   }, [
     navigate,
     ready,
@@ -117,7 +124,10 @@ function CashierLayout() {
       });
   }, [branchId]);
 
-  if (!ready || role !== "cashier") {
+  if (
+    !ready ||
+    role !== "cashier"
+  ) {
     return <FullScreenLoader />;
   }
 
@@ -135,7 +145,7 @@ function CashierLayout() {
         <aside className="kob-sidebar panel-warm">
           <div className="kob-sidebar-header">
             <Link
-              to="/"
+              to="/cashier"
               className="kob-sidebar-brand"
             >
               <div className="kob-brand-icon">
@@ -175,9 +185,9 @@ function CashierLayout() {
             <CashierSidebarLink
               to="/cashier"
               icon={
-                <LayoutDashboard className="h-4 w-4" />
+                <Inbox className="h-4 w-4" />
               }
-              label={t("nav_dashboard")}
+              label={t("pending_orders")}
               exact
             />
 
