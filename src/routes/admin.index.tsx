@@ -6,7 +6,6 @@ import {
   type FormEvent,
 } from "react";
 import {
-  Building2,
   ClipboardList,
   Loader2,
   Plus,
@@ -23,15 +22,21 @@ export const Route = createFileRoute("/admin/")({
   component: AdminIndex,
 });
 
-type Tab = "overview" | "subs" | "branches" | "staff";
+type Tab =
+  | "overview"
+  | "subs"
+  | "branches"
+  | "staff";
 
 type RecentOrder = {
   id: string;
   status: string;
   created_at: string;
+
   branch?: {
     name_en?: string | null;
   } | null;
+
   drink?: {
     name_en?: string | null;
   } | null;
@@ -40,14 +45,17 @@ type RecentOrder = {
 type SubscriptionRow = {
   id: string;
   status: string;
+
   customer?: {
     name?: string | null;
     phone?: string | null;
   } | null;
+
   plan?: {
     name?: string | null;
     duration_days?: number | null;
   } | null;
+
   branch?: {
     name_en?: string | null;
   } | null;
@@ -65,6 +73,7 @@ type StaffRow = {
   user_id: string;
   role: string;
   branch_id?: string | null;
+
   branch?: {
     name_en?: string | null;
   } | null;
@@ -72,7 +81,9 @@ type StaffRow = {
 
 function AdminIndex() {
   const { t } = useI18n();
-  const [tab, setTab] = useState<Tab>("overview");
+
+  const [tab, setTab] =
+    useState<Tab>("overview");
 
   const tabs = [
     {
@@ -99,43 +110,76 @@ function AdminIndex() {
 
   return (
     <div className="w-full min-w-0">
-      <div className="panel mb-6 p-2">
-        <div className="flex w-full gap-2 overflow-x-auto pb-1">
-          {tabs.map(({ key, icon: Icon, label }) => {
-            const isActive = tab === key;
+      <div className="kob-page-header">
+        <div>
+          <h1 className="kob-page-title">
+            {t("admin_title")}
+          </h1>
+
+          <p className="kob-page-description">
+            {t("admin_sub")}
+          </p>
+        </div>
+      </div>
+
+      <div className="kob-secondary-tabs">
+        {tabs.map(
+          ({
+            key,
+            icon: Icon,
+            label,
+          }) => {
+            const active = tab === key;
 
             return (
               <button
                 key={key}
                 type="button"
-                onClick={() => setTab(key)}
+                onClick={() => {
+                  setTab(key);
+                }}
                 className={
-                  "flex shrink-0 items-center gap-2 rounded-lg px-4 py-2.5 text-sm transition " +
-                  (isActive
-                    ? "btn-brass"
-                    : "text-cream-dim hover:bg-white/5 hover:text-caramel-bright")
+                  active
+                    ? "kob-secondary-tab kob-secondary-tab-active"
+                    : "kob-secondary-tab"
                 }
               >
                 <Icon className="h-4 w-4" />
-                <span className="whitespace-nowrap">
+
+                <span>
                   {label}
                 </span>
               </button>
             );
-          })}
-        </div>
+          },
+        )}
       </div>
 
-      {tab === "overview" && <Overview />}
-      {tab === "subs" && <SubscriptionsTab />}
-      {tab === "branches" && <BranchesTab />}
-      {tab === "staff" && <StaffTab />}
+      {tab === "overview" && (
+        <Overview />
+      )}
+
+      {tab === "subs" && (
+        <SubscriptionsTab />
+      )}
+
+      {tab === "branches" && (
+        <BranchesTab />
+      )}
+
+      {tab === "staff" && (
+        <StaffTab />
+      )}
     </div>
   );
 }
 
 function Overview() {
-  const { t, fmtNum, timeAgo } = useI18n();
+  const {
+    t,
+    fmtNum,
+    timeAgo,
+  } = useI18n();
 
   const [stats, setStats] = useState({
     subscriptions: 0,
@@ -144,88 +188,103 @@ function Overview() {
     approved: 0,
   });
 
-  const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [
+    recentOrders,
+    setRecentOrders,
+  ] = useState<RecentOrder[]>([]);
 
-  const loadDashboard = useCallback(async () => {
-    const [
-      subscriptionsResult,
-      branchesResult,
-      pendingResult,
-      approvedResult,
-      ordersResult,
-    ] = await Promise.all([
-      supabase
-        .from("subscriptions")
-        .select("*", {
-          count: "exact",
-          head: true,
-        })
-        .eq("status", "active"),
+  const [loading, setLoading] =
+    useState(true);
 
-      supabase
-        .from("branches")
-        .select("*", {
-          count: "exact",
-          head: true,
-        }),
+  const loadDashboard =
+    useCallback(async () => {
+      const [
+        subscriptionsResult,
+        branchesResult,
+        pendingResult,
+        approvedResult,
+        ordersResult,
+      ] = await Promise.all([
+        supabase
+          .from("subscriptions")
+          .select("*", {
+            count: "exact",
+            head: true,
+          })
+          .eq("status", "active"),
 
-      supabase
-        .from("orders")
-        .select("*", {
-          count: "exact",
-          head: true,
-        })
-        .eq("status", "pending"),
+        supabase
+          .from("branches")
+          .select("*", {
+            count: "exact",
+            head: true,
+          }),
 
-      supabase
-        .from("orders")
-        .select("*", {
-          count: "exact",
-          head: true,
-        })
-        .eq("status", "approved"),
+        supabase
+          .from("orders")
+          .select("*", {
+            count: "exact",
+            head: true,
+          })
+          .eq("status", "pending"),
 
-      supabase
-        .from("orders")
-        .select(
-          `
-            id,
-            status,
-            created_at,
-            branch:branches(name_en),
-            drink:drink_types(name_en)
-          `,
-        )
-        .order("created_at", {
-          ascending: false,
-        })
-        .limit(10),
-    ]);
+        supabase
+          .from("orders")
+          .select("*", {
+            count: "exact",
+            head: true,
+          })
+          .eq("status", "approved"),
 
-    setStats({
-      subscriptions: subscriptionsResult.count ?? 0,
-      branches: branchesResult.count ?? 0,
-      pending: pendingResult.count ?? 0,
-      approved: approvedResult.count ?? 0,
-    });
+        supabase
+          .from("orders")
+          .select(
+            `
+              id,
+              status,
+              created_at,
+              branch:branches(name_en),
+              drink:drink_types(name_en)
+            `,
+          )
+          .order("created_at", {
+            ascending: false,
+          })
+          .limit(10),
+      ]);
 
-    setRecentOrders(
-      (ordersResult.data ?? []) as unknown as RecentOrder[],
-    );
+      setStats({
+        subscriptions:
+          subscriptionsResult.count ?? 0,
 
-    setLoading(false);
-  }, []);
+        branches:
+          branchesResult.count ?? 0,
+
+        pending:
+          pendingResult.count ?? 0,
+
+        approved:
+          approvedResult.count ?? 0,
+      });
+
+      setRecentOrders(
+        (ordersResult.data ??
+          []) as unknown as RecentOrder[],
+      );
+
+      setLoading(false);
+    }, []);
 
   useEffect(() => {
     void loadDashboard();
 
-    const intervalId = window.setInterval(() => {
-      void loadDashboard();
-    }, 8000);
+    const interval =
+      window.setInterval(() => {
+        void loadDashboard();
+      }, 8000);
 
     return () => {
-      window.clearInterval(intervalId);
+      window.clearInterval(interval);
     };
   }, [loadDashboard]);
 
@@ -238,7 +297,7 @@ function Overview() {
     {
       label: t("stat_branches"),
       value: stats.branches,
-      icon: Building2,
+      icon: Store,
     },
     {
       label: t("stat_pending"),
@@ -254,32 +313,38 @@ function Overview() {
 
   return (
     <>
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {statCards.map(({ label, value, icon: Icon }) => (
-          <div
-            key={label}
-            className="panel-warm min-w-0 p-5"
-          >
-            <div className="mb-4 flex items-start justify-between gap-4">
-              <div className="text-[10px] uppercase tracking-[0.25em] text-cream-dim">
-                {label}
+      <div className="kob-stats-grid">
+        {statCards.map(
+          ({
+            label,
+            value,
+            icon: Icon,
+          }) => (
+            <article
+              key={label}
+              className="kob-stat-card panel-warm"
+            >
+              <div className="kob-stat-card-top">
+                <span className="kob-stat-label">
+                  {label}
+                </span>
+
+                <span className="kob-stat-icon">
+                  <Icon className="h-5 w-5" />
+                </span>
               </div>
 
-              <div className="engraved flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
-                <Icon className="h-4 w-4 text-caramel-bright" />
-              </div>
-            </div>
-
-            <div className="font-display text-4xl font-bold gold-text">
-              {fmtNum(value)}
-            </div>
-          </div>
-        ))}
+              <strong className="kob-stat-value">
+                {fmtNum(value)}
+              </strong>
+            </article>
+          ),
+        )}
       </div>
 
-      <div className="panel min-w-0 p-4 sm:p-6">
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <h2 className="font-display text-xl font-bold text-cream">
+      <section className="panel kob-content-card">
+        <div className="kob-card-header">
+          <h2 className="kob-card-title">
             {t("recent_activity")}
           </h2>
 
@@ -288,66 +353,72 @@ function Overview() {
           )}
         </div>
 
-        <div className="engraved w-full overflow-x-auto">
-          <table className="w-full min-w-[720px] text-sm">
+        <div className="kob-table-wrapper engraved">
+          <table className="kob-table min-w-[720px]">
             <thead>
-              <tr className="text-[10px] uppercase tracking-widest text-cream-dim">
-                <th className="px-4 py-3 text-start">
+              <tr>
+                <th>
                   {t("col_coffee")}
                 </th>
 
-                <th className="px-4 py-3 text-start">
+                <th>
                   {t("col_branch")}
                 </th>
 
-                <th className="px-4 py-3 text-start">
+                <th>
                   {t("col_status")}
                 </th>
 
-                <th className="px-4 py-3 text-end">
+                <th className="text-end">
                   {t("col_when")}
                 </th>
               </tr>
             </thead>
 
             <tbody>
-              {recentOrders.map((order) => (
-                <tr
-                  key={order.id}
-                  className="border-t border-[oklch(0.08_0.02_40)]"
-                >
-                  <td className="px-4 py-3 text-cream">
-                    {order.drink?.name_en ?? "—"}
-                  </td>
+              {recentOrders.map(
+                (order) => (
+                  <tr key={order.id}>
+                    <td className="text-cream">
+                      {order.drink
+                        ?.name_en ?? "—"}
+                    </td>
 
-                  <td className="px-4 py-3 text-cream-dim">
-                    {order.branch?.name_en ?? "—"}
-                  </td>
+                    <td className="text-cream-dim">
+                      {order.branch
+                        ?.name_en ?? "—"}
+                    </td>
 
-                  <td className="px-4 py-3">
-                    <StatusPill s={order.status} />
-                  </td>
+                    <td>
+                      <StatusPill
+                        s={order.status}
+                      />
+                    </td>
 
-                  <td className="px-4 py-3 text-end text-cream-dim">
-                    {timeAgo(order.created_at)}
-                  </td>
-                </tr>
-              ))}
-
-              {!loading && recentOrders.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={4}
-                    className="px-4 py-8 text-center text-cream-dim"
-                  >
-                    {t("empty_orders")}
-                  </td>
-                </tr>
+                    <td className="text-end text-cream-dim">
+                      {timeAgo(
+                        order.created_at,
+                      )}
+                    </td>
+                  </tr>
+                ),
               )}
+
+              {!loading &&
+                recentOrders.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="py-10 text-center text-cream-dim"
+                    >
+                      {t("empty_orders")}
+                    </td>
+                  </tr>
+                )}
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
     </>
   );
 }
@@ -355,37 +426,45 @@ function Overview() {
 function SubscriptionsTab() {
   const { t } = useI18n();
 
-  const [rows, setRows] = useState<SubscriptionRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [rows, setRows] =
+    useState<SubscriptionRow[]>([]);
 
-  const loadSubscriptions = useCallback(async () => {
-    const { data } = await supabase
-      .from("subscriptions")
-      .select(
-        `
-          *,
-          customer:customers(name,phone),
-          plan:plans(name,duration_days),
-          branch:branches(name_en)
-        `,
-      )
-      .order("created_at", {
-        ascending: false,
-      })
-      .limit(100);
+  const [loading, setLoading] =
+    useState(true);
 
-    setRows((data ?? []) as unknown as SubscriptionRow[]);
-    setLoading(false);
-  }, []);
+  const loadSubscriptions =
+    useCallback(async () => {
+      const { data } = await supabase
+        .from("subscriptions")
+        .select(
+          `
+            *,
+            customer:customers(name,phone),
+            plan:plans(name,duration_days),
+            branch:branches(name_en)
+          `,
+        )
+        .order("created_at", {
+          ascending: false,
+        })
+        .limit(100);
+
+      setRows(
+        (data ??
+          []) as unknown as SubscriptionRow[],
+      );
+
+      setLoading(false);
+    }, []);
 
   useEffect(() => {
     void loadSubscriptions();
   }, [loadSubscriptions]);
 
   return (
-    <div className="panel min-w-0 p-4 sm:p-6">
-      <div className="mb-4 flex items-center justify-between gap-4">
-        <h2 className="font-display text-xl font-bold text-cream">
+    <section className="panel kob-content-card">
+      <div className="kob-card-header">
+        <h2 className="kob-card-title">
           {t("all_subs")}
         </h2>
 
@@ -394,27 +473,27 @@ function SubscriptionsTab() {
         )}
       </div>
 
-      <div className="engraved w-full overflow-x-auto">
-        <table className="w-full min-w-[850px] text-sm">
+      <div className="kob-table-wrapper engraved">
+        <table className="kob-table min-w-[850px]">
           <thead>
-            <tr className="text-[10px] uppercase tracking-widest text-cream-dim">
-              <th className="px-4 py-3 text-start">
+            <tr>
+              <th>
                 {t("col_phone")}
               </th>
 
-              <th className="px-4 py-3 text-start">
+              <th>
                 {t("col_customer")}
               </th>
 
-              <th className="px-4 py-3 text-start">
+              <th>
                 {t("col_plan")}
               </th>
 
-              <th className="px-4 py-3 text-start">
+              <th>
                 {t("col_branch")}
               </th>
 
-              <th className="px-4 py-3 text-end">
+              <th className="text-end">
                 {t("col_status")}
               </th>
             </tr>
@@ -422,76 +501,89 @@ function SubscriptionsTab() {
 
           <tbody>
             {rows.map((row) => (
-              <tr
-                key={row.id}
-                className="border-t border-[oklch(0.08_0.02_40)]"
-              >
-                <td className="px-4 py-3 font-mono text-cream">
-                  {row.customer?.phone ?? "—"}
+              <tr key={row.id}>
+                <td className="font-mono text-cream">
+                  {row.customer?.phone ??
+                    "—"}
                 </td>
 
-                <td className="px-4 py-3 text-cream-dim">
-                  {row.customer?.name ?? "—"}
+                <td className="text-cream-dim">
+                  {row.customer?.name ??
+                    "—"}
                 </td>
 
-                <td className="px-4 py-3 text-cream">
+                <td className="text-cream">
                   {row.plan?.name ?? "—"}
                 </td>
 
-                <td className="px-4 py-3 text-cream-dim">
-                  {row.branch?.name_en ?? "—"}
+                <td className="text-cream-dim">
+                  {row.branch?.name_en ??
+                    "—"}
                 </td>
 
-                <td className="px-4 py-3 text-end">
-                  <StatusPill s={row.status} />
+                <td className="text-end">
+                  <StatusPill
+                    s={row.status}
+                  />
                 </td>
               </tr>
             ))}
 
-            {!loading && rows.length === 0 && (
-              <tr>
-                <td
-                  colSpan={5}
-                  className="px-4 py-8 text-center text-cream-dim"
-                >
-                  {t("empty_subs")}
-                </td>
-              </tr>
-            )}
+            {!loading &&
+              rows.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="py-10 text-center text-cream-dim"
+                  >
+                    {t("empty_subs")}
+                  </td>
+                </tr>
+              )}
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
   );
 }
 
 function BranchesTab() {
   const { t } = useI18n();
 
-  const [rows, setRows] = useState<BranchRow[]>([]);
+  const [rows, setRows] =
+    useState<BranchRow[]>([]);
+
   const [form, setForm] = useState({
     name_en: "",
     name_ar: "",
     address_en: "",
   });
 
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [busy, setBusy] =
+    useState(false);
 
-  const loadBranches = useCallback(async () => {
-    const { data } = await supabase
-      .from("branches")
-      .select("*")
-      .order("name_en");
+  const [message, setMessage] =
+    useState<string | null>(null);
 
-    setRows((data ?? []) as BranchRow[]);
-  }, []);
+  const loadBranches =
+    useCallback(async () => {
+      const { data } = await supabase
+        .from("branches")
+        .select("*")
+        .order("name_en");
+
+      setRows(
+        (data ?? []) as BranchRow[],
+      );
+    }, []);
 
   useEffect(() => {
     void loadBranches();
   }, [loadBranches]);
 
-  async function createBranch(event: FormEvent<HTMLFormElement>) {
+  async function createBranch(
+    event: FormEvent<HTMLFormElement>,
+  ) {
     event.preventDefault();
 
     setBusy(true);
@@ -500,9 +592,15 @@ function BranchesTab() {
     const { error } = await supabase
       .from("branches")
       .insert({
-        name_en: form.name_en.trim(),
-        name_ar: form.name_ar.trim(),
-        address_en: form.address_en.trim() || null,
+        name_en:
+          form.name_en.trim(),
+
+        name_ar:
+          form.name_ar.trim(),
+
+        address_en:
+          form.address_en.trim() ||
+          null,
       });
 
     setBusy(false);
@@ -518,46 +616,45 @@ function BranchesTab() {
       address_en: "",
     });
 
-    setMessage(t("btn_create"));
     await loadBranches();
   }
 
   return (
     <>
-      <div className="panel-warm mb-6 min-w-0 p-4 sm:p-6">
-        <h2 className="mb-4 font-display text-xl font-bold text-cream">
+      <section className="panel-warm kob-content-card mb-6">
+        <h2 className="kob-card-title mb-5">
           {t("new_branch")}
         </h2>
 
         <form
           onSubmit={createBranch}
-          className="grid items-end gap-3 md:grid-cols-2 xl:grid-cols-4"
+          className="kob-form-grid"
         >
-          <FieldInput
+          <FormInput
             label={`${t("f_name")} (EN)`}
             value={form.name_en}
+            required
             onChange={(value) => {
               setForm((current) => ({
                 ...current,
                 name_en: value,
               }));
             }}
-            required
           />
 
-          <FieldInput
+          <FormInput
             label={`${t("f_name")} (AR)`}
             value={form.name_ar}
+            required
             onChange={(value) => {
               setForm((current) => ({
                 ...current,
                 name_ar: value,
               }));
             }}
-            required
           />
 
-          <FieldInput
+          <FormInput
             label={t("f_address")}
             value={form.address_en}
             onChange={(value) => {
@@ -571,7 +668,7 @@ function BranchesTab() {
           <button
             type="submit"
             disabled={busy}
-            className="btn-brass flex min-h-11 items-center justify-center gap-2 px-4 py-3"
+            className="btn-brass kob-form-button"
           >
             {busy ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -579,7 +676,9 @@ function BranchesTab() {
               <Plus className="h-4 w-4" />
             )}
 
-            {t("btn_create")}
+            <span>
+              {t("btn_create")}
+            </span>
           </button>
         </form>
 
@@ -588,13 +687,13 @@ function BranchesTab() {
             {message}
           </div>
         )}
-      </div>
+      </section>
 
-      <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+      <div className="kob-branches-grid">
         {rows.map((branch) => (
           <article
             key={branch.id}
-            className="panel min-w-0 p-5"
+            className="panel kob-branch-card"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
@@ -602,21 +701,22 @@ function BranchesTab() {
                   {branch.name_en}
                 </h3>
 
-                <p className="mt-1 text-sm text-cream-dim">
-                  {branch.address_en || "—"}
+                <p className="mt-2 text-sm text-cream-dim">
+                  {branch.address_en ||
+                    "—"}
                 </p>
               </div>
 
-              <div className="engraved shrink-0 rounded-lg px-3 py-1.5 text-xs gold-text">
+              <span className="engraved shrink-0 rounded-lg px-3 py-1.5 text-xs gold-text">
                 {branch.name_ar}
-              </div>
+              </span>
             </div>
 
-            <div className="hairline-divider my-4" />
+            <div className="hairline-divider my-5" />
 
             <a
               href={`/scan?branch=${encodeURIComponent(branch.id)}`}
-              className="btn-ghost-brass block w-full px-4 py-2.5 text-center text-xs"
+              className="btn-ghost-brass block w-full px-4 py-3 text-center text-sm"
             >
               {t("open_scan_link")}
             </a>
@@ -624,7 +724,7 @@ function BranchesTab() {
         ))}
 
         {rows.length === 0 && (
-          <div className="panel col-span-full p-8 text-center text-cream-dim">
+          <div className="panel col-span-full p-10 text-center text-cream-dim">
             {t("empty_branches")}
           </div>
         )}
@@ -636,8 +736,11 @@ function BranchesTab() {
 function StaffTab() {
   const { t } = useI18n();
 
-  const [users, setUsers] = useState<StaffRow[]>([]);
-  const [branches, setBranches] = useState<BranchRow[]>([]);
+  const [users, setUsers] =
+    useState<StaffRow[]>([]);
+
+  const [branches, setBranches] =
+    useState<BranchRow[]>([]);
 
   const [form, setForm] = useState({
     user_id: "",
@@ -645,46 +748,57 @@ function StaffTab() {
     branch_id: "",
   });
 
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [busy, setBusy] =
+    useState(false);
 
-  const loadStaff = useCallback(async () => {
-    const [rolesResult, branchesResult] = await Promise.all([
-      supabase
-        .from("user_roles")
-        .select(
-          `
-            id,
-            user_id,
-            role,
-            branch_id,
-            branch:branches(name_en)
-          `,
-        )
-        .order("created_at", {
-          ascending: false,
-        }),
+  const [message, setMessage] =
+    useState<string | null>(null);
 
-      supabase
-        .from("branches")
-        .select("*")
-        .order("name_en"),
-    ]);
+  const loadStaff =
+    useCallback(async () => {
+      const [
+        rolesResult,
+        branchesResult,
+      ] = await Promise.all([
+        supabase
+          .from("user_roles")
+          .select(
+            `
+              id,
+              user_id,
+              role,
+              branch_id,
+              branch:branches(name_en)
+            `,
+          )
+          .order("created_at", {
+            ascending: false,
+          }),
 
-    setUsers(
-      (rolesResult.data ?? []) as unknown as StaffRow[],
-    );
+        supabase
+          .from("branches")
+          .select("*")
+          .order("name_en"),
+      ]);
 
-    setBranches(
-      (branchesResult.data ?? []) as BranchRow[],
-    );
-  }, []);
+      setUsers(
+        (rolesResult.data ??
+          []) as unknown as StaffRow[],
+      );
+
+      setBranches(
+        (branchesResult.data ??
+          []) as BranchRow[],
+      );
+    }, []);
 
   useEffect(() => {
     void loadStaff();
   }, [loadStaff]);
 
-  async function assignRole(event: FormEvent<HTMLFormElement>) {
+  async function assignRole(
+    event: FormEvent<HTMLFormElement>,
+  ) {
     event.preventDefault();
 
     setBusy(true);
@@ -693,9 +807,16 @@ function StaffTab() {
     const { error } = await supabase
       .from("user_roles")
       .insert({
-        user_id: form.user_id.trim(),
-        role: form.role,
-        branch_id: form.branch_id || null,
+        user_id:
+          form.user_id.trim(),
+
+        role:
+          form.role as
+            | "admin"
+            | "cashier",
+
+        branch_id:
+          form.branch_id || null,
       });
 
     setBusy(false);
@@ -711,38 +832,39 @@ function StaffTab() {
       branch_id: "",
     });
 
-    setMessage(t("btn_assign"));
+    setMessage("Assigned.");
+
     await loadStaff();
   }
 
   return (
     <>
-      <div className="panel-warm mb-6 min-w-0 p-4 sm:p-6">
-        <h2 className="mb-2 font-display text-xl font-bold text-cream">
+      <section className="panel-warm kob-content-card mb-6">
+        <h2 className="kob-card-title">
           {t("assign_role")}
         </h2>
 
-        <p className="mb-4 text-xs leading-6 text-cream-dim">
+        <p className="mb-5 mt-2 text-xs leading-6 text-cream-dim">
           {t("assign_hint")}
         </p>
 
         <form
           onSubmit={assignRole}
-          className="grid items-end gap-3 md:grid-cols-2 xl:grid-cols-4"
+          className="kob-form-grid"
         >
-          <FieldInput
+          <FormInput
             label={t("f_user_id")}
             value={form.user_id}
+            required
             onChange={(value) => {
               setForm((current) => ({
                 ...current,
                 user_id: value,
               }));
             }}
-            required
           />
 
-          <FieldSelect
+          <FormSelect
             label={t("f_role")}
             value={form.role}
             onChange={(value) => {
@@ -763,7 +885,7 @@ function StaffTab() {
             ]}
           />
 
-          <FieldSelect
+          <FormSelect
             label={t("f_branch")}
             value={form.branch_id}
             onChange={(value) => {
@@ -777,17 +899,20 @@ function StaffTab() {
                 value: "",
                 label: "—",
               },
-              ...branches.map((branch) => ({
-                value: branch.id,
-                label: branch.name_en,
-              })),
+              ...branches.map(
+                (branch) => ({
+                  value: branch.id,
+                  label:
+                    branch.name_en,
+                }),
+              ),
             ]}
           />
 
           <button
             type="submit"
             disabled={busy}
-            className="btn-brass flex min-h-11 items-center justify-center gap-2 px-4 py-3"
+            className="btn-brass kob-form-button"
           >
             {busy ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -795,7 +920,9 @@ function StaffTab() {
               <Plus className="h-4 w-4" />
             )}
 
-            {t("btn_assign")}
+            <span>
+              {t("btn_assign")}
+            </span>
           </button>
         </form>
 
@@ -804,26 +931,26 @@ function StaffTab() {
             {message}
           </div>
         )}
-      </div>
+      </section>
 
-      <div className="panel min-w-0 p-4 sm:p-6">
-        <h2 className="mb-4 font-display text-xl font-bold text-cream">
+      <section className="panel kob-content-card">
+        <h2 className="kob-card-title mb-5">
           {t("staff_members")}
         </h2>
 
-        <div className="engraved w-full overflow-x-auto">
-          <table className="w-full min-w-[720px] text-sm">
+        <div className="kob-table-wrapper engraved">
+          <table className="kob-table min-w-[720px]">
             <thead>
-              <tr className="text-[10px] uppercase tracking-widest text-cream-dim">
-                <th className="px-4 py-3 text-start">
+              <tr>
+                <th>
                   {t("col_user_id")}
                 </th>
 
-                <th className="px-4 py-3 text-start">
+                <th>
                   {t("col_role")}
                 </th>
 
-                <th className="px-4 py-3 text-start">
+                <th>
                   {t("col_branch")}
                 </th>
               </tr>
@@ -831,20 +958,20 @@ function StaffTab() {
 
             <tbody>
               {users.map((user) => (
-                <tr
-                  key={user.id}
-                  className="border-t border-[oklch(0.08_0.02_40)]"
-                >
-                  <td className="px-4 py-3 font-mono text-xs text-cream-dim">
+                <tr key={user.id}>
+                  <td className="font-mono text-xs text-cream-dim">
                     {user.user_id}
                   </td>
 
-                  <td className="px-4 py-3">
-                    <StatusPill s={user.role} />
+                  <td>
+                    <StatusPill
+                      s={user.role}
+                    />
                   </td>
 
-                  <td className="px-4 py-3 text-cream">
-                    {user.branch?.name_en ?? "—"}
+                  <td className="text-cream">
+                    {user.branch
+                      ?.name_en ?? "—"}
                   </td>
                 </tr>
               ))}
@@ -853,7 +980,7 @@ function StaffTab() {
                 <tr>
                   <td
                     colSpan={3}
-                    className="px-4 py-8 text-center text-cream-dim"
+                    className="py-10 text-center text-cream-dim"
                   >
                     {t("empty_roles")}
                   </td>
@@ -862,29 +989,31 @@ function StaffTab() {
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
     </>
   );
 }
 
-type FieldInputProps = {
+type FormInputProps = {
   label: string;
   value: string;
-  onChange: (value: string) => void;
+  onChange: (
+    value: string,
+  ) => void;
   type?: string;
   required?: boolean;
 };
 
-function FieldInput({
+function FormInput({
   label,
   value,
   onChange,
   type = "text",
   required = false,
-}: FieldInputProps) {
+}: FormInputProps) {
   return (
     <label className="block min-w-0">
-      <span className="mb-1.5 block text-[10px] uppercase tracking-[0.2em] text-cream-dim">
+      <span className="kob-field-label">
         {label}
       </span>
 
@@ -893,42 +1022,49 @@ function FieldInput({
         value={value}
         required={required}
         onChange={(event) => {
-          onChange(event.target.value);
+          onChange(
+            event.target.value,
+          );
         }}
-        className="inset-well w-full px-3 py-2.5 outline-none focus:ring-2 focus:ring-caramel/60"
+        className="inset-well kob-field-control"
       />
     </label>
   );
 }
 
-type FieldSelectProps = {
+type FormSelectProps = {
   label: string;
   value: string;
-  onChange: (value: string) => void;
+  onChange: (
+    value: string,
+  ) => void;
+
   options: Array<{
     value: string;
     label: string;
   }>;
 };
 
-function FieldSelect({
+function FormSelect({
   label,
   value,
   onChange,
   options,
-}: FieldSelectProps) {
+}: FormSelectProps) {
   return (
     <label className="block min-w-0">
-      <span className="mb-1.5 block text-[10px] uppercase tracking-[0.2em] text-cream-dim">
+      <span className="kob-field-label">
         {label}
       </span>
 
       <select
         value={value}
         onChange={(event) => {
-          onChange(event.target.value);
+          onChange(
+            event.target.value,
+          );
         }}
-        className="inset-well w-full px-3 py-2.5 outline-none focus:ring-2 focus:ring-caramel/60"
+        className="inset-well kob-field-control"
       >
         {options.map((option) => (
           <option
