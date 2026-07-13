@@ -120,7 +120,7 @@ function AuthPage() {
       {/* Main Layout */}
       <section className="relative z-10 mx-auto grid min-h-[calc(100vh-88px)] w-full max-w-7xl grid-cols-1 items-center gap-10 px-5 pb-8 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:px-10">
         {/* Left Visual Section */}
-        <div className="hidden lg:flex min-h-[640px] flex-col justify-center">
+        <div className="hidden min-h-[640px] flex-col justify-center lg:flex">
           <div className="max-w-xl">
             <div className="engraved mb-7 inline-flex items-center gap-2 px-3 py-1.5 text-xs uppercase tracking-[0.22em] text-cream-dim">
               <span className="h-1.5 w-1.5 rounded-full bg-caramel" />
@@ -161,7 +161,7 @@ function AuthPage() {
               <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-caramel/10 blur-[70px]" />
 
               <div className="mb-8">
-                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl engraved">
+                <div className="engraved mb-5 flex h-14 w-14 items-center justify-center rounded-2xl">
                   <Coffee className="h-7 w-7 text-caramel-bright" />
                 </div>
 
@@ -220,7 +220,6 @@ function AuthPage() {
                 {t("staffOnlyNotice")}
               </p>
             </div>
-
           </div>
         </div>
       </section>
@@ -254,7 +253,7 @@ function FeatureCard({
 }) {
   return (
     <div className="panel-warm rounded-3xl p-5">
-      <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full engraved text-caramel-bright">
+      <div className="engraved mb-4 flex h-11 w-11 items-center justify-center rounded-full text-caramel-bright">
         {icon}
       </div>
       <div className="mb-1 font-display text-xl font-bold text-cream">
