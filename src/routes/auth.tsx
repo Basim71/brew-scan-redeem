@@ -221,13 +221,6 @@ function AuthPage() {
               </p>
             </div>
 
-            <p className="mt-6 text-center text-xs leading-relaxed text-cream-dim sm:text-sm">
-              {t("customersHint").replace(t("goToScan") + ".", "")}
-              <Link to="/scan" className="text-caramel-bright underline">
-                {t("goToScan")}
-              </Link>
-              .
-            </p>
           </div>
         </div>
       </section>
