@@ -67,19 +67,19 @@ function AdminLayout() {
     return <FullScreenLoader />;
   }
 
-  const signOut = async () => {
+  async function signOut() {
     await supabase.auth.signOut();
     navigate({ to: "/auth" });
-  };
+  }
 
   return (
-    <main className="min-h-screen w-full p-3 sm:p-5 lg:p-6">
-      <div className="grid min-h-[calc(100vh-1.5rem)] w-full gap-4 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-6">
-        <aside className="panel-warm flex min-w-0 flex-col p-3 lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)] lg:p-4">
+    <main className="min-h-screen w-full overflow-x-hidden p-3 sm:p-5 lg:p-6">
+      <div className="grid min-h-[calc(100vh-24px)] w-full gap-4 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-6">
+        <aside className="panel-warm flex min-w-0 flex-col p-3 lg:sticky lg:top-6 lg:h-[calc(100vh-48px)] lg:p-4">
           <div className="flex items-center justify-between gap-3 lg:block">
             <Link
               to="/"
-              className="flex min-w-0 items-center gap-3 rounded-xl px-1 py-1"
+              className="flex min-w-0 items-center gap-3"
             >
               <div className="panel-warm flex h-11 w-11 shrink-0 items-center justify-center rounded-full">
                 <Coffee className="h-5 w-5 text-caramel-bright" />
@@ -96,22 +96,20 @@ function AdminLayout() {
               </div>
             </Link>
 
-            <div className="flex shrink-0 items-center gap-2 lg:mt-5 lg:hidden">
+            <div className="flex shrink-0 items-center gap-2 lg:hidden">
               <LanguageSwitcher />
 
               <button
                 type="button"
                 onClick={signOut}
                 className="btn-ghost-brass flex items-center justify-center px-3 py-2"
-                aria-label={t("signOut")}
-                title={t("signOut")}
               >
                 <LogOut className="h-4 w-4" />
               </button>
             </div>
           </div>
 
-          <div className="hairline-divider my-3 hidden lg:block" />
+          <div className="hairline-divider my-4 hidden lg:block" />
 
           <nav className="flex min-w-0 gap-2 overflow-x-auto pb-2 lg:flex-1 lg:flex-col lg:overflow-visible lg:pb-0">
             <NavTab
@@ -161,7 +159,7 @@ function AdminLayout() {
           </div>
         </aside>
 
-        <section className="min-w-0 pb-4">
+        <section className="min-w-0 w-full">
           <Outlet />
         </section>
       </div>
@@ -186,21 +184,19 @@ function NavTab({
   label,
   exact = false,
 }: NavTabProps) {
-  const baseClassName =
+  const baseClasses =
     "flex shrink-0 items-center gap-2 rounded-lg px-4 py-3 text-sm transition lg:w-full";
 
   return (
     <Link
       to={to}
       activeOptions={{ exact }}
-      className={`${baseClassName} text-cream-dim hover:bg-white/5 hover:text-caramel-bright`}
+      className={`${baseClasses} text-cream-dim hover:bg-white/5 hover:text-caramel-bright`}
       activeProps={{
-        className: `${baseClassName} btn-brass`,
+        className: `${baseClasses} btn-brass`,
       }}
     >
-      <span className="shrink-0">
-        {icon}
-      </span>
+      {icon}
 
       <span className="whitespace-nowrap">
         {label}
