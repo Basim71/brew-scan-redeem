@@ -16,8 +16,8 @@ import {
 
 import { supabase } from "@/integrations/supabase/client";
 import { LanguageSwitcher, useI18n } from "@/lib/i18n";
-import { useRole } from "@/lib/use-auth";
 import { FullScreenLoader } from "@/lib/ui";
+import { useRole } from "@/lib/use-auth";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -35,110 +35,147 @@ export const Route = createFileRoute("/admin")({
       },
     ],
   }),
+
   component: AdminLayout,
 });
 
 function AdminLayout() {
   const navigate = useNavigate();
-  const { session, role, ready } = useRole();
+
+  const {
+    session,
+    role,
+    ready,
+  } = useRole();
+
   const { t } = useI18n();
 
   useEffect(() => {
-    if (!ready) return;
-
-    if (!session) {
-      navigate({ to: "/auth" });
+    if (!ready) {
       return;
     }
 
-    if (role === "admin") return;
+    if (!session) {
+      navigate({
+        to: "/auth",
+      });
+
+      return;
+    }
+
+    if (role === "admin") {
+      return;
+    }
 
     if (role === "cashier") {
-      navigate({ to: "/cashier" });
+      navigate({
+        to: "/cashier",
+      });
+
       return;
     }
 
     void supabase.auth.signOut().then(() => {
-      navigate({ to: "/auth" });
+      navigate({
+        to: "/auth",
+      });
     });
-  }, [navigate, ready, role, session]);
+  }, [
+    navigate,
+    ready,
+    role,
+    session,
+  ]);
 
   if (!ready || role !== "admin") {
     return <FullScreenLoader />;
   }
 
-  async function signOut() {
+  async function handleSignOut() {
     await supabase.auth.signOut();
-    navigate({ to: "/auth" });
+
+    navigate({
+      to: "/auth",
+    });
   }
 
   return (
-    <main className="min-h-screen w-full overflow-x-hidden p-3 sm:p-5 lg:p-6">
-      <div className="grid min-h-[calc(100vh-24px)] w-full gap-4 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-6">
-        <aside className="panel-warm flex min-w-0 flex-col p-3 lg:sticky lg:top-6 lg:h-[calc(100vh-48px)] lg:p-4">
-          <div className="flex items-center justify-between gap-3 lg:block">
+    <main className="kob-app-shell">
+      <div className="kob-dashboard-layout">
+        <aside className="kob-sidebar panel-warm">
+          <div className="kob-sidebar-header">
             <Link
               to="/"
-              className="flex min-w-0 items-center gap-3"
+              className="kob-sidebar-brand"
             >
-              <div className="panel-warm flex h-11 w-11 shrink-0 items-center justify-center rounded-full">
-                <Coffee className="h-5 w-5 text-caramel-bright" />
+              <div className="kob-brand-icon">
+                <Coffee className="h-5 w-5" />
               </div>
 
               <div className="min-w-0">
-                <div className="truncate font-display font-bold tracking-wide gold-text">
+                <div className="kob-brand-title">
                   {t("admin_title")}
                 </div>
 
-                <div className="truncate text-[10px] uppercase tracking-widest text-cream-dim">
+                <div className="kob-brand-subtitle">
                   {t("admin_sub")}
                 </div>
               </div>
             </Link>
 
-            <div className="flex shrink-0 items-center gap-2 lg:hidden">
+            <div className="kob-mobile-actions">
               <LanguageSwitcher />
 
               <button
                 type="button"
-                onClick={signOut}
-                className="btn-ghost-brass flex items-center justify-center px-3 py-2"
+                onClick={handleSignOut}
+                className="btn-ghost-brass kob-icon-button"
+                aria-label={t("signOut")}
+                title={t("signOut")}
               >
                 <LogOut className="h-4 w-4" />
               </button>
             </div>
           </div>
 
-          <div className="hairline-divider my-4 hidden lg:block" />
+          <div className="hairline-divider kob-sidebar-divider" />
 
-          <nav className="flex min-w-0 gap-2 overflow-x-auto pb-2 lg:flex-1 lg:flex-col lg:overflow-visible lg:pb-0">
-            <NavTab
+          <nav className="kob-sidebar-navigation">
+            <SidebarLink
               to="/admin"
-              icon={<LayoutDashboard className="h-4 w-4" />}
+              icon={
+                <LayoutDashboard className="h-4 w-4" />
+              }
               label={t("nav_dashboard")}
               exact
             />
 
-            <NavTab
+            <SidebarLink
               to="/admin/plans"
-              icon={<Boxes className="h-4 w-4" />}
+              icon={
+                <Boxes className="h-4 w-4" />
+              }
               label={t("nav_plans")}
             />
 
-            <NavTab
+            <SidebarLink
               to="/admin/coupons"
-              icon={<Ticket className="h-4 w-4" />}
+              icon={
+                <Ticket className="h-4 w-4" />
+              }
               label={t("nav_coupons")}
             />
 
-            <NavTab
+            <SidebarLink
               to="/admin/sell-coupon"
-              icon={<ShoppingCart className="h-4 w-4" />}
+              icon={
+                <ShoppingCart className="h-4 w-4" />
+              }
               label={t("nav_sell_coupon")}
             />
           </nav>
 
-          <div className="mt-auto hidden pt-4 lg:block">
+          <div className="kob-sidebar-footer">
             <div className="hairline-divider mb-4" />
 
             <div className="flex items-center gap-2">
@@ -146,7 +183,7 @@ function AdminLayout() {
 
               <button
                 type="button"
-                onClick={signOut}
+                onClick={handleSignOut}
                 className="btn-ghost-brass flex min-w-0 flex-1 items-center justify-center gap-2 px-3 py-2.5"
               >
                 <LogOut className="h-4 w-4 shrink-0" />
@@ -159,7 +196,7 @@ function AdminLayout() {
           </div>
         </aside>
 
-        <section className="min-w-0 w-full">
+        <section className="kob-dashboard-content">
           <Outlet />
         </section>
       </div>
@@ -167,38 +204,41 @@ function AdminLayout() {
   );
 }
 
-type NavTabProps = {
+type SidebarLinkProps = {
   to:
     | "/admin"
     | "/admin/plans"
     | "/admin/coupons"
     | "/admin/sell-coupon";
+
   icon: ReactNode;
   label: string;
   exact?: boolean;
 };
 
-function NavTab({
+function SidebarLink({
   to,
   icon,
   label,
   exact = false,
-}: NavTabProps) {
-  const baseClasses =
-    "flex shrink-0 items-center gap-2 rounded-lg px-4 py-3 text-sm transition lg:w-full";
-
+}: SidebarLinkProps) {
   return (
     <Link
       to={to}
-      activeOptions={{ exact }}
-      className={`${baseClasses} text-cream-dim hover:bg-white/5 hover:text-caramel-bright`}
+      activeOptions={{
+        exact,
+      }}
+      className="kob-sidebar-link"
       activeProps={{
-        className: `${baseClasses} btn-brass`,
+        className:
+          "kob-sidebar-link kob-sidebar-link-active",
       }}
     >
-      {icon}
+      <span className="shrink-0">
+        {icon}
+      </span>
 
-      <span className="whitespace-nowrap">
+      <span className="truncate">
         {label}
       </span>
     </Link>
