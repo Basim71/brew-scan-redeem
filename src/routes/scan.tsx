@@ -1,8 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+} from "@tanstack/react-router";
 import {
   useEffect,
   useMemo,
-  useRef,
   useState,
   type FormEvent,
   type ReactNode,
@@ -17,8 +19,30 @@ import {
   XCircle,
 } from "lucide-react";
 
+import { DrinkSlider } from "@/components/drinks/DrinkSlider";
+import type { Drink } from "@/components/drinks/types";
 import { supabase } from "@/integrations/supabase/client";
-import { LanguageSwitcher, useI18n } from "@/lib/i18n";
+import {
+  LanguageSwitcher,
+  useI18n,
+} from "@/lib/i18n";
+
+export const Route = createFileRoute("/scan")({
+  head: () => ({
+    meta: [
+      {
+        title: "Scan · KOB",
+      },
+      {
+        name: "description",
+        content:
+          "Scan a KOB branch, register, access your subscription, and order coffee.",
+      },
+    ],
+  }),
+
+  component: ScanPage,
+});
 
 type Step =
   | "branch"
@@ -44,9 +68,9 @@ type Plan = {
 
 type Subscription = {
   id: string;
-  customer_id?: string;
-  plan_id?: string;
-  branch_id?: string;
+  customer_id?: string | null;
+  plan_id?: string | null;
+  branch_id?: string | null;
   start_date: string;
   end_date: string;
   status: string;
@@ -56,14 +80,7 @@ type Subscription = {
 type Customer = {
   id: string;
   name: string;
-};
-
-type Drink = {
-  id: string;
-  name_en: string;
-  name_ar: string;
-  is_active: boolean;
-  image_url: string | null;
+  phone?: string | null;
 };
 
 type DeviceState = {
@@ -73,55 +90,133 @@ type DeviceState = {
 
 type RegistrationStatus = {
   found: boolean;
-  status: "pending" | "approved" | "rejected" | null;
+
+  status:
+    | "pending"
+    | "approved"
+    | "rejected"
+    | null;
 };
 
-export const Route = createFileRoute("/scan")({
-  head: () => ({
-    meta: [
-      { title: "Scan · KOB" },
-      {
-        name: "description",
-        content:
-          "Scan a KOB branch, view available drinks, register, and order coffee.",
-      },
-    ],
-  }),
-  component: ScanPage,
-});
+type LookupPayload = {
+  found: boolean;
+  customer?: Customer | null;
+  subscription?: Subscription | null;
+  used_today?: number;
+};
 
-const DEVICE_TOKEN_KEY = "kob_device_token";
+type OrderStatus =
+  | "pending"
+  | "approved"
+  | "rejected";
+
+const DEVICE_TOKEN_KEY =
+  "kob_device_token";
 
 function ScanPage() {
-  const { t, lang, setLang, dir, fmtNum } = useI18n();
+  const {
+    t,
+    lang,
+    setLang,
+    dir,
+    fmtNum,
+  } = useI18n();
 
-  const [step, setStep] = useState<Step>("branch");
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [branch, setBranch] = useState<Branch | null>(null);
-  const [phone, setPhone] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [sub, setSub] = useState<Subscription | null>(null);
-  const [customer, setCustomer] = useState<Customer | null>(null);
-  const [usedToday, setUsedToday] = useState(0);
-  const [drinks, setDrinks] = useState<Drink[]>([]);
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-  const [info, setInfo] = useState<string | null>(null);
-  const [deviceToken, setDeviceToken] = useState("");
-  const [deviceKnown, setDeviceKnown] = useState(false);
-  const [orderId, setOrderId] = useState<string | null>(null);
-  const [orderStatus, setOrderStatus] = useState<
-    "pending" | "approved" | "rejected"
-  >("pending");
+  const [step, setStep] =
+    useState<Step>("branch");
+
+  const [branches, setBranches] =
+    useState<Branch[]>([]);
+
+  const [branch, setBranch] =
+    useState<Branch | null>(null);
+
+  const [drinks, setDrinks] =
+    useState<Drink[]>([]);
+
+  const [phone, setPhone] =
+    useState("");
+
+  const [firstName, setFirstName] =
+    useState("");
+
+  const [lastName, setLastName] =
+    useState("");
+
+  const [subscription, setSubscription] =
+    useState<Subscription | null>(null);
+
+  const [customer, setCustomer] =
+    useState<Customer | null>(null);
+
+  const [usedToday, setUsedToday] =
+    useState(0);
+
+  const [deviceToken, setDeviceToken] =
+    useState("");
+
+  const [deviceKnown, setDeviceKnown] =
+    useState(false);
+
+  const [busy, setBusy] =
+    useState(false);
+
+  const [error, setError] =
+    useState<string | null>(null);
+
+  const [info, setInfo] =
+    useState<string | null>(null);
+
+  const [orderId, setOrderId] =
+    useState<string | null>(null);
+
+  const [orderStatus, setOrderStatus] =
+    useState<OrderStatus>("pending");
 
   const branchLabel = useMemo(() => {
-    if (!branch) return "";
-    return lang === "ar" ? branch.name_ar : branch.name_en;
-  }, [branch, lang]);
+    if (!branch) {
+      return "";
+    }
+
+    return lang === "ar"
+      ? branch.name_ar
+      : branch.name_en;
+  }, [
+    branch,
+    lang,
+  ]);
+
+  const totalDays =
+    subscription?.plan?.duration_days ??
+    0;
+
+  const elapsedDays = subscription
+    ? daysBetween(
+        subscription.start_date,
+        todayLocalISO(),
+      )
+    : 0;
+
+  const daysLeft =
+    subscription
+      ? Math.max(
+          0,
+          totalDays -
+            elapsedDays,
+        )
+      : 0;
+
+  const canOrder =
+    Boolean(subscription) &&
+    subscription?.status ===
+      "active" &&
+    usedToday === 0 &&
+    daysLeft > 0;
 
   useEffect(() => {
-    setDeviceToken(getOrCreateDeviceToken());
+    setDeviceToken(
+      getOrCreateDeviceToken(),
+    );
   }, []);
 
   useEffect(() => {
@@ -135,282 +230,619 @@ function ScanPage() {
     }
 
     void loadDrinks();
-  }, [branch]);
+  }, [
+    branch,
+    lang,
+  ]);
 
   useEffect(() => {
-    if (!orderId) return;
-
-    const intervalId = window.setInterval(async () => {
-      const { data } = await supabase.rpc("scan_order_status", {
-        _order_id: orderId,
-      });
-
-      if (data && data !== orderStatus) {
-        setOrderStatus(data as "pending" | "approved" | "rejected");
-      }
-    }, 2000);
-
-    return () => window.clearInterval(intervalId);
-  }, [orderId, orderStatus]);
-
-  async function loadBranches() {
-    const { data, error } = await supabase
-      .from("branches")
-      .select("id,name_en,name_ar")
-      .eq("is_active", true)
-      .order("name_en");
-
-    if (error) {
-      console.error("Failed to load branches:", error);
+    if (!orderId) {
       return;
     }
 
-    const list = (data ?? []) as Branch[];
-    setBranches(list);
+    const intervalId =
+      window.setInterval(
+        async () => {
+          const {
+            data,
+            error:
+              statusError,
+          } =
+            await supabase.rpc(
+              "scan_order_status",
+              {
+                _order_id:
+                  orderId,
+              },
+            );
 
-    const url = new URL(window.location.href);
-    const branchId = url.searchParams.get("branch");
+          if (statusError) {
+            console.error(
+              "scan_order_status:",
+              statusError,
+            );
 
-    if (!branchId) return;
+            return;
+          }
 
-    const matchedBranch = list.find((item) => item.id === branchId);
+          if (
+            data ===
+              "pending" ||
+            data ===
+              "approved" ||
+            data ===
+              "rejected"
+          ) {
+            setOrderStatus(
+              data,
+            );
 
-    if (matchedBranch) {
-      setBranch(matchedBranch);
-      setStep("language");
+            if (
+              data ===
+              "approved"
+            ) {
+              setUsedToday(1);
+            }
+          }
+        },
+        2000,
+      );
+
+    return () => {
+      window.clearInterval(
+        intervalId,
+      );
+    };
+  }, [orderId]);
+
+  async function loadBranches() {
+    setError(null);
+
+    const {
+      data,
+      error: branchesError,
+    } = await supabase
+      .from("branches")
+      .select(
+        "id,name_en,name_ar",
+      )
+      .order("name_en");
+
+    if (branchesError) {
+      console.error(
+        "Failed to load branches:",
+        branchesError,
+      );
+
+      setBranches([]);
+
+      setError(
+        lang === "ar"
+          ? "تعذر تحميل الفروع."
+          : "Unable to load branches.",
+      );
+
+      return;
     }
+
+    const branchList =
+      (data ?? []) as Branch[];
+
+    setBranches(
+      branchList,
+    );
+
+    const currentUrl =
+      new URL(
+        window.location.href,
+      );
+
+    const branchId =
+      currentUrl.searchParams.get(
+        "branch",
+      );
+
+    if (!branchId) {
+      return;
+    }
+
+    const matchedBranch =
+      branchList.find(
+        (item) =>
+          item.id ===
+          branchId,
+      );
+
+    if (!matchedBranch) {
+      return;
+    }
+
+    setBranch(
+      matchedBranch,
+    );
+
+    setStep(
+      "language",
+    );
   }
 
   async function loadDrinks() {
-    const { data, error } = await supabase
+    setError(null);
+
+    const {
+      data,
+      error: drinksError,
+    } = await supabase
       .from("drink_types")
-      .select("id,name_en,name_ar,is_active,image_url")
+      .select(
+        `
+          id,
+          name_en,
+          name_ar,
+          is_active,
+          image_url
+        `,
+      )
       .eq("is_active", true)
       .order("name_en");
 
-    if (error) {
-      console.error("Failed to load drinks:", error);
+    if (drinksError) {
+      console.error(
+        "Failed to load drinks:",
+        drinksError,
+      );
+
       setDrinks([]);
-      setErr(
+
+      setError(
         lang === "ar"
           ? "تعذر تحميل المشروبات."
           : "Unable to load drinks.",
       );
+
       return;
     }
 
-    setDrinks((data ?? []) as Drink[]);
+    setDrinks(
+      (data ?? []) as Drink[],
+    );
   }
 
-  async function chooseLanguage(selectedLanguage: "ar" | "en") {
-    setLang(selectedLanguage);
-    setErr(null);
+  async function chooseLanguage(
+    selectedLanguage:
+      | "ar"
+      | "en",
+  ) {
+    setLang(
+      selectedLanguage,
+    );
+
+    setError(null);
     setInfo(null);
 
-    if (!branch || !deviceToken) {
-      setStep("showcase");
+    if (
+      !branch ||
+      !deviceToken
+    ) {
+      setStep(
+        "showcase",
+      );
+
       return;
     }
 
     setBusy(true);
 
-    const { data, error } = await supabase.rpc("scan_device_state", {
-      _device_token: deviceToken,
-      _branch_id: branch.id,
-    });
-
-    setBusy(false);
-
-    if (error) {
-      console.error("scan_device_state:", error);
-      setStep("showcase");
-      return;
-    }
-
-    const payload = data as DeviceState | null;
-    const known = Boolean(payload?.known);
-    setDeviceKnown(known);
-    setStep(known ? "phone" : "showcase");
-  }
-
-  async function submitRegistration(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (!branch) return;
-
-    const normalizedPhone = normalizePhone(phone);
-
-    if (firstName.trim().length < 2 || lastName.trim().length < 2) {
-      setErr(
-        lang === "ar"
-          ? "يرجى إدخال الاسم الأول والأخير."
-          : "Please enter your first and last name.",
-      );
-      return;
-    }
-
-    if (!/^05\d{8}$/.test(normalizedPhone)) {
-      setErr(
-        lang === "ar"
-          ? "رقم الجوال يجب أن يبدأ بـ 05 ويتكون من 10 أرقام."
-          : "Phone number must start with 05 and contain 10 digits.",
-      );
-      return;
-    }
-
-    setBusy(true);
-    setErr(null);
-
-    const { error } = await supabase.rpc("scan_register_request", {
-      _first_name: firstName.trim(),
-      _last_name: lastName.trim(),
-      _phone: normalizedPhone,
-      _branch_id: branch.id,
-      _device_token: deviceToken,
-      _preferred_language: lang,
-      _user_agent: navigator.userAgent,
-    });
-
-    setBusy(false);
-
-    if (error) {
-      console.error("scan_register_request:", error);
-      setErr(translateRegistrationError(error.message, lang));
-      return;
-    }
-
-    setPhone(normalizedPhone);
-    setDeviceKnown(true);
-    setStep("registration-sent");
-  }
-
-  async function lookup() {
-    if (!branch) return;
-
-    const normalizedPhone = normalizePhone(phone);
-
-    if (!/^05\d{8}$/.test(normalizedPhone)) {
-      setErr(
-        lang === "ar"
-          ? "أدخل رقم جوال صحيح يبدأ بـ 05."
-          : "Enter a valid phone number starting with 05.",
-      );
-      return;
-    }
-
-    setBusy(true);
-    setErr(null);
-    setInfo(null);
-
-    const { data, error } = await supabase.rpc("scan_lookup", {
-      _phone: normalizedPhone,
-      _branch_id: branch.id,
-    });
-
-    const payload = data as
-      | {
-          found: boolean;
-          customer?: Customer;
-          subscription?: Subscription;
-          used_today?: number;
-        }
-      | null;
-
-    if (!error && payload?.found) {
-      setPhone(normalizedPhone);
-      setCustomer(payload.customer ?? null);
-      setSub(payload.subscription ?? null);
-      setUsedToday(payload.used_today ?? 0);
-      setBusy(false);
-      setStep("menu");
-      return;
-    }
-
-    const { data: registrationData } = await supabase.rpc(
-      "scan_registration_status",
+    const {
+      data,
+      error: stateError,
+    } = await supabase.rpc(
+      "scan_device_state",
       {
-        _phone: normalizedPhone,
-        _branch_id: branch.id,
-        _device_token: deviceToken,
+        _device_token:
+          deviceToken,
+
+        _branch_id:
+          branch.id,
       },
     );
 
     setBusy(false);
 
-    const registration = registrationData as RegistrationStatus | null;
+    if (stateError) {
+      console.error(
+        "scan_device_state:",
+        stateError,
+      );
 
-    if (registration?.status === "pending") {
+      setStep(
+        "showcase",
+      );
+
+      return;
+    }
+
+    const state =
+      data as
+        | DeviceState
+        | null;
+
+    const known =
+      Boolean(
+        state?.known,
+      );
+
+    setDeviceKnown(
+      known,
+    );
+
+    if (known) {
+      setStep("phone");
+      return;
+    }
+
+    setStep(
+      "showcase",
+    );
+  }
+
+  async function submitRegistration(
+    event:
+      FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+
+    if (!branch) {
+      return;
+    }
+
+    const normalizedPhone =
+      normalizePhone(phone);
+
+    if (
+      firstName.trim().length <
+        2 ||
+      lastName.trim().length <
+        2
+    ) {
+      setError(
+        lang === "ar"
+          ? "يرجى إدخال الاسم الأول والأخير."
+          : "Please enter your first and last name.",
+      );
+
+      return;
+    }
+
+    if (
+      !isValidSaudiPhone(
+        normalizedPhone,
+      )
+    ) {
+      setError(
+        lang === "ar"
+          ? "رقم الجوال يجب أن يبدأ بـ 05 ويتكون من 10 أرقام."
+          : "Phone number must start with 05 and contain 10 digits.",
+      );
+
+      return;
+    }
+
+    setBusy(true);
+    setError(null);
+    setInfo(null);
+
+    const {
+      error:
+        registrationError,
+    } = await supabase.rpc(
+      "scan_register_request",
+      {
+        _first_name:
+          firstName.trim(),
+
+        _last_name:
+          lastName.trim(),
+
+        _phone:
+          normalizedPhone,
+
+        _branch_id:
+          branch.id,
+
+        _device_token:
+          deviceToken,
+
+        _preferred_language:
+          lang,
+
+        _user_agent:
+          navigator.userAgent,
+      },
+    );
+
+    setBusy(false);
+
+    if (registrationError) {
+      console.error(
+        "scan_register_request:",
+        registrationError,
+      );
+
+      setError(
+        translateRegistrationError(
+          registrationError.message,
+          lang,
+        ),
+      );
+
+      return;
+    }
+
+    setPhone(
+      normalizedPhone,
+    );
+
+    setDeviceKnown(true);
+
+    setStep(
+      "registration-sent",
+    );
+  }
+
+  async function lookup() {
+    if (!branch) {
+      return;
+    }
+
+    const normalizedPhone =
+      normalizePhone(phone);
+
+    if (
+      !isValidSaudiPhone(
+        normalizedPhone,
+      )
+    ) {
+      setError(
+        lang === "ar"
+          ? "أدخل رقم جوال صحيح يبدأ بـ 05."
+          : "Enter a valid phone number starting with 05.",
+      );
+
+      return;
+    }
+
+    setBusy(true);
+    setError(null);
+    setInfo(null);
+
+    const {
+      data,
+      error: lookupError,
+    } = await supabase.rpc(
+      "scan_lookup",
+      {
+        _phone:
+          normalizedPhone,
+
+        _branch_id:
+          branch.id,
+      },
+    );
+
+    const payload =
+      data as
+        | LookupPayload
+        | null;
+
+    if (
+      !lookupError &&
+      payload?.found &&
+      payload.subscription
+    ) {
+      setPhone(
+        normalizedPhone,
+      );
+
+      setCustomer(
+        payload.customer ??
+          null,
+      );
+
+      setSubscription(
+        payload.subscription,
+      );
+
+      setUsedToday(
+        payload.used_today ??
+          0,
+      );
+
+      setBusy(false);
+
+      setStep(
+        "menu",
+      );
+
+      return;
+    }
+
+    if (lookupError) {
+      console.error(
+        "scan_lookup:",
+        lookupError,
+      );
+    }
+
+    const {
+      data:
+        registrationData,
+      error:
+        registrationStatusError,
+    } = await supabase.rpc(
+      "scan_registration_status",
+      {
+        _phone:
+          normalizedPhone,
+
+        _branch_id:
+          branch.id,
+
+        _device_token:
+          deviceToken,
+      },
+    );
+
+    setBusy(false);
+
+    if (
+      registrationStatusError
+    ) {
+      console.error(
+        "scan_registration_status:",
+        registrationStatusError,
+      );
+    }
+
+    const registration =
+      registrationData as
+        | RegistrationStatus
+        | null;
+
+    if (
+      registration?.status ===
+      "pending"
+    ) {
       setInfo(
         lang === "ar"
           ? "طلب تسجيلك بانتظار موافقة الكاشير."
           : "Your registration request is waiting for cashier approval.",
       );
+
       return;
     }
 
-    if (registration?.status === "rejected") {
-      setErr(
+    if (
+      registration?.status ===
+      "rejected"
+    ) {
+      setError(
         lang === "ar"
           ? "تم رفض طلب التسجيل. يرجى التواصل مع الكاشير."
           : "Your registration request was rejected. Please contact the cashier.",
       );
+
       return;
     }
 
-    setErr(
+    setError(
       lang === "ar"
         ? "لا يوجد اشتراك نشط لهذا الرقم."
         : "No active subscription was found for this number.",
     );
   }
 
-  async function sendOrder(drink: Drink) {
-    if (!sub || !branch || !customer) return;
-
-    setBusy(true);
-    setErr(null);
-
-    const { data, error } = await supabase.rpc("scan_submit_order", {
-      _phone: phone.trim(),
-      _branch_id: branch.id,
-      _drink_type_id: drink.id,
-    });
-
-    setBusy(false);
-
-    if (error || !data) {
-      setErr(error?.message ?? "Failed");
+  async function sendOrder(
+    drink: Drink,
+  ) {
+    if (
+      !subscription ||
+      !branch
+    ) {
       return;
     }
 
-    setOrderId(data as string);
-    setOrderStatus("pending");
-    setStep("waiting");
+    if (!canOrder) {
+      setError(
+        lang === "ar"
+          ? "لا يمكنك إرسال طلب جديد الآن."
+          : "You cannot place another order right now.",
+      );
+
+      return;
+    }
+
+    setBusy(true);
+    setError(null);
+    setInfo(null);
+
+    const {
+      data,
+      error: orderError,
+    } = await supabase.rpc(
+      "scan_submit_order",
+      {
+        _phone:
+          normalizePhone(
+            phone,
+          ),
+
+        _branch_id:
+          branch.id,
+
+        _drink_type_id:
+          drink.id,
+      },
+    );
+
+    setBusy(false);
+
+    if (
+      orderError ||
+      !data
+    ) {
+      console.error(
+        "scan_submit_order:",
+        orderError,
+      );
+
+      setError(
+        translateOrderError(
+          orderError?.message ??
+            "",
+          lang,
+        ),
+      );
+
+      return;
+    }
+
+    setOrderId(
+      data as string,
+    );
+
+    setOrderStatus(
+      "pending",
+    );
+
+    setStep(
+      "waiting",
+    );
   }
 
-  const totalDays = sub?.plan?.duration_days ?? 0;
-  const daysLeft = Math.max(
-    0,
-    totalDays -
-      (sub
-        ? daysBetween(
-            sub.start_date,
-            new Date().toISOString().slice(0, 10),
-          )
-        : 0),
-  );
-
-  const canOrder = Boolean(sub) && sub?.status === "active" && usedToday === 0;
+  function resetOrderScreen() {
+    setOrderId(null);
+    setOrderStatus(
+      "pending",
+    );
+    setError(null);
+    setInfo(null);
+    setStep("menu");
+  }
 
   return (
-    <main dir={dir} className="flex min-h-screen flex-col items-center px-4 py-8">
+    <main
+      dir={dir}
+      className="flex min-h-screen flex-col items-center overflow-x-hidden px-4 py-8"
+    >
       <div className="w-full max-w-md">
         <div className="mb-6 flex items-center justify-between">
           <Link
             to="/"
-            className="flex items-center gap-2 text-cream-dim hover:text-caramel-bright"
+            className="flex items-center gap-2 text-cream-dim transition hover:text-caramel-bright"
           >
             <Coffee className="h-5 w-5" />
+
             <span className="font-display text-xl font-bold tracking-wider gold-text">
               KOB
             </span>
@@ -420,42 +852,80 @@ function ScanPage() {
         </div>
 
         {step === "branch" && (
-          <div className="panel-warm p-7">
+          <section className="panel-warm p-7">
             <h1 className="mb-1 font-display text-2xl font-bold text-cream">
               {t("pickBranch")}
             </h1>
-            <p className="mb-5 text-sm text-cream-dim">{t("scanHint")}</p>
+
+            <p className="mb-5 text-sm text-cream-dim">
+              {t("scanHint")}
+            </p>
 
             <div className="space-y-2">
-              {branches.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => {
-                    setBranch(item);
-                    setStep("language");
-                  }}
-                  className="btn-ghost-brass flex w-full items-center justify-between px-4 py-4 text-start"
-                >
-                  <span className="font-semibold text-cream">
-                    {lang === "ar" ? item.name_ar : item.name_en}
-                  </span>
-                </button>
-              ))}
+              {branches.map(
+                (item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => {
+                      setBranch(
+                        item,
+                      );
 
-              {branches.length === 0 && (
+                      setError(
+                        null,
+                      );
+
+                      setStep(
+                        "language",
+                      );
+                    }}
+                    className="btn-ghost-brass flex w-full items-center justify-between px-4 py-4 text-start"
+                  >
+                    <span className="font-semibold text-cream">
+                      {lang ===
+                      "ar"
+                        ? item.name_ar
+                        : item.name_en}
+                    </span>
+                  </button>
+                ),
+              )}
+
+              {branches.length ===
+                0 && (
                 <div className="engraved p-4 text-center text-sm text-cream-dim">
-                  {t("empty_branches")}
+                  {lang === "ar"
+                    ? "لا توجد فروع متاحة."
+                    : "No branches are available."}
                 </div>
               )}
             </div>
-          </div>
+
+            {error && (
+              <div className="mt-4">
+                <ErrorBox
+                  message={error}
+                />
+              </div>
+            )}
+          </section>
         )}
 
-        {step === "language" && branch && (
-          <div className="panel-warm p-7">
-            <BackBtn onClick={() => setStep("branch")} label={t("back")} />
-            <BranchBadge label={branchLabel} />
+        {step === "language" &&
+          branch && (
+          <section className="panel-warm p-7">
+            <BackButton
+              onClick={() => {
+                setError(null);
+                setStep("branch");
+              }}
+              label={t("back")}
+            />
+
+            <BranchBadge
+              label={branchLabel}
+            />
 
             <h1 className="mb-6 text-center font-display text-2xl font-bold text-cream">
               {t("pickLang")}
@@ -465,7 +935,11 @@ function ScanPage() {
               <button
                 type="button"
                 disabled={busy}
-                onClick={() => void chooseLanguage("en")}
+                onClick={() => {
+                  void chooseLanguage(
+                    "en",
+                  );
+                }}
                 className="btn-brass py-5 font-display text-xl"
               >
                 English
@@ -474,7 +948,11 @@ function ScanPage() {
               <button
                 type="button"
                 disabled={busy}
-                onClick={() => void chooseLanguage("ar")}
+                onClick={() => {
+                  void chooseLanguage(
+                    "ar",
+                  );
+                }}
                 className="btn-brass py-5 font-display text-xl"
               >
                 العربية
@@ -484,91 +962,167 @@ function ScanPage() {
             {busy && (
               <Loader2 className="mx-auto mt-5 h-5 w-5 animate-spin text-caramel" />
             )}
-          </div>
+          </section>
         )}
 
-        {step === "showcase" && branch && (
-          <div className="kob-showcase-page">
-            <DrinkShowcaseCarousel drinks={drinks} lang={lang} />
+        {step === "showcase" &&
+          branch && (
+          <section className="kob-voyager-page">
+            <DrinkSlider
+              drinks={drinks}
+              language={lang}
+              mode="showcase"
+            />
 
-            <div className="kob-showcase-actions">
+            {error && (
+              <div className="mx-auto mt-4 w-full max-w-sm">
+                <ErrorBox
+                  message={error}
+                />
+              </div>
+            )}
+
+            <div className="kob-voyager-page-actions">
               <button
                 type="button"
                 onClick={() => {
-                  setErr(null);
-                  setStep("register");
+                  setError(null);
+                  setInfo(null);
+                  setStep(
+                    "register",
+                  );
                 }}
-                className="btn-brass kob-showcase-register-button"
+                className="btn-brass kob-voyager-register-button"
               >
                 <UserPlus className="h-5 w-5" />
-                <span>{lang === "ar" ? "تسجيل" : "Register"}</span>
+
+                <span>
+                  {lang === "ar"
+                    ? "تسجيل"
+                    : "Register"}
+                </span>
               </button>
 
               <button
                 type="button"
                 onClick={() => {
-                  setErr(null);
-                  setStep("phone");
+                  setError(null);
+                  setInfo(null);
+                  setStep(
+                    "phone",
+                  );
                 }}
-                className="kob-showcase-login-button"
+                className="kob-voyager-existing-button"
               >
                 {lang === "ar"
                   ? "لدي اشتراك بالفعل"
                   : "I already have a subscription"}
               </button>
             </div>
-          </div>
+          </section>
         )}
 
-        {step === "register" && branch && (
-          <div className="panel-warm p-7">
-            <BackBtn onClick={() => setStep("showcase")} label={t("back")} />
-            <BranchBadge label={branchLabel} />
+        {step === "register" &&
+          branch && (
+          <section className="panel-warm p-7">
+            <BackButton
+              onClick={() => {
+                setError(null);
+                setInfo(null);
+                setStep(
+                  "showcase",
+                );
+              }}
+              label={t("back")}
+            />
+
+            <BranchBadge
+              label={branchLabel}
+            />
 
             <h1 className="mb-1 text-center font-display text-2xl font-bold text-cream">
-              {lang === "ar" ? "طلب تسجيل جديد" : "New Registration"}
+              {lang === "ar"
+                ? "طلب تسجيل جديد"
+                : "New Registration"}
             </h1>
 
-            <p className="mb-5 text-center text-sm text-cream-dim">
+            <p className="mb-5 text-center text-sm leading-6 text-cream-dim">
               {lang === "ar"
-                ? "أدخل بياناتك وسيصل الطلب إلى كاشير الفرع."
+                ? "أدخل بياناتك وسيصل طلب التسجيل إلى كاشير الفرع."
                 : "Enter your details and the request will be sent to the branch cashier."}
             </p>
 
-            <form onSubmit={submitRegistration} className="space-y-4">
-              <Field label={lang === "ar" ? "الاسم الأول" : "First name"}>
+            <form
+              onSubmit={
+                submitRegistration
+              }
+              className="space-y-4"
+            >
+              <Field
+                label={
+                  lang === "ar"
+                    ? "الاسم الأول"
+                    : "First name"
+                }
+              >
                 <input
-                  value={firstName}
+                  type="text"
+                  value={
+                    firstName
+                  }
                   required
                   maxLength={50}
-                  onChange={(event) => setFirstName(event.target.value)}
+                  autoComplete="given-name"
+                  onChange={(
+                    event,
+                  ) => {
+                    setFirstName(
+                      event.target
+                        .value,
+                    );
+                  }}
                   className="inset-well w-full px-4 py-3 outline-none focus:ring-2 focus:ring-caramel/60"
                 />
               </Field>
 
-              <Field label={lang === "ar" ? "الاسم الأخير" : "Last name"}>
+              <Field
+                label={
+                  lang === "ar"
+                    ? "الاسم الأخير"
+                    : "Last name"
+                }
+              >
                 <input
-                  value={lastName}
+                  type="text"
+                  value={
+                    lastName
+                  }
                   required
                   maxLength={50}
-                  onChange={(event) => setLastName(event.target.value)}
+                  autoComplete="family-name"
+                  onChange={(
+                    event,
+                  ) => {
+                    setLastName(
+                      event.target
+                        .value,
+                    );
+                  }}
                   className="inset-well w-full px-4 py-3 outline-none focus:ring-2 focus:ring-caramel/60"
                 />
               </Field>
 
-              <Field label={lang === "ar" ? "رقم الجوال" : "Phone number"}>
-                <input
-                  value={phone}
-                  required
-                  inputMode="numeric"
-                  maxLength={10}
-                  placeholder="05XXXXXXXX"
-                  onChange={(event) => setPhone(normalizePhone(event.target.value))}
-                  className="inset-well w-full px-4 py-3 text-center font-mono tracking-widest outline-none focus:ring-2 focus:ring-caramel/60"
-                />
-              </Field>
+              <PhoneField
+                value={phone}
+                language={lang}
+                onChange={setPhone}
+              />
 
-              {err && <ErrorBox message={err} />}
+              {error && (
+                <ErrorBox
+                  message={error}
+                />
+              )}
 
               <button
                 type="submit"
@@ -580,49 +1134,72 @@ function ScanPage() {
                 ) : (
                   <UserPlus className="h-4 w-4" />
                 )}
+
                 <span>
                   {lang === "ar"
                     ? "إرسال طلب التسجيل"
-                    : "Send registration request"}
+                    : "Send Registration Request"}
                 </span>
               </button>
             </form>
-          </div>
+          </section>
         )}
 
-        {step === "registration-sent" && (
-          <div className="panel-warm p-8 text-center">
+        {step ===
+          "registration-sent" && (
+          <section className="panel-warm p-8 text-center">
             <div className="engraved mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full">
               <Clock className="h-9 w-9 animate-pulse text-caramel-bright" />
             </div>
 
             <h1 className="font-display text-2xl font-bold text-cream">
-              {lang === "ar" ? "تم إرسال طلب التسجيل" : "Registration Sent"}
+              {lang === "ar"
+                ? "تم إرسال طلب التسجيل"
+                : "Registration Sent"}
             </h1>
 
             <p className="mt-3 text-sm leading-7 text-cream-dim">
               {lang === "ar"
                 ? "وصلت بياناتك إلى الكاشير. بعد تفعيل الاشتراك امسح الكود مرة أخرى وأدخل رقم جوالك."
-                : "Your details were sent to the cashier. Once activated, scan the QR code again and enter your phone number."}
+                : "Your details were sent to the cashier. Once your subscription is activated, scan the QR code again and enter your phone number."}
             </p>
 
             <button
               type="button"
-              onClick={() => setStep("phone")}
+              onClick={() => {
+                setError(null);
+                setInfo(null);
+                setStep("phone");
+              }}
               className="btn-ghost-brass mt-6 px-5 py-3"
             >
-              {lang === "ar" ? "فحص حالة الاشتراك" : "Check subscription status"}
+              {lang === "ar"
+                ? "فحص حالة الاشتراك"
+                : "Check Subscription Status"}
             </button>
-          </div>
+          </section>
         )}
 
-        {step === "phone" && branch && (
-          <div className="panel-warm p-7">
-            <BackBtn
-              onClick={() => setStep(deviceKnown ? "language" : "showcase")}
+        {step === "phone" &&
+          branch && (
+          <section className="panel-warm p-7">
+            <BackButton
+              onClick={() => {
+                setError(null);
+                setInfo(null);
+
+                setStep(
+                  deviceKnown
+                    ? "language"
+                    : "showcase",
+                );
+              }}
               label={t("back")}
             />
-            <BranchBadge label={branchLabel} />
+
+            <BranchBadge
+              label={branchLabel}
+            />
 
             <h1 className="mb-1 text-center font-display text-2xl font-bold text-cream">
               {t("enterPhone")}
@@ -635,41 +1212,63 @@ function ScanPage() {
             </p>
 
             <form
-              onSubmit={(event) => {
+              onSubmit={(
+                event,
+              ) => {
                 event.preventDefault();
                 void lookup();
               }}
               className="space-y-4"
             >
-              <input
+              <PhoneField
                 value={phone}
-                required
-                inputMode="numeric"
-                maxLength={10}
-                placeholder="05XXXXXXXX"
-                onChange={(event) => setPhone(normalizePhone(event.target.value))}
-                className="inset-well w-full px-4 py-4 text-center font-mono text-lg tracking-widest outline-none focus:ring-2 focus:ring-caramel/60"
+                language={lang}
+                onChange={setPhone}
+                large
               />
 
-              {err && <ErrorBox message={err} />}
-              {info && <InfoBox message={info} />}
+              {error && (
+                <ErrorBox
+                  message={error}
+                />
+              )}
+
+              {info && (
+                <InfoBox
+                  message={info}
+                />
+              )}
 
               <button
                 type="submit"
                 disabled={busy}
                 className="btn-brass flex w-full items-center justify-center gap-2 py-4"
               >
-                {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-                {t("lookup")}
+                {busy && (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                )}
+
+                <span>
+                  {t("lookup")}
+                </span>
               </button>
             </form>
-          </div>
+          </section>
         )}
 
-        {step === "menu" && sub && branch && (
-          <>
-            <div className="panel-warm mb-4 p-6">
-              <BackBtn onClick={() => setStep("phone")} label={t("back")} />
+        {step === "menu" &&
+          subscription &&
+          branch && (
+          <div className="space-y-4">
+            <section className="panel-warm p-6">
+              <BackButton
+                onClick={() => {
+                  setError(null);
+                  setInfo(null);
+                  setStep("phone");
+                }}
+                label={t("back")}
+              />
 
               <div className="engraved p-4">
                 <div className="mb-1 text-[10px] uppercase tracking-[0.25em] text-cream-dim">
@@ -677,395 +1276,181 @@ function ScanPage() {
                 </div>
 
                 <div className="font-display text-2xl font-bold text-cream">
-                  {sub.plan?.name ?? "—"}
+                  {subscription.plan
+                    ?.name ?? "—"}
                 </div>
+
+                {customer?.name && (
+                  <div className="mt-1 text-sm text-cream-dim">
+                    {customer.name}
+                  </div>
+                )}
 
                 <div className="hairline-divider my-3" />
 
-                <div className="flex justify-between text-sm">
-                  <span className="text-cream-dim">{t("branchLabel")}</span>
-                  <span className="text-cream">{branchLabel}</span>
+                <div className="flex justify-between gap-4 text-sm">
+                  <span className="text-cream-dim">
+                    {t(
+                      "branchLabel",
+                    )}
+                  </span>
+
+                  <span className="text-end text-cream">
+                    {branchLabel}
+                  </span>
                 </div>
 
-                <div className="mt-2 flex items-baseline justify-between">
+                <div className="mt-3 flex items-baseline justify-between">
                   <span className="text-sm text-cream-dim">
-                    {t("remainingLabel")}
+                    {t(
+                      "remainingLabel",
+                    )}
                   </span>
 
                   <span className="font-display text-3xl font-bold gold-text">
-                    {fmtNum(daysLeft)}
+                    {fmtNum(
+                      daysLeft,
+                    )}
+
                     <span className="font-sans text-sm text-cream-dim">
-                      {" "}/ {fmtNum(totalDays)}
+                      {" "}
+                      /{" "}
+                      {fmtNum(
+                        totalDays,
+                      )}
                     </span>
                   </span>
                 </div>
               </div>
-            </div>
+            </section>
 
-            <div className="panel p-6">
-              <h2 className="mb-4 font-display text-xl font-bold text-cream">
-                {t("pickCoffee")}
-              </h2>
-
-              <DrinkGrid
+            <section className="kob-order-slider-section">
+              <DrinkSlider
                 drinks={drinks}
-                lang={lang}
+                language={lang}
                 mode="order"
                 busy={busy}
-                canOrder={canOrder}
-                onOrder={sendOrder}
+                canOrder={
+                  canOrder
+                }
+                onOrder={
+                  sendOrder
+                }
               />
 
               {!canOrder && (
-                <div className="engraved mt-4 p-3 text-center text-sm text-cream-dim">
-                  {t("empty_days")}
+                <div className="engraved mx-auto mt-4 max-w-sm p-3 text-center text-sm text-cream-dim">
+                  {usedToday > 0
+                    ? lang === "ar"
+                      ? "تم استخدام طلب اليوم بالفعل."
+                      : "Today's order has already been used."
+                    : daysLeft <= 0
+                      ? lang === "ar"
+                        ? "انتهت مدة الاشتراك."
+                        : "The subscription has expired."
+                      : t(
+                          "empty_days",
+                        )}
                 </div>
               )}
 
-              {err && (
-                <div className="mt-4">
-                  <ErrorBox message={err} />
+              {error && (
+                <div className="mx-auto mt-4 max-w-sm">
+                  <ErrorBox
+                    message={error}
+                  />
                 </div>
               )}
-            </div>
-          </>
+            </section>
+          </div>
         )}
 
         {step === "waiting" && (
-          <div className="panel-warm p-8 text-center">
-            {orderStatus === "pending" && (
+          <section className="panel-warm p-8 text-center">
+            {orderStatus ===
+              "pending" && (
               <>
                 <div className="engraved mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full">
                   <Clock className="h-9 w-9 animate-pulse text-caramel-bright" />
                 </div>
+
                 <h1 className="mb-2 font-display text-2xl font-bold text-cream">
                   {t("waiting")}
                 </h1>
-                <p className="text-sm text-cream-dim">{t("waitingHint")}</p>
+
+                <p className="text-sm leading-6 text-cream-dim">
+                  {t(
+                    "waitingHint",
+                  )}
+                </p>
               </>
             )}
 
-            {orderStatus === "approved" && (
+            {orderStatus ===
+              "approved" && (
               <>
                 <div className="engraved mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full">
                   <Check className="h-10 w-10 text-leaf" />
                 </div>
+
                 <h1 className="mb-2 font-display text-2xl font-bold text-cream">
-                  {t("approvedMsg")}
+                  {t(
+                    "approvedMsg",
+                  )}
                 </h1>
+
+                <p className="text-sm text-cream-dim">
+                  {lang === "ar"
+                    ? "يتم الآن تجهيز قهوتك."
+                    : "Your coffee is now being prepared."}
+                </p>
               </>
             )}
 
-            {orderStatus === "rejected" && (
+            {orderStatus ===
+              "rejected" && (
               <>
                 <div className="engraved mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full">
                   <XCircle className="h-10 w-10 text-[oklch(0.7_0.18_32)]" />
                 </div>
+
                 <h1 className="mb-2 font-display text-2xl font-bold text-cream">
-                  {t("rejectedMsg")}
+                  {t(
+                    "rejectedMsg",
+                  )}
                 </h1>
               </>
             )}
 
-            <button
-              type="button"
-              onClick={() => {
-                setOrderId(null);
-                setOrderStatus("pending");
-                setStep("menu");
-              }}
-              className="btn-ghost-brass mt-6 px-5 py-2.5 text-sm"
-            >
-              {t("newOrder")}
-            </button>
-          </div>
+            {orderStatus !==
+              "pending" && (
+              <button
+                type="button"
+                onClick={
+                  resetOrderScreen
+                }
+                className="btn-ghost-brass mt-6 px-5 py-2.5 text-sm"
+              >
+                {orderStatus ===
+                "approved"
+                  ? lang === "ar"
+                    ? "العودة للاشتراك"
+                    : "Back to Subscription"
+                  : t("newOrder")}
+              </button>
+            )}
+          </section>
         )}
       </div>
     </main>
   );
 }
 
-type DrinkShowcaseCarouselProps = {
-  drinks: Drink[];
-  lang: "ar" | "en";
-};
-
-function DrinkShowcaseCarousel({
-  drinks,
-  lang,
-}: DrinkShowcaseCarouselProps) {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const carouselRef = useRef<HTMLDivElement | null>(null);
-  const scrollFrameRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (drinks.length === 0) {
-      setActiveIndex(0);
-      return;
-    }
-
-    if (activeIndex > drinks.length - 1) {
-      setActiveIndex(0);
-    }
-  }, [activeIndex, drinks.length]);
-
-  useEffect(() => {
-    return () => {
-      if (scrollFrameRef.current !== null) {
-        cancelAnimationFrame(scrollFrameRef.current);
-      }
-    };
-  }, []);
-
-  function updateActiveCard() {
-    const container = carouselRef.current;
-
-    if (!container || drinks.length === 0) {
-      return;
-    }
-
-    const cards = Array.from(
-      container.querySelectorAll<HTMLElement>("[data-drink-card]"),
-    );
-
-    if (cards.length === 0) {
-      return;
-    }
-
-    const containerRect = container.getBoundingClientRect();
-    const containerCenter = containerRect.left + containerRect.width / 2;
-
-    let closestIndex = 0;
-    let closestDistance = Number.POSITIVE_INFINITY;
-
-    cards.forEach((card, index) => {
-      const cardRect = card.getBoundingClientRect();
-      const cardCenter = cardRect.left + cardRect.width / 2;
-      const distance = Math.abs(containerCenter - cardCenter);
-
-      if (distance < closestDistance) {
-        closestDistance = distance;
-        closestIndex = index;
-      }
-    });
-
-    setActiveIndex(closestIndex);
-  }
-
-  function handleScroll() {
-    if (scrollFrameRef.current !== null) {
-      cancelAnimationFrame(scrollFrameRef.current);
-    }
-
-    scrollFrameRef.current = requestAnimationFrame(() => {
-      updateActiveCard();
-      scrollFrameRef.current = null;
-    });
-  }
-
-  function scrollToDrink(index: number) {
-    const container = carouselRef.current;
-
-    if (!container) {
-      return;
-    }
-
-    const cards = container.querySelectorAll<HTMLElement>(
-      "[data-drink-card]",
-    );
-    const card = cards[index];
-
-    if (!card) {
-      return;
-    }
-
-    const containerRect = container.getBoundingClientRect();
-    const cardRect = card.getBoundingClientRect();
-    const delta =
-      cardRect.left +
-      cardRect.width / 2 -
-      (containerRect.left + containerRect.width / 2);
-
-    container.scrollBy({
-      left: delta,
-      behavior: "smooth",
-    });
-
-    setActiveIndex(index);
-  }
-
-  if (drinks.length === 0) {
-    return (
-      <div className="kob-showcase-empty">
-        <Coffee className="h-12 w-12" />
-        <p>
-          {lang === "ar"
-            ? "لا توجد مشروبات متاحة حاليًا"
-            : "No drinks are currently available"}
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="kob-showcase-carousel-wrapper">
-      <div
-        ref={carouselRef}
-        onScroll={handleScroll}
-        className="kob-showcase-carousel"
-        dir="ltr"
-      >
-        <div className="kob-showcase-spacer" aria-hidden="true" />
-
-        {drinks.map((drink, index) => {
-          const active = index === activeIndex;
-
-          return (
-            <article
-              key={drink.id}
-              data-drink-card
-              aria-current={active ? "true" : undefined}
-              className={
-                active
-                  ? "kob-showcase-drink-card kob-showcase-drink-card-active"
-                  : "kob-showcase-drink-card"
-              }
-            >
-              <div className="kob-showcase-image-wrapper">
-                {drink.image_url ? (
-                  <img
-                    src={drink.image_url}
-                    alt={lang === "ar" ? drink.name_ar : drink.name_en}
-                    draggable={false}
-                    className="kob-showcase-image"
-                  />
-                ) : (
-                  <div className="kob-showcase-image-placeholder">
-                    <Coffee className="h-16 w-16" />
-                  </div>
-                )}
-
-                <div className="kob-showcase-image-shade" />
-
-                <div className="kob-showcase-drink-name">
-                  <span>{lang === "ar" ? drink.name_ar : drink.name_en}</span>
-                  <small>{lang === "ar" ? drink.name_en : drink.name_ar}</small>
-                </div>
-              </div>
-            </article>
-          );
-        })}
-
-        <div className="kob-showcase-spacer" aria-hidden="true" />
-      </div>
-
-      <div className="kob-showcase-dots" aria-label="Drink navigation">
-        {drinks.map((drink, index) => (
-          <button
-            key={drink.id}
-            type="button"
-            aria-label={`${lang === "ar" ? "المشروب" : "Drink"} ${index + 1}`}
-            onClick={() => scrollToDrink(index)}
-            className={
-              index === activeIndex
-                ? "kob-showcase-dot kob-showcase-dot-active"
-                : "kob-showcase-dot"
-            }
-          />
-        ))}
-      </div>
-
-      <div className="kob-showcase-swipe-hint">
-        <span>
-          {lang === "ar"
-            ? "اسحب لاكتشاف المشروبات"
-            : "Swipe to explore"}
-        </span>
-        <div className="kob-showcase-swipe-line" />
-      </div>
-    </div>
-  );
-}
-
-function DrinkGrid({
-  drinks,
-  lang,
-  mode,
-  busy = false,
-  canOrder = false,
-  onOrder,
+function BranchBadge({
+  label,
 }: {
-  drinks: Drink[];
-  lang: "ar" | "en";
-  mode: "showcase" | "order";
-  busy?: boolean;
-  canOrder?: boolean;
-  onOrder?: (drink: Drink) => void | Promise<void>;
+  label: string;
 }) {
-  if (drinks.length === 0) {
-    return (
-      <div className="engraved p-6 text-center text-sm text-cream-dim">
-        {lang === "ar"
-          ? "لا توجد مشروبات متاحة حاليًا."
-          : "No drinks are currently available."}
-      </div>
-    );
-  }
-
-  return (
-    <div className="grid grid-cols-2 gap-3">
-      {drinks.map((drink) => {
-        const content = (
-          <>
-            <div className="aspect-square overflow-hidden bg-black/20">
-              {drink.image_url ? (
-                <img
-                  src={drink.image_url}
-                  alt={lang === "ar" ? drink.name_ar : drink.name_en}
-                  loading="lazy"
-                  className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center">
-                  <Coffee className="h-10 w-10 text-caramel-bright" />
-                </div>
-              )}
-            </div>
-
-            <div className="p-3 font-display text-base font-semibold text-cream sm:text-lg">
-              {lang === "ar" ? drink.name_ar : drink.name_en}
-            </div>
-          </>
-        );
-
-        if (mode === "showcase") {
-          return (
-            <article
-              key={drink.id}
-              className="engraved group overflow-hidden text-center"
-            >
-              {content}
-            </article>
-          );
-        }
-
-        return (
-          <button
-            key={drink.id}
-            type="button"
-            disabled={busy || !canOrder}
-            onClick={() => void onOrder?.(drink)}
-            className="engraved group overflow-hidden text-center transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {content}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-function BranchBadge({ label }: { label: string }) {
   return (
     <div className="engraved mb-5 px-3 py-2 text-center text-xs uppercase tracking-widest text-cream-dim">
       {label}
@@ -1073,31 +1458,109 @@ function BranchBadge({ label }: { label: string }) {
   );
 }
 
-function BackBtn({ onClick, label }: { onClick: () => void; label: string }) {
+function BackButton({
+  onClick,
+  label,
+}: {
+  onClick: () => void;
+  label: string;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="mb-4 flex items-center gap-1 text-xs text-cream-dim hover:text-caramel-bright"
+      className="mb-4 flex items-center gap-1 text-xs text-cream-dim transition hover:text-caramel-bright"
     >
       <ArrowLeft className="h-3.5 w-3.5" />
-      {label}
+
+      <span>
+        {label}
+      </span>
     </button>
   );
 }
 
-function Field({ label, children }: { label: string; children: ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
   return (
     <label className="block">
       <span className="mb-1.5 block text-[10px] uppercase tracking-[0.2em] text-cream-dim">
         {label}
       </span>
+
       {children}
     </label>
   );
 }
 
-function ErrorBox({ message }: { message: string }) {
+type PhoneFieldProps = {
+  value: string;
+  language:
+    | "ar"
+    | "en";
+  onChange: (
+    value: string,
+  ) => void;
+  large?: boolean;
+};
+
+function PhoneField({
+  value,
+  language,
+  onChange,
+  large = false,
+}: PhoneFieldProps) {
+  const input = (
+    <input
+      type="tel"
+      value={value}
+      required
+      inputMode="numeric"
+      autoComplete="tel"
+      maxLength={10}
+      placeholder="05XXXXXXXX"
+      onChange={(event) => {
+        onChange(
+          normalizePhone(
+            event.target.value,
+          ),
+        );
+      }}
+      className={
+        large
+          ? "inset-well w-full px-4 py-4 text-center font-mono text-lg tracking-widest outline-none focus:ring-2 focus:ring-caramel/60"
+          : "inset-well w-full px-4 py-3 text-center font-mono tracking-widest outline-none focus:ring-2 focus:ring-caramel/60"
+      }
+    />
+  );
+
+  if (large) {
+    return input;
+  }
+
+  return (
+    <Field
+      label={
+        language === "ar"
+          ? "رقم الجوال"
+          : "Phone number"
+      }
+    >
+      {input}
+    </Field>
+  );
+}
+
+function ErrorBox({
+  message,
+}: {
+  message: string;
+}) {
   return (
     <div className="engraved p-3 text-center text-sm text-[oklch(0.78_0.16_32)]">
       {message}
@@ -1105,7 +1568,11 @@ function ErrorBox({ message }: { message: string }) {
   );
 }
 
-function InfoBox({ message }: { message: string }) {
+function InfoBox({
+  message,
+}: {
+  message: string;
+}) {
   return (
     <div className="rounded-xl border border-caramel/25 bg-caramel/10 p-3 text-center text-sm text-cream">
       {message}
@@ -1114,33 +1581,83 @@ function InfoBox({ message }: { message: string }) {
 }
 
 function getOrCreateDeviceToken() {
-  const existing = window.localStorage.getItem(DEVICE_TOKEN_KEY);
-  if (existing) return existing;
+  const existingToken =
+    window.localStorage.getItem(
+      DEVICE_TOKEN_KEY,
+    );
 
-  const token =
-    typeof crypto !== "undefined" && "randomUUID" in crypto
+  if (existingToken) {
+    return existingToken;
+  }
+
+  const generatedToken =
+    typeof crypto !==
+      "undefined" &&
+    typeof crypto.randomUUID ===
+      "function"
       ? crypto.randomUUID()
-      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      : `${Date.now()}-${Math.random()
+          .toString(36)
+          .slice(2)}`;
 
-  window.localStorage.setItem(DEVICE_TOKEN_KEY, token);
-  return token;
+  window.localStorage.setItem(
+    DEVICE_TOKEN_KEY,
+    generatedToken,
+  );
+
+  return generatedToken;
 }
 
-function normalizePhone(value: string) {
-  return value.replace(/\D/g, "").slice(0, 10);
+function normalizePhone(
+  value: string,
+) {
+  return value
+    .replace(/\D/g, "")
+    .slice(0, 10);
 }
 
-function translateRegistrationError(message: string, language: "ar" | "en") {
-  if (message.includes("invalid_phone")) {
+function isValidSaudiPhone(
+  value: string,
+) {
+  return /^05\d{8}$/.test(
+    value,
+  );
+}
+
+function translateRegistrationError(
+  message: string,
+  language:
+    | "ar"
+    | "en",
+) {
+  if (
+    message.includes(
+      "invalid_phone",
+    )
+  ) {
     return language === "ar"
       ? "رقم الجوال غير صحيح."
       : "The phone number is invalid.";
   }
 
-  if (message.includes("invalid_name")) {
+  if (
+    message.includes(
+      "invalid_name",
+    )
+  ) {
     return language === "ar"
       ? "الاسم الأول أو الأخير غير صحيح."
       : "The first or last name is invalid.";
+  }
+
+  if (
+    message.includes(
+      "invalid_request",
+    )
+  ) {
+    return language === "ar"
+      ? "بيانات الطلب غير مكتملة."
+      : "The registration request is incomplete.";
   }
 
   return language === "ar"
@@ -1148,9 +1665,89 @@ function translateRegistrationError(message: string, language: "ar" | "en") {
     : "Unable to send the registration request.";
 }
 
-function daysBetween(startDate: string, currentDate: string) {
-  const milliseconds =
-    new Date(currentDate).getTime() - new Date(startDate).getTime();
+function translateOrderError(
+  message: string,
+  language:
+    | "ar"
+    | "en",
+) {
+  if (
+    message.includes(
+      "already_used",
+    ) ||
+    message.includes(
+      "already ordered",
+    )
+  ) {
+    return language === "ar"
+      ? "تم استخدام طلب اليوم بالفعل."
+      : "Today's order has already been used.";
+  }
 
-  return Math.max(0, Math.floor(milliseconds / 86400000));
+  if (
+    message.includes(
+      "subscription",
+    )
+  ) {
+    return language === "ar"
+      ? "لا يوجد اشتراك فعال يسمح بإرسال الطلب."
+      : "No active subscription allows this order.";
+  }
+
+  if (
+    message.includes(
+      "drink",
+    )
+  ) {
+    return language === "ar"
+      ? "المشروب غير متاح حاليًا."
+      : "The selected drink is currently unavailable.";
+  }
+
+  return language === "ar"
+    ? "تعذر إرسال طلب القهوة."
+    : "Unable to submit the coffee order.";
+}
+
+function daysBetween(
+  startDate: string,
+  currentDate: string,
+) {
+  const start =
+    new Date(
+      `${startDate}T00:00:00`,
+    );
+
+  const current =
+    new Date(
+      `${currentDate}T00:00:00`,
+    );
+
+  const milliseconds =
+    current.getTime() -
+    start.getTime();
+
+  return Math.max(
+    0,
+    Math.floor(
+      milliseconds /
+        86400000,
+    ),
+  );
+}
+
+function todayLocalISO() {
+  const currentDate =
+    new Date();
+
+  const timezoneOffset =
+    currentDate.getTimezoneOffset();
+
+  return new Date(
+    currentDate.getTime() -
+      timezoneOffset *
+        60000,
+  )
+    .toISOString()
+    .slice(0, 10);
 }
