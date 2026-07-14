@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
   type FormEvent,
   type ReactNode,
@@ -487,32 +488,17 @@ function ScanPage() {
         )}
 
         {step === "showcase" && branch && (
-          <div className="space-y-4">
-            <div className="panel-warm p-6">
-              <BackBtn onClick={() => setStep("language")} label={t("back")} />
-              <BranchBadge label={branchLabel} />
+          <div className="kob-showcase-page">
+            <DrinkShowcaseCarousel drinks={drinks} lang={lang} />
 
-              <h1 className="text-center font-display text-2xl font-bold text-cream">
-                {lang === "ar" ? "المشروبات المتوفرة" : "Available Drinks"}
-              </h1>
-
-              <p className="mt-2 text-center text-sm text-cream-dim">
-                {lang === "ar"
-                  ? "تستطيع مشاهدة المشروبات، لكن الطلب يتطلب اشتراكًا فعالًا."
-                  : "You can view the drinks, but ordering requires an active subscription."}
-              </p>
-            </div>
-
-            <div className="panel p-6">
-              <DrinkGrid drinks={drinks} lang={lang} mode="showcase" />
-
+            <div className="kob-showcase-actions">
               <button
                 type="button"
                 onClick={() => {
                   setErr(null);
                   setStep("register");
                 }}
-                className="btn-brass mt-5 flex w-full items-center justify-center gap-2 py-4"
+                className="btn-brass kob-showcase-register-button"
               >
                 <UserPlus className="h-5 w-5" />
                 <span>{lang === "ar" ? "تسجيل" : "Register"}</span>
@@ -520,8 +506,11 @@ function ScanPage() {
 
               <button
                 type="button"
-                onClick={() => setStep("phone")}
-                className="btn-ghost-brass mt-3 w-full py-3 text-sm"
+                onClick={() => {
+                  setErr(null);
+                  setStep("phone");
+                }}
+                className="kob-showcase-login-button"
               >
                 {lang === "ar"
                   ? "لدي اشتراك بالفعل"
@@ -793,6 +782,208 @@ function ScanPage() {
         )}
       </div>
     </main>
+  );
+}
+
+type DrinkShowcaseCarouselProps = {
+  drinks: Drink[];
+  lang: "ar" | "en";
+};
+
+function DrinkShowcaseCarousel({
+  drinks,
+  lang,
+}: DrinkShowcaseCarouselProps) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const carouselRef = useRef<HTMLDivElement | null>(null);
+  const scrollFrameRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (drinks.length === 0) {
+      setActiveIndex(0);
+      return;
+    }
+
+    if (activeIndex > drinks.length - 1) {
+      setActiveIndex(0);
+    }
+  }, [activeIndex, drinks.length]);
+
+  useEffect(() => {
+    return () => {
+      if (scrollFrameRef.current !== null) {
+        cancelAnimationFrame(scrollFrameRef.current);
+      }
+    };
+  }, []);
+
+  function updateActiveCard() {
+    const container = carouselRef.current;
+
+    if (!container || drinks.length === 0) {
+      return;
+    }
+
+    const cards = Array.from(
+      container.querySelectorAll<HTMLElement>("[data-drink-card]"),
+    );
+
+    if (cards.length === 0) {
+      return;
+    }
+
+    const containerRect = container.getBoundingClientRect();
+    const containerCenter = containerRect.left + containerRect.width / 2;
+
+    let closestIndex = 0;
+    let closestDistance = Number.POSITIVE_INFINITY;
+
+    cards.forEach((card, index) => {
+      const cardRect = card.getBoundingClientRect();
+      const cardCenter = cardRect.left + cardRect.width / 2;
+      const distance = Math.abs(containerCenter - cardCenter);
+
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestIndex = index;
+      }
+    });
+
+    setActiveIndex(closestIndex);
+  }
+
+  function handleScroll() {
+    if (scrollFrameRef.current !== null) {
+      cancelAnimationFrame(scrollFrameRef.current);
+    }
+
+    scrollFrameRef.current = requestAnimationFrame(() => {
+      updateActiveCard();
+      scrollFrameRef.current = null;
+    });
+  }
+
+  function scrollToDrink(index: number) {
+    const container = carouselRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    const cards = container.querySelectorAll<HTMLElement>(
+      "[data-drink-card]",
+    );
+    const card = cards[index];
+
+    if (!card) {
+      return;
+    }
+
+    const containerRect = container.getBoundingClientRect();
+    const cardRect = card.getBoundingClientRect();
+    const delta =
+      cardRect.left +
+      cardRect.width / 2 -
+      (containerRect.left + containerRect.width / 2);
+
+    container.scrollBy({
+      left: delta,
+      behavior: "smooth",
+    });
+
+    setActiveIndex(index);
+  }
+
+  if (drinks.length === 0) {
+    return (
+      <div className="kob-showcase-empty">
+        <Coffee className="h-12 w-12" />
+        <p>
+          {lang === "ar"
+            ? "لا توجد مشروبات متاحة حاليًا"
+            : "No drinks are currently available"}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="kob-showcase-carousel-wrapper">
+      <div
+        ref={carouselRef}
+        onScroll={handleScroll}
+        className="kob-showcase-carousel"
+        dir="ltr"
+      >
+        <div className="kob-showcase-spacer" aria-hidden="true" />
+
+        {drinks.map((drink, index) => {
+          const active = index === activeIndex;
+
+          return (
+            <article
+              key={drink.id}
+              data-drink-card
+              aria-current={active ? "true" : undefined}
+              className={
+                active
+                  ? "kob-showcase-drink-card kob-showcase-drink-card-active"
+                  : "kob-showcase-drink-card"
+              }
+            >
+              <div className="kob-showcase-image-wrapper">
+                {drink.image_url ? (
+                  <img
+                    src={drink.image_url}
+                    alt={lang === "ar" ? drink.name_ar : drink.name_en}
+                    draggable={false}
+                    className="kob-showcase-image"
+                  />
+                ) : (
+                  <div className="kob-showcase-image-placeholder">
+                    <Coffee className="h-16 w-16" />
+                  </div>
+                )}
+
+                <div className="kob-showcase-image-shade" />
+
+                <div className="kob-showcase-drink-name">
+                  <span>{lang === "ar" ? drink.name_ar : drink.name_en}</span>
+                  <small>{lang === "ar" ? drink.name_en : drink.name_ar}</small>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+
+        <div className="kob-showcase-spacer" aria-hidden="true" />
+      </div>
+
+      <div className="kob-showcase-dots" aria-label="Drink navigation">
+        {drinks.map((drink, index) => (
+          <button
+            key={drink.id}
+            type="button"
+            aria-label={`${lang === "ar" ? "المشروب" : "Drink"} ${index + 1}`}
+            onClick={() => scrollToDrink(index)}
+            className={
+              index === activeIndex
+                ? "kob-showcase-dot kob-showcase-dot-active"
+                : "kob-showcase-dot"
+            }
+          />
+        ))}
+      </div>
+
+      <div className="kob-showcase-swipe-hint">
+        <span>
+          {lang === "ar"
+            ? "اسحب لاكتشاف المشروبات"
+            : "Swipe to explore"}
+        </span>
+        <div className="kob-showcase-swipe-line" />
+      </div>
+    </div>
   );
 }
 
