@@ -9,6 +9,7 @@ import {
   Boxes,
   Building2,
   Coffee,
+  CupSoda,
   LayoutDashboard,
   LogOut,
   ShoppingCart,
@@ -18,7 +19,10 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
-import { LanguageSwitcher, useI18n } from "@/lib/i18n";
+import {
+  LanguageSwitcher,
+  useI18n,
+} from "@/lib/i18n";
 import { FullScreenLoader } from "@/lib/ui";
 import { useRole } from "@/lib/use-auth";
 
@@ -48,7 +52,9 @@ function AdminLayout() {
   const { t } = useI18n();
 
   useEffect(() => {
-    if (!ready) return;
+    if (!ready) {
+      return;
+    }
 
     if (!session) {
       navigate({
@@ -58,7 +64,9 @@ function AdminLayout() {
       return;
     }
 
-    if (role === "admin") return;
+    if (role === "admin") {
+      return;
+    }
 
     if (role === "cashier") {
       navigate({
@@ -73,7 +81,12 @@ function AdminLayout() {
         to: "/auth",
       });
     });
-  }, [navigate, ready, role, session]);
+  }, [
+    navigate,
+    ready,
+    role,
+    session,
+  ]);
 
   if (!ready || role !== "admin") {
     return <FullScreenLoader />;
@@ -131,44 +144,66 @@ function AdminLayout() {
           <nav className="kob-sidebar-navigation">
             <SidebarLink
               to="/admin"
-              icon={<LayoutDashboard className="h-4 w-4" />}
+              icon={
+                <LayoutDashboard className="h-4 w-4" />
+              }
               label={t("nav_dashboard")}
               exact
             />
 
             <SidebarLink
               to="/admin/plans"
-              icon={<Boxes className="h-4 w-4" />}
+              icon={
+                <Boxes className="h-4 w-4" />
+              }
               label={t("nav_plans")}
             />
 
             <SidebarLink
+              to="/admin/drinks"
+              icon={
+                <CupSoda className="h-4 w-4" />
+              }
+              label="Drinks"
+            />
+
+            <SidebarLink
               to="/admin/coupons"
-              icon={<Ticket className="h-4 w-4" />}
+              icon={
+                <Ticket className="h-4 w-4" />
+              }
               label={t("nav_coupons")}
             />
 
             <SidebarLink
               to="/admin/sell-coupon"
-              icon={<ShoppingCart className="h-4 w-4" />}
+              icon={
+                <ShoppingCart className="h-4 w-4" />
+              }
               label={t("nav_sell_coupon")}
             />
 
             <SidebarLink
               to="/admin/subscriptions"
-              icon={<Users className="h-4 w-4" />}
+              icon={
+                <Users className="h-4 w-4" />
+              }
               label={t("all_subs")}
             />
 
             <SidebarLink
               to="/admin/branches"
-              icon={<Building2 className="h-4 w-4" />}
+              icon={
+                <Building2 className="h-4 w-4" />
+              }
               label={t("tab_branches")}
             />
 
             <SidebarLink
               to="/admin/cashiers"
-              icon={<UserRoundCog className="h-4 w-4" />}
+              icon={
+                <UserRoundCog className="h-4 w-4" />
+              }
               label={t("tab_staff")}
             />
           </nav>
@@ -205,6 +240,7 @@ function AdminLayout() {
 type AdminRoute =
   | "/admin"
   | "/admin/plans"
+  | "/admin/drinks"
   | "/admin/coupons"
   | "/admin/sell-coupon"
   | "/admin/subscriptions"
