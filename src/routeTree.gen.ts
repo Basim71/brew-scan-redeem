@@ -15,280 +15,153 @@ import { Route as CashierRouteImport } from './routes/cashier'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
-
 import { Route as CashierIndexRouteImport } from './routes/cashier.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
-
 import { Route as CashierSellCouponRouteImport } from './routes/cashier.sell-coupon'
-
+import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as AdminSellCouponRouteImport } from './routes/admin.sell-coupon'
 import { Route as AdminPlansRouteImport } from './routes/admin.plans'
+import { Route as AdminDrinksRouteImport } from './routes/admin.drinks'
 import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
-import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
-import { Route as AdminBranchesRouteImport } from './routes/admin.branches'
 import { Route as AdminCashiersRouteImport } from './routes/admin.cashiers'
+import { Route as AdminBranchesRouteImport } from './routes/admin.branches'
 
-const SitemapDotxmlRoute =
-  SitemapDotxmlRouteImport.update({
-    id: '/sitemap.xml',
-    path: '/sitemap.xml',
-    getParentRoute: () =>
-      rootRouteImport,
-  } as any)
-
-const ScanRoute =
-  ScanRouteImport.update({
-    id: '/scan',
-    path: '/scan',
-    getParentRoute: () =>
-      rootRouteImport,
-  } as any)
-
-const CashierRoute =
-  CashierRouteImport.update({
-    id: '/cashier',
-    path: '/cashier',
-    getParentRoute: () =>
-      rootRouteImport,
-  } as any)
-
-const AuthRoute =
-  AuthRouteImport.update({
-    id: '/auth',
-    path: '/auth',
-    getParentRoute: () =>
-      rootRouteImport,
-  } as any)
-
-const AdminRoute =
-  AdminRouteImport.update({
-    id: '/admin',
-    path: '/admin',
-    getParentRoute: () =>
-      rootRouteImport,
-  } as any)
-
-const IndexRoute =
-  IndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () =>
-      rootRouteImport,
-  } as any)
-
-const CashierIndexRoute =
-  CashierIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () =>
-      CashierRoute,
-  } as any)
-
-const AdminIndexRoute =
-  AdminIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () =>
-      AdminRoute,
-  } as any)
-
-const CashierSellCouponRoute =
-  CashierSellCouponRouteImport.update({
-    id: '/sell-coupon',
-    path: '/sell-coupon',
-    getParentRoute: () =>
-      CashierRoute,
-  } as any)
-
-const AdminSellCouponRoute =
-  AdminSellCouponRouteImport.update({
-    id: '/sell-coupon',
-    path: '/sell-coupon',
-    getParentRoute: () =>
-      AdminRoute,
-  } as any)
-
-const AdminPlansRoute =
-  AdminPlansRouteImport.update({
-    id: '/plans',
-    path: '/plans',
-    getParentRoute: () =>
-      AdminRoute,
-  } as any)
-
-const AdminCouponsRoute =
-  AdminCouponsRouteImport.update({
-    id: '/coupons',
-    path: '/coupons',
-    getParentRoute: () =>
-      AdminRoute,
-  } as any)
-
-const AdminSubscriptionsRoute =
-  AdminSubscriptionsRouteImport.update({
-    id: '/subscriptions',
-    path: '/subscriptions',
-    getParentRoute: () =>
-      AdminRoute,
-  } as any)
-
-const AdminBranchesRoute =
-  AdminBranchesRouteImport.update({
-    id: '/branches',
-    path: '/branches',
-    getParentRoute: () =>
-      AdminRoute,
-  } as any)
-
-const AdminCashiersRoute =
-  AdminCashiersRouteImport.update({
-    id: '/cashiers',
-    path: '/cashiers',
-    getParentRoute: () =>
-      AdminRoute,
-  } as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScanRoute = ScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CashierRoute = CashierRouteImport.update({
+  id: '/cashier',
+  path: '/cashier',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CashierIndexRoute = CashierIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CashierRoute,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const CashierSellCouponRoute = CashierSellCouponRouteImport.update({
+  id: '/sell-coupon',
+  path: '/sell-coupon',
+  getParentRoute: () => CashierRoute,
+} as any)
+const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
+  id: '/subscriptions',
+  path: '/subscriptions',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSellCouponRoute = AdminSellCouponRouteImport.update({
+  id: '/sell-coupon',
+  path: '/sell-coupon',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPlansRoute = AdminPlansRouteImport.update({
+  id: '/plans',
+  path: '/plans',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminDrinksRoute = AdminDrinksRouteImport.update({
+  id: '/drinks',
+  path: '/drinks',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCouponsRoute = AdminCouponsRouteImport.update({
+  id: '/coupons',
+  path: '/coupons',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCashiersRoute = AdminCashiersRouteImport.update({
+  id: '/cashiers',
+  path: '/cashiers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBranchesRoute = AdminBranchesRouteImport.update({
+  id: '/branches',
+  path: '/branches',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-
-  '/admin':
-    typeof AdminRouteWithChildren
-
-  '/auth':
-    typeof AuthRoute
-
-  '/cashier':
-    typeof CashierRouteWithChildren
-
-  '/scan':
-    typeof ScanRoute
-
-  '/sitemap.xml':
-    typeof SitemapDotxmlRoute
-
-  '/admin/coupons':
-    typeof AdminCouponsRoute
-
-  '/admin/plans':
-    typeof AdminPlansRoute
-
-  '/admin/sell-coupon':
-    typeof AdminSellCouponRoute
-
-  '/admin/subscriptions':
-    typeof AdminSubscriptionsRoute
-
-  '/admin/branches':
-    typeof AdminBranchesRoute
-
-  '/admin/cashiers':
-    typeof AdminCashiersRoute
-
-  '/cashier/sell-coupon':
-    typeof CashierSellCouponRoute
-
-  '/admin/':
-    typeof AdminIndexRoute
-
-  '/cashier/':
-    typeof CashierIndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/cashier': typeof CashierRouteWithChildren
+  '/scan': typeof ScanRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/branches': typeof AdminBranchesRoute
+  '/admin/cashiers': typeof AdminCashiersRoute
+  '/admin/coupons': typeof AdminCouponsRoute
+  '/admin/drinks': typeof AdminDrinksRoute
+  '/admin/plans': typeof AdminPlansRoute
+  '/admin/sell-coupon': typeof AdminSellCouponRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/cashier/sell-coupon': typeof CashierSellCouponRoute
+  '/admin/': typeof AdminIndexRoute
+  '/cashier/': typeof CashierIndexRoute
 }
-
 export interface FileRoutesByTo {
-  '/':
-    typeof IndexRoute
-
-  '/auth':
-    typeof AuthRoute
-
-  '/scan':
-    typeof ScanRoute
-
-  '/sitemap.xml':
-    typeof SitemapDotxmlRoute
-
-  '/admin/coupons':
-    typeof AdminCouponsRoute
-
-  '/admin/plans':
-    typeof AdminPlansRoute
-
-  '/admin/sell-coupon':
-    typeof AdminSellCouponRoute
-
-  '/admin/subscriptions':
-    typeof AdminSubscriptionsRoute
-
-  '/admin/branches':
-    typeof AdminBranchesRoute
-
-  '/admin/cashiers':
-    typeof AdminCashiersRoute
-
-  '/cashier/sell-coupon':
-    typeof CashierSellCouponRoute
-
-  '/admin':
-    typeof AdminIndexRoute
-
-  '/cashier':
-    typeof CashierIndexRoute
+  '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/scan': typeof ScanRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/branches': typeof AdminBranchesRoute
+  '/admin/cashiers': typeof AdminCashiersRoute
+  '/admin/coupons': typeof AdminCouponsRoute
+  '/admin/drinks': typeof AdminDrinksRoute
+  '/admin/plans': typeof AdminPlansRoute
+  '/admin/sell-coupon': typeof AdminSellCouponRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/cashier/sell-coupon': typeof CashierSellCouponRoute
+  '/admin': typeof AdminIndexRoute
+  '/cashier': typeof CashierIndexRoute
 }
-
 export interface FileRoutesById {
-  __root__:
-    typeof rootRouteImport
-
-  '/':
-    typeof IndexRoute
-
-  '/admin':
-    typeof AdminRouteWithChildren
-
-  '/auth':
-    typeof AuthRoute
-
-  '/cashier':
-    typeof CashierRouteWithChildren
-
-  '/scan':
-    typeof ScanRoute
-
-  '/sitemap.xml':
-    typeof SitemapDotxmlRoute
-
-  '/admin/coupons':
-    typeof AdminCouponsRoute
-
-  '/admin/plans':
-    typeof AdminPlansRoute
-
-  '/admin/sell-coupon':
-    typeof AdminSellCouponRoute
-
-  '/admin/subscriptions':
-    typeof AdminSubscriptionsRoute
-
-  '/admin/branches':
-    typeof AdminBranchesRoute
-
-  '/admin/cashiers':
-    typeof AdminCashiersRoute
-
-  '/cashier/sell-coupon':
-    typeof CashierSellCouponRoute
-
-  '/admin/':
-    typeof AdminIndexRoute
-
-  '/cashier/':
-    typeof CashierIndexRoute
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/cashier': typeof CashierRouteWithChildren
+  '/scan': typeof ScanRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/branches': typeof AdminBranchesRoute
+  '/admin/cashiers': typeof AdminCashiersRoute
+  '/admin/coupons': typeof AdminCouponsRoute
+  '/admin/drinks': typeof AdminDrinksRoute
+  '/admin/plans': typeof AdminPlansRoute
+  '/admin/sell-coupon': typeof AdminSellCouponRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/cashier/sell-coupon': typeof CashierSellCouponRoute
+  '/admin/': typeof AdminIndexRoute
+  '/cashier/': typeof CashierIndexRoute
 }
-
 export interface FileRouteTypes {
-  fileRoutesByFullPath:
-    FileRoutesByFullPath
-
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/admin'
@@ -296,34 +169,32 @@ export interface FileRouteTypes {
     | '/cashier'
     | '/scan'
     | '/sitemap.xml'
+    | '/admin/branches'
+    | '/admin/cashiers'
     | '/admin/coupons'
+    | '/admin/drinks'
     | '/admin/plans'
     | '/admin/sell-coupon'
     | '/admin/subscriptions'
-    | '/admin/branches'
-    | '/admin/cashiers'
     | '/cashier/sell-coupon'
     | '/admin/'
     | '/cashier/'
-
-  fileRoutesByTo:
-    FileRoutesByTo
-
+  fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/scan'
     | '/sitemap.xml'
+    | '/admin/branches'
+    | '/admin/cashiers'
     | '/admin/coupons'
+    | '/admin/drinks'
     | '/admin/plans'
     | '/admin/sell-coupon'
     | '/admin/subscriptions'
-    | '/admin/branches'
-    | '/admin/cashiers'
     | '/cashier/sell-coupon'
     | '/admin'
     | '/cashier'
-
   id:
     | '__root__'
     | '/'
@@ -332,38 +203,25 @@ export interface FileRouteTypes {
     | '/cashier'
     | '/scan'
     | '/sitemap.xml'
+    | '/admin/branches'
+    | '/admin/cashiers'
     | '/admin/coupons'
+    | '/admin/drinks'
     | '/admin/plans'
     | '/admin/sell-coupon'
     | '/admin/subscriptions'
-    | '/admin/branches'
-    | '/admin/cashiers'
     | '/cashier/sell-coupon'
     | '/admin/'
     | '/cashier/'
-
-  fileRoutesById:
-    FileRoutesById
+  fileRoutesById: FileRoutesById
 }
-
 export interface RootRouteChildren {
-  IndexRoute:
-    typeof IndexRoute
-
-  AdminRoute:
-    typeof AdminRouteWithChildren
-
-  AuthRoute:
-    typeof AuthRoute
-
-  CashierRoute:
-    typeof CashierRouteWithChildren
-
-  ScanRoute:
-    typeof ScanRoute
-
-  SitemapDotxmlRoute:
-    typeof SitemapDotxmlRoute
+  IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  CashierRoute: typeof CashierRouteWithChildren
+  ScanRoute: typeof ScanRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -372,252 +230,172 @@ declare module '@tanstack/react-router' {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
-      preLoaderRoute:
-        typeof SitemapDotxmlRouteImport
-      parentRoute:
-        typeof rootRouteImport
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
     }
-
     '/scan': {
       id: '/scan'
       path: '/scan'
       fullPath: '/scan'
-      preLoaderRoute:
-        typeof ScanRouteImport
-      parentRoute:
-        typeof rootRouteImport
+      preLoaderRoute: typeof ScanRouteImport
+      parentRoute: typeof rootRouteImport
     }
-
     '/cashier': {
       id: '/cashier'
       path: '/cashier'
       fullPath: '/cashier'
-      preLoaderRoute:
-        typeof CashierRouteImport
-      parentRoute:
-        typeof rootRouteImport
+      preLoaderRoute: typeof CashierRouteImport
+      parentRoute: typeof rootRouteImport
     }
-
     '/auth': {
       id: '/auth'
       path: '/auth'
       fullPath: '/auth'
-      preLoaderRoute:
-        typeof AuthRouteImport
-      parentRoute:
-        typeof rootRouteImport
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
     }
-
     '/admin': {
       id: '/admin'
       path: '/admin'
       fullPath: '/admin'
-      preLoaderRoute:
-        typeof AdminRouteImport
-      parentRoute:
-        typeof rootRouteImport
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
     }
-
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute:
-        typeof IndexRouteImport
-      parentRoute:
-        typeof rootRouteImport
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
-
     '/cashier/': {
       id: '/cashier/'
       path: '/'
       fullPath: '/cashier/'
-      preLoaderRoute:
-        typeof CashierIndexRouteImport
-      parentRoute:
-        typeof CashierRoute
+      preLoaderRoute: typeof CashierIndexRouteImport
+      parentRoute: typeof CashierRoute
     }
-
     '/admin/': {
       id: '/admin/'
       path: '/'
       fullPath: '/admin/'
-      preLoaderRoute:
-        typeof AdminIndexRouteImport
-      parentRoute:
-        typeof AdminRoute
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
-
     '/cashier/sell-coupon': {
       id: '/cashier/sell-coupon'
       path: '/sell-coupon'
       fullPath: '/cashier/sell-coupon'
-      preLoaderRoute:
-        typeof CashierSellCouponRouteImport
-      parentRoute:
-        typeof CashierRoute
+      preLoaderRoute: typeof CashierSellCouponRouteImport
+      parentRoute: typeof CashierRoute
     }
-
-    '/admin/sell-coupon': {
-      id: '/admin/sell-coupon'
-      path: '/sell-coupon'
-      fullPath: '/admin/sell-coupon'
-      preLoaderRoute:
-        typeof AdminSellCouponRouteImport
-      parentRoute:
-        typeof AdminRoute
-    }
-
-    '/admin/plans': {
-      id: '/admin/plans'
-      path: '/plans'
-      fullPath: '/admin/plans'
-      preLoaderRoute:
-        typeof AdminPlansRouteImport
-      parentRoute:
-        typeof AdminRoute
-    }
-
-    '/admin/coupons': {
-      id: '/admin/coupons'
-      path: '/coupons'
-      fullPath: '/admin/coupons'
-      preLoaderRoute:
-        typeof AdminCouponsRouteImport
-      parentRoute:
-        typeof AdminRoute
-    }
-
     '/admin/subscriptions': {
       id: '/admin/subscriptions'
       path: '/subscriptions'
       fullPath: '/admin/subscriptions'
-      preLoaderRoute:
-        typeof AdminSubscriptionsRouteImport
-      parentRoute:
-        typeof AdminRoute
+      preLoaderRoute: typeof AdminSubscriptionsRouteImport
+      parentRoute: typeof AdminRoute
     }
-
-    '/admin/branches': {
-      id: '/admin/branches'
-      path: '/branches'
-      fullPath: '/admin/branches'
-      preLoaderRoute:
-        typeof AdminBranchesRouteImport
-      parentRoute:
-        typeof AdminRoute
+    '/admin/sell-coupon': {
+      id: '/admin/sell-coupon'
+      path: '/sell-coupon'
+      fullPath: '/admin/sell-coupon'
+      preLoaderRoute: typeof AdminSellCouponRouteImport
+      parentRoute: typeof AdminRoute
     }
-
+    '/admin/plans': {
+      id: '/admin/plans'
+      path: '/plans'
+      fullPath: '/admin/plans'
+      preLoaderRoute: typeof AdminPlansRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/drinks': {
+      id: '/admin/drinks'
+      path: '/drinks'
+      fullPath: '/admin/drinks'
+      preLoaderRoute: typeof AdminDrinksRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/coupons': {
+      id: '/admin/coupons'
+      path: '/coupons'
+      fullPath: '/admin/coupons'
+      preLoaderRoute: typeof AdminCouponsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/cashiers': {
       id: '/admin/cashiers'
       path: '/cashiers'
       fullPath: '/admin/cashiers'
-      preLoaderRoute:
-        typeof AdminCashiersRouteImport
-      parentRoute:
-        typeof AdminRoute
+      preLoaderRoute: typeof AdminCashiersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/branches': {
+      id: '/admin/branches'
+      path: '/branches'
+      fullPath: '/admin/branches'
+      preLoaderRoute: typeof AdminBranchesRouteImport
+      parentRoute: typeof AdminRoute
     }
   }
 }
 
 interface AdminRouteChildren {
-  AdminCouponsRoute:
-    typeof AdminCouponsRoute
-
-  AdminPlansRoute:
-    typeof AdminPlansRoute
-
-  AdminSellCouponRoute:
-    typeof AdminSellCouponRoute
-
-  AdminSubscriptionsRoute:
-    typeof AdminSubscriptionsRoute
-
-  AdminBranchesRoute:
-    typeof AdminBranchesRoute
-
-  AdminCashiersRoute:
-    typeof AdminCashiersRoute
-
-  AdminIndexRoute:
-    typeof AdminIndexRoute
+  AdminBranchesRoute: typeof AdminBranchesRoute
+  AdminCashiersRoute: typeof AdminCashiersRoute
+  AdminCouponsRoute: typeof AdminCouponsRoute
+  AdminDrinksRoute: typeof AdminDrinksRoute
+  AdminPlansRoute: typeof AdminPlansRoute
+  AdminSellCouponRoute: typeof AdminSellCouponRoute
+  AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
 }
 
-const AdminRouteChildren:
-  AdminRouteChildren = {
-  AdminCouponsRoute:
-    AdminCouponsRoute,
-
-  AdminPlansRoute:
-    AdminPlansRoute,
-
-  AdminSellCouponRoute:
-    AdminSellCouponRoute,
-
-  AdminSubscriptionsRoute:
-    AdminSubscriptionsRoute,
-
-  AdminBranchesRoute:
-    AdminBranchesRoute,
-
-  AdminCashiersRoute:
-    AdminCashiersRoute,
-
-  AdminIndexRoute:
-    AdminIndexRoute,
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminBranchesRoute: AdminBranchesRoute,
+  AdminCashiersRoute: AdminCashiersRoute,
+  AdminCouponsRoute: AdminCouponsRoute,
+  AdminDrinksRoute: AdminDrinksRoute,
+  AdminPlansRoute: AdminPlansRoute,
+  AdminSellCouponRoute: AdminSellCouponRoute,
+  AdminSubscriptionsRoute: AdminSubscriptionsRoute,
+  AdminIndexRoute: AdminIndexRoute,
 }
 
-const AdminRouteWithChildren =
-  AdminRoute._addFileChildren(
-    AdminRouteChildren,
-  )
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface CashierRouteChildren {
-  CashierSellCouponRoute:
-    typeof CashierSellCouponRoute
-
-  CashierIndexRoute:
-    typeof CashierIndexRoute
+  CashierSellCouponRoute: typeof CashierSellCouponRoute
+  CashierIndexRoute: typeof CashierIndexRoute
 }
 
-const CashierRouteChildren:
-  CashierRouteChildren = {
-  CashierSellCouponRoute:
-    CashierSellCouponRoute,
-
-  CashierIndexRoute:
-    CashierIndexRoute,
+const CashierRouteChildren: CashierRouteChildren = {
+  CashierSellCouponRoute: CashierSellCouponRoute,
+  CashierIndexRoute: CashierIndexRoute,
 }
 
 const CashierRouteWithChildren =
-  CashierRoute._addFileChildren(
-    CashierRouteChildren,
-  )
+  CashierRoute._addFileChildren(CashierRouteChildren)
 
-const rootRouteChildren:
-  RootRouteChildren = {
-  IndexRoute:
-    IndexRoute,
-
-  AdminRoute:
-    AdminRouteWithChildren,
-
-  AuthRoute:
-    AuthRoute,
-
-  CashierRoute:
-    CashierRouteWithChildren,
-
-  ScanRoute:
-    ScanRoute,
-
-  SitemapDotxmlRoute:
-    SitemapDotxmlRoute,
+const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
+  AuthRoute: AuthRoute,
+  CashierRoute: CashierRouteWithChildren,
+  ScanRoute: ScanRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
+export const routeTree = rootRouteImport
+  ._addFileChildren(rootRouteChildren)
+  ._addFileTypes<FileRouteTypes>()
 
-export const routeTree =
-  rootRouteImport
-    ._addFileChildren(
-      rootRouteChildren,
-    )
-    ._addFileTypes<FileRouteTypes>()
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

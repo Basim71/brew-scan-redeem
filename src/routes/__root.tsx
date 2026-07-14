@@ -83,9 +83,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "KOB is a premium coffee subscription and coupon system for specialty coffee shops. Scan, sip, repeat." },
       { name: "author", content: "KOB" },
       { property: "og:title", content: "KOB — Premium Coffee Subscription Coupons" },
-      { property: "og:description", content: "Daily coffee, on tap. Coupon subscriptions for specialty coffee shops." },
+      { property: "og:description", content: "KOB is a premium coffee subscription and coupon system for specialty coffee shops. Scan, sip, repeat." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "KOB — Premium Coffee Subscription Coupons" },
+      { name: "twitter:description", content: "KOB is a premium coffee subscription and coupon system for specialty coffee shops. Scan, sip, repeat." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/O3iIb9hN9aSYWgIWCDBlO3yK7GA2/social-images/social-1784026123367-New_Project_(5).webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/O3iIb9hN9aSYWgIWCDBlO3yK7GA2/social-images/social-1784026123367-New_Project_(5).webp" },
     ],
     links: [
       {
@@ -98,7 +102,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700;800&display=swap",
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
   }),
   shellComponent: RootShell,
