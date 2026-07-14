@@ -1,13 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Building2,
   CheckCircle2,
   ClipboardList,
+  Coffee,
+  CupSoda,
   Loader2,
   Users,
 } from "lucide-react";
@@ -24,128 +22,115 @@ type RecentOrder = {
   id: string;
   status: string;
   created_at: string;
-
-  branch?: {
-    name_en?: string | null;
-  } | null;
-
-  drink?: {
-    name_en?: string | null;
-  } | null;
+  branch?: { name_en?: string | null } | null;
+  drink?: { name_en?: string | null } | null;
 };
 
 function AdminDashboard() {
-  const {
-    t,
-    fmtNum,
-    timeAgo,
-  } = useI18n();
+  const { t, fmtNum, timeAgo } = useI18n();
 
   const [stats, setStats] = useState({
     subscriptions: 0,
     branches: 0,
     pending: 0,
     approved: 0,
+    totalDrinks: 0,
+    activeDrinks: 0,
   });
 
-  const [recentOrders, setRecentOrders] =
-    useState<RecentOrder[]>([]);
+  const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const [loading, setLoading] =
-    useState(true);
+  const loadDashboard = useCallback(async () => {
+    setLoading(true);
+    setError(null);
 
-  const loadDashboard =
-    useCallback(async () => {
-      setLoading(true);
+    const [
+      subscriptionsResult,
+      branchesResult,
+      pendingResult,
+      approvedResult,
+      totalDrinksResult,
+      activeDrinksResult,
+      ordersResult,
+    ] = await Promise.all([
+      supabase
+        .from("subscriptions")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "active"),
 
-      const [
-        subscriptionsResult,
-        branchesResult,
-        pendingResult,
-        approvedResult,
-        ordersResult,
-      ] = await Promise.all([
-        supabase
-          .from("subscriptions")
-          .select("*", {
-            count: "exact",
-            head: true,
-          })
-          .eq("status", "active"),
+      supabase.from("branches").select("*", { count: "exact", head: true }),
 
-        supabase
-          .from("branches")
-          .select("*", {
-            count: "exact",
-            head: true,
-          }),
+      supabase
+        .from("orders")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending"),
 
-        supabase
-          .from("orders")
-          .select("*", {
-            count: "exact",
-            head: true,
-          })
-          .eq("status", "pending"),
+      supabase
+        .from("orders")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "approved"),
 
-        supabase
-          .from("orders")
-          .select("*", {
-            count: "exact",
-            head: true,
-          })
-          .eq("status", "approved"),
+      supabase
+        .from("drink_types")
+        .select("*", { count: "exact", head: true }),
 
-        supabase
-          .from("orders")
-          .select(
-            `
-              id,
-              status,
-              created_at,
-              branch:branches(name_en),
-              drink:drink_types(name_en)
-            `,
-          )
-          .order("created_at", {
-            ascending: false,
-          })
-          .limit(10),
-      ]);
+      supabase
+        .from("drink_types")
+        .select("*", { count: "exact", head: true })
+        .eq("is_active", true),
 
-      setStats({
-        subscriptions:
-          subscriptionsResult.count ?? 0,
+      supabase
+        .from("orders")
+        .select(
+          `
+            id,
+            status,
+            created_at,
+            branch:branches(name_en),
+            drink:drink_types(name_en)
+          `,
+        )
+        .order("created_at", { ascending: false })
+        .limit(10),
+    ]);
 
-        branches:
-          branchesResult.count ?? 0,
+    const firstError = [
+      subscriptionsResult.error,
+      branchesResult.error,
+      pendingResult.error,
+      approvedResult.error,
+      totalDrinksResult.error,
+      activeDrinksResult.error,
+      ordersResult.error,
+    ].find(Boolean);
 
-        pending:
-          pendingResult.count ?? 0,
+    if (firstError) {
+      setError(firstError.message);
+    }
 
-        approved:
-          approvedResult.count ?? 0,
-      });
+    setStats({
+      subscriptions: subscriptionsResult.count ?? 0,
+      branches: branchesResult.count ?? 0,
+      pending: pendingResult.count ?? 0,
+      approved: approvedResult.count ?? 0,
+      totalDrinks: totalDrinksResult.count ?? 0,
+      activeDrinks: activeDrinksResult.count ?? 0,
+    });
 
-      setRecentOrders(
-        (ordersResult.data ??
-          []) as unknown as RecentOrder[],
-      );
-
-      setLoading(false);
-    }, []);
+    setRecentOrders((ordersResult.data ?? []) as unknown as RecentOrder[]);
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
     void loadDashboard();
 
-    const interval =
-      window.setInterval(() => {
-        void loadDashboard();
-      }, 10000);
+    const interval = window.setInterval(() => {
+      void loadDashboard();
+    }, 10000);
 
-    return () => {
-      window.clearInterval(interval);
-    };
+    return () => window.clearInterval(interval);
   }, [loadDashboard]);
 
   const statCards = [
@@ -169,56 +154,51 @@ function AdminDashboard() {
       value: stats.approved,
       icon: CheckCircle2,
     },
+    {
+      label: "Total Drinks",
+      value: stats.totalDrinks,
+      icon: CupSoda,
+    },
+    {
+      label: "Active Drinks",
+      value: stats.activeDrinks,
+      icon: Coffee,
+    },
   ];
 
   return (
     <div className="w-full min-w-0">
       <div className="kob-page-header">
         <div>
-          <h1 className="kob-page-title">
-            {t("nav_dashboard")}
-          </h1>
-
-          <p className="kob-page-description">
-            {t("admin_sub")}
-          </p>
+          <h1 className="kob-page-title">{t("nav_dashboard")}</h1>
+          <p className="kob-page-description">{t("admin_sub")}</p>
         </div>
       </div>
 
+      {error && (
+        <div className="mb-5 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          {error}
+        </div>
+      )}
+
       <div className="kob-stats-grid">
-        {statCards.map(
-          ({
-            label,
-            value,
-            icon: Icon,
-          }) => (
-            <article
-              key={label}
-              className="kob-stat-card panel-warm"
-            >
-              <div className="kob-stat-card-top">
-                <span className="kob-stat-label">
-                  {label}
-                </span>
+        {statCards.map(({ label, value, icon: Icon }) => (
+          <article key={label} className="kob-stat-card panel-warm">
+            <div className="kob-stat-card-top">
+              <span className="kob-stat-label">{label}</span>
+              <span className="kob-stat-icon">
+                <Icon className="h-5 w-5" />
+              </span>
+            </div>
 
-                <span className="kob-stat-icon">
-                  <Icon className="h-5 w-5" />
-                </span>
-              </div>
-
-              <strong className="kob-stat-value">
-                {fmtNum(value)}
-              </strong>
-            </article>
-          ),
-        )}
+            <strong className="kob-stat-value">{fmtNum(value)}</strong>
+          </article>
+        ))}
       </div>
 
       <section className="panel kob-content-card">
         <div className="kob-card-header">
-          <h2 className="kob-card-title">
-            {t("recent_activity")}
-          </h2>
+          <h2 className="kob-card-title">{t("recent_activity")}</h2>
 
           {loading && (
             <Loader2 className="h-4 w-4 animate-spin text-caramel" />
@@ -229,58 +209,36 @@ function AdminDashboard() {
           <table className="kob-table min-w-[720px]">
             <thead>
               <tr>
-                <th>
-                  {t("col_coffee")}
-                </th>
-
-                <th>
-                  {t("col_branch")}
-                </th>
-
-                <th>
-                  {t("col_status")}
-                </th>
-
-                <th className="text-end">
-                  {t("col_when")}
-                </th>
+                <th>{t("col_coffee")}</th>
+                <th>{t("col_branch")}</th>
+                <th>{t("col_status")}</th>
+                <th className="text-end">{t("col_when")}</th>
               </tr>
             </thead>
 
             <tbody>
               {recentOrders.map((order) => (
                 <tr key={order.id}>
-                  <td className="text-cream">
-                    {order.drink?.name_en ?? "—"}
-                  </td>
-
+                  <td className="text-cream">{order.drink?.name_en ?? "—"}</td>
                   <td className="text-cream-dim">
                     {order.branch?.name_en ?? "—"}
                   </td>
-
                   <td>
-                    <StatusPill
-                      s={order.status}
-                    />
+                    <StatusPill s={order.status} />
                   </td>
-
                   <td className="text-end text-cream-dim">
                     {timeAgo(order.created_at)}
                   </td>
                 </tr>
               ))}
 
-              {!loading &&
-                recentOrders.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={4}
-                      className="py-10 text-center text-cream-dim"
-                    >
-                      {t("empty_orders")}
-                    </td>
-                  </tr>
-                )}
+              {!loading && recentOrders.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="py-10 text-center text-cream-dim">
+                    {t("empty_orders")}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
