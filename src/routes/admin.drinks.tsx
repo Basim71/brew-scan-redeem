@@ -20,7 +20,9 @@ import {
 
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/admin/drinks")({
+export const Route = createFileRoute(
+  "/admin/drinks",
+)({
   component: AdminDrinksPage,
 });
 
@@ -45,16 +47,23 @@ const initialForm: DrinkForm = {
 };
 
 function AdminDrinksPage() {
-  const [drinks, setDrinks] = useState<DrinkRow[]>([]);
-  const [form, setForm] = useState<DrinkForm>(initialForm);
+  const [drinks, setDrinks] =
+    useState<DrinkRow[]>([]);
+
+  const [form, setForm] =
+    useState<DrinkForm>(initialForm);
 
   const [editingDrink, setEditingDrink] =
     useState<DrinkRow | null>(null);
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] =
+    useState("");
 
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] =
+    useState(true);
+
+  const [saving, setSaving] =
+    useState(false);
 
   const [deletingId, setDeletingId] =
     useState<string | null>(null);
@@ -65,61 +74,86 @@ function AdminDrinksPage() {
   const [error, setError] =
     useState<string | null>(null);
 
-  const loadDrinks = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const loadDrinks =
+    useCallback(async () => {
+      setLoading(true);
+      setError(null);
 
-    const { data, error: queryError } = await supabase
-      .from("drink_types")
-      .select("id,name_en,name_ar,is_active,created_at")
-      .order("created_at", {
-        ascending: false,
-      });
+      const {
+        data,
+        error: queryError,
+      } = await supabase
+        .from("drink_types")
+        .select(
+          "id,name_en,name_ar,is_active,created_at",
+        )
+        .order("created_at", {
+          ascending: false,
+        });
 
-    if (queryError) {
-      console.error("Failed to load drinks:", queryError);
+      if (queryError) {
+        console.error(
+          "Failed to load drinks:",
+          queryError,
+        );
 
-      setDrinks([]);
-      setError(queryError.message);
+        setDrinks([]);
+        setError(queryError.message);
+        setLoading(false);
+
+        return;
+      }
+
+      setDrinks(
+        (data ?? []) as DrinkRow[],
+      );
+
       setLoading(false);
-
-      return;
-    }
-
-    setDrinks((data ?? []) as DrinkRow[]);
-    setLoading(false);
-  }, []);
+    }, []);
 
   useEffect(() => {
     void loadDrinks();
   }, [loadDrinks]);
 
-  const filteredDrinks = useMemo(() => {
-    const value = search.trim().toLowerCase();
+  const filteredDrinks =
+    useMemo(() => {
+      const value =
+        search.trim().toLowerCase();
 
-    if (!value) {
-      return drinks;
-    }
+      if (!value) {
+        return drinks;
+      }
 
-    return drinks.filter((drink) => {
-      return (
-        drink.name_en.toLowerCase().includes(value) ||
-        drink.name_ar.toLowerCase().includes(value)
+      return drinks.filter(
+        (drink) =>
+          drink.name_en
+            .toLowerCase()
+            .includes(value) ||
+          drink.name_ar
+            .toLowerCase()
+            .includes(value),
       );
-    });
-  }, [drinks, search]);
+    }, [
+      drinks,
+      search,
+    ]);
 
-  const activeCount = drinks.filter(
-    (drink) => drink.is_active,
-  ).length;
+  const activeCount =
+    drinks.filter(
+      (drink) =>
+        drink.is_active,
+    ).length;
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>,
   ) {
     event.preventDefault();
 
-    const nameEn = form.name_en.trim();
-    const nameAr = form.name_ar.trim();
+    const nameEn =
+      form.name_en.trim();
+
+    const nameAr =
+      form.name_ar.trim();
 
     if (!nameEn || !nameAr) {
       setError(
@@ -134,14 +168,20 @@ function AdminDrinksPage() {
     setError(null);
 
     if (editingDrink) {
-      const { error: updateError } = await supabase
+      const {
+        error: updateError,
+      } = await supabase
         .from("drink_types")
         .update({
           name_en: nameEn,
           name_ar: nameAr,
-          is_active: form.is_active,
+          is_active:
+            form.is_active,
         })
-        .eq("id", editingDrink.id);
+        .eq(
+          "id",
+          editingDrink.id,
+        );
 
       setSaving(false);
 
@@ -151,18 +191,26 @@ function AdminDrinksPage() {
           updateError,
         );
 
-        setError(updateError.message);
+        setError(
+          updateError.message,
+        );
+
         return;
       }
 
-      setMessage("Drink updated successfully.");
+      setMessage(
+        "Drink updated successfully.",
+      );
     } else {
-      const { error: insertError } = await supabase
+      const {
+        error: insertError,
+      } = await supabase
         .from("drink_types")
         .insert({
           name_en: nameEn,
           name_ar: nameAr,
-          is_active: form.is_active,
+          is_active:
+            form.is_active,
         });
 
       setSaving(false);
@@ -173,24 +221,32 @@ function AdminDrinksPage() {
           insertError,
         );
 
-        setError(insertError.message);
+        setError(
+          insertError.message,
+        );
+
         return;
       }
 
-      setMessage("Drink added successfully.");
+      setMessage(
+        "Drink added successfully.",
+      );
     }
 
     resetForm();
     await loadDrinks();
   }
 
-  function startEditing(drink: DrinkRow) {
+  function startEditing(
+    drink: DrinkRow,
+  ) {
     setEditingDrink(drink);
 
     setForm({
       name_en: drink.name_en,
       name_ar: drink.name_ar,
-      is_active: drink.is_active,
+      is_active:
+        drink.is_active,
     });
 
     setMessage(null);
@@ -204,16 +260,24 @@ function AdminDrinksPage() {
 
   function resetForm() {
     setEditingDrink(null);
-    setForm(initialForm);
+
+    setForm({
+      ...initialForm,
+    });
   }
 
-  async function toggleDrink(drink: DrinkRow) {
+  async function toggleDrink(
+    drink: DrinkRow,
+  ) {
     setError(null);
     setMessage(null);
 
-    const nextStatus = !drink.is_active;
+    const nextStatus =
+      !drink.is_active;
 
-    const { error: updateError } = await supabase
+    const {
+      error: updateError,
+    } = await supabase
       .from("drink_types")
       .update({
         is_active: nextStatus,
@@ -226,7 +290,10 @@ function AdminDrinksPage() {
         updateError,
       );
 
-      setError(updateError.message);
+      setError(
+        updateError.message,
+      );
+
       return;
     }
 
@@ -235,7 +302,8 @@ function AdminDrinksPage() {
         item.id === drink.id
           ? {
               ...item,
-              is_active: nextStatus,
+              is_active:
+                nextStatus,
             }
           : item,
       ),
@@ -248,10 +316,13 @@ function AdminDrinksPage() {
     );
   }
 
-  async function deleteDrink(drink: DrinkRow) {
-    const confirmed = window.confirm(
-      `Delete "${drink.name_en}"?\n\nThis action cannot be undone.`,
-    );
+  async function deleteDrink(
+    drink: DrinkRow,
+  ) {
+    const confirmed =
+      window.confirm(
+        `Delete "${drink.name_en}"?\n\nThis action cannot be undone.`,
+      );
 
     if (!confirmed) {
       return;
@@ -261,7 +332,9 @@ function AdminDrinksPage() {
     setMessage(null);
     setError(null);
 
-    const { error: deleteError } = await supabase
+    const {
+      error: deleteError,
+    } = await supabase
       .from("drink_types")
       .delete()
       .eq("id", drink.id);
@@ -274,19 +347,30 @@ function AdminDrinksPage() {
         deleteError,
       );
 
-      setError(deleteError.message);
+      setError(
+        deleteError.message,
+      );
+
       return;
     }
 
     setDrinks((current) =>
-      current.filter((item) => item.id !== drink.id),
+      current.filter(
+        (item) =>
+          item.id !== drink.id,
+      ),
     );
 
-    if (editingDrink?.id === drink.id) {
+    if (
+      editingDrink?.id ===
+      drink.id
+    ) {
       resetForm();
     }
 
-    setMessage("Drink deleted successfully.");
+    setMessage(
+      "Drink deleted successfully.",
+    );
   }
 
   return (
@@ -378,7 +462,8 @@ function AdminDrinksPage() {
 
               {editingDrink && (
                 <p className="mt-1 text-xs text-cream-dim">
-                  Editing: {editingDrink.name_en}
+                  Editing:{" "}
+                  {editingDrink.name_en}
                 </p>
               )}
             </div>
@@ -392,7 +477,9 @@ function AdminDrinksPage() {
             >
               <X className="h-4 w-4" />
 
-              Cancel
+              <span>
+                Cancel
+              </span>
             </button>
           )}
         </div>
@@ -407,10 +494,12 @@ function AdminDrinksPage() {
             placeholder="Example: Latte"
             required
             onChange={(value) => {
-              setForm((current) => ({
-                ...current,
-                name_en: value,
-              }));
+              setForm(
+                (current) => ({
+                  ...current,
+                  name_en: value,
+                }),
+              );
             }}
           />
 
@@ -421,10 +510,12 @@ function AdminDrinksPage() {
             required
             dir="rtl"
             onChange={(value) => {
-              setForm((current) => ({
-                ...current,
-                name_ar: value,
-              }));
+              setForm(
+                (current) => ({
+                  ...current,
+                  name_ar: value,
+                }),
+              );
             }}
           />
 
@@ -436,10 +527,13 @@ function AdminDrinksPage() {
             <button
               type="button"
               onClick={() => {
-                setForm((current) => ({
-                  ...current,
-                  is_active: !current.is_active,
-                }));
+                setForm(
+                  (current) => ({
+                    ...current,
+                    is_active:
+                      !current.is_active,
+                  }),
+                );
               }}
               className={
                 form.is_active
@@ -506,7 +600,7 @@ function AdminDrinksPage() {
       </section>
 
       <section className="panel kob-content-card">
-        <div className="kob-card-header">
+        <div className="kob-card-header flex-wrap">
           <div>
             <h2 className="kob-card-title">
               Available drinks
@@ -525,7 +619,9 @@ function AdminDrinksPage() {
               value={search}
               placeholder="Search drinks..."
               onChange={(event) => {
-                setSearch(event.target.value);
+                setSearch(
+                  event.target.value,
+                );
               }}
               className="min-w-0 flex-1 bg-transparent text-sm text-cream outline-none placeholder:text-cream-dim/50"
             />
@@ -538,26 +634,36 @@ function AdminDrinksPage() {
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {filteredDrinks.map((drink) => (
-              <DrinkCard
-                key={drink.id}
-                drink={drink}
-                deleting={
-                  deletingId === drink.id
-                }
-                onEdit={() => {
-                  startEditing(drink);
-                }}
-                onToggle={() => {
-                  void toggleDrink(drink);
-                }}
-                onDelete={() => {
-                  void deleteDrink(drink);
-                }}
-              />
-            ))}
+            {filteredDrinks.map(
+              (drink) => (
+                <DrinkCard
+                  key={drink.id}
+                  drink={drink}
+                  deleting={
+                    deletingId ===
+                    drink.id
+                  }
+                  onEdit={() => {
+                    startEditing(
+                      drink,
+                    );
+                  }}
+                  onToggle={() => {
+                    void toggleDrink(
+                      drink,
+                    );
+                  }}
+                  onDelete={() => {
+                    void deleteDrink(
+                      drink,
+                    );
+                  }}
+                />
+              ),
+            )}
 
-            {filteredDrinks.length === 0 && (
+            {filteredDrinks.length ===
+              0 && (
               <div className="engraved col-span-full flex min-h-48 flex-col items-center justify-center p-8 text-center">
                 <Coffee className="mb-3 h-8 w-8 text-caramel" />
 
@@ -645,9 +751,11 @@ function DrinkCard({
           <Check className="h-4 w-4" />
         )}
 
-        {drink.is_active
-          ? "Deactivate"
-          : "Activate"}
+        <span>
+          {drink.is_active
+            ? "Deactivate"
+            : "Activate"}
+        </span>
       </button>
 
       <div className="mt-auto grid grid-cols-2 gap-3">
@@ -658,7 +766,9 @@ function DrinkCard({
         >
           <Edit3 className="h-4 w-4" />
 
-          Edit
+          <span>
+            Edit
+          </span>
         </button>
 
         <button
@@ -673,7 +783,9 @@ function DrinkCard({
             <Trash2 className="h-4 w-4" />
           )}
 
-          Delete
+          <span>
+            Delete
+          </span>
         </button>
       </div>
     </article>
@@ -686,7 +798,9 @@ type FormInputProps = {
   placeholder?: string;
   required?: boolean;
   dir?: "ltr" | "rtl";
-  onChange: (value: string) => void;
+  onChange: (
+    value: string,
+  ) => void;
 };
 
 function FormInput({
@@ -710,7 +824,9 @@ function FormInput({
         dir={dir}
         placeholder={placeholder}
         onChange={(event) => {
-          onChange(event.target.value);
+          onChange(
+            event.target.value,
+          );
         }}
         className="inset-well kob-field-control"
       />
