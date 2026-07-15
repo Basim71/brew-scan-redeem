@@ -5194,3 +5194,334 @@ main.min-h-screen {
   }
 }
 
+/* ========================================================================== 
+ * KOB NEUMORPHIC CONSISTENCY PASS
+ * Explicit compatibility rules for every current route and shared overlay.
+ * ========================================================================== */
+
+:root {
+  --neo-bg: #f5eee6;
+  --neo-surface: #fffdf9;
+  --neo-surface-soft: #f1e6da;
+  --neo-text: #34251e;
+  --neo-muted: #806f65;
+  --neo-accent: #c98745;
+  --neo-accent-dark: #9f622f;
+  --neo-blue: #5a82aa;
+  --neo-success: #4f8a67;
+  --neo-danger: #b94f4a;
+  --neo-shadow-dark: rgba(132, 96, 72, 0.20);
+  --neo-shadow-light: rgba(255, 255, 255, 0.96);
+  --neo-raised:
+    16px 16px 34px var(--neo-shadow-dark),
+    -16px -16px 34px var(--neo-shadow-light);
+  --neo-raised-soft:
+    9px 9px 22px rgba(132, 96, 72, 0.16),
+    -9px -9px 22px rgba(255, 255, 255, 0.9);
+  --neo-inset:
+    inset 5px 5px 11px rgba(132, 96, 72, 0.12),
+    inset -5px -5px 11px rgba(255, 255, 255, 0.88);
+}
+
+/* Authentication */
+.kob-auth-page {
+  background: var(--neo-bg) !important;
+  color: var(--neo-text) !important;
+}
+
+.kob-auth-background-base {
+  background:
+    radial-gradient(circle at 22% 18%, rgba(236, 199, 153, 0.44), transparent 33%),
+    radial-gradient(circle at 82% 72%, rgba(255, 255, 255, 0.95), transparent 37%),
+    linear-gradient(155deg, #faf7f2 0%, #f4ece3 50%, #eee1d4 100%);
+}
+
+.kob-auth-orb {
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  border-radius: 999px;
+  filter: blur(110px);
+  opacity: 0.46;
+}
+
+.kob-auth-orb-left {
+  left: -150px;
+  top: 100px;
+  background: rgba(225, 177, 119, 0.42);
+}
+
+.kob-auth-orb-right {
+  right: -160px;
+  bottom: 20px;
+  background: rgba(213, 188, 163, 0.4);
+}
+
+.kob-auth-hairline {
+  position: absolute;
+  left: 50%;
+  top: 96px;
+  width: min(80vw, 1100px);
+  height: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, transparent, rgba(169, 104, 50, 0.2), transparent);
+}
+
+.kob-auth-bottom-fade {
+  position: absolute;
+  inset: auto 0 0;
+  height: 180px;
+  background: linear-gradient(180deg, transparent, rgba(220, 203, 186, 0.28));
+}
+
+/* Toasts */
+.kob-toast,
+[data-sonner-toast].kob-toast {
+  border: 1px solid rgba(111, 78, 57, 0.13) !important;
+  background: rgba(255, 253, 249, 0.97) !important;
+  color: var(--neo-text) !important;
+  box-shadow: var(--neo-raised-soft) !important;
+}
+
+/* Shared dark Tailwind utilities left in legacy page markup */
+.bg-black\/20,
+.bg-black\/25,
+.bg-black\/40,
+.bg-black\/70,
+.bg-black\/75,
+.bg-black\/80 {
+  background-color: rgba(236, 225, 214, 0.7) !important;
+}
+
+.border-white\/10,
+.border-white\/15 {
+  border-color: rgba(111, 78, 57, 0.12) !important;
+}
+
+.text-green-200,
+.text-green-100 {
+  color: #347052 !important;
+}
+
+.text-red-200,
+.text-red-100 {
+  color: #a84540 !important;
+}
+
+.text-amber-100,
+.text-amber-200 {
+  color: #8d5c24 !important;
+}
+
+.bg-green-500\/10 {
+  background-color: rgba(79, 138, 103, 0.11) !important;
+}
+
+.bg-red-500\/10 {
+  background-color: rgba(200, 91, 85, 0.1) !important;
+}
+
+.bg-amber-500\/10 {
+  background-color: rgba(201, 135, 69, 0.12) !important;
+}
+
+.border-green-500\/30 {
+  border-color: rgba(79, 138, 103, 0.25) !important;
+}
+
+.border-red-500\/30 {
+  border-color: rgba(200, 91, 85, 0.23) !important;
+}
+
+.border-amber-500\/30 {
+  border-color: rgba(201, 135, 69, 0.24) !important;
+}
+
+/* Dialog, drawer and sheet overlays */
+[data-radix-dialog-overlay],
+.fixed.inset-0.z-50.bg-black\/80,
+.fixed.inset-0.z-50.bg-black\/70,
+.fixed.inset-0.z-\[200\].bg-black\/75 {
+  background: rgba(83, 63, 51, 0.24) !important;
+  backdrop-filter: blur(14px) saturate(0.85) !important;
+}
+
+/* All primary page containers */
+.kob-dashboard-content > *,
+.cashier-queue-page,
+.kob-page-header + section,
+.kob-content-card {
+  color: var(--neo-text);
+}
+
+/* Stronger, consistent neumorphic elevation */
+.panel,
+.panel-warm,
+.kob-sidebar,
+.kob-stat-card,
+.kob-content-card,
+.cashier-summary-card,
+.cashier-request-card {
+  border: 1px solid rgba(111, 78, 57, 0.09) !important;
+  background: linear-gradient(145deg, #fffefa, #f2e8dd) !important;
+  box-shadow: var(--neo-raised-soft) !important;
+}
+
+.panel:hover,
+.panel-warm:hover,
+.kob-stat-card:hover,
+.cashier-request-card:hover {
+  box-shadow:
+    13px 13px 28px rgba(132, 96, 72, 0.19),
+    -13px -13px 28px rgba(255, 255, 255, 0.96) !important;
+}
+
+.engraved,
+.inset-well,
+.cashier-filter-control,
+.cashier-detail-row,
+.cashier-drink-display,
+.cashier-registration-customer {
+  background: linear-gradient(145deg, #eee2d6, #fffdf9) !important;
+  box-shadow: var(--neo-inset) !important;
+}
+
+/* Branch QR cards */
+.kob-branch-card > .mt-4.rounded-xl,
+.kob-branch-card > button.mt-3 {
+  border: 1px solid rgba(111, 78, 57, 0.1) !important;
+  background: linear-gradient(145deg, #eee3d7, #fffdf9) !important;
+  color: var(--neo-muted) !important;
+  box-shadow: var(--neo-inset) !important;
+}
+
+.kob-branch-card [class*="shadow-[0_18px_40px"] {
+  box-shadow: var(--neo-raised-soft) !important;
+}
+
+/* Plans, coupons, cashiers, subscriptions and tables */
+.kob-table-wrapper,
+.kob-table,
+table {
+  background: transparent !important;
+}
+
+.kob-table thead,
+table thead {
+  background: rgba(239, 229, 218, 0.72) !important;
+}
+
+.kob-table tbody tr,
+table tbody tr {
+  background: rgba(255, 253, 249, 0.56);
+}
+
+.kob-table tbody tr:hover,
+table tbody tr:hover {
+  background: rgba(232, 193, 141, 0.15) !important;
+}
+
+/* Drink administration */
+.kob-content-card article.panel-warm {
+  border-radius: 20px;
+}
+
+.kob-content-card article.panel-warm > div:first-child.bg-black\/25 {
+  background: linear-gradient(145deg, #eadbca, #faf4ed) !important;
+}
+
+/* Scan page forms and subscription */
+.kob-voyager-page-actions,
+.kob-order-slider-section,
+.kob-voyager-page {
+  color: var(--neo-text);
+}
+
+.kob-voyager-card-back {
+  box-shadow: var(--neo-raised-soft) !important;
+}
+
+/* Soft press interaction everywhere */
+button:not(:disabled),
+a.kob-sidebar-link,
+a.btn-brass,
+a.btn-ghost-brass {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:not(:disabled):active,
+a.kob-sidebar-link:active {
+  transform: scale(0.985);
+}
+
+/* 404 and generic error screens */
+.bg-background {
+  background: var(--neo-bg) !important;
+}
+
+.text-foreground {
+  color: var(--neo-text) !important;
+}
+
+.text-muted-foreground {
+  color: var(--neo-muted) !important;
+}
+
+.bg-primary {
+  background: var(--btn-gradient) !important;
+}
+
+.text-primary-foreground {
+  color: #fff !important;
+}
+
+.border-input {
+  border-color: rgba(111, 78, 57, 0.14) !important;
+}
+
+/* Prevent dark visual remnants on responsive navigation */
+@media (max-width: 900px) {
+  .kob-sidebar,
+  .kob-dashboard-layout,
+  .kob-dashboard-content {
+    background-color: transparent !important;
+  }
+}
+
+
+
+/* Semantic neumorphic helpers used by all updated routes */
+.kob-neo-inset {
+  border: 1px solid rgba(111, 78, 57, 0.1) !important;
+  background: linear-gradient(145deg, #eee2d6, #fffdf9) !important;
+  color: var(--neo-text);
+  box-shadow: var(--neo-inset) !important;
+}
+
+.kob-modal-overlay {
+  background: rgba(82, 62, 50, 0.24) !important;
+  backdrop-filter: blur(15px) saturate(0.86) !important;
+}
+
+.kob-drink-image-shell,
+.kob-drink-image-placeholder {
+  background:
+    radial-gradient(circle at 45% 32%, rgba(232, 193, 141, 0.32), transparent 40%),
+    linear-gradient(145deg, #eadbca, #faf4ed) !important;
+}
+
+.kob-drink-status-inactive {
+  border: 1px solid rgba(111, 78, 57, 0.14) !important;
+  background: rgba(255, 253, 249, 0.88) !important;
+  color: var(--neo-muted) !important;
+  box-shadow: 0 8px 18px -14px rgba(91, 57, 38, 0.36);
+}
+
+.kob-image-preview {
+  background: linear-gradient(145deg, #eadbca, #fffdf9) !important;
+  box-shadow: var(--neo-inset) !important;
+}
+
+.kob-image-preview-actions {
+  background: linear-gradient(180deg, transparent, rgba(52, 37, 30, 0.62)) !important;
+}
