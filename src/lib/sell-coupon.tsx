@@ -245,7 +245,7 @@ export function SellCouponForm({ cashierBranchId }: { cashierBranchId?: string |
       </form>
 
       {confirmAdd && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+        <div className="kob-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4"
           onClick={() => !busy && setConfirmAdd(false)}>
           <div className="panel-warm p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
             <h2 className="font-display text-xl font-bold text-cream mb-2">{t("sell_active_title")}</h2>
