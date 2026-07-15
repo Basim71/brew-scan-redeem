@@ -25,6 +25,7 @@ import { Route as AdminDrinksRouteImport } from './routes/admin.drinks'
 import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
 import { Route as AdminCashiersRouteImport } from './routes/admin.cashiers'
 import { Route as AdminBranchesRouteImport } from './routes/admin.branches'
+import { Route as AdminFinancialReportsRouteImport } from './routes/admin.financial-reports'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -106,6 +107,11 @@ const AdminBranchesRoute = AdminBranchesRouteImport.update({
   path: '/branches',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminFinancialReportsRoute = AdminFinancialReportsRouteImport.update({
+  id: '/financial-reports',
+  path: '/financial-reports',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -118,6 +124,7 @@ export interface FileRoutesByFullPath {
   '/admin/cashiers': typeof AdminCashiersRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/drinks': typeof AdminDrinksRoute
+  '/admin/financial-reports': typeof AdminFinancialReportsRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/sell-coupon': typeof AdminSellCouponRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
@@ -134,6 +141,7 @@ export interface FileRoutesByTo {
   '/admin/cashiers': typeof AdminCashiersRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/drinks': typeof AdminDrinksRoute
+  '/admin/financial-reports': typeof AdminFinancialReportsRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/sell-coupon': typeof AdminSellCouponRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
@@ -153,6 +161,7 @@ export interface FileRoutesById {
   '/admin/cashiers': typeof AdminCashiersRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/drinks': typeof AdminDrinksRoute
+  '/admin/financial-reports': typeof AdminFinancialReportsRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/sell-coupon': typeof AdminSellCouponRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
@@ -173,6 +182,7 @@ export interface FileRouteTypes {
     | '/admin/cashiers'
     | '/admin/coupons'
     | '/admin/drinks'
+    | '/admin/financial-reports'
     | '/admin/plans'
     | '/admin/sell-coupon'
     | '/admin/subscriptions'
@@ -189,6 +199,7 @@ export interface FileRouteTypes {
     | '/admin/cashiers'
     | '/admin/coupons'
     | '/admin/drinks'
+    | '/admin/financial-reports'
     | '/admin/plans'
     | '/admin/sell-coupon'
     | '/admin/subscriptions'
@@ -207,6 +218,7 @@ export interface FileRouteTypes {
     | '/admin/cashiers'
     | '/admin/coupons'
     | '/admin/drinks'
+    | '/admin/financial-reports'
     | '/admin/plans'
     | '/admin/sell-coupon'
     | '/admin/subscriptions'
@@ -310,6 +322,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPlansRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/financial-reports': {
+      id: '/admin/financial-reports'
+      path: '/financial-reports'
+      fullPath: '/admin/financial-reports'
+      preLoaderRoute: typeof AdminFinancialReportsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/drinks': {
       id: '/admin/drinks'
       path: '/drinks'
@@ -346,6 +365,7 @@ interface AdminRouteChildren {
   AdminCashiersRoute: typeof AdminCashiersRoute
   AdminCouponsRoute: typeof AdminCouponsRoute
   AdminDrinksRoute: typeof AdminDrinksRoute
+  AdminFinancialReportsRoute: typeof AdminFinancialReportsRoute
   AdminPlansRoute: typeof AdminPlansRoute
   AdminSellCouponRoute: typeof AdminSellCouponRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
@@ -357,6 +377,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminCashiersRoute: AdminCashiersRoute,
   AdminCouponsRoute: AdminCouponsRoute,
   AdminDrinksRoute: AdminDrinksRoute,
+  AdminFinancialReportsRoute: AdminFinancialReportsRoute,
   AdminPlansRoute: AdminPlansRoute,
   AdminSellCouponRoute: AdminSellCouponRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
