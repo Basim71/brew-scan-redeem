@@ -1,1309 +1,179 @@
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ChangeEvent,
-  type FormEvent,
-} from "react";
-import {
-  Check,
-  Coffee,
-  Edit3,
-  ImagePlus,
-  Loader2,
-  Plus,
-  RefreshCw,
-  Search,
-  Trash2,
-  Upload,
-  X,
-} from "lucide-react";
-
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import { Check, Coffee, Edit3, ImagePlus, Loader2, Plus, RefreshCw, Search, Trash2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute(
-  "/admin/drinks",
-)({
-  component: AdminDrinksPage,
-});
+export const Route = createFileRoute("/admin/drinks")({ component: AdminDrinksPage });
 
+type SelectionType = "single" | "multiple";
+type OptionDraft = { id?: string; name_en: string; name_ar: string; is_active: boolean };
+type GroupDraft = { id?: string; name_en: string; name_ar: string; selection_type: SelectionType; is_required: boolean; options: OptionDraft[] };
 type DrinkRow = {
-  id: string;
-  name_en: string;
-  name_ar: string;
-  is_active: boolean;
-  image_url: string | null;
-  image_path: string | null;
-  created_at: string | null;
+  id: string; name_en: string; name_ar: string; is_active: boolean;
+  image_url: string | null; image_path: string | null; calories: number | null;
+  allergens: string[]; created_at: string | null;
+  option_groups: Array<GroupDraft & { id: string }>;
 };
 
-type DrinkForm = {
-  name_en: string;
-  name_ar: string;
-  is_active: boolean;
-};
-
-const initialForm: DrinkForm = {
-  name_en: "",
-  name_ar: "",
-  is_active: true,
-};
-
-const DRINK_IMAGES_BUCKET =
-  "drink-images";
-
-const MAX_IMAGE_SIZE =
-  5 * 1024 * 1024;
-
-const ACCEPTED_IMAGE_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-];
+const BUCKET = "drink-images";
+const ALLERGENS = [
+  ["milk", "Milk", "حليب", "🥛"], ["nuts", "Nuts", "مكسرات", "🥜"],
+  ["coconut", "Coconut", "جوز الهند", "🥥"], ["soy", "Soy", "صويا", "🫘"],
+  ["gluten", "Gluten", "غلوتين", "🌾"], ["egg", "Egg", "بيض", "🥚"],
+] as const;
 
 function AdminDrinksPage() {
-  const [drinks, setDrinks] =
-    useState<DrinkRow[]>([]);
+  const [rows, setRows] = useState<DrinkRow[]>([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [modalDrink, setModalDrink] = useState<DrinkRow | null | undefined>(undefined);
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const [search, setSearch] =
-    useState("");
+  const load = useCallback(async () => {
+    setLoading(true); setError(null);
+    const { data, error: queryError } = await supabase.from("drink_types").select(`
+      id,name_en,name_ar,is_active,image_url,image_path,calories,allergens,created_at,
+      option_groups:drink_option_groups(
+        id,name_en,name_ar,selection_type,is_required,sort_order,
+        options:drink_options(id,name_en,name_ar,is_active,sort_order)
+      )
+    `).order("created_at", { ascending: false });
+    if (queryError) { setRows([]); setError(queryError.message); }
+    else setRows((data ?? []) as unknown as DrinkRow[]);
+    setLoading(false);
+  }, []);
 
-  const [loading, setLoading] =
-    useState(true);
+  useEffect(() => { void load(); }, [load]);
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return q ? rows.filter((r) => r.name_en.toLowerCase().includes(q) || r.name_ar.toLowerCase().includes(q)) : rows;
+  }, [rows, search]);
 
-  const [modalOpen, setModalOpen] =
-    useState(false);
-
-  const [editingDrink, setEditingDrink] =
-    useState<DrinkRow | null>(null);
-
-  const [deletingId, setDeletingId] =
-    useState<string | null>(null);
-
-  const [message, setMessage] =
-    useState<string | null>(null);
-
-  const [error, setError] =
-    useState<string | null>(null);
-
-  const loadDrinks =
-    useCallback(async () => {
-      setLoading(true);
-      setError(null);
-
-      const {
-        data,
-        error: queryError,
-      } = await supabase
-        .from("drink_types")
-        .select(
-          `
-            id,
-            name_en,
-            name_ar,
-            is_active,
-            image_url,
-            image_path,
-            created_at
-          `,
-        )
-        .order("created_at", {
-          ascending: false,
-        });
-
-      if (queryError) {
-        console.error(
-          "Failed to load drinks:",
-          queryError,
-        );
-
-        setError(
-          queryError.message,
-        );
-
-        setDrinks([]);
-        setLoading(false);
-
-        return;
-      }
-
-      setDrinks(
-        (data ?? []) as DrinkRow[],
-      );
-
-      setLoading(false);
-    }, []);
-
-  useEffect(() => {
-    void loadDrinks();
-  }, [loadDrinks]);
-
-  const filteredDrinks =
-    useMemo(() => {
-      const query =
-        search.trim().toLowerCase();
-
-      if (!query) {
-        return drinks;
-      }
-
-      return drinks.filter(
-        (drink) =>
-          drink.name_en
-            .toLowerCase()
-            .includes(query) ||
-          drink.name_ar
-            .toLowerCase()
-            .includes(query),
-      );
-    }, [
-      drinks,
-      search,
-    ]);
-
-  function openCreateModal() {
-    setEditingDrink(null);
-    setError(null);
-    setMessage(null);
-    setModalOpen(true);
+  async function toggle(row: DrinkRow) {
+    const next = !row.is_active;
+    const { error } = await supabase.from("drink_types").update({ is_active: next }).eq("id", row.id);
+    if (error) return setError(error.message);
+    setRows((current) => current.map((item) => item.id === row.id ? { ...item, is_active: next } : item));
   }
 
-  function openEditModal(
-    drink: DrinkRow,
-  ) {
-    setEditingDrink(drink);
-    setError(null);
-    setMessage(null);
-    setModalOpen(true);
-  }
-
-  function closeModal() {
-    setModalOpen(false);
-    setEditingDrink(null);
-  }
-
-  async function toggleDrink(
-    drink: DrinkRow,
-  ) {
-    setError(null);
-    setMessage(null);
-
-    const nextStatus =
-      !drink.is_active;
-
-    const {
-      error: updateError,
-    } = await supabase
-      .from("drink_types")
-      .update({
-        is_active: nextStatus,
-      })
-      .eq("id", drink.id);
-
-    if (updateError) {
-      setError(
-        updateError.message,
-      );
-
-      return;
-    }
-
-    setDrinks((current) =>
-      current.map((item) =>
-        item.id === drink.id
-          ? {
-              ...item,
-              is_active:
-                nextStatus,
-            }
-          : item,
-      ),
-    );
-
-    setMessage(
-      nextStatus
-        ? "Drink activated successfully."
-        : "Drink deactivated successfully.",
-    );
-  }
-
-  async function deleteDrink(
-    drink: DrinkRow,
-  ) {
-    const confirmed =
-      window.confirm(
-        `Delete "${drink.name_en}"?\n\nThis action cannot be undone.`,
-      );
-
-    if (!confirmed) {
-      return;
-    }
-
-    setDeletingId(drink.id);
-    setError(null);
-    setMessage(null);
-
-    if (drink.image_path) {
-      const {
-        error: storageError,
-      } = await supabase.storage
-        .from(
-          DRINK_IMAGES_BUCKET,
-        )
-        .remove([
-          drink.image_path,
-        ]);
-
-      if (storageError) {
-        console.warn(
-          "Could not remove drink image:",
-          storageError,
-        );
-      }
-    }
-
-    const {
-      error: deleteError,
-    } = await supabase
-      .from("drink_types")
-      .delete()
-      .eq("id", drink.id);
-
+  async function remove(row: DrinkRow) {
+    if (!window.confirm(`Delete ${row.name_en}?`)) return;
+    setDeletingId(row.id); setError(null);
+    const { error } = await supabase.from("drink_types").delete().eq("id", row.id);
+    if (!error && row.image_path) await supabase.storage.from(BUCKET).remove([row.image_path]);
     setDeletingId(null);
-
-    if (deleteError) {
-      setError(
-        deleteError.message,
-      );
-
-      return;
-    }
-
-    setDrinks((current) =>
-      current.filter(
-        (item) =>
-          item.id !== drink.id,
-      ),
-    );
-
-    setMessage(
-      "Drink deleted successfully.",
-    );
+    if (error) return setError(error.message);
+    setRows((current) => current.filter((item) => item.id !== row.id));
   }
 
-  return (
-    <div className="w-full min-w-0">
-      <div className="kob-page-header">
-        <div>
-          <h1 className="kob-page-title">
-            Drinks
-          </h1>
-
-          <p className="kob-page-description">
-            Add and manage drinks available to customers.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              void loadDrinks();
-            }}
-            disabled={loading}
-            className="btn-ghost-brass flex items-center gap-2 px-4 py-2.5"
-          >
-            <RefreshCw
-              className={
-                loading
-                  ? "h-4 w-4 animate-spin"
-                  : "h-4 w-4"
-              }
-            />
-
-            <span>
-              Refresh
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={
-              openCreateModal
-            }
-            className="btn-brass flex items-center gap-2 px-5 py-2.5"
-          >
-            <Plus className="h-4 w-4" />
-
-            <span>
-              Add Drink
-            </span>
-          </button>
-        </div>
-      </div>
-
-      {message && (
-        <div className="mb-5 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-200">
-          {message}
-        </div>
-      )}
-
-      {error && (
-        <div className="mb-5 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-          {error}
-        </div>
-      )}
-
-      <section className="panel kob-content-card">
-        <div className="kob-card-header flex-wrap">
-          <div>
-            <h2 className="kob-card-title">
-              Available Drinks
-            </h2>
-
-            <p className="mt-1 text-xs text-cream-dim">
-              Active drinks appear in the customer ordering flow.
-            </p>
-          </div>
-
-          <div className="inset-well flex min-w-0 items-center gap-2 px-3 py-2.5 sm:w-72">
-            <Search className="h-4 w-4 shrink-0 text-cream-dim" />
-
-            <input
-              type="search"
-              value={search}
-              placeholder="Search drinks..."
-              onChange={(event) => {
-                setSearch(
-                  event.target.value,
-                );
-              }}
-              className="min-w-0 flex-1 bg-transparent text-sm text-cream outline-none placeholder:text-cream-dim/50"
-            />
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="engraved flex min-h-72 items-center justify-center">
-            <Loader2 className="h-7 w-7 animate-spin text-caramel" />
-          </div>
-        ) : (
-          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {filteredDrinks.map(
-              (drink) => (
-                <DrinkCard
-                  key={drink.id}
-                  drink={drink}
-                  deleting={
-                    deletingId ===
-                    drink.id
-                  }
-                  onEdit={() => {
-                    openEditModal(
-                      drink,
-                    );
-                  }}
-                  onToggle={() => {
-                    void toggleDrink(
-                      drink,
-                    );
-                  }}
-                  onDelete={() => {
-                    void deleteDrink(
-                      drink,
-                    );
-                  }}
-                />
-              ),
-            )}
-
-            {filteredDrinks.length ===
-              0 && (
-              <div className="engraved col-span-full flex min-h-72 flex-col items-center justify-center p-8 text-center">
-                <Coffee className="mb-4 h-10 w-10 text-caramel" />
-
-                <p className="text-lg text-cream">
-                  No drinks found.
-                </p>
-
-                <p
-                  className="mt-1 text-sm text-cream-dim"
-                  dir="rtl"
-                >
-                  لا توجد مشروبات
-                </p>
-
-                <button
-                  type="button"
-                  onClick={
-                    openCreateModal
-                  }
-                  className="btn-brass mt-5 flex items-center gap-2 px-5 py-2.5"
-                >
-                  <Plus className="h-4 w-4" />
-
-                  Add Drink
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </section>
-
-      {modalOpen && (
-        <DrinkModal
-          drink={editingDrink}
-          onClose={closeModal}
-          onSaved={async (
-            savedDrink,
-          ) => {
-            closeModal();
-
-            setMessage(
-              editingDrink
-                ? "Drink updated successfully."
-                : "Drink added successfully.",
-            );
-
-            setDrinks(
-              (current) => {
-                const exists =
-                  current.some(
-                    (item) =>
-                      item.id ===
-                      savedDrink.id,
-                  );
-
-                if (exists) {
-                  return current.map(
-                    (item) =>
-                      item.id ===
-                      savedDrink.id
-                        ? savedDrink
-                        : item,
-                  );
-                }
-
-                return [
-                  savedDrink,
-                  ...current,
-                ];
-              },
-            );
-          }}
-        />
-      )}
-    </div>
-  );
-}
-
-type DrinkCardProps = {
-  drink: DrinkRow;
-  deleting: boolean;
-  onEdit: () => void;
-  onToggle: () => void;
-  onDelete: () => void;
-};
-
-function DrinkCard({
-  drink,
-  deleting,
-  onEdit,
-  onToggle,
-  onDelete,
-}: DrinkCardProps) {
-  return (
-    <article className="panel-warm flex min-w-0 flex-col overflow-hidden">
-      <div className="relative aspect-[4/3] overflow-hidden bg-black/25">
-        {drink.image_url ? (
-          <img
-            src={drink.image_url}
-            alt={drink.name_en}
-            loading="lazy"
-            className="h-full w-full object-cover transition duration-500 hover:scale-105"
-          />
-        ) : (
-          <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-b from-caramel/10 to-black/20">
-            <Coffee className="h-12 w-12 text-caramel-bright" />
-
-            <span className="mt-3 text-xs uppercase tracking-widest text-cream-dim">
-              No image
-            </span>
-          </div>
-        )}
-
-        <span
-          className={
-            drink.is_active
-              ? "absolute right-3 top-3 rounded-full border border-green-400/30 bg-green-900/75 px-3 py-1 text-xs font-medium text-green-100 backdrop-blur"
-              : "absolute right-3 top-3 rounded-full border border-white/15 bg-black/70 px-3 py-1 text-xs font-medium text-cream-dim backdrop-blur"
-          }
-        >
-          {drink.is_active
-            ? "Active"
-            : "Inactive"}
-        </span>
-      </div>
-
-      <div className="flex flex-1 flex-col p-5">
-        <div className="min-w-0">
-          <h3 className="truncate font-display text-xl font-bold text-cream">
-            {drink.name_en}
-          </h3>
-
-          <p
-            className="mt-2 truncate text-base text-caramel"
-            dir="rtl"
-          >
-            {drink.name_ar}
-          </p>
-        </div>
-
-        <div className="hairline-divider my-5" />
-
-        <button
-          type="button"
-          onClick={onToggle}
-          className={
-            drink.is_active
-              ? "mb-3 flex w-full items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-sm text-amber-100 transition hover:bg-amber-500/20"
-              : "mb-3 flex w-full items-center justify-center gap-2 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-2.5 text-sm text-green-100 transition hover:bg-green-500/20"
-          }
-        >
-          {drink.is_active ? (
-            <X className="h-4 w-4" />
-          ) : (
-            <Check className="h-4 w-4" />
-          )}
-
-          <span>
-            {drink.is_active
-              ? "Deactivate"
-              : "Activate"}
-          </span>
-        </button>
-
-        <div className="mt-auto grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={onEdit}
-            className="btn-ghost-brass flex items-center justify-center gap-2 px-3 py-2.5 text-sm"
-          >
-            <Edit3 className="h-4 w-4" />
-
-            <span>
-              Edit
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={onDelete}
-            disabled={deleting}
-            className="flex items-center justify-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-sm text-red-200 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {deleting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Trash2 className="h-4 w-4" />
-            )}
-
-            <span>
-              Delete
-            </span>
-          </button>
-        </div>
-      </div>
-    </article>
-  );
-}
-
-type DrinkModalProps = {
-  drink: DrinkRow | null;
-  onClose: () => void;
-  onSaved: (
-    drink: DrinkRow,
-  ) => void | Promise<void>;
-};
-
-function DrinkModal({
-  drink,
-  onClose,
-  onSaved,
-}: DrinkModalProps) {
-  const [form, setForm] =
-    useState<DrinkForm>({
-      name_en:
-        drink?.name_en ?? "",
-      name_ar:
-        drink?.name_ar ?? "",
-      is_active:
-        drink?.is_active ??
-        true,
-    });
-
-  const [imageFile, setImageFile] =
-    useState<File | null>(null);
-
-  const [
-    previewUrl,
-    setPreviewUrl,
-  ] = useState<string | null>(
-    drink?.image_url ?? null,
-  );
-
-  const [removeImage, setRemoveImage] =
-    useState(false);
-
-  const [saving, setSaving] =
-    useState(false);
-
-  const [error, setError] =
-    useState<string | null>(null);
-
-  const fileInputRef =
-    useRef<HTMLInputElement | null>(
-      null,
-    );
-
-  useEffect(() => {
-    return () => {
-      if (
-        previewUrl &&
-        previewUrl.startsWith(
-          "blob:",
-        )
-      ) {
-        URL.revokeObjectURL(
-          previewUrl,
-        );
-      }
-    };
-  }, [previewUrl]);
-
-  function handleImageChange(
-    event:
-      ChangeEvent<HTMLInputElement>,
-  ) {
-    const file =
-      event.target.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    setError(null);
-
-    if (
-      !ACCEPTED_IMAGE_TYPES.includes(
-        file.type,
-      )
-    ) {
-      setError(
-        "Only JPG, PNG, and WebP images are allowed.",
-      );
-
-      event.target.value = "";
-
-      return;
-    }
-
-    if (
-      file.size >
-      MAX_IMAGE_SIZE
-    ) {
-      setError(
-        "The image must be smaller than 5 MB.",
-      );
-
-      event.target.value = "";
-
-      return;
-    }
-
-    if (
-      previewUrl &&
-      previewUrl.startsWith(
-        "blob:",
-      )
-    ) {
-      URL.revokeObjectURL(
-        previewUrl,
-      );
-    }
-
-    const objectUrl =
-      URL.createObjectURL(file);
-
-    setImageFile(file);
-    setPreviewUrl(objectUrl);
-    setRemoveImage(false);
-  }
-
-  function clearImage() {
-    if (
-      previewUrl &&
-      previewUrl.startsWith(
-        "blob:",
-      )
-    ) {
-      URL.revokeObjectURL(
-        previewUrl,
-      );
-    }
-
-    setImageFile(null);
-    setPreviewUrl(null);
-    setRemoveImage(true);
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value =
-        "";
-    }
-  }
-
-  async function handleSubmit(
-    event:
-      FormEvent<HTMLFormElement>,
-  ) {
-    event.preventDefault();
-
-    const nameEn =
-      form.name_en.trim();
-
-    const nameAr =
-      form.name_ar.trim();
-
-    if (!nameEn || !nameAr) {
-      setError(
-        "Enter the drink name in Arabic and English.",
-      );
-
-      return;
-    }
-
-    setSaving(true);
-    setError(null);
-
-    let imageUrl =
-      removeImage
-        ? null
-        : drink?.image_url ??
-          null;
-
-    let imagePath =
-      removeImage
-        ? null
-        : drink?.image_path ??
-          null;
-
-    let uploadedPath:
-      | string
-      | null = null;
-
-    if (imageFile) {
-      const extension =
-        getFileExtension(
-          imageFile,
-        );
-
-      uploadedPath =
-        `drinks/${crypto.randomUUID()}.${extension}`;
-
-      const {
-        error: uploadError,
-      } = await supabase.storage
-        .from(
-          DRINK_IMAGES_BUCKET,
-        )
-        .upload(
-          uploadedPath,
-          imageFile,
-          {
-            cacheControl:
-              "3600",
-            upsert: false,
-            contentType:
-              imageFile.type,
-          },
-        );
-
-      if (uploadError) {
-        setSaving(false);
-
-        setError(
-          uploadError.message,
-        );
-
-        return;
-      }
-
-      const {
-        data: publicUrlData,
-      } = supabase.storage
-        .from(
-          DRINK_IMAGES_BUCKET,
-        )
-        .getPublicUrl(
-          uploadedPath,
-        );
-
-      imageUrl =
-        publicUrlData.publicUrl;
-
-      imagePath =
-        uploadedPath;
-    }
-
-    let savedDrink:
-      | DrinkRow
-      | null = null;
-
-    if (drink) {
-      const {
-        data,
-        error: updateError,
-      } = await supabase
-        .from("drink_types")
-        .update({
-          name_en: nameEn,
-          name_ar: nameAr,
-          is_active:
-            form.is_active,
-          image_url: imageUrl,
-          image_path: imagePath,
-        })
-        .eq("id", drink.id)
-        .select(
-          `
-            id,
-            name_en,
-            name_ar,
-            is_active,
-            image_url,
-            image_path,
-            created_at
-          `,
-        )
-        .single();
-
-      if (updateError) {
-        if (uploadedPath) {
-          await supabase.storage
-            .from(
-              DRINK_IMAGES_BUCKET,
-            )
-            .remove([
-              uploadedPath,
-            ]);
-        }
-
-        setSaving(false);
-
-        setError(
-          updateError.message,
-        );
-
-        return;
-      }
-
-      savedDrink =
-        data as DrinkRow;
-
-      const oldImagePath =
-        drink.image_path;
-
-      const shouldDeleteOldImage =
-        oldImagePath &&
-        oldImagePath !==
-          imagePath;
-
-      if (
-        shouldDeleteOldImage
-      ) {
-        const {
-          error:
-            removeOldImageError,
-        } =
-          await supabase.storage
-            .from(
-              DRINK_IMAGES_BUCKET,
-            )
-            .remove([
-              oldImagePath,
-            ]);
-
-        if (
-          removeOldImageError
-        ) {
-          console.warn(
-            "Could not delete old image:",
-            removeOldImageError,
-          );
-        }
-      }
-    } else {
-      const {
-        data,
-        error: insertError,
-      } = await supabase
-        .from("drink_types")
-        .insert({
-          name_en: nameEn,
-          name_ar: nameAr,
-          is_active:
-            form.is_active,
-          image_url: imageUrl,
-          image_path: imagePath,
-        })
-        .select(
-          `
-            id,
-            name_en,
-            name_ar,
-            is_active,
-            image_url,
-            image_path,
-            created_at
-          `,
-        )
-        .single();
-
-      if (insertError) {
-        if (uploadedPath) {
-          await supabase.storage
-            .from(
-              DRINK_IMAGES_BUCKET,
-            )
-            .remove([
-              uploadedPath,
-            ]);
-        }
-
-        setSaving(false);
-
-        setError(
-          insertError.message,
-        );
-
-        return;
-      }
-
-      savedDrink =
-        data as DrinkRow;
-    }
-
-    setSaving(false);
-
-    if (savedDrink) {
-      await onSaved(
-        savedDrink,
-      );
-    }
-  }
-
-  return (
-    <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
-      onMouseDown={(event) => {
-        if (
-          event.target ===
-          event.currentTarget
-        ) {
-          onClose();
-        }
-      }}
-    >
-      <div className="panel-warm max-h-[92vh] w-full max-w-2xl overflow-y-auto p-5 sm:p-7">
-        <div className="mb-6 flex items-start justify-between gap-4">
-          <div>
-            <h2 className="font-display text-2xl font-bold text-cream">
-              {drink
-                ? "Edit Drink"
-                : "Add Drink"}
-            </h2>
-
-            <p className="mt-1 text-sm text-cream-dim">
-              Add the Arabic and English names and upload a drink image.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="btn-ghost-brass flex h-10 w-10 shrink-0 items-center justify-center"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-5"
-        >
-          <div className="grid gap-4 sm:grid-cols-2">
-            <FormInput
-              label="Drink name in English"
-              value={
-                form.name_en
-              }
-              placeholder="Example: Latte"
-              required
-              onChange={(
-                value,
-              ) => {
-                setForm(
-                  (current) => ({
-                    ...current,
-                    name_en:
-                      value,
-                  }),
-                );
-              }}
-            />
-
-            <FormInput
-              label="اسم المشروب بالعربي"
-              value={
-                form.name_ar
-              }
-              placeholder="مثال: لاتيه"
-              required
-              dir="rtl"
-              onChange={(
-                value,
-              ) => {
-                setForm(
-                  (current) => ({
-                    ...current,
-                    name_ar:
-                      value,
-                  }),
-                );
-              }}
-            />
-          </div>
-
-          <div>
-            <span className="kob-field-label">
-              Drink Image
-            </span>
-
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={
-                handleImageChange
-              }
-              className="hidden"
-            />
-
-            {previewUrl ? (
-              <div className="relative overflow-hidden rounded-2xl border border-caramel/25 bg-black/20">
-                <img
-                  src={previewUrl}
-                  alt="Drink preview"
-                  className="aspect-[16/10] w-full object-cover"
-                />
-
-                <div className="absolute inset-x-0 bottom-0 flex justify-end gap-2 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      fileInputRef.current?.click();
-                    }}
-                    className="btn-ghost-brass flex items-center gap-2 px-4 py-2 text-sm"
-                  >
-                    <Upload className="h-4 w-4" />
-
-                    Change Image
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={
-                      clearImage
-                    }
-                    className="flex items-center gap-2 rounded-lg border border-red-400/30 bg-red-950/70 px-4 py-2 text-sm text-red-100"
-                  >
-                    <Trash2 className="h-4 w-4" />
-
-                    Remove
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  fileInputRef.current?.click();
-                }}
-                className="engraved flex min-h-48 w-full flex-col items-center justify-center border border-dashed border-caramel/30 p-6 text-center transition hover:border-caramel/60 hover:bg-caramel/5"
-              >
-                <ImagePlus className="mb-3 h-10 w-10 text-caramel-bright" />
-
-                <span className="font-semibold text-cream">
-                  Choose image from device
-                </span>
-
-                <span className="mt-2 text-xs text-cream-dim">
-                  JPG, PNG or WebP · Maximum 5 MB
-                </span>
-              </button>
-            )}
-          </div>
-
-          <label className="block">
-            <span className="kob-field-label">
-              Status
-            </span>
-
-            <button
-              type="button"
-              onClick={() => {
-                setForm(
-                  (current) => ({
-                    ...current,
-                    is_active:
-                      !current.is_active,
-                  }),
-                );
-              }}
-              className={
-                form.is_active
-                  ? "flex min-h-12 w-full items-center justify-between rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-green-100"
-                  : "flex min-h-12 w-full items-center justify-between rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-cream-dim"
-              }
-            >
-              <span>
-                {form.is_active
-                  ? "Active"
-                  : "Inactive"}
-              </span>
-
-              <span
-                className={
-                  form.is_active
-                    ? "relative h-6 w-11 rounded-full bg-green-500/60"
-                    : "relative h-6 w-11 rounded-full bg-white/10"
-                }
-              >
-                <span
-                  className={
-                    form.is_active
-                      ? "absolute right-1 top-1 h-4 w-4 rounded-full bg-white"
-                      : "absolute left-1 top-1 h-4 w-4 rounded-full bg-white/70"
-                  }
-                />
-              </span>
-            </button>
-          </label>
-
-          {error && (
-            <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-              {error}
-            </div>
-          )}
-
-          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={saving}
-              className="btn-ghost-brass px-6 py-3"
-            >
-              Cancel
-            </button>
-
-            <button
-              type="submit"
-              disabled={saving}
-              className="btn-brass flex items-center justify-center gap-2 px-7 py-3"
-            >
-              {saving ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : drink ? (
-                <Check className="h-4 w-4" />
-              ) : (
-                <Plus className="h-4 w-4" />
-              )}
-
-              <span>
-                {drink
-                  ? "Save Changes"
-                  : "Add Drink"}
-              </span>
-            </button>
-          </div>
-        </form>
+  return <div className="w-full min-w-0">
+    <div className="kob-page-header">
+      <div><h1 className="kob-page-title">Drinks</h1><p className="kob-page-description">Manage drink images, nutrition, allergens, and customer options.</p></div>
+      <div className="flex gap-3">
+        <button className="btn-ghost-brass flex items-center gap-2 px-4 py-2.5" onClick={() => void load()}><RefreshCw className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"}/>Refresh</button>
+        <button className="btn-brass flex items-center gap-2 px-5 py-2.5" onClick={() => setModalDrink(null)}><Plus className="h-4 w-4"/>Add Drink</button>
       </div>
     </div>
-  );
+    {error && <div className="mb-4 rounded-xl border border-red-300 bg-red-50 p-3 text-red-700">{error}</div>}
+    {message && <div className="mb-4 rounded-xl border border-green-300 bg-green-50 p-3 text-green-700">{message}</div>}
+    <section className="panel kob-content-card">
+      <div className="kob-card-header flex-wrap"><div><h2 className="kob-card-title">Available Drinks</h2></div><div className="inset-well flex items-center gap-2 px-3 py-2.5 sm:w-72"><Search className="h-4 w-4 text-cream-dim"/><input className="min-w-0 flex-1 bg-transparent outline-none" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search drinks..."/></div></div>
+      {loading ? <div className="flex min-h-72 items-center justify-center"><Loader2 className="h-7 w-7 animate-spin"/></div> :
+      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        {filtered.map((drink) => <article key={drink.id} className="panel-warm overflow-hidden">
+          <div className="relative aspect-[4/3] bg-stone-100">{drink.image_url ? <img src={drink.image_url} alt={drink.name_en} className="h-full w-full object-cover"/> : <div className="flex h-full items-center justify-center"><Coffee className="h-12 w-12 text-caramel"/></div>}
+            <div className="absolute left-3 top-3 flex flex-wrap gap-1">{drink.calories != null && <span className="kob-admin-drink-badge">🔥 {drink.calories}</span>}{drink.allergens.slice(0,3).map((a) => <span key={a} className="kob-admin-drink-badge">{ALLERGENS.find((x)=>x[0]===a)?.[3] ?? "⚠️"}</span>)}</div>
+          </div>
+          <div className="p-5"><div className="flex justify-between gap-3"><div><h3 className="font-display text-xl font-bold text-cream">{drink.name_en}</h3><p className="mt-1 text-caramel" dir="rtl">{drink.name_ar}</p></div><span className={drink.is_active ? "kob-status-active" : "kob-status-inactive"}>{drink.is_active ? "Active" : "Inactive"}</span></div>
+            <p className="mt-3 text-xs text-cream-dim">{drink.option_groups.length} option groups</p>
+            <div className="mt-5 grid grid-cols-3 gap-2"><button className="btn-ghost-brass px-2 py-2 text-sm" onClick={() => void toggle(drink)}>{drink.is_active ? "Disable" : "Enable"}</button><button className="btn-ghost-brass flex items-center justify-center gap-1 px-2 py-2 text-sm" onClick={() => setModalDrink(drink)}><Edit3 className="h-4 w-4"/>Edit</button><button className="kob-danger-button flex items-center justify-center gap-1" disabled={deletingId === drink.id} onClick={() => void remove(drink)}>{deletingId === drink.id ? <Loader2 className="h-4 w-4 animate-spin"/> : <Trash2 className="h-4 w-4"/>}</button></div>
+          </div>
+        </article>)}
+      </div>}
+    </section>
+    {modalDrink !== undefined && <DrinkModal drink={modalDrink} onClose={() => setModalDrink(undefined)} onSaved={async () => { setModalDrink(undefined); setMessage("Drink saved successfully."); await load(); }}/>} 
+  </div>;
 }
 
-type FormInputProps = {
-  label: string;
-  value: string;
-  placeholder?: string;
-  required?: boolean;
-  dir?: "ltr" | "rtl";
-  onChange: (
-    value: string,
-  ) => void;
-};
+function DrinkModal({ drink, onClose, onSaved }: { drink: DrinkRow | null; onClose: () => void; onSaved: () => void | Promise<void> }) {
+  const [nameEn, setNameEn] = useState(drink?.name_en ?? "");
+  const [nameAr, setNameAr] = useState(drink?.name_ar ?? "");
+  const [calories, setCalories] = useState(drink?.calories?.toString() ?? "");
+  const [allergens, setAllergens] = useState<string[]>(drink?.allergens ?? []);
+  const [groups, setGroups] = useState<GroupDraft[]>(drink?.option_groups?.map((g) => ({ ...g, options: g.options ?? [] })) ?? []);
+  const [active, setActive] = useState(drink?.is_active ?? true);
+  const [image, setImage] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(drink?.image_url ?? null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement | null>(null);
 
-function FormInput({
-  label,
-  value,
-  placeholder,
-  required = false,
-  dir = "ltr",
-  onChange,
-}: FormInputProps) {
-  return (
-    <label className="block min-w-0">
-      <span className="kob-field-label">
-        {label}
-      </span>
+  function pickImage(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]; if (!file) return;
+    if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) return setError("Use an image smaller than 5 MB.");
+    setImage(file); setPreview(URL.createObjectURL(file));
+  }
+  function addGroup() { setGroups((g) => [...g, { name_en: "", name_ar: "", selection_type: "single", is_required: false, options: [] }]); }
+  function updateGroup(index: number, patch: Partial<GroupDraft>) { setGroups((g) => g.map((item, i) => i === index ? { ...item, ...patch } : item)); }
+  function removeGroup(index: number) { setGroups((g) => g.filter((_, i) => i !== index)); }
+  function addOption(groupIndex: number) { setGroups((g) => g.map((group, i) => i === groupIndex ? { ...group, options: [...group.options, { name_en: "", name_ar: "", is_active: true }] } : group)); }
+  function updateOption(gi: number, oi: number, patch: Partial<OptionDraft>) { setGroups((g) => g.map((group, i) => i === gi ? { ...group, options: group.options.map((o, j) => j === oi ? { ...o, ...patch } : o) } : group)); }
+  function removeOption(gi: number, oi: number) { setGroups((g) => g.map((group, i) => i === gi ? { ...group, options: group.options.filter((_, j) => j !== oi) } : group)); }
 
-      <input
-        type="text"
-        value={value}
-        required={required}
-        dir={dir}
-        maxLength={100}
-        placeholder={placeholder}
-        onChange={(event) => {
-          onChange(
-            event.target.value,
-          );
-        }}
-        className="inset-well kob-field-control"
-      />
-    </label>
-  );
+  async function submit(e: FormEvent) {
+    e.preventDefault(); setSaving(true); setError(null);
+    if (!nameEn.trim() || !nameAr.trim()) { setSaving(false); return setError("Arabic and English names are required."); }
+    if (groups.some((g) => !g.name_en.trim() || !g.name_ar.trim() || g.options.some((o) => !o.name_en.trim() || !o.name_ar.trim()))) { setSaving(false); return setError("Complete all option group and option names."); }
+    let imageUrl = drink?.image_url ?? null; let imagePath = drink?.image_path ?? null; let uploadedPath: string | null = null;
+    if (image) {
+      const ext = image.type === "image/png" ? "png" : image.type === "image/webp" ? "webp" : "jpg";
+      uploadedPath = `drinks/${crypto.randomUUID()}.${ext}`;
+      const uploaded = await supabase.storage.from(BUCKET).upload(uploadedPath, image, { contentType: image.type });
+      if (uploaded.error) { setSaving(false); return setError(uploaded.error.message); }
+      imagePath = uploadedPath; imageUrl = supabase.storage.from(BUCKET).getPublicUrl(uploadedPath).data.publicUrl;
+    }
+    const payload = { name_en: nameEn.trim(), name_ar: nameAr.trim(), calories: calories ? Number(calories) : null, allergens, is_active: active, image_url: imageUrl, image_path: imagePath };
+    const result = drink ? await supabase.from("drink_types").update(payload).eq("id", drink.id).select("id").single() : await supabase.from("drink_types").insert(payload).select("id").single();
+    if (result.error || !result.data) { if (uploadedPath) await supabase.storage.from(BUCKET).remove([uploadedPath]); setSaving(false); return setError(result.error?.message ?? "Unable to save drink."); }
+    const drinkId = result.data.id;
+    if (drink) await supabase.from("drink_option_groups").delete().eq("drink_type_id", drinkId);
+    for (let gi = 0; gi < groups.length; gi++) {
+      const group = groups[gi];
+      const insertedGroup = await supabase.from("drink_option_groups").insert({ drink_type_id: drinkId, name_en: group.name_en.trim(), name_ar: group.name_ar.trim(), selection_type: group.selection_type, is_required: group.is_required, sort_order: gi }).select("id").single();
+      if (insertedGroup.error || !insertedGroup.data) { setSaving(false); return setError(insertedGroup.error?.message ?? "Unable to save options."); }
+      if (group.options.length) {
+        const optionsResult = await supabase.from("drink_options").insert(group.options.map((o, oi) => ({ group_id: insertedGroup.data.id, name_en: o.name_en.trim(), name_ar: o.name_ar.trim(), is_active: o.is_active, sort_order: oi })));
+        if (optionsResult.error) { setSaving(false); return setError(optionsResult.error.message); }
+      }
+    }
+    if (drink?.image_path && uploadedPath && drink.image_path !== uploadedPath) await supabase.storage.from(BUCKET).remove([drink.image_path]);
+    setSaving(false); await onSaved();
+  }
+
+  return <div className="kob-modal-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+    <section className="kob-drink-editor-modal panel-warm">
+      <div className="kob-modal-header"><div><h2>{drink ? "Edit Drink" : "Add Drink"}</h2><p>Nutrition, allergens, and order options.</p></div><button className="btn-ghost-brass h-10 w-10" onClick={onClose}><X className="mx-auto h-4 w-4"/></button></div>
+      <form onSubmit={submit} className="space-y-6">
+        <div className="grid gap-4 md:grid-cols-2"><Input label="English name" value={nameEn} onChange={setNameEn}/><Input label="الاسم بالعربي" value={nameAr} onChange={setNameAr} dir="rtl"/><Input label="Calories (kcal)" value={calories} onChange={(v) => setCalories(v.replace(/\D/g, ""))} inputMode="numeric"/></div>
+        <div><span className="kob-field-label">Drink image</span><input ref={fileRef} type="file" accept="image/*" hidden onChange={pickImage}/><button type="button" className="kob-image-picker" onClick={() => fileRef.current?.click()}>{preview ? <img src={preview} alt="Preview"/> : <><ImagePlus className="h-9 w-9"/><span>Choose image</span></>}</button></div>
+        <div><span className="kob-field-label">Allergens</span><div className="kob-allergen-admin-grid">{ALLERGENS.map(([key,en,ar,icon]) => <label key={key} className={allergens.includes(key) ? "kob-allergen-admin-item active" : "kob-allergen-admin-item"}><input type="checkbox" checked={allergens.includes(key)} onChange={() => setAllergens((a) => a.includes(key) ? a.filter((x)=>x!==key) : [...a,key])}/><span>{icon}</span><span>{en}<small>{ar}</small></span></label>)}</div></div>
+        <div className="kob-option-editor"><div className="flex items-center justify-between"><div><h3>Drink Options</h3><p>Sugar, milk, and any configurable additions.</p></div><button type="button" className="btn-ghost-brass flex items-center gap-2 px-4 py-2" onClick={addGroup}><Plus className="h-4 w-4"/>Add Group</button></div>
+          <div className="space-y-4">{groups.map((group, gi) => <div key={gi} className="kob-option-editor-group">
+            <div className="grid gap-3 md:grid-cols-2"><Input label="Group name EN" value={group.name_en} onChange={(v)=>updateGroup(gi,{name_en:v})}/><Input label="اسم المجموعة" value={group.name_ar} onChange={(v)=>updateGroup(gi,{name_ar:v})} dir="rtl"/></div>
+            <div className="mt-3 flex flex-wrap gap-3"><select className="inset-well px-3 py-2" value={group.selection_type} onChange={(e)=>updateGroup(gi,{selection_type:e.target.value as SelectionType})}><option value="single">Single choice</option><option value="multiple">Multiple choice</option></select><label className="kob-inline-check"><input type="checkbox" checked={group.is_required} onChange={(e)=>updateGroup(gi,{is_required:e.target.checked})}/>Required</label><button type="button" className="kob-text-danger" onClick={()=>removeGroup(gi)}>Remove group</button></div>
+            <div className="mt-4 space-y-2">{group.options.map((option, oi) => <div key={oi} className="kob-option-row"><input className="inset-well" placeholder="Option EN" value={option.name_en} onChange={(e)=>updateOption(gi,oi,{name_en:e.target.value})}/><input className="inset-well" dir="rtl" placeholder="الخيار بالعربي" value={option.name_ar} onChange={(e)=>updateOption(gi,oi,{name_ar:e.target.value})}/><button type="button" className="kob-icon-danger" onClick={()=>removeOption(gi,oi)}><X className="h-4 w-4"/></button></div>)}<button type="button" className="kob-add-option" onClick={()=>addOption(gi)}><Plus className="h-4 w-4"/>Add option</button></div>
+          </div>)}</div>
+        </div>
+        <label className="kob-inline-check"><input type="checkbox" checked={active} onChange={(e)=>setActive(e.target.checked)}/>Active and visible to customers</label>
+        {error && <div className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+        <div className="flex justify-end gap-3"><button type="button" className="btn-ghost-brass px-6 py-3" onClick={onClose}>Cancel</button><button className="btn-brass flex items-center gap-2 px-7 py-3" disabled={saving}>{saving ? <Loader2 className="h-4 w-4 animate-spin"/> : <Check className="h-4 w-4"/>}Save Drink</button></div>
+      </form>
+    </section>
+  </div>;
 }
 
-function getFileExtension(
-  file: File,
-) {
-  if (
-    file.type ===
-    "image/png"
-  ) {
-    return "png";
-  }
-
-  if (
-    file.type ===
-    "image/webp"
-  ) {
-    return "webp";
-  }
-
-  return "jpg";
+function Input({ label, value, onChange, dir, inputMode }: { label: string; value: string; onChange: (value:string)=>void; dir?: "rtl"|"ltr"; inputMode?: "numeric" }) {
+  return <label className="block"><span className="kob-field-label">{label}</span><input className="inset-well kob-field-control" value={value} onChange={(e)=>onChange(e.target.value)} dir={dir} inputMode={inputMode}/></label>;
 }

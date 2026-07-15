@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 
 import { DrinkSlider } from "@/components/drinks/DrinkSlider";
-import type { Drink } from "@/components/drinks/types";
+import type { Drink, DrinkOrderCustomization } from "@/components/drinks/types";
 import { supabase } from "@/integrations/supabase/client";
 import {
   LanguageSwitcher,
@@ -380,7 +380,26 @@ function ScanPage() {
           name_en,
           name_ar,
           is_active,
-          image_url
+          image_url,
+          calories,
+          allergens,
+          option_groups:drink_option_groups(
+            id,
+            drink_type_id,
+            name_en,
+            name_ar,
+            selection_type,
+            is_required,
+            sort_order,
+            options:drink_options(
+              id,
+              group_id,
+              name_en,
+              name_ar,
+              is_active,
+              sort_order
+            )
+          )
         `,
       )
       .eq("is_active", true)
@@ -744,6 +763,7 @@ function ScanPage() {
 
   async function sendOrder(
     drink: Drink,
+    customization: DrinkOrderCustomization,
   ) {
     if (
       !subscription ||
@@ -782,6 +802,12 @@ function ScanPage() {
 
         _drink_type_id:
           drink.id,
+
+        _selected_option_ids:
+          customization.selectedOptionIds,
+
+        _customer_note:
+          customization.note || null,
       },
     );
 

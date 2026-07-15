@@ -50,6 +50,13 @@ type OrderRow = {
   status: OrderStatus;
   created_at: string;
   order_date?: string | null;
+  selected_options: Array<{
+    group_name_en: string;
+    group_name_ar: string;
+    option_name_en: string;
+    option_name_ar: string;
+  }>;
+  customer_note: string | null;
 
   drink: {
     name_en: string;
@@ -202,6 +209,8 @@ function CashierQueuePage() {
               status,
               created_at,
               order_date,
+              selected_options,
+              customer_note,
               drink:drink_types(
                 name_en,
                 name_ar
@@ -1194,6 +1203,32 @@ function CoffeeOrderCard({
           value={timeLabel}
         />
       </div>
+
+      {(order.selected_options?.length > 0 || order.customer_note) && (
+        <div className="cashier-customization-summary">
+          {order.selected_options?.length > 0 && (
+            <div>
+              <span className="cashier-customization-title">
+                {language === "ar" ? "الخيارات" : "Options"}
+              </span>
+              <ul>
+                {order.selected_options.map((option, index) => (
+                  <li key={`${option.option_name_en}-${index}`}>
+                    <b>{language === "ar" ? option.group_name_ar : option.group_name_en}:</b>{" "}
+                    {language === "ar" ? option.option_name_ar : option.option_name_en}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {order.customer_note && (
+            <div className="cashier-customer-note">
+              <span>{language === "ar" ? "تعليق العميل" : "Customer note"}</span>
+              <p>{order.customer_note}</p>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="cashier-card-actions">
         <button
