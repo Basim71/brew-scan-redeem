@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 import { DrinkCard } from "./DrinkCard";
-import type { Drink } from "./types";
+import type { Drink, DrinkOrderCustomization } from "./types";
 
 type DrinkSliderProps = {
   drinks: Drink[];
@@ -22,6 +22,7 @@ type DrinkSliderProps = {
   canOrder?: boolean;
   onOrder?: (
     drink: Drink,
+    customization: DrinkOrderCustomization,
   ) => void | Promise<void>;
 };
 
@@ -301,10 +302,8 @@ export function DrinkSlider({
                     drink.id,
                   );
                 }}
-                onOrder={() => {
-                  void onOrder?.(
-                    drink,
-                  );
+                onOrder={(customization) => {
+                  void onOrder?.(drink, customization);
                 }}
               />
             );
