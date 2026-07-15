@@ -607,7 +607,7 @@ function BranchQrCard({
         />
       </div>
 
-      <div className="mt-4 rounded-xl bg-black/20 p-3 text-center">
+      <div className="kob-neo-inset mt-4 rounded-xl p-3 text-center">
         <p className="text-sm font-semibold text-cream">
           Scan to order
         </p>
@@ -625,7 +625,7 @@ function BranchQrCard({
         onClick={() => {
           void copyBranchUrl();
         }}
-        className="mt-3 w-full truncate rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs text-cream-dim transition hover:border-caramel/40 hover:text-caramel-bright"
+        className="kob-neo-inset mt-3 w-full truncate rounded-lg px-3 py-2 text-xs text-cream-dim transition hover:text-caramel-bright"
         title={branchUrl}
       >
         {copied

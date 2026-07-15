@@ -232,7 +232,7 @@ function CouponsPage() {
 
       {batchOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          className="kob-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4"
           onClick={() => !busy && setBatchOpen(false)}
         >
           <div className="panel-warm p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>

@@ -517,7 +517,7 @@ function DrinkCard({
 }: DrinkCardProps) {
   return (
     <article className="panel-warm flex min-w-0 flex-col overflow-hidden">
-      <div className="relative aspect-[4/3] overflow-hidden bg-black/25">
+      <div className="kob-drink-image-shell relative aspect-[4/3] overflow-hidden">
         {drink.image_url ? (
           <img
             src={drink.image_url}
@@ -526,7 +526,7 @@ function DrinkCard({
             className="h-full w-full object-cover transition duration-500 hover:scale-105"
           />
         ) : (
-          <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-b from-caramel/10 to-black/20">
+          <div className="kob-drink-image-placeholder flex h-full w-full flex-col items-center justify-center">
             <Coffee className="h-12 w-12 text-caramel-bright" />
 
             <span className="mt-3 text-xs uppercase tracking-widest text-cream-dim">
@@ -539,7 +539,7 @@ function DrinkCard({
           className={
             drink.is_active
               ? "absolute right-3 top-3 rounded-full border border-green-400/30 bg-green-900/75 px-3 py-1 text-xs font-medium text-green-100 backdrop-blur"
-              : "absolute right-3 top-3 rounded-full border border-white/15 bg-black/70 px-3 py-1 text-xs font-medium text-cream-dim backdrop-blur"
+              : "kob-drink-status-inactive absolute right-3 top-3 rounded-full px-3 py-1 text-xs font-medium backdrop-blur"
           }
         >
           {drink.is_active
@@ -1007,7 +1007,7 @@ function DrinkModal({
 
   return (
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
+      className="kob-modal-overlay fixed inset-0 z-[200] flex items-center justify-center p-4"
       onMouseDown={(event) => {
         if (
           event.target ===
@@ -1103,14 +1103,14 @@ function DrinkModal({
             />
 
             {previewUrl ? (
-              <div className="relative overflow-hidden rounded-2xl border border-caramel/25 bg-black/20">
+              <div className="kob-image-preview relative overflow-hidden rounded-2xl border border-caramel/25">
                 <img
                   src={previewUrl}
                   alt="Drink preview"
                   className="aspect-[16/10] w-full object-cover"
                 />
 
-                <div className="absolute inset-x-0 bottom-0 flex justify-end gap-2 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12">
+                <div className="kob-image-preview-actions absolute inset-x-0 bottom-0 flex justify-end gap-2 p-4 pt-12">
                   <button
                     type="button"
                     onClick={() => {
@@ -1176,7 +1176,7 @@ function DrinkModal({
               className={
                 form.is_active
                   ? "flex min-h-12 w-full items-center justify-between rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-green-100"
-                  : "flex min-h-12 w-full items-center justify-between rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-cream-dim"
+                  : "kob-neo-inset flex min-h-12 w-full items-center justify-between rounded-xl px-4 py-3 text-cream-dim"
               }
             >
               <span>
