@@ -89,7 +89,7 @@ function AuthPage() {
   const isLoading = busy || checkingRole || (!!session && !ready);
 
   return (
-    <main className="kob-auth-page relative min-h-screen w-full overflow-hidden text-cream">
+    <main className="relative min-h-screen w-full overflow-hidden bg-[#140704] text-cream">
       <AuthBackground />
 
       {/* Top Bar */}
@@ -230,13 +230,14 @@ function AuthPage() {
 function AuthBackground() {
   return (
     <div className="pointer-events-none absolute inset-0 z-0">
-      <div className="kob-auth-background-base absolute inset-0" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_18%,rgba(245,166,71,0.12),transparent_32%),radial-gradient(circle_at_82%_72%,rgba(191,104,33,0.16),transparent_36%),linear-gradient(180deg,#1b0904_0%,#0b0302_100%)]" />
 
-      <div className="kob-auth-orb kob-auth-orb-left" />
-      <div className="kob-auth-orb kob-auth-orb-right" />
+      <div className="absolute -left-36 top-32 h-[520px] w-[520px] rounded-full bg-caramel/10 blur-[130px]" />
+      <div className="absolute -right-36 bottom-20 h-[520px] w-[520px] rounded-full bg-amber-900/20 blur-[130px]" />
 
-      <div className="kob-auth-hairline" />
-      <div className="kob-auth-bottom-fade" />
+      <div className="absolute left-1/2 top-24 h-px w-[80vw] -translate-x-1/2 bg-gradient-to-r from-transparent via-caramel/20 to-transparent" />
+
+      <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black/40 to-transparent" />
     </div>
   );
 }

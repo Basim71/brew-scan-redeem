@@ -133,10 +133,10 @@ function RootComponent() {
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
         <Toaster
-          theme="light"
+          theme="dark"
           position="top-center"
           toastOptions={{
-            className: "kob-toast panel-warm",
+            className: "panel-warm !bg-[oklch(0.18_0.03_45)] !text-[oklch(0.94_0.03_75)] !border-[oklch(0.32_0.09_60)]",
           }}
         />
       </LanguageProvider>

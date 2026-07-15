@@ -224,7 +224,7 @@ function PlansPage() {
 
 function Modal({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
   return (
-    <div className="kob-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4"
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
       onClick={onClose}>
       <div className="panel-warm p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
         {children}
