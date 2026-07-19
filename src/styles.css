@@ -5677,8 +5677,7 @@ html[dir="rtl"] .kob-metric-card::after { right: auto; left: -32px; }
   .kob-sales-chart,
   .kob-financial-chart { height: 270px; }
 }
- * Minimal Neumorphic Login — single canonical block
- * ========================================================================== */
+/* ==========================================================================
  * Minimal Neumorphic Login — single canonical block
  * ========================================================================== */
 
@@ -5923,3 +5922,314 @@ html[dir="rtl"] .kob-auth-input { padding: 0 14px 0 18px; }
   .kob-auth-password-toggle { animation: none; transition: none; }
 }
 
+
+/* ==========================================================================
+ * KOB REORGANIZED WORKSPACE — isolated layout namespace
+ * ========================================================================== */
+
+.app-workspace {
+  min-height: 100svh;
+  width: 100%;
+  overflow-x: clip;
+  padding: 0 18px 34px;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(255, 255, 255, 0.96), transparent 30%),
+    radial-gradient(circle at 94% 12%, rgba(232, 193, 141, 0.18), transparent 32%),
+    linear-gradient(155deg, #faf7f2 0%, #f5ede5 52%, #eee1d5 100%);
+}
+
+.app-island-anchor {
+  position: sticky;
+  top: 0;
+  z-index: 120;
+  width: 100%;
+  padding: 14px 0 8px;
+  pointer-events: none;
+}
+
+.app-island {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: min(100%, 1540px);
+  min-height: 66px;
+  margin: 0 auto;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: 24px;
+  background: rgba(255, 253, 249, 0.78);
+  box-shadow:
+    0 24px 55px -34px rgba(92, 57, 38, 0.38),
+    0 8px 22px -18px rgba(92, 57, 38, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(24px) saturate(1.12);
+  -webkit-backdrop-filter: blur(24px) saturate(1.12);
+  pointer-events: auto;
+}
+
+.app-island-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 4px 8px 4px 4px;
+  border-radius: 17px;
+  color: #4b3025;
+  text-decoration: none;
+}
+
+.app-island-logo {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(201, 135, 69, 0.2);
+  border-radius: 15px;
+  background: linear-gradient(145deg, #fffaf4, #ead9c7);
+  color: #a86530;
+  box-shadow:
+    7px 7px 16px rgba(125, 88, 65, 0.12),
+    -6px -6px 14px rgba(255, 255, 255, 0.86);
+}
+
+.app-island-brand-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.08;
+}
+
+.app-island-brand-copy strong {
+  color: #513426;
+  font-family: var(--font-display);
+  font-size: 18px;
+  letter-spacing: 0.04em;
+}
+
+.app-island-brand-copy small {
+  max-width: 120px;
+  margin-top: 4px;
+  overflow: hidden;
+  color: #958177;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.app-island-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.app-island-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.app-island-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  flex: 0 0 auto;
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  color: #78655a;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.app-island-link:hover {
+  border-color: rgba(201, 135, 69, 0.12);
+  background: rgba(232, 193, 141, 0.15);
+  color: #8d562d;
+  transform: translateY(-1px);
+}
+
+.app-island-link-active,
+.app-island-link-active:hover {
+  border-color: rgba(159, 98, 47, 0.18);
+  background: linear-gradient(135deg, #dda15d, #c77f3f);
+  color: #fff;
+  box-shadow:
+    0 12px 25px -15px rgba(154, 88, 36, 0.58),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38);
+}
+
+.app-island-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.app-island-language {
+  display: block;
+}
+
+.app-island-icon-button,
+.app-island-menu-button {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(111, 78, 57, 0.13);
+  border-radius: 14px;
+  background: linear-gradient(145deg, #fffdf9, #f3e7db);
+  color: #6d4a39;
+  box-shadow:
+    6px 6px 15px rgba(125, 88, 65, 0.11),
+    -5px -5px 12px rgba(255, 255, 255, 0.88);
+  transition: transform 180ms ease, color 180ms ease, border-color 180ms ease;
+}
+
+.app-island-icon-button:hover,
+.app-island-menu-button:hover {
+  border-color: rgba(201, 135, 69, 0.28);
+  color: #a86530;
+  transform: translateY(-1px);
+}
+
+.app-island-menu-button {
+  display: none;
+}
+
+.app-workspace-content {
+  width: min(100%, 1540px);
+  min-width: 0;
+  margin: 0 auto;
+  padding-top: 16px;
+}
+
+/* Auth is intentionally isolated from every staff workspace layout. */
+html,
+body {
+  min-height: 100%;
+}
+
+body:has(.kob-auth-page) {
+  margin: 0;
+  overflow: hidden;
+}
+
+.kob-auth-page {
+  position: fixed !important;
+  inset: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  width: 100vw !important;
+  min-width: 0 !important;
+  height: 100svh !important;
+  min-height: 100svh !important;
+  margin: 0 !important;
+  padding: 24px !important;
+  overflow: auto !important;
+}
+
+.kob-auth-card {
+  align-self: center !important;
+  justify-self: center !important;
+  margin: auto !important;
+}
+
+@media (max-width: 1180px) {
+  .app-island-link span {
+    display: none;
+  }
+
+  .app-island-link {
+    width: 42px;
+    padding: 9px;
+  }
+}
+
+@media (max-width: 760px) {
+  .app-workspace {
+    padding: 0 10px 24px;
+  }
+
+  .app-island-anchor {
+    padding-top: 9px;
+  }
+
+  .app-island {
+    grid-template-columns: minmax(0, 1fr) auto;
+    border-radius: 21px;
+  }
+
+  .app-island-nav {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    left: 0;
+    display: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+    max-height: min(66vh, 520px);
+    padding: 10px;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.82);
+    border-radius: 20px;
+    background: rgba(255, 253, 249, 0.96);
+    box-shadow: 0 24px 50px -30px rgba(92, 57, 38, 0.42);
+    backdrop-filter: blur(24px);
+  }
+
+  .app-island[data-open="true"] .app-island-nav {
+    display: grid;
+  }
+
+  .app-island-link,
+  .app-island-link span {
+    display: flex;
+  }
+
+  .app-island-link {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .app-island-language,
+  .app-island-icon-button {
+    display: none;
+  }
+
+  .app-island-menu-button {
+    display: grid;
+  }
+
+  .app-workspace-content {
+    padding-top: 10px;
+  }
+}
+
+@media (max-width: 460px) {
+  .app-island-brand-copy small {
+    max-width: 82px;
+  }
+
+  .app-island-nav {
+    grid-template-columns: 1fr;
+  }
+
+  .kob-auth-page {
+    padding: 16px !important;
+  }
+}
