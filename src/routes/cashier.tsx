@@ -3,6 +3,7 @@ import { Inbox, ShoppingCart } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { AppWorkspace } from "@/components/layouts/AppWorkspace";
+import { useOrganization } from "@/components/tenant/OrganizationProvider";
 import { RoleGate } from "@/components/layouts/RoleGate";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
@@ -23,6 +24,7 @@ function CashierLayout() {
   const navigate = useNavigate();
   const { branchId } = useRole();
   const { t, lang } = useI18n();
+  const { organization, clearOrganization } = useOrganization();
   const [branchName, setBranchName] = useState("");
 
   useEffect(() => {
@@ -54,6 +56,7 @@ function CashierLayout() {
   ];
 
   async function handleSignOut() {
+    clearOrganization();
     await supabase.auth.signOut();
     navigate({ to: "/auth", replace: true });
   }
@@ -61,7 +64,7 @@ function CashierLayout() {
   return (
     <RoleGate allow="cashier">
       <AppWorkspace
-        title="KOB"
+        title={organization?.nameAr || organization?.nameEn || "KOB"}
         subtitle={branchName || (lang === "ar" ? "الكاشير" : "Cashier")}
         homeTo="/cashier"
         items={items}

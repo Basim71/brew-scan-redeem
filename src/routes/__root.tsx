@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { LanguageProvider } from "../lib/i18n";
 import { Toaster } from "sonner";
+import { OrganizationProvider } from "@/components/tenant/OrganizationProvider";
 
 function NotFoundComponent() {
   return (
@@ -130,6 +131,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
+        <OrganizationProvider>
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
         <Toaster
@@ -139,6 +141,7 @@ function RootComponent() {
             className: "panel-warm !bg-[#fffdf9] !text-[#34251e] !border-[#ead9c9]",
           }}
         />
+        </OrganizationProvider>
       </LanguageProvider>
     </QueryClientProvider>
   );

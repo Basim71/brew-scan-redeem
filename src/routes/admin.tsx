@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { AppWorkspace } from "@/components/layouts/AppWorkspace";
+import { useOrganization } from "@/components/tenant/OrganizationProvider";
 import { RoleGate } from "@/components/layouts/RoleGate";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
@@ -30,6 +31,7 @@ export const Route = createFileRoute("/admin")({
 function AdminLayout() {
   const navigate = useNavigate();
   const { t, lang } = useI18n();
+  const { organization, clearOrganization } = useOrganization();
 
   const items = [
     { to: "/admin", label: t("nav_dashboard"), icon: LayoutDashboard, exact: true },
@@ -48,6 +50,7 @@ function AdminLayout() {
   ];
 
   async function handleSignOut() {
+    clearOrganization();
     await supabase.auth.signOut();
     navigate({ to: "/auth", replace: true });
   }
@@ -55,7 +58,7 @@ function AdminLayout() {
   return (
     <RoleGate allow="admin">
       <AppWorkspace
-        title="KOB"
+        title={organization?.nameAr || organization?.nameEn || "KOB"}
         subtitle={lang === "ar" ? "الإدارة" : "Admin"}
         homeTo="/admin"
         items={items}
