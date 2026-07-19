@@ -4,7 +4,7 @@ import { Eye, EyeOff, Loader2, LockKeyhole, Mail, ShieldCheck } from "lucide-rea
 import { supabase } from "@/integrations/supabase/client";
 import { usePlatform } from "@/components/platform/PlatformProvider";
 
-export const Route = createFileRoute("/platform-auth" as any)({ component: PlatformAuth });
+export const Route = createFileRoute("/platform-auth")({ component: PlatformAuth });
 function PlatformAuth() {
   const navigate = useNavigate();
   const { profile, ready, refresh } = usePlatform();

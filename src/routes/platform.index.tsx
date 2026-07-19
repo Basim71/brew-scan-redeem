@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Building2, CircleAlert, Headphones, Radio, ShieldCheck, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/platform/" as any)({ component: Dashboard });
+export const Route = createFileRoute("/platform/")({ component: Dashboard });
 
 type Metrics = {
   companies: number;

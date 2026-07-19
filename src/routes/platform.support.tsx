@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { listCases } from "@/modules/customer-success/api";
 import { caseStatusLabels, priorityLabels, type CustomerSuccessCase } from "@/modules/customer-success/types";
 
-export const Route = createFileRoute("/platform/support" as any)({ component: SupportCenter });
+export const Route = createFileRoute("/platform/support")({ component: SupportCenter });
 
 function SupportCenter(){
   const navigate=useNavigate();

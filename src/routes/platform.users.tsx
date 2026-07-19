@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Shield, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/platform/users" as any)({ component: UsersPage });
+export const Route = createFileRoute("/platform/users")({ component: UsersPage });
 
 function UsersPage() {
   const [rows, setRows] = useState<any[]>([]);

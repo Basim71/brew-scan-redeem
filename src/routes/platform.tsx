@@ -5,7 +5,7 @@ import { PlatformGate } from "@/components/platform/PlatformGate";
 import { usePlatform } from "@/components/platform/PlatformProvider";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/platform" as any)({ component: PlatformLayout });
+export const Route = createFileRoute("/platform")({ component: PlatformLayout });
 function PlatformLayout() {
  const navigate=useNavigate(); const { profile }=usePlatform();
  const items=[

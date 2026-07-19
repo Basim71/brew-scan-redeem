@@ -6,7 +6,7 @@ import { usePlatform } from "@/components/platform/PlatformProvider";
 import { addCaseMessage, getCase, updateCase } from "@/modules/customer-success/api";
 import { caseStatusLabels, priorityLabels, type CustomerSuccessCase } from "@/modules/customer-success/types";
 
-export const Route=createFileRoute("/platform/support/$caseId" as any)({component:PlatformCaseDetails});
+export const Route=createFileRoute("/platform/support/$caseId")({component:PlatformCaseDetails});
 function PlatformCaseDetails(){
  const {caseId}=Route.useParams() as {caseId:string}; const {profile}=usePlatform();
  const [item,setItem]=useState<CustomerSuccessCase|null>(null); const [messages,setMessages]=useState<any[]>([]); const [body,setBody]=useState(""); const [internal,setInternal]=useState(false); const [saving,setSaving]=useState(false);
