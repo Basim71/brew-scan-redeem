@@ -22,6 +22,9 @@ import { Route as PlatformCompaniesRouteImport } from './routes/platform.compani
 import { Route as PlatformSupportRouteImport } from './routes/platform.support'
 import { Route as PlatformUsersRouteImport } from './routes/platform.users'
 import { Route as PlatformSettingsRouteImport } from './routes/platform.settings'
+import { Route as PlatformSupportCaseIdRouteImport } from './routes/platform.support.$caseId'
+import { Route as AdminCustomerSuccessRouteImport } from './routes/admin.customer-success'
+import { Route as AdminCustomerSuccessCaseIdRouteImport } from './routes/admin.customer-success.$caseId'
 import { Route as CashierIndexRouteImport } from './routes/cashier.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as CashierSellCouponRouteImport } from './routes/cashier.sell-coupon'
@@ -84,6 +87,15 @@ const PlatformUsersRoute = PlatformUsersRouteImport.update({
 } as any)
 const PlatformSettingsRoute = PlatformSettingsRouteImport.update({
   id: '/settings', path: '/settings', getParentRoute: () => PlatformRoute,
+} as any)
+const PlatformSupportCaseIdRoute = PlatformSupportCaseIdRouteImport.update({
+  id: '/support/$caseId', path: '/support/$caseId', getParentRoute: () => PlatformRoute,
+} as any)
+const AdminCustomerSuccessRoute = AdminCustomerSuccessRouteImport.update({
+  id: '/customer-success', path: '/customer-success', getParentRoute: () => AdminRoute,
+} as any)
+const AdminCustomerSuccessCaseIdRoute = AdminCustomerSuccessCaseIdRouteImport.update({
+  id: '/customer-success/$caseId', path: '/customer-success/$caseId', getParentRoute: () => AdminRoute,
 } as any)
 const CashierIndexRoute = CashierIndexRouteImport.update({
   id: '/',
@@ -396,9 +408,10 @@ interface PlatformRouteChildren {
   PlatformSupportRoute: typeof PlatformSupportRoute
   PlatformUsersRoute: typeof PlatformUsersRoute
   PlatformSettingsRoute: typeof PlatformSettingsRoute
+  PlatformSupportCaseIdRoute: typeof PlatformSupportCaseIdRoute
 }
 const PlatformRouteChildren: PlatformRouteChildren = {
-  PlatformIndexRoute, PlatformCompaniesRoute, PlatformSupportRoute, PlatformUsersRoute, PlatformSettingsRoute,
+  PlatformIndexRoute, PlatformCompaniesRoute, PlatformSupportRoute, PlatformUsersRoute, PlatformSettingsRoute, PlatformSupportCaseIdRoute,
 }
 const PlatformRouteWithChildren = PlatformRoute._addFileChildren(PlatformRouteChildren)
 
@@ -411,6 +424,8 @@ interface AdminRouteChildren {
   AdminPlansRoute: typeof AdminPlansRoute
   AdminSellCouponRoute: typeof AdminSellCouponRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
+  AdminCustomerSuccessRoute: typeof AdminCustomerSuccessRoute
+  AdminCustomerSuccessCaseIdRoute: typeof AdminCustomerSuccessCaseIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
@@ -423,6 +438,8 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminPlansRoute: AdminPlansRoute,
   AdminSellCouponRoute: AdminSellCouponRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
+  AdminCustomerSuccessRoute: AdminCustomerSuccessRoute,
+  AdminCustomerSuccessCaseIdRoute: AdminCustomerSuccessCaseIdRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
