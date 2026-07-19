@@ -1,0 +1,6 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect,useState } from "react";
+import { Shield, UserPlus } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+export const Route=createFileRoute("/platform/users" as any)({component:UsersPage});
+function UsersPage(){const [rows,setRows]=useState<any[]>([]);useEffect(()=>{void (async()=>{const {data}=await (supabase as any).from("platform_staff").select("id,full_name,email,role,status,last_login_at").order("created_at");setRows(data??[])})()},[]);return <div className="platform-page" dir="rtl"><header className="platform-page-header"><div><span>Access Control</span><h1>فريق المنصة</h1><p>إدارة مسؤولي المنصة ومستويات فريق الدعم.</p></div><button className="platform-primary-button"><UserPlus/> إضافة موظف</button></header><div className="platform-table-wrap"><table className="platform-table"><thead><tr><th>الموظف</th><th>الدور</th><th>الحالة</th><th>آخر دخول</th></tr></thead><tbody>{rows.map(u=><tr key={u.id}><td><strong>{u.full_name}</strong><small>{u.email}</small></td><td><span className="platform-role"><Shield/>{u.role}</span></td><td>{u.status}</td><td>{u.last_login_at?new Date(u.last_login_at).toLocaleString("ar-SA"):"—"}</td></tr>)}</tbody></table></div></div>}

@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { LanguageProvider } from "../lib/i18n";
 import { Toaster } from "sonner";
 import { OrganizationProvider } from "@/components/tenant/OrganizationProvider";
+import { PlatformProvider } from "@/components/platform/PlatformProvider";
 
 function NotFoundComponent() {
   return (
@@ -131,6 +132,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
+        <PlatformProvider>
         <OrganizationProvider>
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
@@ -142,6 +144,7 @@ function RootComponent() {
           }}
         />
         </OrganizationProvider>
+        </PlatformProvider>
       </LanguageProvider>
     </QueryClientProvider>
   );
