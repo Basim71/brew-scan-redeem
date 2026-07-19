@@ -15,6 +15,13 @@ import { Route as CashierRouteImport } from './routes/cashier'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PlatformAuthRouteImport } from './routes/platform-auth'
+import { Route as PlatformRouteImport } from './routes/platform'
+import { Route as PlatformIndexRouteImport } from './routes/platform.index'
+import { Route as PlatformCompaniesRouteImport } from './routes/platform.companies'
+import { Route as PlatformSupportRouteImport } from './routes/platform.support'
+import { Route as PlatformUsersRouteImport } from './routes/platform.users'
+import { Route as PlatformSettingsRouteImport } from './routes/platform.settings'
 import { Route as CashierIndexRouteImport } from './routes/cashier.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as CashierSellCouponRouteImport } from './routes/cashier.sell-coupon'
@@ -56,6 +63,27 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const PlatformAuthRoute = PlatformAuthRouteImport.update({
+  id: '/platform-auth', path: '/platform-auth', getParentRoute: () => rootRouteImport,
+} as any)
+const PlatformRoute = PlatformRouteImport.update({
+  id: '/platform', path: '/platform', getParentRoute: () => rootRouteImport,
+} as any)
+const PlatformIndexRoute = PlatformIndexRouteImport.update({
+  id: '/', path: '/', getParentRoute: () => PlatformRoute,
+} as any)
+const PlatformCompaniesRoute = PlatformCompaniesRouteImport.update({
+  id: '/companies', path: '/companies', getParentRoute: () => PlatformRoute,
+} as any)
+const PlatformSupportRoute = PlatformSupportRouteImport.update({
+  id: '/support', path: '/support', getParentRoute: () => PlatformRoute,
+} as any)
+const PlatformUsersRoute = PlatformUsersRouteImport.update({
+  id: '/users', path: '/users', getParentRoute: () => PlatformRoute,
+} as any)
+const PlatformSettingsRoute = PlatformSettingsRouteImport.update({
+  id: '/settings', path: '/settings', getParentRoute: () => PlatformRoute,
 } as any)
 const CashierIndexRoute = CashierIndexRouteImport.update({
   id: '/',
@@ -229,6 +257,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PlatformAuthRoute: typeof PlatformAuthRoute
+  PlatformRoute: typeof PlatformRouteWithChildren
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   CashierRoute: typeof CashierRouteWithChildren
@@ -360,6 +390,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface PlatformRouteChildren {
+  PlatformIndexRoute: typeof PlatformIndexRoute
+  PlatformCompaniesRoute: typeof PlatformCompaniesRoute
+  PlatformSupportRoute: typeof PlatformSupportRoute
+  PlatformUsersRoute: typeof PlatformUsersRoute
+  PlatformSettingsRoute: typeof PlatformSettingsRoute
+}
+const PlatformRouteChildren: PlatformRouteChildren = {
+  PlatformIndexRoute, PlatformCompaniesRoute, PlatformSupportRoute, PlatformUsersRoute, PlatformSettingsRoute,
+}
+const PlatformRouteWithChildren = PlatformRoute._addFileChildren(PlatformRouteChildren)
+
 interface AdminRouteChildren {
   AdminBranchesRoute: typeof AdminBranchesRoute
   AdminCashiersRoute: typeof AdminCashiersRoute
@@ -401,6 +443,8 @@ const CashierRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PlatformAuthRoute: PlatformAuthRoute,
+  PlatformRoute: PlatformRouteWithChildren,
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   CashierRoute: CashierRouteWithChildren,
