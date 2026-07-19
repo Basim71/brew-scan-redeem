@@ -1,0 +1,22 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState, type FormEvent } from "react";
+import { CheckCircle2, Clock3, LockKeyhole, MessageCircle, Send, UserRoundCheck } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { usePlatform } from "@/components/platform/PlatformProvider";
+import { addCaseMessage, getCase, updateCase } from "@/modules/customer-success/api";
+import { caseStatusLabels, priorityLabels, type CustomerSuccessCase } from "@/modules/customer-success/types";
+
+export const Route=createFileRoute("/platform/support/$caseId" as any)({component:PlatformCaseDetails});
+function PlatformCaseDetails(){
+ const {caseId}=Route.useParams() as {caseId:string}; const {profile}=usePlatform();
+ const [item,setItem]=useState<CustomerSuccessCase|null>(null); const [messages,setMessages]=useState<any[]>([]); const [body,setBody]=useState(""); const [internal,setInternal]=useState(false); const [saving,setSaving]=useState(false);
+ async function load(){setItem(await getCase(caseId));const {data}=await (supabase as any).from("customer_success_case_messages").select("id,body,visibility,created_at,sender_user_id").eq("case_id",caseId).order("created_at");setMessages(data??[])}
+ useEffect(()=>{void load();const c=supabase.channel(`platform-case-${caseId}`).on("postgres_changes",{event:"*",schema:"public",table:"customer_success_case_messages",filter:`case_id=eq.${caseId}`},()=>void load()).subscribe();return()=>{void supabase.removeChannel(c)}},[caseId]);
+ async function patch(p:Record<string,unknown>){setSaving(true);try{await updateCase(caseId,p);await load()}finally{setSaving(false)}}
+ async function send(e:FormEvent){e.preventDefault();if(!body.trim())return;await addCaseMessage(caseId,body,internal?"internal":"shared");setBody("");await load()}
+ if(!item)return <div className="cs-empty">جارٍ تحميل الحالة...</div>;
+ return <div className="cs-page" dir="rtl"><header className="cs-case-header"><div><span>{item.caseNumber}</span><h1>{item.title}</h1><p>{item.organization?.name_ar||item.organization?.name_en} · {item.description}</p></div><div><span className={`status-${item.status}`}>{caseStatusLabels[item.status]}</span><span className={`priority-${item.priority}`}>{priorityLabels[item.priority]}</span></div></header>
+ <div className="cs-platform-actions"><button disabled={saving} onClick={()=>patch({assigned_platform_member_id:profile?.id,status:"assigned",first_response_at:new Date().toISOString()})}><UserRoundCheck/> استلام الحالة</button><button disabled={saving} onClick={()=>patch({status:"active"})}>بدء المعالجة</button><button disabled={saving} onClick={()=>patch({status:"waiting_company"})}>بانتظار الشركة</button><button disabled={saving} onClick={()=>patch({status:"resolved",resolved_at:new Date().toISOString()})}><CheckCircle2/> تم الحل</button><button disabled={saving} onClick={()=>patch({status:"closed",closed_at:new Date().toISOString()})}>إغلاق</button></div>
+ <div className="cs-workspace"><main className="cs-thread"><div className="cs-section-title"><h2><MessageCircle/> سجل الحالة</h2></div><div className="cs-messages">{messages.map(m=><article key={m.id} className={m.visibility==="internal"?"internal":""}><strong>{m.visibility==="internal"?<><LockKeyhole/> ملاحظة داخلية</>:"رسالة مشتركة"}</strong><p>{m.body}</p><time>{new Date(m.created_at).toLocaleString("ar-SA")}</time></article>)}{!messages.length&&<div className="cs-empty">لا توجد رسائل بعد.</div>}</div><form className="cs-composer platform" onSubmit={send}><label className="cs-internal-toggle"><input type="checkbox" checked={internal} onChange={e=>setInternal(e.target.checked)}/> ملاحظة داخلية</label><textarea value={body} onChange={e=>setBody(e.target.value)} placeholder={internal?"لن تظهر هذه الملاحظة للشركة":"اكتب ردًا للشركة..."}/><button className="cs-primary"><Send/></button></form></main>
+ <aside className="cs-sidebar"><section><h3><Clock3/> إدارة الحالة</h3><dl><dt>الحالة</dt><dd>{caseStatusLabels[item.status]}</dd><dt>الأولوية</dt><dd>{priorityLabels[item.priority]}</dd><dt>الجلسة</dt><dd>{item.sessionPreference}</dd><dt>الموعد</dt><dd>{item.scheduledAt?new Date(item.scheduledAt).toLocaleString("ar-SA"):"غير محدد"}</dd></dl></section><section><h3>الصلاحيات الممنوحة</h3><ul><li>{item.allowView?"✓":"—"} مشاهدة</li><li>{item.allowTemporaryEdit?"✓":"—"} تعديل مؤقت</li><li>{item.allowVoice?"✓":"—"} صوت</li><li>{item.allowRecording?"✓":"—"} تسجيل</li></ul></section></aside></div></div>
+}

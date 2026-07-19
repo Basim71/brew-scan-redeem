@@ -9,6 +9,7 @@ import {
   Ticket,
   UserRoundCog,
   Users,
+  Headphones,
 } from "lucide-react";
 
 import { AppWorkspace } from "@/components/layouts/AppWorkspace";
@@ -47,6 +48,7 @@ function AdminLayout() {
     },
     { to: "/admin/branches", label: t("tab_branches"), icon: Building2 },
     { to: "/admin/cashiers", label: t("tab_staff"), icon: UserRoundCog },
+    { to: "/admin/customer-success", label: lang === "ar" ? "نجاح العملاء" : "Customer Success", icon: Headphones },
   ];
 
   async function handleSignOut() {
