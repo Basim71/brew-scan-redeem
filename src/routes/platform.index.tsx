@@ -1,94 +1,104 @@
 import { createFileRoute } from "@tanstack/react-router";
+import {
+  Building2,
+  CircleAlert,
+  Headphones,
+  Radio,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
 import { useEffect, useState } from "react";
-import { Building2, CircleAlert, Headphones, Radio, ShieldCheck, Users } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/platform/")({ component: Dashboard });
+import { MetricCard } from "@/components/common/MetricCard";
+import { PageHeader } from "@/components/common/PageHeader";
+import {
+  EMPTY_PLATFORM_METRICS,
+  fetchPlatformMetrics,
+  type PlatformMetrics,
+} from "@/services/platform/dashboard";
 
-type Metrics = {
-  companies: number;
-  active: number;
-  customers: number;
-  pending: number;
-  live: number;
-  staff: number;
-};
+export const Route = createFileRoute("/platform/")({ component: PlatformDashboard });
 
-const EMPTY: Metrics = { companies: 0, active: 0, customers: 0, pending: 0, live: 0, staff: 0 };
-
-function Dashboard() {
-  const [metrics, setMetrics] = useState<Metrics>(EMPTY);
+function PlatformDashboard() {
+  const [metrics, setMetrics] = useState<PlatformMetrics>(EMPTY_PLATFORM_METRICS);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
-    let mounted = true;
+    let active = true;
 
-    void (async () => {
-      const db = supabase as any;
-      const [companies, activeCompanies, customers, pendingCases, activeCases, platformStaff] = await Promise.all([
-        db.from("organizations").select("id", { count: "exact", head: true }).eq("organization_type", "company"),
-        db.from("organizations").select("id", { count: "exact", head: true }).eq("organization_type", "company").eq("status", "active"),
-        db.from("customers").select("id", { count: "exact", head: true }),
-        db.from("customer_success_cases").select("id", { count: "exact", head: true }).in("status", ["new", "triaged", "assigned", "waiting_platform"]),
-        db.from("customer_success_cases").select("id", { count: "exact", head: true }).eq("status", "active"),
-        db.from("platform_staff").select("id", { count: "exact", head: true }).eq("status", "active"),
-      ]);
-
-      if (!mounted) return;
-      const firstError = [companies, activeCompanies, customers, pendingCases, activeCases, platformStaff].find((result) => result.error)?.error;
-      setMetrics({
-        companies: companies.count ?? 0,
-        active: activeCompanies.count ?? 0,
-        customers: customers.count ?? 0,
-        pending: pendingCases.count ?? 0,
-        live: activeCases.count ?? 0,
-        staff: platformStaff.count ?? 0,
+    fetchPlatformMetrics()
+      .then(({ metrics: nextMetrics, error }) => {
+        if (!active) return;
+        setMetrics(nextMetrics);
+        setLoadError(error);
+      })
+      .catch((error: unknown) => {
+        if (!active) return;
+        setLoadError(error instanceof Error ? error.message : "حدث خطأ غير متوقع.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
       });
-      setLoadError(firstError?.message ?? null);
-      setLoading(false);
-    })();
 
     return () => {
-      mounted = false;
+      active = false;
     };
   }, []);
 
   const cards = [
-    ["إجمالي الشركات", metrics.companies, Building2],
-    ["الشركات النشطة", metrics.active, ShieldCheck],
-    ["إجمالي العملاء", metrics.customers, Users],
-    ["حالات بانتظار الفريق", metrics.pending, CircleAlert],
-    ["حالات نشطة", metrics.live, Radio],
-    ["فريق المنصة", metrics.staff, Headphones],
+    { label: "إجمالي الشركات", value: metrics.companies, icon: Building2 },
+    { label: "الشركات النشطة", value: metrics.activeCompanies, icon: ShieldCheck },
+    { label: "إجمالي العملاء", value: metrics.customers, icon: Users },
+    { label: "حالات بانتظار الفريق", value: metrics.pendingCases, icon: CircleAlert },
+    { label: "حالات نشطة", value: metrics.activeCases, icon: Radio },
+    { label: "فريق المنصة", value: metrics.activeStaff, icon: Headphones },
   ] as const;
 
   return (
     <div className="platform-page" dir="rtl">
-      <header className="platform-page-header">
-        <div>
-          <span>Platform Intelligence</span>
-          <h1>إدارة منظومة KOB</h1>
-          <p>نظرة مركزية على الشركات وCustomer Success والتشغيل.</p>
+      <PageHeader
+        eyebrow="Platform Intelligence"
+        title="إدارة منظومة KOB"
+        description="نظرة مركزية على الشركات ونجاح العملاء والتشغيل اليومي."
+        action={
+          <div className="status-pill status-pill-success">
+            <i aria-hidden="true" />
+            النظام متصل
+          </div>
+        }
+      />
+
+      {loadError ? (
+        <div className="inline-alert" role="alert">
+          <CircleAlert aria-hidden="true" />
+          <span>تعذر تحميل بعض مؤشرات المنصة: {loadError}</span>
         </div>
-        <div className="platform-live-pill"><i /> النظام متصل</div>
-      </header>
+      ) : null}
 
-      {loadError && <p className="platform-auth-error">تعذر تحميل بعض مؤشرات المنصة: {loadError}</p>}
-
-      <div className="platform-metrics">
-        {cards.map(([label, value, Icon]) => (
-          <article key={label}>
-            <div><Icon /></div>
-            <span>{label}</span>
-            <strong>{loading ? "—" : value.toLocaleString("ar-SA")}</strong>
-          </article>
+      <section className="metrics-grid" aria-label="مؤشرات المنصة">
+        {cards.map((card) => (
+          <MetricCard key={card.label} {...card} loading={loading} />
         ))}
-      </div>
+      </section>
 
-      <section className="platform-feature-grid">
-        <article><Headphones /><div><h2>Customer Success</h2><p>الحالات الجديدة والمجدولة والنشطة في مكان واحد.</p></div></article>
-        <article><ShieldCheck /><div><h2>وصول محكوم بالموافقة</h2><p>لا يبدأ الدعم أي جلسة أو صلاحية مؤقتة دون موافقة ممثل الشركة.</p></div></article>
+      <section className="insight-grid" aria-label="مزايا التشغيل">
+        <article className="insight-card insight-card-dark">
+          <Headphones />
+          <div>
+            <span className="insight-card-kicker">Customer Success</span>
+            <h2>إدارة الحالات من مكان واحد</h2>
+            <p>تابع الحالات الجديدة والمجدولة والنشطة مع سجل واضح لكل إجراء.</p>
+          </div>
+        </article>
+        <article className="insight-card">
+          <ShieldCheck />
+          <div>
+            <span className="insight-card-kicker">Controlled Access</span>
+            <h2>وصول محكوم بالموافقة</h2>
+            <p>لا تبدأ أي جلسة دعم أو صلاحية مؤقتة قبل موافقة ممثل الشركة.</p>
+          </div>
+        </article>
       </section>
     </div>
   );
