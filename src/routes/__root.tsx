@@ -15,8 +15,18 @@ import { LanguageProvider } from "../lib/i18n";
 import { Toaster } from "sonner";
 import { OrganizationProvider } from "@/components/tenant/OrganizationProvider";
 import { PlatformProvider } from "@/components/platform/PlatformProvider";
+import { PlatformAuthPage } from "@/components/platform/PlatformAuthPage";
 
 function NotFoundComponent() {
+  // Lovable may briefly serve a stale generated route tree after files are moved.
+  // Keep the platform sign-in entry available while the route manifest refreshes.
+  if (typeof window !== "undefined") {
+    const pathname = window.location.pathname.replace(/\/+$/, "") || "/";
+    if (pathname === "/platform-auth") {
+      return <PlatformAuthPage />;
+    }
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
@@ -133,17 +143,17 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
         <PlatformProvider>
-        <OrganizationProvider>
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
-        <Toaster
+          <OrganizationProvider>
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+            <Toaster
           theme="light"
           position="top-center"
           toastOptions={{
             className: "panel-warm !bg-[#fffdf9] !text-[#34251e] !border-[#ead9c9]",
           }}
-        />
-        </OrganizationProvider>
+            />
+          </OrganizationProvider>
         </PlatformProvider>
       </LanguageProvider>
     </QueryClientProvider>
