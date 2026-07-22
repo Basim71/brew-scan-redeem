@@ -100,8 +100,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "KOB — Premium Coffee Subscription Coupons" },
       { name: "twitter:description", content: "KOB is a premium coffee subscription and coupon system for specialty coffee shops. Scan, sip, repeat." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/O3iIb9hN9aSYWgIWCDBlO3yK7GA2/social-images/social-1784026123367-New_Project_(5).webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/O3iIb9hN9aSYWgIWCDBlO3yK7GA2/social-images/social-1784026123367-New_Project_(5).webp" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/O3iIb9hN9aSYWgIWCDBlO3yK7GA2/social-images/social-1784722008434-2C88A849-CE26-43CF-AD3A-68CD17B003F6.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/O3iIb9hN9aSYWgIWCDBlO3yK7GA2/social-images/social-1784722008434-2C88A849-CE26-43CF-AD3A-68CD17B003F6.webp" },
     ],
     links: [
       {
