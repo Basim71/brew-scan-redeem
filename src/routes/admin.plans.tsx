@@ -2,22 +2,20 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { Plus, Loader2, Pencil, Power, PowerOff, Trash2, X, Save, Boxes } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  listPlans,
+  createPlan,
+  updatePlan,
+  setPlanActive,
+  deletePlan,
+  type Plan,
+} from "@/services/company/plans.service";
 import { StatusPill } from "@/lib/ui";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/admin/plans")({
   component: PlansPage,
 });
-
-type Plan = {
-  id: string;
-  name: string;
-  duration_days: number;
-  price: number;
-  is_active: boolean;
-  created_at: string;
-};
 
 type FormState = { name: string; duration_days: string; price: string; is_active: boolean };
 const EMPTY: FormState = { name: "", duration_days: "", price: "", is_active: true };
@@ -34,9 +32,11 @@ function PlansPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase.from("plans").select("*").order("created_at", { ascending: false });
-    if (error) toast.error(error.message);
-    setRows((data as Plan[]) ?? []);
+    try {
+      setRows(await listPlans());
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
     setLoading(false);
   }, []);
   useEffect(() => { load(); }, [load]);
@@ -59,11 +59,15 @@ function PlansPage() {
 
     setBusy(true);
     const payload = { name, duration_days: duration, price, is_active: form.is_active };
-    const { error } = editing
-      ? await supabase.from("plans").update(payload).eq("id", editing.id)
-      : await supabase.from("plans").insert(payload);
+    try {
+      if (editing) await updatePlan(editing.id, payload);
+      else await createPlan(payload);
+    } catch (e) {
+      setBusy(false);
+      toast.error((e as Error).message);
+      return;
+    }
     setBusy(false);
-    if (error) { toast.error(error.message); return; }
     toast.success(editing ? t("plans_updated") : t("plans_created"));
     setEditorOpen(false); setEditing(null); setForm(EMPTY);
     load();
@@ -73,16 +77,20 @@ function PlansPage() {
     if (!confirm) return;
     const { plan, action } = confirm;
     setBusy(true);
-    if (action === "delete") {
-      const { error } = await supabase.from("plans").delete().eq("id", plan.id);
+    try {
+      if (action === "delete") {
+        await deletePlan(plan.id);
+        setBusy(false); setConfirm(null);
+        toast.success(t("plans_deleted"));
+      } else {
+        await setPlanActive(plan.id, !plan.is_active);
+        setBusy(false); setConfirm(null);
+        toast.success(plan.is_active ? t("plans_deactivated") : t("plans_activated"));
+      }
+      load();
+    } catch (e) {
       setBusy(false); setConfirm(null);
-      if (error) toast.error(error.message);
-      else { toast.success(t("plans_deleted")); load(); }
-    } else {
-      const { error } = await supabase.from("plans").update({ is_active: !plan.is_active }).eq("id", plan.id);
-      setBusy(false); setConfirm(null);
-      if (error) toast.error(error.message);
-      else { toast.success(plan.is_active ? t("plans_deactivated") : t("plans_activated")); load(); }
+      toast.error((e as Error).message);
     }
   }
 
