@@ -21,10 +21,14 @@ import { Route as AdminBranchesRouteImport } from './routes/admin.branches'
 import { Route as AdminCashiersRouteImport } from './routes/admin.cashiers'
 import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
 import { Route as AdminCustomerSuccessRouteImport } from './routes/admin.customer-success'
+import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminDrinksRouteImport } from './routes/admin.drinks'
 import { Route as AdminFinancialReportsRouteImport } from './routes/admin.financial-reports'
+import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminPlansRouteImport } from './routes/admin.plans'
+import { Route as AdminReportsRouteImport } from './routes/admin.reports'
 import { Route as AdminSellCouponRouteImport } from './routes/admin.sell-coupon'
+import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as CashierIndexRouteImport } from './routes/cashier.index'
 import { Route as CashierSellCouponRouteImport } from './routes/cashier.sell-coupon'
@@ -102,6 +106,11 @@ const AdminCustomerSuccessRoute = AdminCustomerSuccessRouteImport.update({
   path: '/customer-success',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCustomersRoute = AdminCustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminDrinksRoute = AdminDrinksRouteImport.update({
   id: '/drinks',
   path: '/drinks',
@@ -112,14 +121,29 @@ const AdminFinancialReportsRoute = AdminFinancialReportsRouteImport.update({
   path: '/financial-reports',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminOrdersRoute = AdminOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminPlansRoute = AdminPlansRouteImport.update({
   id: '/plans',
   path: '/plans',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminReportsRoute = AdminReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminSellCouponRoute = AdminSellCouponRouteImport.update({
   id: '/sell-coupon',
   path: '/sell-coupon',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
@@ -218,10 +242,14 @@ export interface FileRoutesByFullPath {
   '/admin/cashiers': typeof AdminCashiersRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/customer-success': typeof AdminCustomerSuccessRouteWithChildren
+  '/admin/customers': typeof AdminCustomersRoute
   '/admin/drinks': typeof AdminDrinksRoute
   '/admin/financial-reports': typeof AdminFinancialReportsRoute
+  '/admin/orders': typeof AdminOrdersRoute
   '/admin/plans': typeof AdminPlansRoute
+  '/admin/reports': typeof AdminReportsRoute
   '/admin/sell-coupon': typeof AdminSellCouponRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/cashier/sell-coupon': typeof CashierSellCouponRoute
   '/platform/announcements': typeof PlatformAnnouncementsRoute
@@ -249,10 +277,14 @@ export interface FileRoutesByTo {
   '/admin/cashiers': typeof AdminCashiersRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/customer-success': typeof AdminCustomerSuccessRouteWithChildren
+  '/admin/customers': typeof AdminCustomersRoute
   '/admin/drinks': typeof AdminDrinksRoute
   '/admin/financial-reports': typeof AdminFinancialReportsRoute
+  '/admin/orders': typeof AdminOrdersRoute
   '/admin/plans': typeof AdminPlansRoute
+  '/admin/reports': typeof AdminReportsRoute
   '/admin/sell-coupon': typeof AdminSellCouponRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/cashier/sell-coupon': typeof CashierSellCouponRoute
   '/platform/announcements': typeof PlatformAnnouncementsRoute
@@ -284,10 +316,14 @@ export interface FileRoutesById {
   '/admin/cashiers': typeof AdminCashiersRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/customer-success': typeof AdminCustomerSuccessRouteWithChildren
+  '/admin/customers': typeof AdminCustomersRoute
   '/admin/drinks': typeof AdminDrinksRoute
   '/admin/financial-reports': typeof AdminFinancialReportsRoute
+  '/admin/orders': typeof AdminOrdersRoute
   '/admin/plans': typeof AdminPlansRoute
+  '/admin/reports': typeof AdminReportsRoute
   '/admin/sell-coupon': typeof AdminSellCouponRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/cashier/sell-coupon': typeof CashierSellCouponRoute
   '/platform/announcements': typeof PlatformAnnouncementsRoute
@@ -320,10 +356,14 @@ export interface FileRouteTypes {
     | '/admin/cashiers'
     | '/admin/coupons'
     | '/admin/customer-success'
+    | '/admin/customers'
     | '/admin/drinks'
     | '/admin/financial-reports'
+    | '/admin/orders'
     | '/admin/plans'
+    | '/admin/reports'
     | '/admin/sell-coupon'
+    | '/admin/settings'
     | '/admin/subscriptions'
     | '/cashier/sell-coupon'
     | '/platform/announcements'
@@ -351,10 +391,14 @@ export interface FileRouteTypes {
     | '/admin/cashiers'
     | '/admin/coupons'
     | '/admin/customer-success'
+    | '/admin/customers'
     | '/admin/drinks'
     | '/admin/financial-reports'
+    | '/admin/orders'
     | '/admin/plans'
+    | '/admin/reports'
     | '/admin/sell-coupon'
+    | '/admin/settings'
     | '/admin/subscriptions'
     | '/cashier/sell-coupon'
     | '/platform/announcements'
@@ -385,10 +429,14 @@ export interface FileRouteTypes {
     | '/admin/cashiers'
     | '/admin/coupons'
     | '/admin/customer-success'
+    | '/admin/customers'
     | '/admin/drinks'
     | '/admin/financial-reports'
+    | '/admin/orders'
     | '/admin/plans'
+    | '/admin/reports'
     | '/admin/sell-coupon'
+    | '/admin/settings'
     | '/admin/subscriptions'
     | '/cashier/sell-coupon'
     | '/platform/announcements'
@@ -504,6 +552,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCustomerSuccessRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/customers': {
+      id: '/admin/customers'
+      path: '/customers'
+      fullPath: '/admin/customers'
+      preLoaderRoute: typeof AdminCustomersRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/drinks': {
       id: '/admin/drinks'
       path: '/drinks'
@@ -518,6 +573,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminFinancialReportsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/orders': {
+      id: '/admin/orders'
+      path: '/orders'
+      fullPath: '/admin/orders'
+      preLoaderRoute: typeof AdminOrdersRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/plans': {
       id: '/admin/plans'
       path: '/plans'
@@ -525,11 +587,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPlansRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/reports': {
+      id: '/admin/reports'
+      path: '/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AdminReportsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/sell-coupon': {
       id: '/admin/sell-coupon'
       path: '/sell-coupon'
       fullPath: '/admin/sell-coupon'
       preLoaderRoute: typeof AdminSellCouponRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/subscriptions': {
@@ -663,10 +739,14 @@ interface AdminRouteChildren {
   AdminCashiersRoute: typeof AdminCashiersRoute
   AdminCouponsRoute: typeof AdminCouponsRoute
   AdminCustomerSuccessRoute: typeof AdminCustomerSuccessRouteWithChildren
+  AdminCustomersRoute: typeof AdminCustomersRoute
   AdminDrinksRoute: typeof AdminDrinksRoute
   AdminFinancialReportsRoute: typeof AdminFinancialReportsRoute
+  AdminOrdersRoute: typeof AdminOrdersRoute
   AdminPlansRoute: typeof AdminPlansRoute
+  AdminReportsRoute: typeof AdminReportsRoute
   AdminSellCouponRoute: typeof AdminSellCouponRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -676,10 +756,14 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminCashiersRoute: AdminCashiersRoute,
   AdminCouponsRoute: AdminCouponsRoute,
   AdminCustomerSuccessRoute: AdminCustomerSuccessRouteWithChildren,
+  AdminCustomersRoute: AdminCustomersRoute,
   AdminDrinksRoute: AdminDrinksRoute,
   AdminFinancialReportsRoute: AdminFinancialReportsRoute,
+  AdminOrdersRoute: AdminOrdersRoute,
   AdminPlansRoute: AdminPlansRoute,
+  AdminReportsRoute: AdminReportsRoute,
   AdminSellCouponRoute: AdminSellCouponRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
