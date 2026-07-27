@@ -6424,6 +6424,10 @@ body:has(.kob-auth-page) {
     animation: none;
   }
 
+  .app-island-dropdown[data-open="false"] {
+    display: contents;
+  }
+
   .app-island-dropdown::before {
     display: none;
   }
