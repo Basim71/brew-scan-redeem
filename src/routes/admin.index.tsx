@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import {
   ArrowUpRight,
   BadgeDollarSign,
@@ -11,7 +11,23 @@ import {
   Users,
   WalletCards,
 } from "lucide-react";
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+// Chart bundle (Recharts) is lazy-loaded — see /components/charts/DashboardCharts.
+const DashboardCharts = lazy(() =>
+  import("@/components/charts/DashboardCharts").then((mod) => ({
+    default: {
+      Revenue: mod.RevenueAreaChart,
+      Subscription: mod.SubscriptionAreaChart,
+    } as unknown as React.ComponentType,
+  })),
+);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const RevenueAreaChart = lazy(async () => ({ default: (await import("@/components/charts/DashboardCharts")).RevenueAreaChart }));
+const SubscriptionAreaChart = lazy(async () => ({ default: (await import("@/components/charts/DashboardCharts")).SubscriptionAreaChart }));
+void DashboardCharts;
+
+function ChartFallback() {
+  return <div className="company-chart-skeleton" aria-hidden />;
+}
 
 import { useI18n } from "@/lib/i18n";
 import {
