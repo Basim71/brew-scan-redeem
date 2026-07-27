@@ -11,19 +11,13 @@ import {
   Users,
   WalletCards,
 } from "lucide-react";
-// Chart bundle (Recharts) is lazy-loaded — see /components/charts/DashboardCharts.
-const DashboardCharts = lazy(() =>
-  import("@/components/charts/DashboardCharts").then((mod) => ({
-    default: {
-      Revenue: mod.RevenueAreaChart,
-      Subscription: mod.SubscriptionAreaChart,
-    } as unknown as React.ComponentType,
-  })),
-);
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const RevenueAreaChart = lazy(async () => ({ default: (await import("@/components/charts/DashboardCharts")).RevenueAreaChart }));
-const SubscriptionAreaChart = lazy(async () => ({ default: (await import("@/components/charts/DashboardCharts")).SubscriptionAreaChart }));
-void DashboardCharts;
+// Recharts (~90 KB gzipped) is lazy-loaded — see /components/charts/DashboardCharts.
+const RevenueAreaChart = lazy(async () => ({
+  default: (await import("@/components/charts/DashboardCharts")).RevenueAreaChart,
+}));
+const SubscriptionAreaChart = lazy(async () => ({
+  default: (await import("@/components/charts/DashboardCharts")).SubscriptionAreaChart,
+}));
 
 function ChartFallback() {
   return <div className="company-chart-skeleton" aria-hidden />;
