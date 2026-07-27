@@ -7,6 +7,7 @@ import {
   type ActiveOrganization,
   type OrganizationRole,
 } from "@/components/tenant/OrganizationProvider";
+import { usePlatform } from "@/components/platform/PlatformProvider";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/auth")({
@@ -36,6 +37,7 @@ function destinationFor(role: OrganizationRole) {
 function AuthPage() {
   const navigate = useNavigate();
   const { session, organization, role, ready, activateOrganization, clearOrganization } = useOrganization();
+  const platform = usePlatform();
 
   const [email, setEmail] = useState("");
   const [companyIdentifier, setCompanyIdentifier] = useState("");
@@ -48,6 +50,13 @@ function AuthPage() {
     if (!ready || !session || !organization || !role) return;
     navigate({ to: destinationFor(role), replace: true });
   }, [navigate, organization, ready, role, session]);
+
+  useEffect(() => {
+    if (!platform.ready) return;
+    if (platform.session && platform.profile) {
+      navigate({ to: "/platform", replace: true });
+    }
+  }, [navigate, platform.profile, platform.ready, platform.session]);
 
   async function resolveOrganization(identifier: string): Promise<ActiveOrganization> {
     const db = supabase as any;
@@ -78,11 +87,40 @@ function AuthPage() {
 
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedCompany = companyIdentifier.trim();
-    if (!normalizedEmail || !normalizedCompany || !password) return;
+    if (!normalizedEmail || !password) return;
 
     setBusy(true);
     setError(null);
     clearOrganization();
+
+    // Platform sign-in path (no company code)
+    if (!normalizedCompany) {
+      try {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: normalizedEmail,
+          password,
+        });
+        if (signInError) throw new Error("البريد الإلكتروني أو كلمة المرور غير صحيحة.");
+
+        const rpc = (supabase as any).rpc("get_my_platform_profile");
+        const { data, error: profileError } = await rpc;
+        const hasProfile = Array.isArray(data) ? data.length > 0 : Boolean(data);
+        if (profileError || !hasProfile) {
+          await supabase.auth.signOut();
+          throw new Error(
+            "لا توجد صلاحية دخول لهذا الحساب. أدخل كود الشركة إذا كنت من موظفي شركة.",
+          );
+        }
+
+        await platform.refresh();
+        navigate({ to: "/platform", replace: true });
+      } catch (submitError) {
+        setError(submitError instanceof Error ? submitError.message : "تعذر تسجيل الدخول.");
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
 
     try {
       const targetOrganization = await resolveOrganization(normalizedCompany);
@@ -135,10 +173,9 @@ function AuthPage() {
             <Building2 className="kob-auth-field-icon" aria-hidden="true" />
             <input
               type="text"
-              required
               value={companyIdentifier}
               autoComplete="organization"
-              placeholder="كود الشركة"
+              placeholder="كود الشركة (اتركه فارغًا لفريق KOB)"
               disabled={busy}
               onChange={(event) => setCompanyIdentifier(event.target.value)}
               className="kob-auth-input"

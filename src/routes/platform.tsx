@@ -32,7 +32,7 @@ function PlatformLayout() {
 
   async function handleSignOut() {
     await supabase.auth.signOut();
-    navigate({ to: "/platform-auth", replace: true });
+    navigate({ to: "/auth", replace: true });
   }
 
   const subtitle = profile
