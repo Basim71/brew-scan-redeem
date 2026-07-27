@@ -6343,6 +6343,15 @@ body:has(.kob-auth-page) {
     width: 42px;
     padding: 9px;
   }
+
+  .app-island-group-trigger {
+    width: auto;
+    padding: 9px 10px;
+  }
+
+  .app-island-chevron {
+    display: none;
+  }
 }
 
 @media (max-width: 760px) {
@@ -6387,6 +6396,35 @@ body:has(.kob-auth-page) {
   }
 
   .app-island-link {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .app-island-group {
+    display: contents;
+  }
+
+  .app-island-group-trigger {
+    display: none;
+  }
+
+  .app-island-dropdown {
+    position: static;
+    display: contents;
+    transform: none;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    animation: none;
+  }
+
+  .app-island-dropdown::before {
+    display: none;
+  }
+
+  .app-island-dropdown-item {
     width: 100%;
     justify-content: flex-start;
   }
