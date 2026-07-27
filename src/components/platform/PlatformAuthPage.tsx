@@ -13,8 +13,10 @@ type PlatformProfileRpcResult = {
 };
 
 async function readPlatformProfile(): Promise<PlatformProfileRpcResult> {
-  const result = await supabase.rpc("get_my_platform_profile");
-  return result as unknown as PlatformProfileRpcResult;
+  const result = await (supabase.rpc as unknown as (name: string) => Promise<PlatformProfileRpcResult>)(
+    "get_my_platform_profile",
+  );
+  return result;
 }
 
 function hasPlatformProfile(data: PlatformProfileRpcResult["data"]): boolean {
