@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { CheckCircle2, Clock3, LockKeyhole, MessageCircle, Send, UserRoundCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { usePlatform } from "@/components/platform/PlatformProvider";
-import { addCaseMessage, getCase, updateCase } from "@/modules/customer-success/api";
-import { caseStatusLabels, priorityLabels, type CustomerSuccessCase } from "@/modules/customer-success/types";
+import { usePlatform } from "@/providers/PlatformProvider";
+import { addCaseMessage, getCase, updateCase } from "@/features/customer-success/api";
+import { caseStatusLabels, priorityLabels, type CustomerSuccessCase } from "@/features/customer-success/types";
 
 export const Route=createFileRoute("/platform/support/$caseId")({component:PlatformCaseDetails});
 function PlatformCaseDetails(){

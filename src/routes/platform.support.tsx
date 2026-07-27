@@ -2,8 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, CalendarClock, CheckCircle2, Headphones, Radio, Search, UserCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { listCases } from "@/modules/customer-success/api";
-import { caseStatusLabels, priorityLabels, type CustomerSuccessCase } from "@/modules/customer-success/types";
+import { listCases } from "@/features/customer-success/api";
+import { caseStatusLabels, priorityLabels, type CustomerSuccessCase } from "@/features/customer-success/types";
 
 export const Route = createFileRoute("/platform/support")({ component: SupportCenter });
 

@@ -19,8 +19,8 @@ import {
   XCircle,
 } from "lucide-react";
 
-import { DrinkSlider } from "@/components/drinks/DrinkSlider";
-import type { Drink, DrinkOrderCustomization } from "@/components/drinks/types";
+import { DrinkSlider } from "@/features/drinks/DrinkSlider";
+import type { Drink, DrinkOrderCustomization } from "@/features/drinks/types";
 import { supabase } from "@/integrations/supabase/client";
 import {
   LanguageSwitcher,
