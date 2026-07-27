@@ -30,6 +30,7 @@ import { Route as CashierIndexRouteImport } from './routes/cashier.index'
 import { Route as CashierSellCouponRouteImport } from './routes/cashier.sell-coupon'
 import { Route as PlatformIndexRouteImport } from './routes/platform.index'
 import { Route as PlatformAnnouncementsRouteImport } from './routes/platform.announcements'
+import { Route as PlatformAuditRouteImport } from './routes/platform.audit'
 import { Route as PlatformCompaniesRouteImport } from './routes/platform.companies'
 import { Route as PlatformCustomerSuccessRouteImport } from './routes/platform.customer-success'
 import { Route as PlatformSettingsRouteImport } from './routes/platform.settings'
@@ -145,6 +146,11 @@ const PlatformAnnouncementsRoute = PlatformAnnouncementsRouteImport.update({
   path: '/announcements',
   getParentRoute: () => PlatformRoute,
 } as any)
+const PlatformAuditRoute = PlatformAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => PlatformRoute,
+} as any)
 const PlatformCompaniesRoute = PlatformCompaniesRouteImport.update({
   id: '/companies',
   path: '/companies',
@@ -212,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/cashier/sell-coupon': typeof CashierSellCouponRoute
   '/platform/announcements': typeof PlatformAnnouncementsRoute
+  '/platform/audit': typeof PlatformAuditRoute
   '/platform/companies': typeof PlatformCompaniesRoute
   '/platform/customer-success': typeof PlatformCustomerSuccessRouteWithChildren
   '/platform/settings': typeof PlatformSettingsRoute
@@ -241,6 +248,7 @@ export interface FileRoutesByTo {
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/cashier/sell-coupon': typeof CashierSellCouponRoute
   '/platform/announcements': typeof PlatformAnnouncementsRoute
+  '/platform/audit': typeof PlatformAuditRoute
   '/platform/companies': typeof PlatformCompaniesRoute
   '/platform/customer-success': typeof PlatformCustomerSuccessRouteWithChildren
   '/platform/settings': typeof PlatformSettingsRoute
@@ -274,6 +282,7 @@ export interface FileRoutesById {
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/cashier/sell-coupon': typeof CashierSellCouponRoute
   '/platform/announcements': typeof PlatformAnnouncementsRoute
+  '/platform/audit': typeof PlatformAuditRoute
   '/platform/companies': typeof PlatformCompaniesRoute
   '/platform/customer-success': typeof PlatformCustomerSuccessRouteWithChildren
   '/platform/settings': typeof PlatformSettingsRoute
@@ -308,6 +317,7 @@ export interface FileRouteTypes {
     | '/admin/subscriptions'
     | '/cashier/sell-coupon'
     | '/platform/announcements'
+    | '/platform/audit'
     | '/platform/companies'
     | '/platform/customer-success'
     | '/platform/settings'
@@ -337,6 +347,7 @@ export interface FileRouteTypes {
     | '/admin/subscriptions'
     | '/cashier/sell-coupon'
     | '/platform/announcements'
+    | '/platform/audit'
     | '/platform/companies'
     | '/platform/customer-success'
     | '/platform/settings'
@@ -369,6 +380,7 @@ export interface FileRouteTypes {
     | '/admin/subscriptions'
     | '/cashier/sell-coupon'
     | '/platform/announcements'
+    | '/platform/audit'
     | '/platform/companies'
     | '/platform/customer-success'
     | '/platform/settings'
@@ -542,6 +554,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlatformAnnouncementsRouteImport
       parentRoute: typeof PlatformRoute
     }
+    '/platform/audit': {
+      id: '/platform/audit'
+      path: '/audit'
+      fullPath: '/platform/audit'
+      preLoaderRoute: typeof PlatformAuditRouteImport
+      parentRoute: typeof PlatformRoute
+    }
     '/platform/companies': {
       id: '/platform/companies'
       path: '/companies'
@@ -688,6 +707,7 @@ const PlatformSupportRouteWithChildren = PlatformSupportRoute._addFileChildren(
 
 interface PlatformRouteChildren {
   PlatformAnnouncementsRoute: typeof PlatformAnnouncementsRoute
+  PlatformAuditRoute: typeof PlatformAuditRoute
   PlatformCompaniesRoute: typeof PlatformCompaniesRoute
   PlatformCustomerSuccessRoute: typeof PlatformCustomerSuccessRouteWithChildren
   PlatformSettingsRoute: typeof PlatformSettingsRoute
@@ -699,6 +719,7 @@ interface PlatformRouteChildren {
 
 const PlatformRouteChildren: PlatformRouteChildren = {
   PlatformAnnouncementsRoute: PlatformAnnouncementsRoute,
+  PlatformAuditRoute: PlatformAuditRoute,
   PlatformCompaniesRoute: PlatformCompaniesRoute,
   PlatformCustomerSuccessRoute: PlatformCustomerSuccessRouteWithChildren,
   PlatformSettingsRoute: PlatformSettingsRoute,
