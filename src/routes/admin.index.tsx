@@ -1,285 +1,214 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
 import {
+  ArrowUpRight,
   BadgeDollarSign,
-  CalendarDays,
   Coffee,
-  Loader2,
   RefreshCw,
+  ShoppingBag,
   TrendingUp,
   UserPlus,
   Users,
   WalletCards,
 } from "lucide-react";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
+import {
+  buildBranchPerformance,
+  buildDailyRevenue,
+  buildSubscriptionTrend,
+  loadCompanyDashboard,
+  type DashboardPayload,
+} from "@/features/company/dashboard/service";
 
 export const Route = createFileRoute("/admin/")({
   component: AdminDashboard,
 });
 
-type SoldCoupon = {
-  id: string;
-  price: number | string;
-  sold_at: string | null;
-  plan?: { name?: string | null } | null;
-};
-
-type OrderRow = {
-  id: string;
-  status: string;
-  created_at: string;
-  drink?: { name_en?: string | null; name_ar?: string | null } | null;
-};
-
-type DashboardStats = {
-  customers: number;
-  newCustomersWeek: number;
-  newCustomersMonth: number;
-  activeSubscriptions: number;
-  salesToday: number;
-  salesMonth: number;
-  soldToday: number;
-  pendingOrders: number;
-};
-
-const EMPTY_STATS: DashboardStats = {
-  customers: 0,
-  newCustomersWeek: 0,
-  newCustomersMonth: 0,
-  activeSubscriptions: 0,
-  salesToday: 0,
-  salesMonth: 0,
-  soldToday: 0,
-  pendingOrders: 0,
-};
-
 function AdminDashboard() {
   const { lang, fmtNum } = useI18n();
-  const [stats, setStats] = useState(EMPTY_STATS);
-  const [soldCoupons, setSoldCoupons] = useState<SoldCoupon[]>([]);
-  const [recentOrders, setRecentOrders] = useState<OrderRow[]>([]);
+  const isRTL = lang === "ar";
+  const [data, setData] = useState<DashboardPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadDashboard = useCallback(async () => {
+  async function load() {
     setLoading(true);
-    setError(null);
+    try {
+      const { payload, error: e } = await loadCompanyDashboard();
+      setData(payload);
+      setError(e);
+    } finally {
+      setLoading(false);
+    }
+  }
 
-    const now = new Date();
-    const todayStart = startOfDay(now).toISOString();
-    const weekStart = new Date(now.getTime() - 6 * 86400000);
-    weekStart.setHours(0, 0, 0, 0);
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const chartStart = new Date(now.getTime() - 29 * 86400000);
-    chartStart.setHours(0, 0, 0, 0);
+  useEffect(() => { void load(); }, []);
 
-    const [
-      customersResult,
-      weekCustomersResult,
-      monthCustomersResult,
-      subscriptionsResult,
-      pendingOrdersResult,
-      soldCouponsResult,
-      recentOrdersResult,
-    ] = await Promise.all([
-      supabase.from("customers").select("*", { count: "exact", head: true }),
-      supabase.from("customers").select("*", { count: "exact", head: true }).gte("created_at", weekStart.toISOString()),
-      supabase.from("customers").select("*", { count: "exact", head: true }).gte("created_at", monthStart.toISOString()),
-      supabase.from("subscriptions").select("*", { count: "exact", head: true }).eq("status", "active"),
-      supabase.from("orders").select("*", { count: "exact", head: true }).eq("status", "pending"),
-      supabase
-        .from("coupons")
-        .select("id,price,sold_at,plan:plans(name)")
-        .eq("status", "sold")
-        .gte("sold_at", chartStart.toISOString())
-        .order("sold_at", { ascending: true }),
-      supabase
-        .from("orders")
-        .select("id,status,created_at,drink:drink_types(name_en,name_ar)")
-        .order("created_at", { ascending: false })
-        .limit(6),
-    ]);
+  const revenueSeries = useMemo(() => (data ? buildDailyRevenue(data.soldCoupons, lang) : []), [data, lang]);
+  const subSeries = useMemo(() => (data ? buildSubscriptionTrend(data.soldCoupons, lang) : []), [data, lang]);
+  const branchPerf = useMemo(() => {
+    if (!data) return [];
+    const monthStart = new Date();
+    monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
+    return buildBranchPerformance(data.branches, data.soldCoupons, data.ordersMonth, monthStart.toISOString());
+  }, [data]);
 
-    const firstError = [
-      customersResult.error,
-      weekCustomersResult.error,
-      monthCustomersResult.error,
-      subscriptionsResult.error,
-      pendingOrdersResult.error,
-      soldCouponsResult.error,
-      recentOrdersResult.error,
-    ].find(Boolean);
+  const fmtCurrency = (n: number) => `${fmtNum(Math.round(n))} ${isRTL ? "ر.س" : "SAR"}`;
 
-    if (firstError) setError(firstError.message);
-
-    const coupons = (soldCouponsResult.data ?? []) as unknown as SoldCoupon[];
-    const salesTodayRows = coupons.filter((coupon) => coupon.sold_at && coupon.sold_at >= todayStart);
-    const monthIso = monthStart.toISOString();
-    const salesMonthRows = coupons.filter((coupon) => coupon.sold_at && coupon.sold_at >= monthIso);
-
-    setStats({
-      customers: customersResult.count ?? 0,
-      newCustomersWeek: weekCustomersResult.count ?? 0,
-      newCustomersMonth: monthCustomersResult.count ?? 0,
-      activeSubscriptions: subscriptionsResult.count ?? 0,
-      salesToday: sumPrices(salesTodayRows),
-      salesMonth: sumPrices(salesMonthRows),
-      soldToday: salesTodayRows.length,
-      pendingOrders: pendingOrdersResult.count ?? 0,
-    });
-
-    setSoldCoupons(coupons);
-    setRecentOrders((recentOrdersResult.data ?? []) as unknown as OrderRow[]);
-    setLoading(false);
-  }, []);
-
-  useEffect(() => {
-    void loadDashboard();
-    const interval = window.setInterval(() => void loadDashboard(), 15000);
-    return () => window.clearInterval(interval);
-  }, [loadDashboard]);
-
-  const chartData = useMemo(() => buildDailySales(soldCoupons, lang), [soldCoupons, lang]);
-
-  const cards = [
-    { label: lang === "ar" ? "إجمالي العملاء" : "Total Customers", value: stats.customers, icon: Users, tone: "brown" },
-    { label: lang === "ar" ? "عملاء جدد خلال أسبوع" : "New Customers · 7 Days", value: stats.newCustomersWeek, icon: UserPlus, tone: "blue" },
-    { label: lang === "ar" ? "عملاء جدد هذا الشهر" : "New Customers · Month", value: stats.newCustomersMonth, icon: CalendarDays, tone: "violet" },
-    { label: lang === "ar" ? "الاشتراكات النشطة" : "Active Subscriptions", value: stats.activeSubscriptions, icon: WalletCards, tone: "green" },
-    { label: lang === "ar" ? "مبيعات اليوم" : "Today Revenue", value: money(stats.salesToday, lang), icon: BadgeDollarSign, tone: "gold" },
-    { label: lang === "ar" ? "مبيعات الشهر" : "Monthly Revenue", value: money(stats.salesMonth, lang), icon: TrendingUp, tone: "orange" },
-    { label: lang === "ar" ? "اشتراكات مباعة اليوم" : "Sold Today", value: stats.soldToday, icon: Coffee, tone: "rose" },
-    { label: lang === "ar" ? "طلبات بانتظار الموافقة" : "Pending Orders", value: stats.pendingOrders, icon: RefreshCw, tone: "cyan" },
-  ];
+  const kpis = data ? [
+    { label: isRTL ? "العملاء" : "Customers", value: fmtNum(data.stats.customers), sub: `+${fmtNum(data.stats.newCustomersMonth)} ${isRTL ? "هذا الشهر" : "this month"}`, icon: Users, tone: "espresso" },
+    { label: isRTL ? "اشتراكات نشطة" : "Active Subs", value: fmtNum(data.stats.activeSubscriptions), sub: `${fmtNum(data.stats.expiringSubscriptions)} ${isRTL ? "تنتهي قريباً" : "expiring soon"}`, icon: WalletCards, tone: "gold" },
+    { label: isRTL ? "إيراد اليوم" : "Revenue Today", value: fmtCurrency(data.stats.revenueToday), sub: `${fmtCurrency(data.stats.revenueMonth)} ${isRTL ? "هذا الشهر" : "MTD"}`, icon: BadgeDollarSign, tone: "cream" },
+    { label: isRTL ? "طلبات اليوم" : "Orders Today", value: fmtNum(data.stats.ordersToday), sub: `${fmtNum(data.stats.pendingOrders)} ${isRTL ? "قيد الانتظار" : "pending"}`, icon: ShoppingBag, tone: "espresso" },
+  ] : [];
 
   return (
-    <div className="kob-dashboard-modern">
-      <div className="kob-dashboard-hero">
+    <div className="company-page" dir={isRTL ? "rtl" : "ltr"}>
+      <header className="company-page-header">
         <div>
-          <span className="kob-dashboard-kicker">KOB Analytics</span>
-          <h1>{lang === "ar" ? "نظرة شاملة على أداء المقهى" : "Your business at a glance"}</h1>
-          <p>{lang === "ar" ? "العملاء والاشتراكات والمبيعات والطلبات في لوحة واحدة." : "Customers, subscriptions, revenue, and live activity in one place."}</p>
+          <span className="company-kicker">{isRTL ? "بوابة الشركة" : "Company Portal"}</span>
+          <h1>{isRTL ? "نظرة عامة" : "Overview"}</h1>
+          <p>{isRTL ? "مؤشرات الأداء الحيّة لأعمال المقهى." : "Live performance across your coffee business."}</p>
         </div>
+        <div className="company-header-actions">
+          <Link to={"/admin/sell-coupon" as any} className="company-btn-primary">
+            <UserPlus className="h-4 w-4" />{isRTL ? "بيع كوبون" : "Sell Coupon"}
+          </Link>
+          <button className="company-btn-ghost" onClick={() => void load()} disabled={loading}>
+            <RefreshCw className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
+            {isRTL ? "تحديث" : "Refresh"}
+          </button>
+        </div>
+      </header>
 
-        <button type="button" onClick={() => void loadDashboard()} className="btn-ghost-brass kob-dashboard-refresh" disabled={loading}>
-          <RefreshCw className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
-          {lang === "ar" ? "تحديث" : "Refresh"}
-        </button>
-      </div>
+      {error && <div className="company-alert error">{error}</div>}
 
-      {error && <div className="kob-dashboard-error">{error}</div>}
+      <section className="company-kpi-grid">
+        {(loading && !data ? (Array.from({ length: 4 }) as typeof kpis) : kpis).map((kpi, i) => {
+          if (!kpi) return <div key={i} className="company-kpi-card skeleton" />;
+          const Icon = kpi.icon;
+          return (
+            <article key={kpi.label} className="company-kpi-card" data-tone={kpi.tone}>
+              <div className="company-kpi-icon"><Icon className="h-5 w-5" /></div>
+              <div className="company-kpi-body">
+                <span className="company-kpi-label">{kpi.label}</span>
+                <strong className="company-kpi-value">{kpi.value}</strong>
+                <span className="company-kpi-sub">{kpi.sub}</span>
+              </div>
+            </article>
+          );
+        })}
+      </section>
 
-      <div className="kob-dashboard-metrics">
-        {cards.map(({ label, value, icon: Icon, tone }) => (
-          <article key={label} className={`kob-metric-card kob-metric-${tone}`}>
-            <div className="kob-metric-icon"><Icon className="h-5 w-5" /></div>
-            <div className="kob-metric-copy">
-              <span>{label}</span>
-              <strong>{typeof value === "number" ? fmtNum(value) : value}</strong>
-            </div>
-          </article>
-        ))}
-      </div>
-
-      <div className="kob-dashboard-grid">
-        <section className="kob-dashboard-chart-card panel-warm">
-          <div className="kob-card-header">
+      <section className="company-card-grid two">
+        <article className="company-card chart">
+          <header>
             <div>
-              <h2 className="kob-card-title">{lang === "ar" ? "المبيعات خلال 30 يوم" : "Revenue · Last 30 Days"}</h2>
-              <p className="kob-page-description">{lang === "ar" ? "إجمالي قيمة الكوبونات المباعة يوميًا." : "Daily value of sold subscriptions."}</p>
+              <span className="company-kicker">{isRTL ? "الإيرادات" : "Revenue"}</span>
+              <h3>{isRTL ? "آخر 30 يوماً" : "Last 30 days"}</h3>
             </div>
-            {loading && <Loader2 className="h-4 w-4 animate-spin text-caramel" />}
-          </div>
-
-          <div className="kob-sales-chart">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData} margin={{ top: 10, right: 8, left: -16, bottom: 0 }}>
+            <TrendingUp className="h-4 w-4" />
+          </header>
+          <div className="company-chart">
+            <ResponsiveContainer width="100%" height={220}>
+              <AreaChart data={revenueSeries}>
                 <defs>
-                  <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#c98745" stopOpacity={0.42} />
-                    <stop offset="100%" stopColor="#c98745" stopOpacity={0.02} />
+                  <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#c8963c" stopOpacity={0.6} />
+                    <stop offset="100%" stopColor="#c8963c" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="4 8" vertical={false} stroke="rgba(111,78,57,.12)" />
-                <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: "#806f65", fontSize: 11 }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: "#806f65", fontSize: 11 }} />
-                <Tooltip formatter={(value) => money(Number(value), lang)} contentStyle={{ borderRadius: 16, border: "1px solid rgba(111,78,57,.14)", background: "#fffdf9" }} />
-                <Area type="monotone" dataKey="revenue" stroke="#b87336" strokeWidth={3} fill="url(#revenueFill)" />
+                <CartesianGrid stroke="rgba(60,40,25,0.08)" vertical={false} />
+                <XAxis dataKey="label" stroke="#6b503a" fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis stroke="#6b503a" fontSize={11} tickLine={false} axisLine={false} width={40} />
+                <Tooltip contentStyle={{ background: "#fff8ee", border: "1px solid #e6d7ba", borderRadius: 10, color: "#3a2617" }} />
+                <Area type="monotone" dataKey="revenue" stroke="#8a5a24" strokeWidth={2} fill="url(#revGrad)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
-        </section>
+        </article>
 
-        <section className="kob-dashboard-activity panel-warm">
-          <div className="kob-card-header">
-            <h2 className="kob-card-title">{lang === "ar" ? "آخر الطلبات" : "Latest Orders"}</h2>
+        <article className="company-card chart">
+          <header>
+            <div>
+              <span className="company-kicker">{isRTL ? "الاشتراكات" : "Subscriptions"}</span>
+              <h3>{isRTL ? "الاتجاه الشهري" : "Monthly trend"}</h3>
+            </div>
+            <WalletCards className="h-4 w-4" />
+          </header>
+          <div className="company-chart">
+            <ResponsiveContainer width="100%" height={220}>
+              <AreaChart data={subSeries}>
+                <defs>
+                  <linearGradient id="subGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3a2617" stopOpacity={0.35} />
+                    <stop offset="100%" stopColor="#3a2617" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke="rgba(60,40,25,0.08)" vertical={false} />
+                <XAxis dataKey="label" stroke="#6b503a" fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis stroke="#6b503a" fontSize={11} tickLine={false} axisLine={false} width={30} />
+                <Tooltip contentStyle={{ background: "#fff8ee", border: "1px solid #e6d7ba", borderRadius: 10, color: "#3a2617" }} />
+                <Area type="monotone" dataKey="subscriptions" stroke="#3a2617" strokeWidth={2} fill="url(#subGrad)" />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
+        </article>
+      </section>
 
-          <div className="kob-activity-list">
-            {recentOrders.map((order) => (
-              <article key={order.id} className="kob-activity-item">
-                <span className="kob-activity-icon"><Coffee className="h-4 w-4" /></span>
+      <section className="company-card-grid two">
+        <article className="company-card">
+          <header>
+            <div>
+              <span className="company-kicker">{isRTL ? "أحدث الطلبات" : "Latest Orders"}</span>
+              <h3>{isRTL ? "آخر النشاطات" : "Recent activity"}</h3>
+            </div>
+            <Link to={"/admin/orders" as any} className="company-link">
+              {isRTL ? "عرض الكل" : "View all"} <ArrowUpRight className="h-3.5 w-3.5" />
+            </Link>
+          </header>
+          <ul className="company-activity">
+            {(data?.latestOrders ?? []).slice(0, 6).map((o) => (
+              <li key={o.id}>
+                <div className="company-activity-icon"><Coffee className="h-4 w-4" /></div>
                 <div>
-                  <strong>{lang === "ar" ? order.drink?.name_ar : order.drink?.name_en || "—"}</strong>
-                  <small>{new Date(order.created_at).toLocaleString(lang === "ar" ? "ar-SA" : "en-US")}</small>
+                  <strong>{o.customer?.name || "—"}</strong>
+                  <small>{isRTL ? o.drink?.name_ar : o.drink?.name_en} · {isRTL ? o.branch?.name_ar : o.branch?.name_en}</small>
                 </div>
-                <span className={`kob-order-state kob-order-${order.status}`}>{order.status}</span>
-              </article>
+                <span className={`company-status ${o.status}`}>{o.status}</span>
+              </li>
             ))}
+            {!loading && (data?.latestOrders.length ?? 0) === 0 && (
+              <li className="company-empty-inline">{isRTL ? "لا توجد طلبات بعد." : "No orders yet."}</li>
+            )}
+          </ul>
+        </article>
 
-            {!loading && recentOrders.length === 0 && <div className="kob-dashboard-empty">{lang === "ar" ? "لا توجد طلبات بعد." : "No orders yet."}</div>}
-          </div>
-        </section>
-      </div>
+        <article className="company-card">
+          <header>
+            <div>
+              <span className="company-kicker">{isRTL ? "أداء الفروع" : "Branch Performance"}</span>
+              <h3>{isRTL ? "هذا الشهر" : "Month to date"}</h3>
+            </div>
+          </header>
+          <ul className="company-branch-list">
+            {branchPerf.slice(0, 6).map((b) => (
+              <li key={b.branchId}>
+                <div>
+                  <strong>{isRTL ? b.nameAr : b.nameEn}</strong>
+                  <small>{fmtNum(b.ordersMonth)} {isRTL ? "طلب" : "orders"}</small>
+                </div>
+                <span className="company-branch-revenue">{fmtCurrency(b.revenueMonth)}</span>
+              </li>
+            ))}
+            {!loading && branchPerf.length === 0 && (
+              <li className="company-empty-inline">{isRTL ? "لا توجد فروع نشطة." : "No active branches."}</li>
+            )}
+          </ul>
+        </article>
+      </section>
     </div>
   );
-}
-
-function sumPrices(rows: SoldCoupon[]) {
-  return rows.reduce((total, row) => total + Number(row.price || 0), 0);
-}
-
-function startOfDay(date: Date) {
-  const result = new Date(date);
-  result.setHours(0, 0, 0, 0);
-  return result;
-}
-
-function money(value: number, lang: string) {
-  return new Intl.NumberFormat(lang === "ar" ? "ar-SA" : "en-SA", {
-    style: "currency",
-    currency: "SAR",
-    maximumFractionDigits: 2,
-  }).format(value);
-}
-
-function buildDailySales(rows: SoldCoupon[], lang: string) {
-  const map = new Map<string, number>();
-  for (const row of rows) {
-    if (!row.sold_at) continue;
-    const key = row.sold_at.slice(0, 10);
-    map.set(key, (map.get(key) ?? 0) + Number(row.price || 0));
-  }
-
-  return Array.from({ length: 30 }, (_, index) => {
-    const date = new Date();
-    date.setDate(date.getDate() - (29 - index));
-    const key = date.toISOString().slice(0, 10);
-    return {
-      date: key,
-      label: date.toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US", { day: "numeric", month: "short" }),
-      revenue: map.get(key) ?? 0,
-    };
-  });
 }

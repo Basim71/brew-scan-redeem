@@ -1,23 +1,10 @@
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
-import {
-  BarChart3,
-  Boxes,
-  Building2,
-  CupSoda,
-  LayoutDashboard,
-  ShoppingCart,
-  Ticket,
-  UserRoundCog,
-  Users,
-  Headphones,
-} from "lucide-react";
 
-import { AppWorkspace } from "@/layouts/AppWorkspace";
-import type { FloatingIslandItem } from "@/layouts/FloatingIsland";
 import { useOrganization } from "@/providers/OrganizationProvider";
 import { RoleGate } from "@/layouts/RoleGate";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
+import { CompanyLayout } from "@/features/company/CompanyLayout";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -32,50 +19,9 @@ export const Route = createFileRoute("/admin")({
 
 function AdminLayout() {
   const navigate = useNavigate();
-  const { t, lang } = useI18n();
+  const { lang } = useI18n();
   const { organization, clearOrganization } = useOrganization();
-
-  const items: FloatingIslandItem[] = [
-    { to: "/admin", label: t("nav_dashboard"), icon: LayoutDashboard, exact: true },
-    {
-      kind: "group",
-      label: lang === "ar" ? "المبيعات" : "Sales",
-      icon: ShoppingCart,
-      children: [
-        { to: "/admin/sell-coupon", label: t("nav_sell_coupon"), icon: ShoppingCart },
-        { to: "/admin/coupons", label: t("nav_coupons"), icon: Ticket },
-        { to: "/admin/subscriptions", label: t("all_subs"), icon: Users },
-      ],
-    },
-    {
-      kind: "group",
-      label: lang === "ar" ? "الكتالوج" : "Catalog",
-      icon: Boxes,
-      children: [
-        { to: "/admin/plans", label: t("nav_plans"), icon: Boxes },
-        { to: "/admin/drinks", label: lang === "ar" ? "المشروبات" : "Drinks", icon: CupSoda },
-      ],
-    },
-    {
-      kind: "group",
-      label: lang === "ar" ? "العمليات" : "Operations",
-      icon: Building2,
-      children: [
-        { to: "/admin/branches", label: t("tab_branches"), icon: Building2 },
-        { to: "/admin/cashiers", label: t("tab_staff"), icon: UserRoundCog },
-      ],
-    },
-    {
-      to: "/admin/financial-reports",
-      label: lang === "ar" ? "التقارير" : "Reports",
-      icon: BarChart3,
-    },
-    {
-      to: "/admin/customer-success",
-      label: lang === "ar" ? "نجاح العملاء" : "Support",
-      icon: Headphones,
-    },
-  ];
+  const isRTL = lang === "ar";
 
   async function handleSignOut() {
     clearOrganization();
@@ -85,15 +31,13 @@ function AdminLayout() {
 
   return (
     <RoleGate allow="admin">
-      <AppWorkspace
+      <CompanyLayout
         title={organization?.nameAr || organization?.nameEn || "KOB"}
-        subtitle={lang === "ar" ? "الإدارة" : "Admin"}
-        homeTo="/admin"
-        items={items}
+        subtitle={isRTL ? "بوابة الشركة" : "Company Portal"}
         onSignOut={handleSignOut}
       >
         <Outlet />
-      </AppWorkspace>
+      </CompanyLayout>
     </RoleGate>
   );
 }
