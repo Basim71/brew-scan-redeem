@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { AppWorkspace } from "@/components/layouts/AppWorkspace";
+import type { FloatingIslandItem } from "@/components/layouts/FloatingIsland";
 import { useOrganization } from "@/components/tenant/OrganizationProvider";
 import { RoleGate } from "@/components/layouts/RoleGate";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,21 +35,46 @@ function AdminLayout() {
   const { t, lang } = useI18n();
   const { organization, clearOrganization } = useOrganization();
 
-  const items = [
+  const items: FloatingIslandItem[] = [
     { to: "/admin", label: t("nav_dashboard"), icon: LayoutDashboard, exact: true },
-    { to: "/admin/plans", label: t("nav_plans"), icon: Boxes },
-    { to: "/admin/drinks", label: lang === "ar" ? "المشروبات" : "Drinks", icon: CupSoda },
-    { to: "/admin/coupons", label: t("nav_coupons"), icon: Ticket },
-    { to: "/admin/sell-coupon", label: t("nav_sell_coupon"), icon: ShoppingCart },
-    { to: "/admin/subscriptions", label: t("all_subs"), icon: Users },
+    {
+      kind: "group",
+      label: lang === "ar" ? "المبيعات" : "Sales",
+      icon: ShoppingCart,
+      children: [
+        { to: "/admin/sell-coupon", label: t("nav_sell_coupon"), icon: ShoppingCart },
+        { to: "/admin/coupons", label: t("nav_coupons"), icon: Ticket },
+        { to: "/admin/subscriptions", label: t("all_subs"), icon: Users },
+      ],
+    },
+    {
+      kind: "group",
+      label: lang === "ar" ? "الكتالوج" : "Catalog",
+      icon: Boxes,
+      children: [
+        { to: "/admin/plans", label: t("nav_plans"), icon: Boxes },
+        { to: "/admin/drinks", label: lang === "ar" ? "المشروبات" : "Drinks", icon: CupSoda },
+      ],
+    },
+    {
+      kind: "group",
+      label: lang === "ar" ? "العمليات" : "Operations",
+      icon: Building2,
+      children: [
+        { to: "/admin/branches", label: t("tab_branches"), icon: Building2 },
+        { to: "/admin/cashiers", label: t("tab_staff"), icon: UserRoundCog },
+      ],
+    },
     {
       to: "/admin/financial-reports",
-      label: lang === "ar" ? "التقارير المالية" : "Financial",
+      label: lang === "ar" ? "التقارير" : "Reports",
       icon: BarChart3,
     },
-    { to: "/admin/branches", label: t("tab_branches"), icon: Building2 },
-    { to: "/admin/cashiers", label: t("tab_staff"), icon: UserRoundCog },
-    { to: "/admin/customer-success", label: lang === "ar" ? "نجاح العملاء" : "Customer Success", icon: Headphones },
+    {
+      to: "/admin/customer-success",
+      label: lang === "ar" ? "نجاح العملاء" : "Support",
+      icon: Headphones,
+    },
   ];
 
   async function handleSignOut() {
