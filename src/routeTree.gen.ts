@@ -40,6 +40,7 @@ import { Route as PlatformUsersRouteImport } from './routes/platform.users'
 import { Route as AdminCustomerSuccessCaseIdRouteImport } from './routes/admin.customer-success.$caseId'
 import { Route as PlatformCompaniesOrganizationIdRouteImport } from './routes/platform.companies.$organizationId'
 import { Route as PlatformCustomerSuccessCaseIdRouteImport } from './routes/platform.customer-success.$caseId'
+import { Route as PlatformSupportRouteImport } from './routes/platform.support.'
 import { Route as PlatformSupportCaseIdRouteImport } from './routes/platform.support.$caseId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -200,6 +201,11 @@ const PlatformCustomerSuccessCaseIdRoute =
     path: '/$caseId',
     getParentRoute: () => PlatformCustomerSuccessRoute,
   } as any)
+const PlatformSupportRoute = PlatformSupportRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PlatformSupportRoute,
+} as any)
 const PlatformSupportCaseIdRoute = PlatformSupportCaseIdRouteImport.update({
   id: '/$caseId',
   path: '/$caseId',
@@ -235,6 +241,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/cashier/': typeof CashierIndexRoute
   '/platform/': typeof PlatformIndexRoute
+  '/platform/support/': typeof PlatformSupportRoute
   '/admin/customer-success/$caseId': typeof AdminCustomerSuccessCaseIdRoute
   '/platform/companies/$organizationId': typeof PlatformCompaniesOrganizationIdRoute
   '/platform/customer-success/$caseId': typeof PlatformCustomerSuccessCaseIdRoute
@@ -260,12 +267,12 @@ export interface FileRoutesByTo {
   '/platform/companies': typeof PlatformCompaniesRouteWithChildren
   '/platform/customer-success': typeof PlatformCustomerSuccessRouteWithChildren
   '/platform/settings': typeof PlatformSettingsRoute
-  '/platform/support': typeof PlatformSupportRouteWithChildren
   '/platform/training': typeof PlatformTrainingRoute
   '/platform/users': typeof PlatformUsersRoute
   '/admin': typeof AdminIndexRoute
   '/cashier': typeof CashierIndexRoute
   '/platform': typeof PlatformIndexRoute
+  '/platform/support': typeof PlatformSupportRoute
   '/admin/customer-success/$caseId': typeof AdminCustomerSuccessCaseIdRoute
   '/platform/companies/$organizationId': typeof PlatformCompaniesOrganizationIdRoute
   '/platform/customer-success/$caseId': typeof PlatformCustomerSuccessCaseIdRoute
@@ -301,6 +308,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/cashier/': typeof CashierIndexRoute
   '/platform/': typeof PlatformIndexRoute
+  '/platform/support/': typeof PlatformSupportRoute
   '/admin/customer-success/$caseId': typeof AdminCustomerSuccessCaseIdRoute
   '/platform/companies/$organizationId': typeof PlatformCompaniesOrganizationIdRoute
   '/platform/customer-success/$caseId': typeof PlatformCustomerSuccessCaseIdRoute
@@ -337,6 +345,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/cashier/'
     | '/platform/'
+    | '/platform/support/'
     | '/admin/customer-success/$caseId'
     | '/platform/companies/$organizationId'
     | '/platform/customer-success/$caseId'
@@ -362,12 +371,12 @@ export interface FileRouteTypes {
     | '/platform/companies'
     | '/platform/customer-success'
     | '/platform/settings'
-    | '/platform/support'
     | '/platform/training'
     | '/platform/users'
     | '/admin'
     | '/cashier'
     | '/platform'
+    | '/platform/support'
     | '/admin/customer-success/$caseId'
     | '/platform/companies/$organizationId'
     | '/platform/customer-success/$caseId'
@@ -402,6 +411,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/cashier/'
     | '/platform/'
+    | '/platform/support/'
     | '/admin/customer-success/$caseId'
     | '/platform/companies/$organizationId'
     | '/platform/customer-success/$caseId'
@@ -637,6 +647,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlatformCustomerSuccessCaseIdRouteImport
       parentRoute: typeof PlatformCustomerSuccessRoute
     }
+    '/platform/support/': {
+      id: '/platform/support/'
+      path: '/'
+      fullPath: '/platform/support/'
+      preLoaderRoute: typeof PlatformSupportRouteImport
+      parentRoute: typeof PlatformSupportRoute
+    }
     '/platform/support/$caseId': {
       id: '/platform/support/$caseId'
       path: '/$caseId'
@@ -725,10 +742,12 @@ const PlatformCustomerSuccessRouteWithChildren =
   )
 
 interface PlatformSupportRouteChildren {
+  PlatformSupportRoute: typeof PlatformSupportRoute
   PlatformSupportCaseIdRoute: typeof PlatformSupportCaseIdRoute
 }
 
 const PlatformSupportRouteChildren: PlatformSupportRouteChildren = {
+  PlatformSupportRoute: PlatformSupportRoute,
   PlatformSupportCaseIdRoute: PlatformSupportCaseIdRoute,
 }
 
