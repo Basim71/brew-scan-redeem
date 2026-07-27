@@ -1,28 +1,74 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, type FormEvent } from "react";
-import { Building2, Eye, EyeOff, Loader2, LockKeyhole, Mail } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
 
-import {
-  useOrganization,
-  type ActiveOrganization,
-  type OrganizationRole,
-} from "@/providers/OrganizationProvider";
-import { usePlatform } from "@/providers/PlatformProvider";
-import { supabase } from "@/integrations/supabase/client";
-import kobLogo from "@/assets/kob-logo.png.asset.json";
+import { AuthLoadingScreen } from "@/features/authentication/components/AuthLoadingScreen";
+import { UnifiedLoginForm } from "@/features/authentication/components/UnifiedLoginForm";
+import { WorkspaceSelector } from "@/features/authentication/components/WorkspaceSelector";
+import { useAuthentication } from "@/features/authentication/hooks/useAuthentication";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "تسجيل الدخول · KOB" },
-      { name: "description", content: "تسجيل دخول موظفي شركات KOB." },
+      { title: "KOB · Sign in" },
+      { name: "description", content: "Unified sign-in for KOB platform and company workspaces." },
       { name: "robots", content: "noindex" },
     ],
   }),
   component: AuthPage,
 });
 
-type ResolvedOrganizationRow = {
+function AuthPage() {
+  const { lang } = useI18n();
+  const {
+    phase,
+    memberships,
+    busy,
+    error,
+    noWorkspaceMessage,
+    submit,
+    selectWorkspace,
+    signOutFromSelector,
+  } = useAuthentication();
+
+  if (phase === "loading") {
+    return <AuthLoadingScreen message={lang === "ar" ? "جارٍ التحقق من الجلسة..." : "Restoring session..."} />;
+  }
+
+  if (phase === "selector") {
+    return (
+      <WorkspaceSelector
+        memberships={memberships}
+        busy={busy}
+        onSelect={(m) => void selectWorkspace(m)}
+        onSignOut={() => void signOutFromSelector()}
+      />
+    );
+  }
+
+  if (phase === "no_workspace") {
+    return (
+      <UnifiedLoginForm
+        busy={busy}
+        error={noWorkspaceMessage}
+        onSubmit={async (email, password) => {
+          await submit(email, password);
+        }}
+      />
+    );
+  }
+
+  return (
+    <UnifiedLoginForm
+      busy={busy}
+      error={error}
+      onSubmit={async (email, password) => {
+        await submit(email, password);
+      }}
+    />
+  );
+}
+
+type _Unused_ResolvedOrganizationRow = {
   organization_id: string;
   organization_code: string;
   organization_name_ar: string | null;
