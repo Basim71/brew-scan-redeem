@@ -15,7 +15,7 @@
     "@supabase/supabase-js": "^2.110.0",
     "@tailwindcss/vite": "^4.2.1",
     "@tanstack/react-query": "^5.101.1",
-    "@tanstack/react-router": "1.168.26",
+    "@tanstack/react-router": "1.170.18",
     "@tanstack/react-start": "1.168.26",
     "@tanstack/router-plugin": "1.168.23",
     "clsx": "^2.1.1",
@@ -49,9 +49,9 @@
     "vite": "^8.0.16"
   },
   "overrides": {
-    "@tanstack/router-core": "1.171.13"
+    "@tanstack/react-router": "1.170.18"
   },
   "resolutions": {
-    "@tanstack/router-core": "1.171.13"
+    "@tanstack/react-router": "1.170.18"
   }
 }
