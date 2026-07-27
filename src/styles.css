@@ -6170,6 +6170,10 @@ html[dir="rtl"] .kob-auth-input { padding: 0 14px 0 18px; }
   color: #8d562d;
 }
 
+.app-island-dropdown[data-open="false"] {
+  display: none;
+}
+
 .app-island-dropdown {
   position: absolute;
   top: calc(100% + 10px);
