@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CashierRouteImport } from './routes/cashier'
 import { Route as PlatformRouteImport } from './routes/platform'
 import { Route as ScanRouteImport } from './routes/scan'
@@ -42,6 +43,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CashierRoute = CashierRouteImport.update({
@@ -159,6 +165,7 @@ const PlatformSupportCaseIdRoute = PlatformSupportCaseIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/auth': typeof AuthRoute
   '/cashier': typeof CashierRouteWithChildren
   '/platform': typeof PlatformRouteWithChildren
   '/scan': typeof ScanRoute
@@ -184,6 +191,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/scan': typeof ScanRoute
   '/admin/branches': typeof AdminBranchesRoute
   '/admin/cashiers': typeof AdminCashiersRoute
@@ -209,6 +217,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/auth': typeof AuthRoute
   '/cashier': typeof CashierRouteWithChildren
   '/platform': typeof PlatformRouteWithChildren
   '/scan': typeof ScanRoute
@@ -237,6 +246,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/auth'
     | '/cashier'
     | '/platform'
     | '/scan'
@@ -262,6 +272,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
     | '/scan'
     | '/admin/branches'
     | '/admin/cashiers'
@@ -286,6 +297,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/auth'
     | '/cashier'
     | '/platform'
     | '/scan'
@@ -313,6 +325,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  AuthRoute: typeof AuthRoute
   CashierRoute: typeof CashierRouteWithChildren
   PlatformRoute: typeof PlatformRouteWithChildren
   ScanRoute: typeof ScanRoute
@@ -332,6 +345,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cashier': {
@@ -578,6 +598,7 @@ const PlatformRouteWithChildren = PlatformRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  AuthRoute: AuthRoute,
   CashierRoute: CashierRouteWithChildren,
   PlatformRoute: PlatformRouteWithChildren,
   ScanRoute: ScanRoute,
