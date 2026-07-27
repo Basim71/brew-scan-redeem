@@ -22,7 +22,7 @@ function NotFoundComponent() {
   // Keep the platform sign-in entry available while the route manifest refreshes.
   if (typeof window !== "undefined") {
     const pathname = window.location.pathname.replace(/\/+$/, "") || "/";
-    if (pathname === "/platform-auth") {
+    if (pathname === "/auth") {
       return <PlatformAuthPage />;
     }
   }
