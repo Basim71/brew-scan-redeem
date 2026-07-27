@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
-
-import { PlatformAuthPage } from "@/components/platform/PlatformAuthPage";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/platform-auth")({
-  component: PlatformAuthPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/auth" });
+  },
 });
