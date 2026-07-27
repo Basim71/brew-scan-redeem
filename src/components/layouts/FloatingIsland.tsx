@@ -136,8 +136,11 @@ export function FloatingIsland({
                       aria-hidden="true"
                     />
                   </button>
-                  {isOpen ? (
-                    <div className="app-island-dropdown" role="menu">
+                  <div
+                    className="app-island-dropdown"
+                    role="menu"
+                    data-open={isOpen ? "true" : "false"}
+                  >
                       {item.children.map((c) => {
                         const CIcon = c.icon;
                         return (
@@ -161,8 +164,7 @@ export function FloatingIsland({
                           </Link>
                         );
                       })}
-                    </div>
-                  ) : null}
+                  </div>
                 </div>
               );
             }
