@@ -6,6 +6,50 @@ existing functionality is preserved, the app builds, and every top-level
 route (`/`, `/auth`, `/scan`, `/admin`, `/cashier`, `/platform`) still
 resolves.
 
+## Update — TASK-001 follow-up pass
+
+A second pass tightened the structure against the finer-grained target
+layout (components/common|forms|navigation|feedback, features expanded).
+
+### Deletions
+- `src/lib/utils.ts` — the `cn()` helper had zero importers; deleted.
+- npm deps removed alongside it: `clsx`, `tailwind-merge` (only used by
+  the deleted `utils.ts`).
+
+### Moves / renames
+| From | To |
+| --- | --- |
+| `src/components/MetricCard.tsx` | `src/components/common/MetricCard.tsx` |
+| `src/components/PageHeader.tsx` | `src/components/common/PageHeader.tsx` |
+| `src/features/sell-coupon/` | `src/features/coupons/` |
+
+Import sites updated: `src/routes/platform.index.tsx`,
+`src/routes/admin.sell-coupon.tsx`, `src/routes/cashier.sell-coupon.tsx`.
+
+### Target folders vs actual
+The target layout enumerated many feature buckets
+(`authentication`, `companies`, `customers`, `subscriptions`, `orders`,
+`branches`, `cashiers`, `reports`) and component subfolders
+(`forms`, `navigation`, `feedback`) that currently have no dedicated
+modules — the logic lives inside individual route files under
+`src/routes/`. Empty folders were NOT created to avoid noise; the four
+component subfolders (`common`, `forms`, `navigation`, `feedback`) exist
+so future extraction has an obvious home. `src/styles.css` intentionally
+stays at `src/` because TanStack Start auto-discovers it there (see
+`src/app/README.md`).
+
+### Remaining technical debt
+- Route files (`admin.*.tsx`, `cashier.*.tsx`, `platform.*.tsx`) still
+  contain feature logic inline. Extraction into `src/features/<domain>/`
+  is a larger refactor and was deliberately deferred to keep this task
+  behavior-preserving.
+- `src/routes/platform-auth.tsx` remains as a redirect shim to `/auth`.
+
+### Validation
+- `bunx tsgo --noEmit` — clean.
+- Dev server responds `200` for `/`, `/auth`, `/scan`.
+- `bun remove clsx tailwind-merge` completed; lockfile updated.
+
 ## New `src/` layout
 
 ```
