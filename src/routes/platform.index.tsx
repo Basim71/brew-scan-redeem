@@ -9,8 +9,8 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { MetricCard } from "@/components/MetricCard";
-import { PageHeader } from "@/components/PageHeader";
+import { MetricCard } from "@/components/common/MetricCard";
+import { PageHeader } from "@/components/common/PageHeader";
 import {
   EMPTY_PLATFORM_METRICS,
   fetchPlatformMetrics,
