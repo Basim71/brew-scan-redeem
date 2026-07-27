@@ -839,33 +839,218 @@ export type Database = {
         }
         Relationships: []
       }
-      plans: {
+      plan_allowed_branches: {
+        Row: {
+          branch_id: string
+          created_at: string
+          id: string
+          mode: string
+          organization_id: string
+          plan_id: string
+        }
+        Insert: {
+          branch_id: string
+          created_at?: string
+          id?: string
+          mode?: string
+          organization_id: string
+          plan_id: string
+        }
+        Update: {
+          branch_id?: string
+          created_at?: string
+          id?: string
+          mode?: string
+          organization_id?: string
+          plan_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_allowed_branches_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plan_allowed_branches_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plan_allowed_branches_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plan_allowed_drinks: {
         Row: {
           created_at: string
-          duration_days: number
+          drink_type_id: string
           id: string
-          is_active: boolean
-          name: string
           organization_id: string
-          price: number
+          plan_id: string
         }
         Insert: {
           created_at?: string
-          duration_days: number
+          drink_type_id: string
           id?: string
-          is_active?: boolean
-          name: string
-          organization_id?: string
-          price: number
+          organization_id: string
+          plan_id: string
         }
         Update: {
           created_at?: string
-          duration_days?: number
+          drink_type_id?: string
+          id?: string
+          organization_id?: string
+          plan_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_allowed_drinks_drink_type_id_fkey"
+            columns: ["drink_type_id"]
+            isOneToOne: false
+            referencedRelation: "drink_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plan_allowed_drinks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plan_allowed_drinks_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plans: {
+        Row: {
+          allow_comments: boolean
+          allow_extra_shot: boolean
+          allow_milk: boolean
+          allow_sugar: boolean
+          allow_syrup: boolean
+          allowed_weekdays: number[]
+          archived_at: string | null
+          auto_renewal: boolean
+          badge: string | null
+          carry_unused: boolean
+          color: string
+          created_at: string
+          currency: string
+          description_ar: string | null
+          description_en: string | null
+          display_order: number
+          drinks_per_redemption: number
+          duration_days: number
+          grace_period_days: number | null
+          id: string
+          is_active: boolean
+          is_hidden: boolean
+          max_addons: number | null
+          max_carry_days: number | null
+          max_drinks_per_day: number
+          max_drinks_per_redemption: number
+          max_redemptions_per_period: number | null
+          max_selectable_drinks: number | null
+          name: string
+          name_ar: string
+          name_en: string
+          organization_id: string
+          price: number
+          redemption_frequency: string
+          redemption_frequency_days: number | null
+          redemption_window_end: string | null
+          redemption_window_start: string | null
+        }
+        Insert: {
+          allow_comments?: boolean
+          allow_extra_shot?: boolean
+          allow_milk?: boolean
+          allow_sugar?: boolean
+          allow_syrup?: boolean
+          allowed_weekdays?: number[]
+          archived_at?: string | null
+          auto_renewal?: boolean
+          badge?: string | null
+          carry_unused?: boolean
+          color?: string
+          created_at?: string
+          currency?: string
+          description_ar?: string | null
+          description_en?: string | null
+          display_order?: number
+          drinks_per_redemption?: number
+          duration_days: number
+          grace_period_days?: number | null
           id?: string
           is_active?: boolean
+          is_hidden?: boolean
+          max_addons?: number | null
+          max_carry_days?: number | null
+          max_drinks_per_day?: number
+          max_drinks_per_redemption?: number
+          max_redemptions_per_period?: number | null
+          max_selectable_drinks?: number | null
+          name: string
+          name_ar: string
+          name_en: string
+          organization_id?: string
+          price: number
+          redemption_frequency?: string
+          redemption_frequency_days?: number | null
+          redemption_window_end?: string | null
+          redemption_window_start?: string | null
+        }
+        Update: {
+          allow_comments?: boolean
+          allow_extra_shot?: boolean
+          allow_milk?: boolean
+          allow_sugar?: boolean
+          allow_syrup?: boolean
+          allowed_weekdays?: number[]
+          archived_at?: string | null
+          auto_renewal?: boolean
+          badge?: string | null
+          carry_unused?: boolean
+          color?: string
+          created_at?: string
+          currency?: string
+          description_ar?: string | null
+          description_en?: string | null
+          display_order?: number
+          drinks_per_redemption?: number
+          duration_days?: number
+          grace_period_days?: number | null
+          id?: string
+          is_active?: boolean
+          is_hidden?: boolean
+          max_addons?: number | null
+          max_carry_days?: number | null
+          max_drinks_per_day?: number
+          max_drinks_per_redemption?: number
+          max_redemptions_per_period?: number | null
+          max_selectable_drinks?: number | null
           name?: string
+          name_ar?: string
+          name_en?: string
           organization_id?: string
           price?: number
+          redemption_frequency?: string
+          redemption_frequency_days?: number | null
+          redemption_window_end?: string | null
+          redemption_window_start?: string | null
         }
         Relationships: [
           {
