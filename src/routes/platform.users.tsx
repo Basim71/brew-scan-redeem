@@ -1,31 +1,28 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Shield, UserPlus } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { PlatformGate } from "@/features/platform/PlatformGate";
+import { ROLE_MATRIX } from "@/features/platform/access";
+import { listPlatformStaff, type PlatformStaffRow } from "@/services/platform/platform-users.service";
 
 export const Route = createFileRoute("/platform/users")({ component: UsersPage });
 
 function UsersPage() {
-  const [rows, setRows] = useState<any[]>([]);
+  const [rows, setRows] = useState<PlatformStaffRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
-    void (async () => {
-      const { data, error: queryError } = await (supabase as any)
-        .from("platform_staff")
-        .select("id,full_name,email,role,status,last_login_at,created_at")
-        .order("created_at");
-      if (!mounted) return;
-      setRows(data ?? []);
-      setError(queryError?.message ?? null);
-      setLoading(false);
-    })();
+    listPlatformStaff()
+      .then((r) => { if (mounted) setRows(r); })
+      .catch((e) => { if (mounted) setError(e instanceof Error ? e.message : "خطأ"); })
+      .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
   }, []);
 
   return (
+    <PlatformGate allow={ROLE_MATRIX["/platform/users"]}>
     <div className="platform-page" dir="rtl">
       <header className="platform-page-header">
         <div><span>Access Control</span><h1>فريق المنصة</h1><p>موظفو KOB محفوظون في organization_members، وهذه الصفحة تقرأ العرض الموحد فقط.</p></div>
@@ -50,5 +47,6 @@ function UsersPage() {
         </table>
       </div>
     </div>
+    </PlatformGate>
   );
 }
