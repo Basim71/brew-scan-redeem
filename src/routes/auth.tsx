@@ -9,6 +9,7 @@ import {
 } from "@/components/tenant/OrganizationProvider";
 import { usePlatform } from "@/components/platform/PlatformProvider";
 import { supabase } from "@/integrations/supabase/client";
+import kobLogo from "@/assets/kob-logo.png.asset.json";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -151,6 +152,18 @@ function AuthPage() {
       <div className="kob-auth-ambient kob-auth-ambient-two" />
 
       <section className="kob-auth-card">
+        <div className="kob-auth-brand">
+          <div className="kob-auth-logo-plate">
+            <img src={kobLogo.url} alt="KOB" className="kob-auth-logo" />
+          </div>
+          <p className="kob-auth-tagline">اشتراكات القهوة اليومية</p>
+          <div className="kob-auth-divider" aria-hidden="true">
+            <span />
+            <em>تسجيل الدخول</em>
+            <span />
+          </div>
+        </div>
+
         <form onSubmit={submit} className="kob-auth-form">
           <label className="kob-auth-field">
             <Mail className="kob-auth-field-icon" aria-hidden="true" />
