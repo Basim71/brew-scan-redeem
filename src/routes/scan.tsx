@@ -807,7 +807,7 @@ function ScanPage() {
           customization.selectedOptionIds,
 
         _customer_note:
-          customization.note || null,
+          customization.note || undefined,
       },
     );
 
