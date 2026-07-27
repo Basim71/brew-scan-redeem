@@ -15,18 +15,8 @@ import { LanguageProvider } from "../lib/i18n";
 import { Toaster } from "sonner";
 import { OrganizationProvider } from "@/providers/OrganizationProvider";
 import { PlatformProvider } from "@/providers/PlatformProvider";
-import { PlatformAuthPage } from "@/features/platform/PlatformAuthPage";
 
 function NotFoundComponent() {
-  // Lovable may briefly serve a stale generated route tree after files are moved.
-  // Keep the platform sign-in entry available while the route manifest refreshes.
-  if (typeof window !== "undefined") {
-    const pathname = window.location.pathname.replace(/\/+$/, "") || "/";
-    if (pathname === "/auth") {
-      return <PlatformAuthPage />;
-    }
-  }
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
