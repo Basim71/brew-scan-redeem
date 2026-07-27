@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { addCaseMessage, getCase } from "@/modules/customer-success/api";
 import { caseStatusLabels, priorityLabels, type CustomerSuccessCase } from "@/modules/customer-success/types";
 
-export const Route = createFileRoute("/admin/customer-success/$caseId" as any)({ component: CompanyCaseDetails });
+export const Route = createFileRoute("/admin/customer-success/$caseId")({ component: CompanyCaseDetails });
 
 function CompanyCaseDetails() {
   const { caseId } = Route.useParams() as { caseId: string };

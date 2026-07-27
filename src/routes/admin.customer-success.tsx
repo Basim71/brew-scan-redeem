@@ -6,7 +6,7 @@ import { useOrganization } from "@/components/tenant/OrganizationProvider";
 import { createCase, listCases } from "@/modules/customer-success/api";
 import { caseStatusLabels, priorityLabels, type CustomerSuccessCase } from "@/modules/customer-success/types";
 
-export const Route = createFileRoute("/admin/customer-success" as any)({ component: CustomerSuccessPage });
+export const Route = createFileRoute("/admin/customer-success")({ component: CustomerSuccessPage });
 
 const emptyForm = {
   category: "technical",
