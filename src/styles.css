@@ -137,6 +137,127 @@ html[dir="rtl"] {
     sans-serif;
 }
 
+/* ============================================================
+ * KOB Unified Design Tokens (TASK-006)
+ * Single semantic layer consumed by every portal (Auth, Platform,
+ * Company, Cashier, Customer Success). Aliases map to the existing
+ * espresso/caramel primitives — no visual regression, just one
+ * shared vocabulary.
+ * ============================================================ */
+:root {
+  /* Neutrals */
+  --kob-warm-white: oklch(0.985 0.008 82);
+  --kob-soft-cream: var(--cream);
+  --kob-cream-dim: var(--cream-dim);
+  --kob-espresso: var(--espresso-950);
+  --kob-espresso-soft: var(--espresso-800);
+  --kob-medium-brown: var(--espresso-600);
+  --kob-soft-gray: oklch(0.62 0.012 70);
+
+  /* Brand accent */
+  --kob-gold: var(--caramel);
+  --kob-gold-bright: var(--caramel-bright);
+  --kob-gold-muted: oklch(0.7 0.09 68);
+
+  /* Semantic status */
+  --kob-success: oklch(0.68 0.14 155);
+  --kob-success-foreground: oklch(0.16 0.03 155);
+  --kob-warning: oklch(0.8 0.15 78);
+  --kob-warning-foreground: oklch(0.2 0.05 60);
+  --kob-error: oklch(0.65 0.2 27);
+  --kob-error-foreground: oklch(0.98 0.01 60);
+  --kob-info: oklch(0.7 0.11 235);
+  --kob-info-foreground: oklch(0.16 0.03 235);
+
+  /* Spacing scale (4px base) */
+  --kob-space-1: 0.25rem;
+  --kob-space-2: 0.5rem;
+  --kob-space-3: 0.75rem;
+  --kob-space-4: 1rem;
+  --kob-space-5: 1.5rem;
+  --kob-space-6: 2rem;
+  --kob-space-7: 3rem;
+  --kob-space-8: 4rem;
+
+  /* Container widths */
+  --kob-container-sm: 40rem;
+  --kob-container-md: 56rem;
+  --kob-container-lg: 72rem;
+  --kob-container-xl: 88rem;
+
+  /* Radius scale */
+  --kob-radius-xs: 0.375rem;
+  --kob-radius-sm: 0.5rem;
+  --kob-radius-md: 0.75rem;
+  --kob-radius-lg: 1rem;
+  --kob-radius-xl: 1.5rem;
+  --kob-radius-pill: 999px;
+
+  /* Elevation */
+  --kob-shadow-sm: 0 1px 2px oklch(0.05 0.02 40 / 0.4);
+  --kob-shadow-md: 0 6px 16px -8px oklch(0.05 0.02 40 / 0.55);
+  --kob-shadow-lg: 0 18px 40px -18px oklch(0.05 0.02 40 / 0.7);
+  --kob-focus-ring: 0 0 0 3px oklch(0.74 0.14 66 / 0.45);
+
+  /* Typography */
+  --kob-font-display: var(--font-display);
+  --kob-font-sans: var(--font-sans);
+  --kob-font-numeric: "Inter", "SF Mono", ui-monospace, monospace;
+  --kob-leading-tight: 1.2;
+  --kob-leading-normal: 1.5;
+  --kob-leading-relaxed: 1.7;
+}
+
+@theme inline {
+  --color-kob-warm-white: var(--kob-warm-white);
+  --color-kob-cream: var(--kob-soft-cream);
+  --color-kob-espresso: var(--kob-espresso);
+  --color-kob-brown: var(--kob-medium-brown);
+  --color-kob-gold: var(--kob-gold);
+  --color-kob-gray: var(--kob-soft-gray);
+  --color-kob-success: var(--kob-success);
+  --color-kob-warning: var(--kob-warning);
+  --color-kob-error: var(--kob-error);
+  --color-kob-info: var(--kob-info);
+}
+
+/* Accessibility — reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Accessibility — keyboard focus */
+:where(a, button, [role="button"], input, select, textarea, summary):focus-visible {
+  outline: none;
+  box-shadow: var(--kob-focus-ring);
+  border-radius: var(--kob-radius-sm);
+}
+
+/* Status badge utility (used across portals) */
+.kob-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kob-space-2);
+  padding: var(--kob-space-1) var(--kob-space-3);
+  border-radius: var(--kob-radius-pill);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  border: 1px solid transparent;
+}
+.kob-badge[data-tone="success"] { background: color-mix(in oklab, var(--kob-success) 18%, transparent); color: var(--kob-success); border-color: color-mix(in oklab, var(--kob-success) 40%, transparent); }
+.kob-badge[data-tone="warning"] { background: color-mix(in oklab, var(--kob-warning) 22%, transparent); color: var(--kob-warning); border-color: color-mix(in oklab, var(--kob-warning) 45%, transparent); }
+.kob-badge[data-tone="error"]   { background: color-mix(in oklab, var(--kob-error) 20%, transparent); color: var(--kob-error); border-color: color-mix(in oklab, var(--kob-error) 45%, transparent); }
+.kob-badge[data-tone="info"]    { background: color-mix(in oklab, var(--kob-info) 20%, transparent); color: var(--kob-info); border-color: color-mix(in oklab, var(--kob-info) 45%, transparent); }
+.kob-badge[data-tone="neutral"] { background: color-mix(in oklab, var(--kob-soft-gray) 20%, transparent); color: var(--kob-soft-gray); border-color: color-mix(in oklab, var(--kob-soft-gray) 40%, transparent); }
+
 @theme inline {
   --radius-sm:
     calc(var(--radius) - 4px);
