@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Loader2, ShieldX } from "lucide-react";
-import { usePlatform, type PlatformRole } from "./PlatformProvider";
+import { usePlatform, type PlatformRole } from "@/providers/PlatformProvider";
 
 export function PlatformGate({ children, allow }: { children: ReactNode; allow?: PlatformRole[] }) {
   const navigate = useNavigate();

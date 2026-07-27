@@ -3,7 +3,7 @@ import { Eye, EyeOff, Loader2, LockKeyhole, Mail, ShieldCheck } from "lucide-rea
 import { useEffect, useState, type FormEvent } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
-import { usePlatform } from "./PlatformProvider";
+import { usePlatform } from "@/providers/PlatformProvider";
 
 type PlatformProfileRow = Record<string, unknown>;
 

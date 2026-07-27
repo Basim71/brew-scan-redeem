@@ -9,13 +9,13 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { MetricCard } from "@/components/common/MetricCard";
-import { PageHeader } from "@/components/common/PageHeader";
+import { MetricCard } from "@/components/MetricCard";
+import { PageHeader } from "@/components/PageHeader";
 import {
   EMPTY_PLATFORM_METRICS,
   fetchPlatformMetrics,
   type PlatformMetrics,
-} from "@/services/platform/dashboard";
+} from "@/services/platform-dashboard";
 
 export const Route = createFileRoute("/platform/")({ component: PlatformDashboard });
 

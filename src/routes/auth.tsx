@@ -6,8 +6,8 @@ import {
   useOrganization,
   type ActiveOrganization,
   type OrganizationRole,
-} from "@/components/tenant/OrganizationProvider";
-import { usePlatform } from "@/components/platform/PlatformProvider";
+} from "@/providers/OrganizationProvider";
+import { usePlatform } from "@/providers/PlatformProvider";
 import { supabase } from "@/integrations/supabase/client";
 import kobLogo from "@/assets/kob-logo.png.asset.json";
 

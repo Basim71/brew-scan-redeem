@@ -8,9 +8,9 @@ import {
 } from "lucide-react";
 import { useMemo } from "react";
 
-import { AppWorkspace } from "@/components/layouts/AppWorkspace";
-import { PlatformGate } from "@/components/platform/PlatformGate";
-import { usePlatform } from "@/components/platform/PlatformProvider";
+import { AppWorkspace } from "@/layouts/AppWorkspace";
+import { PlatformGate } from "@/features/platform/PlatformGate";
+import { usePlatform } from "@/providers/PlatformProvider";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/platform")({ component: PlatformLayout });

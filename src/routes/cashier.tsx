@@ -2,9 +2,9 @@ import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { Inbox, ShoppingCart } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { AppWorkspace } from "@/components/layouts/AppWorkspace";
-import { useOrganization } from "@/components/tenant/OrganizationProvider";
-import { RoleGate } from "@/components/layouts/RoleGate";
+import { AppWorkspace } from "@/layouts/AppWorkspace";
+import { useOrganization } from "@/providers/OrganizationProvider";
+import { RoleGate } from "@/layouts/RoleGate";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { useRole } from "@/lib/use-auth";

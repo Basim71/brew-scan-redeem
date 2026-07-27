@@ -13,9 +13,9 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { LanguageProvider } from "../lib/i18n";
 import { Toaster } from "sonner";
-import { OrganizationProvider } from "@/components/tenant/OrganizationProvider";
-import { PlatformProvider } from "@/components/platform/PlatformProvider";
-import { PlatformAuthPage } from "@/components/platform/PlatformAuthPage";
+import { OrganizationProvider } from "@/providers/OrganizationProvider";
+import { PlatformProvider } from "@/providers/PlatformProvider";
+import { PlatformAuthPage } from "@/features/platform/PlatformAuthPage";
 
 function NotFoundComponent() {
   // Lovable may briefly serve a stale generated route tree after files are moved.

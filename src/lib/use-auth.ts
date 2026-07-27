@@ -1,4 +1,4 @@
-import { useOrganization, type OrganizationRole } from "@/components/tenant/OrganizationProvider";
+import { useOrganization, type OrganizationRole } from "@/providers/OrganizationProvider";
 
 export type AppRole = "admin" | "cashier";
 

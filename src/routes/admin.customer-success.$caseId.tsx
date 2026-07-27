@@ -2,8 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { Clock3, MessageCircle, Paperclip, Send, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { addCaseMessage, getCase } from "@/modules/customer-success/api";
-import { caseStatusLabels, priorityLabels, type CustomerSuccessCase } from "@/modules/customer-success/types";
+import { addCaseMessage, getCase } from "@/features/customer-success/api";
+import { caseStatusLabels, priorityLabels, type CustomerSuccessCase } from "@/features/customer-success/types";
 
 export const Route = createFileRoute("/admin/customer-success/$caseId")({ component: CompanyCaseDetails });
 

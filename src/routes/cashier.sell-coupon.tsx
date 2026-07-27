@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRole } from "@/lib/use-auth";
-import { SellCouponForm } from "@/lib/sell-coupon";
+import { SellCouponForm } from "@/features/sell-coupon/SellCouponForm";
 import { FullScreenLoader } from "@/lib/ui";
 
 export const Route = createFileRoute("/cashier/sell-coupon")({

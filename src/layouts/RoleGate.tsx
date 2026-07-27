@@ -1,7 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
-import { useOrganization } from "@/components/tenant/OrganizationProvider";
+import { useOrganization } from "@/providers/OrganizationProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { FullScreenLoader } from "@/lib/ui";
 import { mapOrganizationRole } from "@/lib/use-auth";
