@@ -33,6 +33,7 @@ import { Route as PlatformCompaniesRouteImport } from './routes/platform.compani
 import { Route as PlatformCustomerSuccessRouteImport } from './routes/platform.customer-success'
 import { Route as PlatformSettingsRouteImport } from './routes/platform.settings'
 import { Route as PlatformSupportRouteImport } from './routes/platform.support'
+import { Route as PlatformTrainingRouteImport } from './routes/platform.training'
 import { Route as PlatformUsersRouteImport } from './routes/platform.users'
 import { Route as AdminCustomerSuccessCaseIdRouteImport } from './routes/admin.customer-success.$caseId'
 import { Route as PlatformCustomerSuccessCaseIdRouteImport } from './routes/platform.customer-success.$caseId'
@@ -158,6 +159,11 @@ const PlatformSupportRoute = PlatformSupportRouteImport.update({
   path: '/support',
   getParentRoute: () => PlatformRoute,
 } as any)
+const PlatformTrainingRoute = PlatformTrainingRouteImport.update({
+  id: '/training',
+  path: '/training',
+  getParentRoute: () => PlatformRoute,
+} as any)
 const PlatformUsersRoute = PlatformUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -203,6 +209,7 @@ export interface FileRoutesByFullPath {
   '/platform/customer-success': typeof PlatformCustomerSuccessRouteWithChildren
   '/platform/settings': typeof PlatformSettingsRoute
   '/platform/support': typeof PlatformSupportRouteWithChildren
+  '/platform/training': typeof PlatformTrainingRoute
   '/platform/users': typeof PlatformUsersRoute
   '/admin/': typeof AdminIndexRoute
   '/cashier/': typeof CashierIndexRoute
@@ -230,6 +237,7 @@ export interface FileRoutesByTo {
   '/platform/customer-success': typeof PlatformCustomerSuccessRouteWithChildren
   '/platform/settings': typeof PlatformSettingsRoute
   '/platform/support': typeof PlatformSupportRouteWithChildren
+  '/platform/training': typeof PlatformTrainingRoute
   '/platform/users': typeof PlatformUsersRoute
   '/admin': typeof AdminIndexRoute
   '/cashier': typeof CashierIndexRoute
@@ -261,6 +269,7 @@ export interface FileRoutesById {
   '/platform/customer-success': typeof PlatformCustomerSuccessRouteWithChildren
   '/platform/settings': typeof PlatformSettingsRoute
   '/platform/support': typeof PlatformSupportRouteWithChildren
+  '/platform/training': typeof PlatformTrainingRoute
   '/platform/users': typeof PlatformUsersRoute
   '/admin/': typeof AdminIndexRoute
   '/cashier/': typeof CashierIndexRoute
@@ -293,6 +302,7 @@ export interface FileRouteTypes {
     | '/platform/customer-success'
     | '/platform/settings'
     | '/platform/support'
+    | '/platform/training'
     | '/platform/users'
     | '/admin/'
     | '/cashier/'
@@ -320,6 +330,7 @@ export interface FileRouteTypes {
     | '/platform/customer-success'
     | '/platform/settings'
     | '/platform/support'
+    | '/platform/training'
     | '/platform/users'
     | '/admin'
     | '/cashier'
@@ -350,6 +361,7 @@ export interface FileRouteTypes {
     | '/platform/customer-success'
     | '/platform/settings'
     | '/platform/support'
+    | '/platform/training'
     | '/platform/users'
     | '/admin/'
     | '/cashier/'
@@ -539,6 +551,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlatformSupportRouteImport
       parentRoute: typeof PlatformRoute
     }
+    '/platform/training': {
+      id: '/platform/training'
+      path: '/training'
+      fullPath: '/platform/training'
+      preLoaderRoute: typeof PlatformTrainingRouteImport
+      parentRoute: typeof PlatformRoute
+    }
     '/platform/users': {
       id: '/platform/users'
       path: '/users'
@@ -653,6 +672,7 @@ interface PlatformRouteChildren {
   PlatformCustomerSuccessRoute: typeof PlatformCustomerSuccessRouteWithChildren
   PlatformSettingsRoute: typeof PlatformSettingsRoute
   PlatformSupportRoute: typeof PlatformSupportRouteWithChildren
+  PlatformTrainingRoute: typeof PlatformTrainingRoute
   PlatformUsersRoute: typeof PlatformUsersRoute
   PlatformIndexRoute: typeof PlatformIndexRoute
 }
@@ -662,6 +682,7 @@ const PlatformRouteChildren: PlatformRouteChildren = {
   PlatformCustomerSuccessRoute: PlatformCustomerSuccessRouteWithChildren,
   PlatformSettingsRoute: PlatformSettingsRoute,
   PlatformSupportRoute: PlatformSupportRouteWithChildren,
+  PlatformTrainingRoute: PlatformTrainingRoute,
   PlatformUsersRoute: PlatformUsersRoute,
   PlatformIndexRoute: PlatformIndexRoute,
 }
