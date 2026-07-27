@@ -84,10 +84,10 @@ export function PlanCard({
         </li>
         <li>{S[FREQ_LABEL[plan.redemption_frequency]][l]}</li>
         <li>
-          <b>{drinkCount ?? plan.allowed_drink_ids.length || "∞"}</b> {S.step_drinks[l]}
+          <b>{drinkCount ?? (plan.allowed_drink_ids.length || "∞")}</b> {S.step_drinks[l]}
         </li>
         <li>
-          <b>{branchCount ?? plan.allowed_branch_ids.length || "∞"}</b> {S.step_branches[l]}
+          <b>{branchCount ?? (plan.allowed_branch_ids.length || "∞")}</b> {S.step_branches[l]}
         </li>
       </ul>
 
