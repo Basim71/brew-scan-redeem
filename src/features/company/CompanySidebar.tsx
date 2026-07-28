@@ -34,8 +34,7 @@ export type CompanyNavItem = {
 
 const NAV_ITEMS: CompanyNavItem[] = [
   { to: "/admin", labelKey: { ar: "لوحة التحكم", en: "Overview" }, icon: LayoutDashboard, exact: true },
-  { to: "/admin/customers", labelKey: { ar: "العملاء", en: "Customers" }, icon: Users },
-  { to: "/admin/subscriptions", labelKey: { ar: "الاشتراكات", en: "Subscriptions" }, icon: WalletCards },
+  { to: "/admin/customers", labelKey: { ar: "مركز العملاء", en: "Customer Hub" }, icon: Users },
   { to: "/admin/orders", labelKey: { ar: "الطلبات", en: "Orders" }, icon: ShoppingBag },
   { to: "/admin/drinks", labelKey: { ar: "المشروبات", en: "Drinks" }, icon: Coffee },
   { to: "/admin/coupons", labelKey: { ar: "الكوبونات", en: "Coupons" }, icon: Ticket },

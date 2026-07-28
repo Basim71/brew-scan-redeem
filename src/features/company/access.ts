@@ -3,7 +3,6 @@ import type { OrganizationRole } from "@/providers/OrganizationProvider";
 export type CompanyRoute =
   | "/admin"
   | "/admin/customers"
-  | "/admin/subscriptions"
   | "/admin/orders"
   | "/admin/drinks"
   | "/admin/coupons"
@@ -23,7 +22,6 @@ export type CompanyRoute =
 export const COMPANY_ROLE_MATRIX: Record<CompanyRoute, OrganizationRole[]> = {
   "/admin": ["owner", "admin", "manager"],
   "/admin/customers": ["owner", "admin", "manager"],
-  "/admin/subscriptions": ["owner", "admin", "manager"],
   "/admin/orders": ["owner", "admin", "manager"],
   "/admin/drinks": ["owner", "admin", "manager"],
   "/admin/coupons": ["owner", "admin", "manager"],
