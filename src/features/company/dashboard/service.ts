@@ -294,17 +294,27 @@ export function buildBranchPerformance(
   coupons: SoldCoupon[],
   orders: DashboardPayload["ordersMonth"],
   monthStartIso: string,
+  activeSubsByBranch: Record<string, number> = {},
+  todayIso?: string,
 ): BranchPerformance[] {
   const revenueByBranch = new Map<string, number>();
+  const revenueTodayByBranch = new Map<string, number>();
   for (const c of coupons) {
     if (!c.sold_at || c.sold_at < monthStartIso) continue;
     if (!c.branch_id) continue;
     revenueByBranch.set(c.branch_id, (revenueByBranch.get(c.branch_id) ?? 0) + Number(c.price || 0));
+    if (todayIso && c.sold_at >= todayIso) {
+      revenueTodayByBranch.set(c.branch_id, (revenueTodayByBranch.get(c.branch_id) ?? 0) + Number(c.price || 0));
+    }
   }
   const ordersByBranch = new Map<string, number>();
+  const ordersTodayByBranch = new Map<string, number>();
   for (const o of orders) {
     if (!o.branch_id) continue;
     ordersByBranch.set(o.branch_id, (ordersByBranch.get(o.branch_id) ?? 0) + 1);
+    if (todayIso && o.created_at >= todayIso) {
+      ordersTodayByBranch.set(o.branch_id, (ordersTodayByBranch.get(o.branch_id) ?? 0) + 1);
+    }
   }
   return branches
     .map((b) => ({
@@ -313,6 +323,37 @@ export function buildBranchPerformance(
       nameEn: b.name_en,
       revenueMonth: revenueByBranch.get(b.id) ?? 0,
       ordersMonth: ordersByBranch.get(b.id) ?? 0,
+      revenueToday: revenueTodayByBranch.get(b.id) ?? 0,
+      ordersToday: ordersTodayByBranch.get(b.id) ?? 0,
+      activeMembers: activeSubsByBranch[b.id] ?? 0,
     }))
     .sort((a, b) => b.revenueMonth - a.revenueMonth);
+}
+
+export function buildDrinkPopularity(payload: DashboardPayload): DrinkPopularity[] {
+  const now = Date.now();
+  const week = now - 7 * 86400000;
+  const prev = now - 14 * 86400000;
+  const map = new Map<string, { month: number; week: number; prevWeek: number }>();
+  for (const o of payload.ordersMonth) {
+    if (!o.drink_type_id || o.status === "rejected") continue;
+    const entry = map.get(o.drink_type_id) ?? { month: 0, week: 0, prevWeek: 0 };
+    entry.month += 1;
+    const ts = new Date(o.created_at).getTime();
+    if (ts >= week) entry.week += 1;
+    else if (ts >= prev) entry.prevWeek += 1;
+    map.set(o.drink_type_id, entry);
+  }
+  return payload.drinks.map((d) => {
+    const e = map.get(d.id) ?? { month: 0, week: 0, prevWeek: 0 };
+    return {
+      drinkId: d.id,
+      nameEn: d.name_en,
+      nameAr: d.name_ar,
+      imageUrl: d.image_url,
+      ordersMonth: e.month,
+      ordersWeek: e.week,
+      ordersPrevWeek: e.prevWeek,
+    };
+  }).sort((a, b) => b.ordersMonth - a.ordersMonth);
 }
