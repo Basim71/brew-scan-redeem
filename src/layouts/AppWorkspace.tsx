@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import { LiveStatusProvider } from "@/providers/LiveStatusProvider";
+
 import { FloatingIsland, type FloatingIslandItem } from "./FloatingIsland";
 
 type AppWorkspaceProps = {
@@ -11,24 +13,13 @@ type AppWorkspaceProps = {
   children: ReactNode;
 };
 
-export function AppWorkspace({
-  title,
-  subtitle,
-  homeTo,
-  items,
-  onSignOut,
-  children,
-}: AppWorkspaceProps) {
+export function AppWorkspace({ title, subtitle, homeTo, items, onSignOut, children }: AppWorkspaceProps) {
   return (
-    <main className="app-workspace">
-      <FloatingIsland
-        title={title}
-        subtitle={subtitle}
-        homeTo={homeTo}
-        items={items}
-        onSignOut={onSignOut}
-      />
-      <section className="app-workspace-content">{children}</section>
-    </main>
+    <LiveStatusProvider>
+      <main className="app-workspace">
+        <FloatingIsland title={title} subtitle={subtitle} homeTo={homeTo} items={items} onSignOut={onSignOut} />
+        <section className="app-workspace-content">{children}</section>
+      </main>
+    </LiveStatusProvider>
   );
 }
