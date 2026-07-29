@@ -1,6 +1,6 @@
 import { useMemo, type ReactNode } from "react";
 import {
-  ChartNoAxesCombined,
+  BarChart3,
   Layers3,
   Building2,
   Coffee,
@@ -45,7 +45,7 @@ const PRIMARY: Array<{
   { to: "/admin/orders", labelAr: "الاستخدامات", labelEn: "Redemptions", icon: ShoppingBag },
   { to: "/admin/drinks", labelAr: "المشروبات", labelEn: "Drinks", icon: Coffee },
   { to: "/admin/subscriptions", labelAr: "الاشتراكات", labelEn: "Subscriptions", icon: Layers3 },
-  { to: "/admin/reports", labelAr: "التقارير", labelEn: "Reports", icon: ChartNoAxesCombined },
+  { to: "/admin/reports", labelAr: "التقارير", labelEn: "Reports", icon: BarChart3 },
 ];
 
 const OPERATIONS: Array<{ to: CompanyRoute; labelAr: string; labelEn: string; icon: any }> = [
