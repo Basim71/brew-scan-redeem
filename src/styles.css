@@ -6129,10 +6129,10 @@ html[dir="rtl"] .kob-auth-input { padding: 0 14px 0 18px; }
 
 .app-island-anchor {
   position: sticky;
-  top: 0;
+  top: 20px;
   z-index: 120;
   width: 100%;
-  padding: 14px 0 8px;
+  padding: 0 16px;
   pointer-events: none;
 }
 
@@ -6141,20 +6141,45 @@ html[dir="rtl"] .kob-auth-input { padding: 0 14px 0 18px; }
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
-  width: min(100%, 1540px);
+  width: fit-content;
+  max-width: min(100%, 1540px);
   min-height: 66px;
   margin: 0 auto;
   padding: 8px 10px;
   border: 1px solid rgba(255, 255, 255, 0.82);
-  border-radius: 24px;
+  border-radius: 999px;
   background: rgba(255, 253, 249, 0.78);
   box-shadow:
     0 24px 55px -34px rgba(92, 57, 38, 0.38),
     0 8px 22px -18px rgba(92, 57, 38, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(24px) saturate(1.12);
-  -webkit-backdrop-filter: blur(24px) saturate(1.12);
   pointer-events: auto;
+  transition:
+    min-height 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    padding 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms ease,
+    background 220ms ease;
+}
+
+.app-island[data-scrolled="true"] {
+  min-height: 54px;
+  padding: 4px 8px;
+  background: rgba(255, 253, 249, 0.88);
+  box-shadow:
+    0 14px 34px -26px rgba(92, 57, 38, 0.32),
+    0 4px 12px -10px rgba(92, 57, 38, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+}
+
+.app-island[data-scrolled="true"] .app-island-link {
+  min-height: 36px;
+  padding: 6px 10px;
+}
+
+.app-island[data-scrolled="true"] .app-island-logo {
+  width: 38px;
+  height: 38px;
 }
 
 .app-island-brand {
