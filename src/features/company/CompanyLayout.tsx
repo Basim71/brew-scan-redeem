@@ -1,15 +1,13 @@
 import { useMemo, type ReactNode } from "react";
 import {
-  BadgeDollarSign,
-  Boxes,
+  ChartNoAxesCombined,
+  Layers3,
   Building2,
   Coffee,
   Headphones,
   LayoutDashboard,
-  MoreHorizontal,
   Settings,
   ShoppingBag,
-  Ticket,
   UserRoundCog,
   Users,
 } from "lucide-react";
@@ -43,15 +41,14 @@ const PRIMARY: Array<{
   exact?: boolean;
 }> = [
   { to: "/admin", labelAr: "لوحة التحكم", labelEn: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/admin/customers", labelAr: "مركز العملاء", labelEn: "Customer Hub", icon: Users },
-  { to: "/admin/orders", labelAr: "الاستحقاقات اليومية", labelEn: "Daily Redemptions", icon: ShoppingBag },
+  { to: "/admin/customers", labelAr: "العملاء", labelEn: "Customers", icon: Users },
+  { to: "/admin/orders", labelAr: "الاستخدامات", labelEn: "Redemptions", icon: ShoppingBag },
   { to: "/admin/drinks", labelAr: "المشروبات", labelEn: "Drinks", icon: Coffee },
-  { to: "/admin/plans", labelAr: "الخطط", labelEn: "Plans", icon: Boxes },
-  { to: "/admin/coupons", labelAr: "الكوبونات", labelEn: "Coupons", icon: Ticket },
-  { to: "/admin/reports", labelAr: "التقارير", labelEn: "Reports", icon: BadgeDollarSign },
+  { to: "/admin/subscriptions", labelAr: "الاشتراكات", labelEn: "Subscriptions", icon: Layers3 },
+  { to: "/admin/reports", labelAr: "التقارير", labelEn: "Reports", icon: ChartNoAxesCombined },
 ];
 
-const MORE: Array<{ to: CompanyRoute; labelAr: string; labelEn: string; icon: any }> = [
+const OPERATIONS: Array<{ to: CompanyRoute; labelAr: string; labelEn: string; icon: any }> = [
   { to: "/admin/branches", labelAr: "الفروع", labelEn: "Branches", icon: Building2 },
   { to: "/admin/cashiers", labelAr: "الموظفون", labelEn: "Employees", icon: UserRoundCog },
   { to: "/admin/customer-success", labelAr: "نجاح العملاء", labelEn: "Customer Success", icon: Headphones },
@@ -64,44 +61,34 @@ export function CompanyLayout({ title, subtitle, onSignOut, children }: Props) {
   const isAr = lang === "ar";
 
   const items = useMemo<FloatingIslandItem[]>(() => {
-    const primary: FloatingIslandItem[] = PRIMARY
-      .filter((it) => canAccessCompanyRoute(it.to, role))
-      .map((it) => ({
-        kind: "link",
-        to: it.to,
-        label: isAr ? it.labelAr : it.labelEn,
-        icon: it.icon,
-        exact: it.exact,
-      }));
+    const primary: FloatingIslandItem[] = PRIMARY.filter((it) => canAccessCompanyRoute(it.to, role)).map((it) => ({
+      kind: "link",
+      to: it.to,
+      label: isAr ? it.labelAr : it.labelEn,
+      icon: it.icon,
+      exact: it.exact,
+    }));
 
-    const more = MORE
-      .filter((it) => canAccessCompanyRoute(it.to, role))
-      .map((it) => ({
-        kind: "link" as const,
-        to: it.to,
-        label: isAr ? it.labelAr : it.labelEn,
-        icon: it.icon,
-      }));
+    const operations = OPERATIONS.filter((it) => canAccessCompanyRoute(it.to, role)).map((it) => ({
+      kind: "link" as const,
+      to: it.to,
+      label: isAr ? it.labelAr : it.labelEn,
+      icon: it.icon,
+    }));
 
-    if (more.length > 0) {
+    if (operations.length > 0) {
       primary.push({
         kind: "group",
-        label: isAr ? "المزيد" : "More",
-        icon: MoreHorizontal,
-        children: more,
+        label: isAr ? "الإدارة" : "Manage",
+        icon: Settings,
+        children: operations,
       });
     }
     return primary;
   }, [isAr, role]);
 
   return (
-    <AppWorkspace
-      title={title}
-      subtitle={subtitle}
-      homeTo="/admin"
-      items={items}
-      onSignOut={onSignOut}
-    >
+    <AppWorkspace title={title} subtitle={subtitle} homeTo="/admin" items={items} onSignOut={onSignOut}>
       {children}
     </AppWorkspace>
   );
