@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Calendar, Clock, Coffee, Crown, History, NotebookPen, Phone, QrCode, Sparkles, User, X } from "lucide-react";
+import { Calendar, Clock, Coffee, History, NotebookPen, Phone, QrCode, Sparkles, User, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import type { CustomerAggregate } from "./aggregate";
 import { getNote, setNote } from "./notes";
@@ -45,22 +45,15 @@ export function CustomerDrawer({ aggregate, onClose }: Props) {
             <div className="hub-drawer-name">
               <div className="hub-drawer-name-row">
                 <strong>{a.customer.name}</strong>
-                {a.isVip && (
-                  <span className="hub-tag vip">
-                    <Crown className="h-3 w-3" />
-                    VIP
-                  </span>
-                )}
                 <span className={`hub-tag ${a.status}`}>
                   {isAr
                     ? {
                         active: "نشط",
                         expiring: "قارب على الانتهاء",
                         expired: "منتهي",
-                        inactive: "غير نشط",
-                        new: "جديد",
+                        no_membership: "بدون عضوية",
                       }[a.status]
-                    : { active: "Active", expiring: "Expiring", expired: "Expired", inactive: "Inactive", new: "New" }[
+                    : { active: "Active", expiring: "Expiring", expired: "Expired", no_membership: "No Membership" }[
                         a.status
                       ]}
                 </span>

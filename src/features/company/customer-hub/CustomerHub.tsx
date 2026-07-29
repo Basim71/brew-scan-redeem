@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "@tanstack/react-router";
-import { Crown, Grid3x3, List, PlusCircle, Search, Users } from "lucide-react";
+import { Grid3x3, List, Search, Users } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
 import { aggregateCustomers, type CustomerAggregate } from "./aggregate";
@@ -8,7 +7,7 @@ import { loadCustomerHub, type HubBundle } from "./service";
 import { getSavedView, saveView } from "./notes";
 import { CustomerDrawer } from "./CustomerDrawer";
 
-type FilterKey = "all" | "vip" | "active" | "expired" | "expiring" | "inactive" | "new";
+type FilterKey = "all" | "active" | "expiring" | "expired";
 type SortKey = "newest" | "oldest" | "spend" | "orders" | "recent";
 
 const REFRESH_MS = 5000;
@@ -67,12 +66,9 @@ export function CustomerHub() {
         const hay = `${a.customer.name} ${a.customer.phone} ${a.customer.id}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
-      if (filter === "vip" && !a.isVip) return false;
       if (filter === "active" && a.status !== "active") return false;
       if (filter === "expired" && a.status !== "expired") return false;
       if (filter === "expiring" && a.status !== "expiring") return false;
-      if (filter === "inactive" && a.status !== "inactive") return false;
-      if (filter === "new" && !a.isNew) return false;
       if (branchId !== "all" && a.primaryBranch?.id !== branchId) return false;
       if (planId !== "all" && a.activeSubscription?.plan?.id !== planId) return false;
       if (drinkId !== "all" && a.favoriteDrink?.id !== drinkId) return false;
@@ -139,26 +135,20 @@ export function CustomerHub() {
           />
         </label>
         <div className="hub-chips">
-          {(["all", "vip", "active", "expiring", "expired", "inactive", "new"] as FilterKey[]).map((k) => (
+          {(["all", "active", "expiring", "expired"] as FilterKey[]).map((k) => (
             <button key={k} data-active={filter === k} onClick={() => setFilter(k)}>
               {isAr
                 ? {
                     all: "الكل",
-                    vip: "VIP",
                     active: "نشط",
                     expiring: "قارب على الانتهاء",
                     expired: "منتهي",
-                    inactive: "غير نشط",
-                    new: "جديد",
                   }[k]
                 : {
                     all: "All",
-                    vip: "VIP",
                     active: "Active",
-                    expiring: "Expiring",
+                    expiring: "Expiring in 7 Days",
                     expired: "Expired",
-                    inactive: "Inactive",
-                    new: "New",
                   }[k]}
             </button>
           ))}
@@ -203,10 +193,6 @@ export function CustomerHub() {
               <Grid3x3 className="h-4 w-4" />
             </button>
           </div>
-          <Link to="/admin/sell-coupon" className="hub-btn primary">
-            <PlusCircle className="h-4 w-4" />
-            {isAr ? "بيع عضوية" : "Sell Membership"}
-          </Link>
         </div>
       </section>
 
@@ -238,8 +224,6 @@ export function CustomerHub() {
                   <th>{isAr ? "الحالة" : "Status"}</th>
                   <th>{isAr ? "آخر زيارة" : "Last Visit"}</th>
                   <th>{isAr ? "المشروب المفضل" : "Favorite Drink"}</th>
-                  <th>{isAr ? "الإنفاق" : "Spend"}</th>
-                  <th>{isAr ? "الطلبات" : "Orders"}</th>
                   <th></th>
                 </tr>
               </thead>
@@ -253,12 +237,6 @@ export function CustomerHub() {
                           <strong>{a.customer.name}</strong>
                           <small dir="ltr">{a.customer.phone}</small>
                         </div>
-                        {a.isVip && (
-                          <span className="hub-tag vip">
-                            <Crown className="h-3 w-3" />
-                            VIP
-                          </span>
-                        )}
                       </div>
                     </td>
                     <td>
@@ -273,8 +251,6 @@ export function CustomerHub() {
                     </td>
                     <td>{a.lastVisit ? new Date(a.lastVisit).toLocaleDateString(isAr ? "ar-SA" : "en-US") : "—"}</td>
                     <td>{a.favoriteDrink ? (isAr ? a.favoriteDrink.name_ar : a.favoriteDrink.name_en) : "—"}</td>
-                    <td>{fmtNum(a.totalSpend)}</td>
-                    <td>{fmtNum(a.approvedCount)}</td>
                     <td>
                       <button
                         className="hub-btn ghost"
@@ -301,29 +277,10 @@ export function CustomerHub() {
                     <strong>{a.customer.name}</strong>
                     <small dir="ltr">{a.customer.phone}</small>
                   </div>
-                  {a.isVip && (
-                    <span className="hub-tag vip">
-                      <Crown className="h-3 w-3" />
-                    </span>
-                  )}
                 </div>
                 <div className="hub-card-meta">
                   <span className={`hub-tag ${a.status}`}>{a.status}</span>
                   <small>{a.favoriteDrink ? (isAr ? a.favoriteDrink.name_ar : a.favoriteDrink.name_en) : "—"}</small>
-                </div>
-                <div className="hub-card-stats">
-                  <div>
-                    <b>{fmtNum(a.approvedCount)}</b>
-                    <span>{isAr ? "طلب" : "orders"}</span>
-                  </div>
-                  <div>
-                    <b>{fmtNum(a.totalSpend)}</b>
-                    <span>{isAr ? "إنفاق" : "spend"}</span>
-                  </div>
-                  <div>
-                    <b>{fmtNum(a.loyalty.score)}</b>
-                    <span>{isAr ? "ولاء" : "loyalty"}</span>
-                  </div>
                 </div>
               </button>
             ))}
