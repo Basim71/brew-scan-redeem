@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
   AlertCircle,
-  ArrowUpRight,
   BadgeDollarSign,
   CheckCircle2,
   Clock,
@@ -31,9 +30,7 @@ import {
 
 const POLL_MS = 5000;
 
-/* ------------------------------------------------------------------ */
-/* Animated counter                                                   */
-/* ------------------------------------------------------------------ */
+/* Animated counter --------------------------------------------------- */
 function useAnimatedNumber(value: number, duration = 600) {
   const [display, setDisplay] = useState(value);
   const fromRef = useRef(value);
@@ -42,13 +39,11 @@ function useAnimatedNumber(value: number, duration = 600) {
     if (value === display) return;
     fromRef.current = display;
     startRef.current = performance.now();
-    const target = value;
     let raf = 0;
     const tick = (now: number) => {
       const p = Math.min(1, (now - startRef.current) / duration);
       const eased = 1 - Math.pow(1 - p, 3);
-      const next = fromRef.current + (target - fromRef.current) * eased;
-      setDisplay(next);
+      setDisplay(fromRef.current + (value - fromRef.current) * eased);
       if (p < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
@@ -63,16 +58,14 @@ function AnimatedNumber({ value, fmt }: { value: number; fmt: (n: number) => str
   return <>{fmt(Math.round(d))}</>;
 }
 
-/* ------------------------------------------------------------------ */
-/* Helpers                                                            */
-/* ------------------------------------------------------------------ */
+/* Helpers ------------------------------------------------------------ */
 function greeting(hour: number, isRTL: boolean) {
   if (hour < 12) return isRTL ? "صباح الخير" : "Good Morning";
   if (hour < 18) return isRTL ? "مساء الخير" : "Good Afternoon";
   return isRTL ? "مساء الخير" : "Good Evening";
 }
 
-function useNow(intervalMs = 30000) {
+function useNow(intervalMs = 30_000) {
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
     const t = window.setInterval(() => setNow(new Date()), intervalMs);
@@ -98,36 +91,122 @@ function pctDelta(current: number, prev: number): number {
   return Math.round(((current - prev) / prev) * 100);
 }
 
-type ActivityItem = {
+/* Focus, opportunities, alerts, activity ----------------------------- */
+type Card = {
   id: string;
-  kind: "order" | "customer" | "subscription";
   title: string;
-  subtitle: string;
-  time: string;
-  status?: string;
+  desc: string;
+  priority: "high" | "medium" | "low";
+  to: string;
+  icon: typeof AlertCircle;
 };
+
+function buildFocus(data: DashboardPayload, top: DrinkPopularity | null, isRTL: boolean): Card[] {
+  const s = data.stats;
+  const out: Card[] = [];
+  if (s.expiringSubscriptions > 0) out.push({
+    id: "expiring", priority: "high", icon: AlertCircle,
+    title: isRTL ? `${s.expiringSubscriptions} اشتراك ينتهي قريباً` : `${s.expiringSubscriptions} memberships expiring soon`,
+    desc: isRTL ? "تواصل مع العملاء قبل انتهاء اشتراكاتهم." : "Reach out before their plans end.",
+    to: "/admin/customers",
+  });
+  if (s.approvedOrdersToday > 0) out.push({
+    id: "redemptions", priority: "medium", icon: Coffee,
+    title: isRTL ? `${s.approvedOrdersToday} استلام اليوم` : `${s.approvedOrdersToday} redemptions today`,
+    desc: isRTL ? "تدفّق سلس في الفروع." : "Steady flow across branches.",
+    to: "/admin/orders",
+  });
+  if (s.newCustomersToday > 0) out.push({
+    id: "inactive-followup", priority: "low", icon: UserPlus,
+    title: isRTL ? `${s.newCustomersToday} عميل جديد اليوم` : `${s.newCustomersToday} new customers today`,
+    desc: isRTL ? "رحّب بهم لتعزيز الولاء." : "Welcome them to build loyalty.",
+    to: "/admin/customers",
+  });
+  if (top && top.ordersWeek > 0) out.push({
+    id: "top-drink", priority: "low", icon: Flame,
+    title: isRTL ? `${top.nameAr ?? top.nameEn} الأكثر طلباً` : `${top.nameEn ?? top.nameAr} is trending`,
+    desc: isRTL ? "ركّز عليه في العروض." : "Feature it in a promo.",
+    to: "/admin/drinks",
+  });
+  return out.slice(0, 4);
+}
+
+function buildOpportunities(data: DashboardPayload, isRTL: boolean): Card[] {
+  const s = data.stats;
+  const out: Card[] = [];
+  if (s.expiringSubscriptions > 0) out.push({
+    id: "renew", priority: "high", icon: WalletCards,
+    title: isRTL ? `${s.expiringSubscriptions} فرصة تجديد` : `${s.expiringSubscriptions} renewal opportunities`,
+    desc: isRTL ? "اعرض تجديدات مبكرة لهؤلاء العملاء." : "Offer early renewals to these customers.",
+    to: "/admin/customers",
+  });
+  if (s.activeSubscriptions > 0) out.push({
+    id: "upsell-annual", priority: "medium", icon: TrendingUp,
+    title: isRTL ? "ترقية إلى الخطة السنوية" : "Upsell annual plans",
+    desc: isRTL ? "ادعُ الأعضاء النشطين للترقية." : "Invite active members to upgrade.",
+    to: "/admin/plans",
+  });
+  if (s.availableCoupons > 0) out.push({
+    id: "unused-coupons", priority: "medium", icon: Ticket,
+    title: isRTL ? `${s.availableCoupons} كوبون غير مباع` : `${s.availableCoupons} unused coupons`,
+    desc: isRTL ? "حوّل المخزون إلى إيراد." : "Convert inventory into revenue.",
+    to: "/admin/coupons",
+  });
+  out.push({
+    id: "inactive", priority: "low", icon: Users,
+    title: isRTL ? "أعضاء غير نشطين" : "Inactive members",
+    desc: isRTL ? "استعرض قائمة الفلترة داخل مركز العملاء." : "Use the filter inside Customer Hub.",
+    to: "/admin/customers",
+  });
+  return out.slice(0, 4);
+}
+
+function buildAlerts(data: DashboardPayload, isRTL: boolean): Card[] {
+  const s = data.stats;
+  const out: Card[] = [];
+  if (s.pendingOrders > 0) out.push({
+    id: "pending", priority: "high", icon: Clock,
+    title: isRTL ? `${s.pendingOrders} طلب بانتظار الموافقة` : `${s.pendingOrders} orders awaiting approval`,
+    desc: isRTL ? "افتح الاستحقاقات اليومية لمراجعتها." : "Review pending redemptions now.",
+    to: "/admin/orders",
+  });
+  const delta = pctDelta(s.revenueToday, s.revenueYesterday);
+  if (s.revenueYesterday > 0 && delta <= -20) out.push({
+    id: "rev-drop", priority: "high", icon: TrendingDown,
+    title: isRTL ? `إيراد اليوم منخفض ${Math.abs(delta)}%` : `Revenue is down ${Math.abs(delta)}% today`,
+    desc: isRTL ? "قارن الأداء في التقارير." : "Compare performance in Reports.",
+    to: "/admin/reports",
+  });
+  if (s.availableCoupons === 0) out.push({
+    id: "no-coupons", priority: "medium", icon: Ticket,
+    title: isRTL ? "لا يوجد كوبونات متاحة" : "No coupons available",
+    desc: isRTL ? "أنشئ دفعة جديدة قبل البيع." : "Generate a new batch before selling.",
+    to: "/admin/coupons",
+  });
+  return out;
+}
+
+type ActivityItem = { id: string; title: string; subtitle: string; time: string; kind: "order" | "customer" };
 
 function buildActivity(data: DashboardPayload, isRTL: boolean): ActivityItem[] {
   const items: ActivityItem[] = [];
-  for (const o of data.latestOrders.slice(0, 12)) {
+  for (const o of data.latestOrders.slice(0, 10)) {
     const drink = isRTL ? o.drink?.name_ar : o.drink?.name_en;
     const branch = isRTL ? o.branch?.name_ar : o.branch?.name_en;
-    const verb =
-      o.status === "approved"
-        ? isRTL ? "استلم" : "redeemed"
-        : o.status === "rejected"
-          ? isRTL ? "طلب مرفوض" : "rejected order for"
-          : isRTL ? "طلب" : "requested";
+    const verb = o.status === "approved"
+      ? isRTL ? "استلم" : "redeemed"
+      : o.status === "rejected"
+        ? isRTL ? "رُفض طلب" : "rejected"
+        : isRTL ? "طلب" : "requested";
     items.push({
       id: `o-${o.id}`,
       kind: "order",
       title: `${o.customer?.name ?? (isRTL ? "عميل" : "Customer")} ${verb} ${drink ?? ""}`.trim(),
       subtitle: branch ?? "",
       time: o.created_at,
-      status: o.status,
     });
   }
-  for (const c of data.recentCustomers.slice(0, 5)) {
+  for (const c of data.recentCustomers.slice(0, 4)) {
     items.push({
       id: `c-${c.id}`,
       kind: "customer",
@@ -136,212 +215,14 @@ function buildActivity(data: DashboardPayload, isRTL: boolean): ActivityItem[] {
       time: c.created_at,
     });
   }
-  return items
-    .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
-    .slice(0, 10);
+  return items.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 8);
 }
 
-/* ------------------------------------------------------------------ */
-/* Focus / Opportunities / Health computation                         */
-/* ------------------------------------------------------------------ */
-type FocusCard = {
-  id: string;
-  title: string;
-  desc: string;
-  priority: "high" | "medium" | "low";
-  actionLabel: string;
-  to: string;
-  icon: typeof AlertCircle;
-};
-
-function buildFocus(data: DashboardPayload, top: DrinkPopularity | null, isRTL: boolean): FocusCard[] {
-  const cards: FocusCard[] = [];
-  const s = data.stats;
-
-  if (s.expiringSubscriptions > 0) {
-    cards.push({
-      id: "expiring",
-      priority: "high",
-      icon: AlertCircle,
-      title: isRTL ? `${s.expiringSubscriptions} اشتراك ينتهي قريباً` : `${s.expiringSubscriptions} memberships expiring soon`,
-      desc: isRTL ? "تواصل مع العملاء لتجديد اشتراكاتهم قبل الانتهاء." : "Reach out to customers before their plans expire.",
-      actionLabel: isRTL ? "عرض العملاء" : "View Customers",
-      to: "/admin/subscriptions",
-    });
-  }
-  if (s.pendingOrders > 0) {
-    cards.push({
-      id: "pending",
-      priority: "high",
-      icon: Clock,
-      title: isRTL ? `${s.pendingOrders} طلب بانتظار الموافقة` : `${s.pendingOrders} orders awaiting approval`,
-      desc: isRTL ? "افتح الطلبات وقم بمراجعتها الآن." : "Review pending orders now.",
-      actionLabel: isRTL ? "فتح الطلبات" : "Open Orders",
-      to: "/admin/orders",
-    });
-  }
-  if (s.revenueYesterday > 0 && s.revenueToday < s.revenueYesterday * 0.7) {
-    cards.push({
-      id: "rev-drop",
-      priority: "medium",
-      icon: TrendingDown,
-      title: isRTL ? "الإيراد اليوم أقل من أمس" : "Revenue is below yesterday",
-      desc: isRTL ? "ادفع الحملات وشجّع البيع لتحسين الأداء." : "Launch a campaign to lift today's sales.",
-      actionLabel: isRTL ? "بيع اشتراك" : "Sell More",
-      to: "/admin/sell-coupon",
-    });
-  }
-  if (s.availableCoupons > 0) {
-    cards.push({
-      id: "coupons",
-      priority: "low",
-      icon: Ticket,
-      title: isRTL ? `${s.availableCoupons} كوبون جاهز للبيع` : `${s.availableCoupons} coupons ready to sell`,
-      desc: isRTL ? "استغل المخزون المتوفر لبيع اشتراكات جديدة." : "Convert inventory into new memberships.",
-      actionLabel: isRTL ? "بيع اشتراك" : "Sell Coupon",
-      to: "/admin/sell-coupon",
-    });
-  }
-  if (top && top.ordersWeek > 0) {
-    cards.push({
-      id: "top-drink",
-      priority: "low",
-      icon: Flame,
-      title: isRTL
-        ? `${top.nameAr ?? top.nameEn} هو الأكثر مبيعاً`
-        : `${top.nameEn ?? top.nameAr} is trending`,
-      desc: isRTL ? "استخدمه في حملة ترويجية هذا الأسبوع." : "Feature it in a promo this week.",
-      actionLabel: isRTL ? "إدارة المشروبات" : "Manage Drinks",
-      to: "/admin/drinks",
-    });
-  }
-  return cards.slice(0, 5);
-}
-
-type Opportunity = FocusCard;
-
-function buildOpportunities(
-  data: DashboardPayload,
-  drinks: DrinkPopularity[],
-  branches: BranchPerformance[],
-  isRTL: boolean,
-): Opportunity[] {
-  const out: Opportunity[] = [];
-  const s = data.stats;
-
-  if (s.newCustomersToday > 0) {
-    out.push({
-      id: "welcome-new",
-      priority: "medium",
-      icon: UserPlus,
-      title: isRTL ? `${s.newCustomersToday} عميل جديد اليوم` : `${s.newCustomersToday} new customers today`,
-      desc: isRTL ? "قدّم لهم أول اشتراك ترحيبي." : "Offer a welcome plan to convert them.",
-      actionLabel: isRTL ? "بيع اشتراك" : "Sell Membership",
-      to: "/admin/sell-coupon",
-    });
-  }
-
-  const risingDrink = drinks.find((d) => d.ordersWeek > 0 && d.ordersWeek >= d.ordersPrevWeek * 1.5 && d.ordersWeek >= 3);
-  if (risingDrink) {
-    out.push({
-      id: `rising-${risingDrink.drinkId}`,
-      priority: "medium",
-      icon: Sparkles,
-      title: isRTL
-        ? `${risingDrink.nameAr ?? risingDrink.nameEn} في نمو متسارع`
-        : `${risingDrink.nameEn ?? risingDrink.nameAr} is rising fast`,
-      desc: isRTL ? "أطلق حملة قصيرة حوله لزيادة الإيراد." : "Run a short campaign to capitalize.",
-      actionLabel: isRTL ? "إنشاء حملة" : "Create Campaign",
-      to: "/admin/drinks",
-    });
-  }
-
-  const weakBranch = branches.find(
-    (b) => branches.length > 1 && b.ordersMonth < (branches[0]?.ordersMonth ?? 0) * 0.4,
-  );
-  if (weakBranch) {
-    out.push({
-      id: `branch-${weakBranch.branchId}`,
-      priority: "medium",
-      icon: Building2,
-      title: isRTL
-        ? `فرع ${weakBranch.nameAr ?? weakBranch.nameEn} تحت المتوسط`
-        : `${weakBranch.nameEn ?? weakBranch.nameAr} is underperforming`,
-      desc: isRTL ? "راجع الأداء وشجّع فريق الفرع." : "Review branch and support the team.",
-      actionLabel: isRTL ? "فتح الفرع" : "Open Branch",
-      to: "/admin/branches",
-    });
-  }
-
-  if (s.expiringSubscriptions >= 3) {
-    out.push({
-      id: "renew-batch",
-      priority: "high",
-      icon: WalletCards,
-      title: isRTL ? `${s.expiringSubscriptions} فرصة تجديد` : `${s.expiringSubscriptions} renewals in reach`,
-      desc: isRTL ? "تواصل مع العملاء لعرض التجديد." : "Contact these customers with a renewal offer.",
-      actionLabel: isRTL ? "عرض الاشتراكات" : "View Subscriptions",
-      to: "/admin/subscriptions",
-    });
-  }
-
-  return out.slice(0, 4);
-}
-
-type Health = { label: string; status: "green" | "amber" | "red"; value: string; hint: string };
-
-function buildHealth(data: DashboardPayload, isRTL: boolean): Health[] {
-  const s = data.stats;
-  const items: Health[] = [];
-
-  // Membership health
-  const total = s.activeSubscriptions + s.expiringSubscriptions;
-  const memberPct = total > 0 ? Math.round(((total - s.expiringSubscriptions) / total) * 100) : 100;
-  items.push({
-    label: isRTL ? "صحة الاشتراكات" : "Membership Health",
-    status: memberPct >= 80 ? "green" : memberPct >= 50 ? "amber" : "red",
-    value: `${memberPct}%`,
-    hint: isRTL ? `${s.activeSubscriptions} نشط` : `${s.activeSubscriptions} active`,
-  });
-
-  // Customer activity: approved today / active subs
-  const activityRate = s.activeSubscriptions > 0
-    ? Math.min(100, Math.round((s.approvedOrdersToday / s.activeSubscriptions) * 100))
-    : 0;
-  items.push({
-    label: isRTL ? "نشاط العملاء" : "Customer Activity",
-    status: activityRate >= 40 ? "green" : activityRate >= 15 ? "amber" : "red",
-    value: `${activityRate}%`,
-    hint: isRTL ? `${s.approvedOrdersToday} استلام اليوم` : `${s.approvedOrdersToday} redeemed today`,
-  });
-
-  // Coupons inventory
-  items.push({
-    label: isRTL ? "الكوبونات" : "Coupons",
-    status: s.availableCoupons >= 10 ? "green" : s.availableCoupons > 0 ? "amber" : "red",
-    value: `${s.availableCoupons}`,
-    hint: isRTL ? "متاح للبيع" : "available",
-  });
-
-  // Revenue trend
-  const delta = pctDelta(s.revenueToday, s.revenueYesterday);
-  items.push({
-    label: isRTL ? "اتجاه الإيراد" : "Revenue Trend",
-    status: delta >= 0 ? "green" : delta >= -20 ? "amber" : "red",
-    value: `${delta > 0 ? "+" : ""}${delta}%`,
-    hint: isRTL ? "مقارنة بأمس" : "vs. yesterday",
-  });
-
-  return items;
-}
-
-/* ------------------------------------------------------------------ */
-/* Component                                                          */
-/* ------------------------------------------------------------------ */
+/* Component ---------------------------------------------------------- */
 export default function CommandCenter() {
   const { lang, fmtNum } = useI18n();
   const isRTL = lang === "ar";
-  const { organization, branchId } = useOrganization();
+  const { organization } = useOrganization();
   const now = useNow(30_000);
 
   const [data, setData] = useState<DashboardPayload | null>(null);
@@ -383,21 +264,9 @@ export default function CommandCenter() {
   }, []);
 
   const drinkPop = useMemo(() => (data ? buildDrinkPopularity(data) : []), [data]);
-  const revenueSeries = useMemo(() => (data ? buildDailyRevenue(data.soldCoupons, lang) : []), [data, lang]);
-  const branchPerf = useMemo(() => {
-    if (!data) return [];
-    const monthStart = new Date();
-    monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
-    const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
-    return buildBranchPerformance(
-      data.branches, data.soldCoupons, data.ordersMonth,
-      monthStart.toISOString(), data.activeSubsByBranch, todayStart.toISOString(),
-    );
-  }, [data]);
-
   const focus = useMemo(() => (data ? buildFocus(data, drinkPop[0] ?? null, isRTL) : []), [data, drinkPop, isRTL]);
-  const health = useMemo(() => (data ? buildHealth(data, isRTL) : []), [data, isRTL]);
-  const opportunities = useMemo(() => (data ? buildOpportunities(data, drinkPop, branchPerf, isRTL) : []), [data, drinkPop, branchPerf, isRTL]);
+  const opportunities = useMemo(() => (data ? buildOpportunities(data, isRTL) : []), [data, isRTL]);
+  const alerts = useMemo(() => (data ? buildAlerts(data, isRTL) : []), [data, isRTL]);
   const activity = useMemo(() => (data ? buildActivity(data, isRTL) : []), [data, isRTL]);
 
   const fmtCurrency = (n: number) => `${fmtNum(Math.round(n))} ${isRTL ? "ر.س" : "SAR"}`;
@@ -405,82 +274,70 @@ export default function CommandCenter() {
   const timeLabel = now.toLocaleTimeString(isRTL ? "ar-SA" : "en-US", { hour: "2-digit", minute: "2-digit" });
   const orgName = organization?.nameAr && isRTL ? organization.nameAr : organization?.nameEn ?? organization?.nameAr ?? "";
 
-  const businessMsg = useMemo(() => {
-    if (!data) return "";
-    const s = data.stats;
-    if (s.pendingOrders > 0) return isRTL ? "لديك طلبات بانتظارك." : "Orders are waiting for you.";
-    if (s.expiringSubscriptions > 0) return isRTL ? "هناك فرص تجديد اليوم." : "Renewal opportunities today.";
-    const delta = pctDelta(s.revenueToday, s.revenueYesterday);
-    if (delta > 10) return isRTL ? "المبيعات في تصاعد." : "Sales are on the rise.";
-    if (delta < -10) return isRTL ? "الأداء اليوم أقل من أمس." : "Today is slower than yesterday.";
-    return isRTL ? "كل شيء يسير بسلاسة." : "Everything is running smoothly.";
-  }, [data, isRTL]);
-
-  const insights = useMemo(() => {
-    if (!data) return [] as string[];
-    const s = data.stats;
-    const arr: string[] = [];
-    const delta = pctDelta(s.revenueToday, s.revenueYesterday);
-    if (Math.abs(delta) >= 5) {
-      arr.push(
-        isRTL
-          ? `الإيراد ${delta >= 0 ? "ارتفع" : "انخفض"} بنسبة ${Math.abs(delta)}% عن أمس.`
-          : `Revenue ${delta >= 0 ? "up" : "down"} ${Math.abs(delta)}% vs. yesterday.`
-      );
-    }
-    const top = drinkPop[0];
-    const second = drinkPop[1];
-    if (top && second && top.ordersMonth > second.ordersMonth) {
-      arr.push(
-        isRTL
-          ? `${top.nameAr ?? top.nameEn} يتصدر ${second.nameAr ?? second.nameEn} هذا الشهر.`
-          : `${top.nameEn ?? top.nameAr} is outperforming ${second.nameEn ?? second.nameAr} this month.`
-      );
-    }
-    if (s.newCustomersWeek > 0) {
-      arr.push(
-        isRTL
-          ? `${s.newCustomersWeek} عميل جديد خلال الأسبوع.`
-          : `${s.newCustomersWeek} new customers joined this week.`
-      );
-    }
-    if (s.activeSubscriptions > 0) {
-      arr.push(
-        isRTL
-          ? `${s.activeSubscriptions} اشتراك نشط حالياً.`
-          : `${s.activeSubscriptions} active memberships right now.`
-      );
-    }
-    return arr.slice(0, 4);
-  }, [data, drinkPop, isRTL]);
-
-  const totalOrdersMonth = drinkPop.reduce((a, b) => a + b.ordersMonth, 0);
-  const activeBranches = branchPerf.filter((b) => (b.ordersToday ?? 0) > 0 || (b.activeMembers ?? 0) > 0).length;
+  const top = drinkPop[0] ?? null;
   const showFirstSkeleton = firstLoadRef.current && !data;
 
   const kpis = data ? [
-    { label: isRTL ? "أعضاء نشطون" : "Active Members", value: data.stats.activeSubscriptions, icon: Users, fmt: fmtNum },
-    { label: isRTL ? "مشروبات استُلمت اليوم" : "Drinks Redeemed Today", value: data.stats.approvedOrdersToday, icon: Coffee, fmt: fmtNum },
-    { label: isRTL ? "إيراد اليوم" : "Revenue Today", value: data.stats.revenueToday, icon: BadgeDollarSign, fmt: fmtCurrency },
-    { label: isRTL ? "طلبات اليوم" : "Orders Today", value: data.stats.ordersToday, icon: ShoppingBag, fmt: fmtNum },
-    { label: isRTL ? "تجديدات معلقة" : "Pending Renewals", value: data.stats.expiringSubscriptions, icon: WalletCards, fmt: fmtNum },
-    { label: isRTL ? "عملاء جدد" : "New Customers", value: data.stats.newCustomersToday, icon: UserPlus, fmt: fmtNum },
-    { label: isRTL ? "كوبونات متاحة" : "Available Coupons", value: data.stats.availableCoupons, icon: Ticket, fmt: fmtNum },
-    { label: isRTL ? "فروع نشطة" : "Active Branches", value: activeBranches, icon: Store, fmt: fmtNum },
+    {
+      key: "redemptions",
+      label: isRTL ? "استحقاقات اليوم" : "Today's Redemptions",
+      value: data.stats.approvedOrdersToday,
+      fmt: fmtNum,
+      icon: Coffee,
+      to: "/admin/orders",
+      hint: isRTL ? "افتح الاستحقاقات اليومية" : "Go to Daily Redemptions",
+    },
+    {
+      key: "members",
+      label: isRTL ? "أعضاء نشطون" : "Active Members",
+      value: data.stats.activeSubscriptions,
+      fmt: fmtNum,
+      icon: Users,
+      to: "/admin/customers",
+      hint: isRTL ? "افتح مركز العملاء" : "Open Customer Hub",
+    },
+    {
+      key: "expiring",
+      label: isRTL ? "اشتراكات تنتهي" : "Expiring Memberships",
+      value: data.stats.expiringSubscriptions,
+      fmt: fmtNum,
+      icon: WalletCards,
+      to: "/admin/customers",
+      hint: isRTL ? "قائمة التجديدات" : "Renewals filter",
+    },
+    {
+      key: "revenue",
+      label: isRTL ? "إيراد اليوم" : "Revenue Today",
+      value: data.stats.revenueToday,
+      fmt: fmtCurrency,
+      icon: BadgeDollarSign,
+      to: "/admin/reports",
+      hint: isRTL ? "افتح التقارير" : "Open Reports",
+    },
+    {
+      key: "coupons",
+      label: isRTL ? "كوبونات متاحة" : "Available Coupons",
+      value: data.stats.availableCoupons,
+      fmt: fmtNum,
+      icon: Ticket,
+      to: "/admin/coupons",
+      hint: isRTL ? "إدارة الكوبونات" : "Manage coupons",
+    },
+    {
+      key: "top-drink",
+      label: isRTL ? "الأكثر طلباً" : "Top Drink",
+      value: top?.ordersMonth ?? 0,
+      fmt: (n: number) => (top ? `${fmtNum(n)}` : "—"),
+      subLabel: top ? (isRTL ? top.nameAr ?? top.nameEn : top.nameEn ?? top.nameAr) ?? undefined : undefined,
+      icon: Flame,
+      to: "/admin/drinks",
+      hint: isRTL ? "المشروبات" : "Drinks",
+    },
   ] : [];
-
-  const [branchSort, setBranchSort] = useState<"revenue" | "orders" | "members">("revenue");
-  const sortedBranches = useMemo(() => {
-    const arr = [...branchPerf];
-    if (branchSort === "orders") arr.sort((a, b) => (b.ordersToday ?? 0) - (a.ordersToday ?? 0));
-    else if (branchSort === "members") arr.sort((a, b) => (b.activeMembers ?? 0) - (a.activeMembers ?? 0));
-    else arr.sort((a, b) => b.revenueMonth - a.revenueMonth);
-    return arr;
-  }, [branchPerf, branchSort]);
 
   return (
     <div className="cmd-page" dir={isRTL ? "rtl" : "ltr"}>
-      {/* Header */}
+      {/* Greeting */}
       <header className="cmd-header">
         <div className="cmd-header-copy">
           <span className="cmd-eyebrow">{dateLabel} · {timeLabel}</span>
@@ -488,13 +345,13 @@ export default function CommandCenter() {
             {greeting(now.getHours(), isRTL)}
             {orgName ? <span className="cmd-org-name">, {orgName}</span> : null}
           </h1>
-          <p>{businessMsg || (isRTL ? "مركز قرارات أعمالك اليومي." : "Your daily business decision center.")}</p>
+          <p>{isRTL ? "ما الذي يحتاج انتباهك اليوم؟" : "What needs your attention today?"}</p>
         </div>
         <div className="cmd-live">
           {!online || connError ? (
             <span className="cmd-live-badge offline" role="status">
               <WifiOff className="h-3.5 w-3.5" />
-              {isRTL ? "غير متصل · محاولة إعادة الاتصال" : "Offline · reconnecting"}
+              {isRTL ? "غير متصل" : "Offline"}
             </span>
           ) : (
             <>
@@ -512,120 +369,62 @@ export default function CommandCenter() {
 
       {error && <div className="company-alert error">{error}</div>}
 
-      {/* Section 1 — Today's Focus */}
+      {/* Interactive KPI cards */}
+      <section className="cmd-section">
+        <div className="cmd-kpi-grid">
+          {(showFirstSkeleton ? Array.from({ length: 6 }) : kpis).map((k: any, i) => (
+            !k ? <div key={i} className="cmd-kpi-card skeleton" /> : (
+              <Link key={k.key} to={k.to} className="cmd-kpi-card cmd-kpi-link" title={k.hint}>
+                <div className="cmd-kpi-icon"><k.icon className="h-4 w-4" /></div>
+                <span className="cmd-kpi-label">{k.label}</span>
+                <strong className="cmd-kpi-value">
+                  <AnimatedNumber value={k.value} fmt={k.fmt} />
+                </strong>
+                {k.subLabel ? <small className="cmd-kpi-sub">{k.subLabel}</small> : null}
+              </Link>
+            )
+          ))}
+        </div>
+      </section>
+
+      {/* Today's Focus */}
       <section className="cmd-section">
         <div className="cmd-section-head">
           <span className="cmd-kicker">{isRTL ? "أولوية اليوم" : "Today's Focus"}</span>
           <h2>{isRTL ? "ما الذي يحتاج انتباهك؟" : "What needs your attention?"}</h2>
         </div>
         {showFirstSkeleton ? (
-          <div className="cmd-focus-grid">
-            {[0, 1, 2].map((i) => <div key={i} className="cmd-focus-card skeleton" />)}
-          </div>
+          <div className="cmd-focus-grid">{[0, 1, 2].map((i) => <div key={i} className="cmd-focus-card skeleton" />)}</div>
         ) : focus.length === 0 ? (
           <div className="cmd-focus-empty">
             <CheckCircle2 className="h-5 w-5" />
-            <span>{isRTL ? "لا توجد بنود عاجلة الآن." : "Nothing urgent right now."}</span>
+            <span>{isRTL ? "لا توجد بنود عاجلة." : "Nothing urgent right now."}</span>
           </div>
         ) : (
           <div className="cmd-focus-grid">
             {focus.map((f) => {
               const Icon = f.icon;
               return (
-                <article key={f.id} className="cmd-focus-card" data-priority={f.priority}>
+                <Link key={f.id} to={f.to} className="cmd-focus-card cmd-focus-link" data-priority={f.priority}>
                   <div className="cmd-focus-icon"><Icon className="h-4 w-4" /></div>
                   <div className="cmd-focus-copy">
                     <strong>{f.title}</strong>
                     <p>{f.desc}</p>
                   </div>
-                  <Link to={f.to as any} className="cmd-focus-action">
-                    {f.actionLabel} <ArrowUpRight className="h-3.5 w-3.5" />
-                  </Link>
-                </article>
+                </Link>
               );
             })}
           </div>
         )}
       </section>
 
-      {/* Section 2 — Business Health */}
-      <section className="cmd-section">
-        <div className="cmd-section-head">
-          <span className="cmd-kicker">{isRTL ? "صحة الأعمال" : "Business Health"}</span>
-          <h2>{isRTL ? "نبض المؤشرات الرئيسية" : "Vitals at a glance"}</h2>
-        </div>
-        <div className="cmd-health-grid">
-          {(showFirstSkeleton ? Array.from({ length: 4 }) : health).map((h: any, i) => (
-            !h ? <div key={i} className="cmd-health-card skeleton" /> : (
-              <article key={h.label} className="cmd-health-card" data-status={h.status}>
-                <span className="cmd-health-dot" aria-hidden />
-                <div>
-                  <span className="cmd-health-label">{h.label}</span>
-                  <strong>{h.value}</strong>
-                  <small>{h.hint}</small>
-                </div>
-              </article>
-            )
-          ))}
-        </div>
-      </section>
-
-      {/* Section 3 — Live Metrics */}
-      <section className="cmd-section">
-        <div className="cmd-section-head">
-          <span className="cmd-kicker">{isRTL ? "المؤشرات الحيّة" : "Live Metrics"}</span>
-          <h2>{isRTL ? "الأرقام لحظة بلحظة" : "Real-time numbers"}</h2>
-        </div>
-        <div className="cmd-kpi-grid">
-          {(showFirstSkeleton ? Array.from({ length: 8 }) : kpis).map((k: any, i) => (
-            !k ? <div key={i} className="cmd-kpi-card skeleton" /> : (
-              <article key={k.label} className="cmd-kpi-card">
-                <div className="cmd-kpi-icon"><k.icon className="h-4 w-4" /></div>
-                <span className="cmd-kpi-label">{k.label}</span>
-                <strong className="cmd-kpi-value">
-                  <AnimatedNumber value={k.value} fmt={k.fmt} />
-                </strong>
-              </article>
-            )
-          ))}
-        </div>
-      </section>
-
-      {/* Row: Opportunities + Activity */}
+      {/* Live Activity + Opportunities */}
       <section className="cmd-two">
         <article className="cmd-panel">
           <header>
             <div>
-              <span className="cmd-kicker">{isRTL ? "فرص اليوم" : "Today's Opportunities"}</span>
-              <h3>{isRTL ? "زد إيراداتك" : "Grow revenue"}</h3>
-            </div>
-            <Zap className="h-4 w-4" />
-          </header>
-          <ul className="cmd-opp-list">
-            {opportunities.length === 0 && !showFirstSkeleton && (
-              <li className="cmd-empty">{isRTL ? "لا توجد فرص جاهزة الآن." : "No opportunities right now."}</li>
-            )}
-            {opportunities.map((o) => {
-              const Icon = o.icon;
-              return (
-                <li key={o.id}>
-                  <div className="cmd-opp-icon"><Icon className="h-4 w-4" /></div>
-                  <div className="cmd-opp-copy">
-                    <strong>{o.title}</strong>
-                    <small>{o.desc}</small>
-                  </div>
-                  <Link to={o.to as any} className="cmd-mini-btn">{o.actionLabel}</Link>
-                </li>
-              );
-            })}
-          </ul>
-        </article>
-
-        <article className="cmd-panel">
-          <header>
-            <div>
               <span className="cmd-kicker">{isRTL ? "نشاط مباشر" : "Live Activity"}</span>
-              <h3>{isRTL ? "أحدث الأحداث" : "Latest events"}</h3>
+              <h3>{isRTL ? "آخر الاستحقاقات" : "Recent redemptions"}</h3>
             </div>
             <Activity className="h-4 w-4" />
           </header>
@@ -647,180 +446,61 @@ export default function CommandCenter() {
             ))}
           </ul>
         </article>
-      </section>
 
-      {/* Row: Top Products + Compact Revenue */}
-      <section className="cmd-two">
         <article className="cmd-panel">
           <header>
             <div>
-              <span className="cmd-kicker">{isRTL ? "أفضل المنتجات" : "Top Products"}</span>
-              <h3>{isRTL ? "الأكثر طلباً هذا الشهر" : "Most redeemed this month"}</h3>
+              <span className="cmd-kicker">{isRTL ? "فرص الأعمال" : "Business Opportunities"}</span>
+              <h3>{isRTL ? "زد إيراداتك" : "Grow revenue"}</h3>
             </div>
-            <BarChart3 className="h-4 w-4" />
+            <Zap className="h-4 w-4" />
           </header>
-          <ul className="cmd-drinks">
-            {drinkPop.slice(0, 5).map((d) => {
-              const pct = totalOrdersMonth > 0 ? Math.round((d.ordersMonth / totalOrdersMonth) * 100) : 0;
-              const trend = d.ordersWeek - d.ordersPrevWeek;
-              const TrendIcon = trend > 0 ? TrendingUp : trend < 0 ? TrendingDown : Minus;
+          <ul className="cmd-opp-list">
+            {opportunities.length === 0 && !showFirstSkeleton && (
+              <li className="cmd-empty">{isRTL ? "لا توجد فرص الآن." : "No opportunities right now."}</li>
+            )}
+            {opportunities.map((o) => {
+              const Icon = o.icon;
               return (
-                <li key={d.drinkId}>
-                  <div className="cmd-drink-thumb">
-                    {d.imageUrl ? <img src={d.imageUrl} alt="" /> : <Coffee className="h-4 w-4" />}
-                  </div>
-                  <div className="cmd-drink-body">
-                    <strong>{isRTL ? d.nameAr ?? d.nameEn : d.nameEn ?? d.nameAr}</strong>
-                    <div className="cmd-drink-bar" aria-hidden>
-                      <span style={{ width: `${pct}%` }} />
+                <li key={o.id}>
+                  <Link to={o.to} className="cmd-opp-link">
+                    <div className="cmd-opp-icon"><Icon className="h-4 w-4" /></div>
+                    <div className="cmd-opp-copy">
+                      <strong>{o.title}</strong>
+                      <small>{o.desc}</small>
                     </div>
-                    <small>{fmtNum(d.ordersMonth)} {isRTL ? "طلب" : "orders"} · {pct}%</small>
-                  </div>
-                  <span className={`cmd-trend ${trend > 0 ? "up" : trend < 0 ? "down" : "flat"}`}>
-                    <TrendIcon className="h-3.5 w-3.5" />
-                    {trend > 0 ? "+" : ""}{trend}
-                  </span>
+                  </Link>
                 </li>
               );
             })}
-            {drinkPop.length === 0 && !showFirstSkeleton && (
-              <li className="cmd-empty">{isRTL ? "لا توجد بيانات مشروبات." : "No drink data yet."}</li>
-            )}
           </ul>
         </article>
-
-        <article className="cmd-panel">
-          <header>
-            <div>
-              <span className="cmd-kicker">{isRTL ? "الإيرادات" : "Revenue"}</span>
-              <h3>{isRTL ? "آخر 30 يوماً" : "Last 30 days"}</h3>
-            </div>
-            <TrendingUp className="h-4 w-4" />
-          </header>
-          <div className="cmd-mini-chart">
-            <Suspense fallback={<div className="company-chart-skeleton" aria-hidden />}>
-              <RevenueAreaChart data={revenueSeries} />
-            </Suspense>
-          </div>
-        </article>
       </section>
 
-      {/* Section 7 — Branch Performance */}
-      <section className="cmd-section">
-        <div className="cmd-section-head between">
-          <div>
-            <span className="cmd-kicker">{isRTL ? "أداء الفروع" : "Branch Performance"}</span>
-            <h2>{isRTL ? "مقارنة مباشرة" : "Live comparison"}</h2>
-          </div>
-          <div className="cmd-sort" role="tablist" aria-label="Sort branches">
-            {(["revenue", "orders", "members"] as const).map((s) => (
-              <button
-                key={s}
-                type="button"
-                className={branchSort === s ? "active" : ""}
-                onClick={() => setBranchSort(s)}
-              >
-                {s === "revenue" ? (isRTL ? "الإيراد" : "Revenue")
-                  : s === "orders" ? (isRTL ? "الطلبات" : "Orders")
-                  : (isRTL ? "الأعضاء" : "Members")}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="cmd-table-wrap">
-          <table className="cmd-table">
-            <thead>
-              <tr>
-                <th>{isRTL ? "الفرع" : "Branch"}</th>
-                <th>{isRTL ? "طلبات اليوم" : "Orders Today"}</th>
-                <th>{isRTL ? "إيراد الشهر" : "Revenue (MTD)"}</th>
-                <th>{isRTL ? "الأعضاء" : "Members"}</th>
-                <th>{isRTL ? "النمو" : "Growth"}</th>
-                <th>{isRTL ? "الحالة" : "Status"}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sortedBranches.map((b) => {
-                const top = sortedBranches[0]?.revenueMonth ?? 0;
-                const health: "green" | "amber" | "red" =
-                  b.revenueMonth >= top * 0.7 ? "green"
-                  : b.revenueMonth >= top * 0.3 ? "amber" : "red";
-                const grew = (b.ordersToday ?? 0) > 0;
-                return (
-                  <tr key={b.branchId}>
-                    <td>{isRTL ? b.nameAr ?? b.nameEn : b.nameEn ?? b.nameAr}</td>
-                    <td>{fmtNum(b.ordersToday ?? 0)}</td>
-                    <td className="strong">{fmtCurrency(b.revenueMonth)}</td>
-                    <td>{fmtNum(b.activeMembers ?? 0)}</td>
-                    <td>
-                      <span className={`cmd-trend ${grew ? "up" : "flat"}`}>
-                        {grew ? <ArrowUpRight className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
-                        {fmtNum(b.ordersMonth)}
-                      </span>
-                    </td>
-                    <td>
-                      <span className={`cmd-status ${health}`}>
-                        {health === "green" ? (isRTL ? "ممتاز" : "Healthy")
-                          : health === "amber" ? (isRTL ? "يحتاج مراجعة" : "Watch")
-                          : (isRTL ? "منخفض" : "Low")}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-              {sortedBranches.length === 0 && !showFirstSkeleton && (
-                <tr><td colSpan={6} className="cmd-empty">{isRTL ? "لا توجد فروع نشطة." : "No active branches."}</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* Section 8 — Quick Actions */}
-      <section className="cmd-section">
-        <div className="cmd-section-head">
-          <span className="cmd-kicker">{isRTL ? "إجراءات سريعة" : "Quick Actions"}</span>
-          <h2>{isRTL ? "افعل الآن" : "Do it now"}</h2>
-        </div>
-        <div className="cmd-quick-grid">
-          {[
-            { label: isRTL ? "عميل جديد" : "New Customer", to: "/admin/customers", icon: UserPlus },
-            { label: isRTL ? "بيع اشتراك" : "Sell Membership", to: "/admin/sell-coupon", icon: WalletCards },
-            { label: isRTL ? "إنشاء كوبون" : "Create Coupon", to: "/admin/coupons", icon: Ticket },
-            { label: isRTL ? "إضافة مشروب" : "Add Drink", to: "/admin/drinks", icon: Coffee },
-            { label: isRTL ? "خطة جديدة" : "Create Plan", to: "/admin/plans", icon: Package },
-            { label: isRTL ? "التقارير" : "Reports", to: "/admin/reports", icon: BarChart3 },
-            { label: isRTL ? "الموظفون" : "Employees", to: "/admin/cashiers", icon: Users },
-            { label: isRTL ? "دعم العملاء" : "Customer Success", to: "/admin/customer-success", icon: LifeBuoy },
-          ].map((q) => {
-            const Icon = q.icon;
-            return (
-              <Link key={q.to} to={q.to as any} className="cmd-quick-btn">
-                <Icon className="h-4 w-4" />
-                <span>{q.label}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Section 9 — Insights */}
-      {insights.length > 0 && (
+      {/* Smart Alerts */}
+      {alerts.length > 0 && (
         <section className="cmd-section">
           <div className="cmd-section-head">
-            <span className="cmd-kicker">{isRTL ? "ملاحظات ذكية" : "Business Insights"}</span>
-            <h2>{isRTL ? "من بياناتك" : "From your data"}</h2>
+            <span className="cmd-kicker">{isRTL ? "تنبيهات ذكية" : "Smart Alerts"}</span>
+            <h2>{isRTL ? "تحتاج إلى تصرّف" : "Requires action"}</h2>
           </div>
-          <ul className="cmd-insights">
-            {insights.map((t, i) => (
-              <li key={i}><Sparkles className="h-3.5 w-3.5" /> {t}</li>
-            ))}
-          </ul>
+          <div className="cmd-alerts">
+            {alerts.map((a) => {
+              const Icon = a.icon;
+              return (
+                <Link key={a.id} to={a.to} className="cmd-alert" data-priority={a.priority}>
+                  <div className="cmd-alert-icon"><Icon className="h-4 w-4" /></div>
+                  <div className="cmd-alert-copy">
+                    <strong>{a.title}</strong>
+                    <small>{a.desc}</small>
+                  </div>
+                  <Sparkles className="h-3.5 w-3.5 cmd-alert-spark" aria-hidden />
+                </Link>
+              );
+            })}
+          </div>
         </section>
       )}
-
-      {/* silent unused refs to avoid TS complaints */}
-      <span hidden aria-hidden>{branchId}<Coins /><Plus /><ArrowDownRight /><HeadphonesIcon /><Gift /></span>
     </div>
   );
 }
