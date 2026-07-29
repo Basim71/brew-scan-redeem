@@ -14,6 +14,13 @@ export type DashboardStats = {
   approvedOrdersToday: number;
   newCustomersToday: number;
   availableCoupons: number;
+  reservedCoupons: number;
+  soldCouponsCount: number;
+  expiredSubscriptions: number;
+  cancelledSubscriptions: number;
+  activeBranches: number;
+  activeDrinks: number;
+  employees: number;
 };
 
 export type SoldCoupon = {
@@ -67,7 +74,13 @@ export type DashboardPayload = {
   stats: DashboardStats;
   soldCoupons: SoldCoupon[];
   latestOrders: LatestOrder[];
-  ordersMonth: { id: string; created_at: string; branch_id: string | null; drink_type_id: string | null; status: string }[];
+  ordersMonth: {
+    id: string;
+    created_at: string;
+    branch_id: string | null;
+    drink_type_id: string | null;
+    status: string;
+  }[];
   branches: { id: string; name_ar: string | null; name_en: string | null }[];
   drinks: { id: string; name_ar: string | null; name_en: string | null; image_url: string | null }[];
   expiringSoon: ExpiringSub[];
@@ -89,6 +102,13 @@ const EMPTY_STATS: DashboardStats = {
   approvedOrdersToday: 0,
   newCustomersToday: 0,
   availableCoupons: 0,
+  reservedCoupons: 0,
+  soldCouponsCount: 0,
+  expiredSubscriptions: 0,
+  cancelledSubscriptions: 0,
+  activeBranches: 0,
+  activeDrinks: 0,
+  employees: 0,
 };
 
 function sumPrices(rows: SoldCoupon[]): number {
@@ -106,12 +126,16 @@ export async function loadCompanyDashboard(): Promise<{
   error: string | null;
 }> {
   const now = new Date();
-  const todayStart = new Date(now); todayStart.setHours(0, 0, 0, 0);
+  const todayStart = new Date(now);
+  todayStart.setHours(0, 0, 0, 0);
   const yesterdayStart = new Date(todayStart.getTime() - 86400000);
-  const weekStart = new Date(now.getTime() - 6 * 86400000); weekStart.setHours(0, 0, 0, 0);
-  const prevWeekStart = new Date(now.getTime() - 13 * 86400000); prevWeekStart.setHours(0, 0, 0, 0);
+  const weekStart = new Date(now.getTime() - 6 * 86400000);
+  weekStart.setHours(0, 0, 0, 0);
+  const prevWeekStart = new Date(now.getTime() - 13 * 86400000);
+  prevWeekStart.setHours(0, 0, 0, 0);
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const chartStart = new Date(now.getTime() - 29 * 86400000); chartStart.setHours(0, 0, 0, 0);
+  const chartStart = new Date(now.getTime() - 29 * 86400000);
+  chartStart.setHours(0, 0, 0, 0);
   const expSoon = new Date(now.getTime() + 7 * 86400000);
   const today = todayIsoDate();
 
@@ -134,48 +158,69 @@ export async function loadCompanyDashboard(): Promise<{
     expiringListResult,
     recentCustomersResult,
     activeSubsListResult,
+    reservedCouponsResult,
+    soldCouponsCountResult,
+    expiredSubsResult,
+    cancelledSubsResult,
+    activeBranchesCountResult,
+    activeDrinksCountResult,
+    employeesResult,
   ] = await Promise.all([
     supabase.from("customers").select("*", { count: "exact", head: true }),
     supabase.from("customers").select("*", { count: "exact", head: true }).gte("created_at", weekStart.toISOString()),
     supabase.from("customers").select("*", { count: "exact", head: true }).gte("created_at", monthStart.toISOString()),
     supabase.from("subscriptions").select("*", { count: "exact", head: true }).eq("status", "active"),
-    supabase.from("subscriptions").select("*", { count: "exact", head: true })
+    supabase
+      .from("subscriptions")
+      .select("*", { count: "exact", head: true })
       .eq("status", "active")
       .lte("end_date", expSoon.toISOString().slice(0, 10))
       .gte("end_date", today),
     supabase.from("orders").select("*", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("orders").select("*", { count: "exact", head: true }).eq("order_date", today),
-    supabase.from("orders").select("*", { count: "exact", head: true }).eq("order_date", today).eq("status", "approved"),
+    supabase
+      .from("orders")
+      .select("*", { count: "exact", head: true })
+      .eq("order_date", today)
+      .eq("status", "approved"),
     supabase.from("coupons").select("*", { count: "exact", head: true }).eq("status", "available"),
     supabase.from("customers").select("*", { count: "exact", head: true }).gte("created_at", todayStart.toISOString()),
-    supabase.from("coupons")
+    supabase
+      .from("coupons")
       .select("id,price,sold_at,branch_id")
       .eq("status", "sold")
       .gte("sold_at", chartStart.toISOString())
       .order("sold_at", { ascending: true }),
-    supabase.from("orders")
-      .select("id,status,created_at,drink_type_id,drink:drink_types(name_en,name_ar),customer:customers(name),branch:branches(name_en,name_ar)")
+    supabase
+      .from("orders")
+      .select(
+        "id,status,created_at,drink_type_id,drink:drink_types(name_en,name_ar),customer:customers(name),branch:branches(name_en,name_ar)",
+      )
       .order("created_at", { ascending: false })
       .limit(20),
-    supabase.from("orders")
+    supabase
+      .from("orders")
       .select("id,created_at,branch_id,drink_type_id,status")
       .gte("created_at", monthStart.toISOString()),
     supabase.from("branches").select("id,name_ar,name_en").eq("is_active", true).order("created_at"),
     supabase.from("drink_types").select("id,name_ar,name_en,image_url").eq("is_active", true),
-    supabase.from("subscriptions")
+    supabase
+      .from("subscriptions")
       .select("id,end_date,customer:customers(name),plan:plans(name_ar,name_en)")
       .eq("status", "active")
       .lte("end_date", expSoon.toISOString().slice(0, 10))
       .gte("end_date", today)
       .order("end_date", { ascending: true })
       .limit(20),
-    supabase.from("customers")
-      .select("id,name,created_at")
-      .order("created_at", { ascending: false })
-      .limit(10),
-    supabase.from("subscriptions")
-      .select("id,branch_id")
-      .eq("status", "active"),
+    supabase.from("customers").select("id,name,created_at").order("created_at", { ascending: false }).limit(10),
+    supabase.from("subscriptions").select("id,branch_id").eq("status", "active"),
+    supabase.from("coupons").select("*", { count: "exact", head: true }).eq("status", "reserved"),
+    supabase.from("coupons").select("*", { count: "exact", head: true }).eq("status", "sold"),
+    supabase.from("subscriptions").select("*", { count: "exact", head: true }).eq("status", "expired"),
+    supabase.from("subscriptions").select("*", { count: "exact", head: true }).eq("status", "cancelled"),
+    supabase.from("branches").select("*", { count: "exact", head: true }).eq("is_active", true),
+    supabase.from("drink_types").select("*", { count: "exact", head: true }).eq("is_active", true),
+    supabase.from("user_roles").select("*", { count: "exact", head: true }),
   ]);
 
   const firstError =
@@ -196,7 +241,14 @@ export async function loadCompanyDashboard(): Promise<{
     drinksResult.error ??
     expiringListResult.error ??
     recentCustomersResult.error ??
-    activeSubsListResult.error;
+    activeSubsListResult.error ??
+    reservedCouponsResult.error ??
+    soldCouponsCountResult.error ??
+    expiredSubsResult.error ??
+    cancelledSubsResult.error ??
+    activeBranchesCountResult.error ??
+    activeDrinksCountResult.error ??
+    employeesResult.error;
 
   const coupons = (soldCouponsResult.data ?? []) as unknown as SoldCoupon[];
   const todayIso = todayStart.toISOString();
@@ -221,6 +273,13 @@ export async function loadCompanyDashboard(): Promise<{
     approvedOrdersToday: approvedTodayResult.count ?? 0,
     newCustomersToday: newCustomersTodayResult.count ?? 0,
     availableCoupons: availableCouponsResult.count ?? 0,
+    reservedCoupons: reservedCouponsResult.count ?? 0,
+    soldCouponsCount: soldCouponsCountResult.count ?? 0,
+    expiredSubscriptions: expiredSubsResult.count ?? 0,
+    cancelledSubscriptions: cancelledSubsResult.count ?? 0,
+    activeBranches: activeBranchesCountResult.count ?? 0,
+    activeDrinks: activeDrinksCountResult.count ?? 0,
+    employees: employeesResult.count ?? 0,
   };
 
   const expiringSoon: ExpiringSub[] = ((expiringListResult.data ?? []) as any[]).map((row) => ({
@@ -231,7 +290,7 @@ export async function loadCompanyDashboard(): Promise<{
   }));
 
   const activeSubsByBranch: Record<string, number> = {};
-  for (const row of ((activeSubsListResult.data ?? []) as any[])) {
+  for (const row of (activeSubsListResult.data ?? []) as any[]) {
     if (row.branch_id) activeSubsByBranch[row.branch_id] = (activeSubsByBranch[row.branch_id] ?? 0) + 1;
   }
 
@@ -344,16 +403,18 @@ export function buildDrinkPopularity(payload: DashboardPayload): DrinkPopularity
     else if (ts >= prev) entry.prevWeek += 1;
     map.set(o.drink_type_id, entry);
   }
-  return payload.drinks.map((d) => {
-    const e = map.get(d.id) ?? { month: 0, week: 0, prevWeek: 0 };
-    return {
-      drinkId: d.id,
-      nameEn: d.name_en,
-      nameAr: d.name_ar,
-      imageUrl: d.image_url,
-      ordersMonth: e.month,
-      ordersWeek: e.week,
-      ordersPrevWeek: e.prevWeek,
-    };
-  }).sort((a, b) => b.ordersMonth - a.ordersMonth);
+  return payload.drinks
+    .map((d) => {
+      const e = map.get(d.id) ?? { month: 0, week: 0, prevWeek: 0 };
+      return {
+        drinkId: d.id,
+        nameEn: d.name_en,
+        nameAr: d.name_ar,
+        imageUrl: d.image_url,
+        ordersMonth: e.month,
+        ordersWeek: e.week,
+        ordersPrevWeek: e.prevWeek,
+      };
+    })
+    .sort((a, b) => b.ordersMonth - a.ordersMonth);
 }

@@ -4,23 +4,26 @@ import {
   Activity,
   AlertCircle,
   BadgeDollarSign,
+  Building2,
   CheckCircle2,
   Clock,
   Coffee,
   Flame,
+  Layers3,
   Sparkles,
   Ticket,
   TrendingDown,
   TrendingUp,
   UserPlus,
+  UserRoundCog,
   Users,
   WalletCards,
-  WifiOff,
   Zap,
 } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
 import { useOrganization } from "@/providers/OrganizationProvider";
+import { useLiveStatus } from "@/providers/LiveStatusProvider";
 import {
   buildDrinkPopularity,
   loadCompanyDashboard,
@@ -28,37 +31,33 @@ import {
   type DrinkPopularity,
 } from "@/features/company/dashboard/service";
 
-const POLL_MS = 5000;
+const POLL_MS = 15_000;
 
-/* Animated counter --------------------------------------------------- */
 function useAnimatedNumber(value: number, duration = 600) {
   const [display, setDisplay] = useState(value);
   const fromRef = useRef(value);
-  const startRef = useRef<number>(0);
   useEffect(() => {
     if (value === display) return;
+    const started = performance.now();
     fromRef.current = display;
-    startRef.current = performance.now();
     let raf = 0;
     const tick = (now: number) => {
-      const p = Math.min(1, (now - startRef.current) / duration);
-      const eased = 1 - Math.pow(1 - p, 3);
+      const progress = Math.min(1, (now - started) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
       setDisplay(fromRef.current + (value - fromRef.current) * eased);
-      if (p < 1) raf = requestAnimationFrame(tick);
+      if (progress < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+  }, [value, duration, display]);
   return display;
 }
 
-function AnimatedNumber({ value, fmt }: { value: number; fmt: (n: number) => string }) {
-  const d = useAnimatedNumber(value);
-  return <>{fmt(Math.round(d))}</>;
+function AnimatedNumber({ value, fmt }: { value: number; fmt: (value: number) => string }) {
+  const display = useAnimatedNumber(value);
+  return <>{fmt(Math.round(display))}</>;
 }
 
-/* Helpers ------------------------------------------------------------ */
 function greeting(hour: number, isRTL: boolean) {
   if (hour < 12) return isRTL ? "صباح الخير" : "Good Morning";
   if (hour < 18) return isRTL ? "مساء الخير" : "Good Afternoon";
@@ -68,30 +67,28 @@ function greeting(hour: number, isRTL: boolean) {
 function useNow(intervalMs = 30_000) {
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
-    const t = window.setInterval(() => setNow(new Date()), intervalMs);
-    return () => window.clearInterval(t);
+    const timer = window.setInterval(() => setNow(new Date()), intervalMs);
+    return () => window.clearInterval(timer);
   }, [intervalMs]);
   return now;
 }
 
 function relativeTime(iso: string, now: Date, isRTL: boolean): string {
   const diff = Math.max(0, now.getTime() - new Date(iso).getTime());
-  const sec = Math.floor(diff / 1000);
-  if (sec < 45) return isRTL ? "قبل لحظات" : "just now";
-  const min = Math.floor(sec / 60);
+  const min = Math.floor(diff / 60_000);
+  if (min < 1) return isRTL ? "الآن" : "just now";
   if (min < 60) return isRTL ? `قبل ${min} دقيقة` : `${min} min ago`;
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return isRTL ? `قبل ${hr} ساعة` : `${hr} h ago`;
-  const day = Math.floor(hr / 24);
-  return isRTL ? `قبل ${day} يوم` : `${day} d ago`;
+  const hours = Math.floor(min / 60);
+  if (hours < 24) return isRTL ? `قبل ${hours} ساعة` : `${hours} h ago`;
+  const days = Math.floor(hours / 24);
+  return isRTL ? `قبل ${days} يوم` : `${days} d ago`;
 }
 
-function pctDelta(current: number, prev: number): number {
-  if (prev <= 0) return current > 0 ? 100 : 0;
-  return Math.round(((current - prev) / prev) * 100);
+function pctDelta(current: number, previous: number): number {
+  if (previous <= 0) return current > 0 ? 100 : 0;
+  return Math.round(((current - previous) / previous) * 100);
 }
 
-/* Focus, opportunities, alerts, activity ----------------------------- */
 type Card = {
   id: string;
   title: string;
@@ -101,315 +98,521 @@ type Card = {
   icon: typeof AlertCircle;
 };
 
+type Metric = {
+  key: string;
+  label: string;
+  value: number;
+  format: (value: number) => string;
+  icon: typeof Users;
+  to: string;
+  note?: string;
+  trend?: number;
+};
+
+type MetricGroup = {
+  key: string;
+  title: string;
+  subtitle: string;
+  metrics: Metric[];
+};
+
+type ActivityItem = {
+  id: string;
+  title: string;
+  subtitle: string;
+  time: string;
+  kind: "order" | "customer";
+};
+
 function buildFocus(data: DashboardPayload, top: DrinkPopularity | null, isRTL: boolean): Card[] {
   const s = data.stats;
-  const out: Card[] = [];
-  if (s.expiringSubscriptions > 0) out.push({
-    id: "expiring", priority: "high", icon: AlertCircle,
-    title: isRTL ? `${s.expiringSubscriptions} اشتراك ينتهي قريباً` : `${s.expiringSubscriptions} memberships expiring soon`,
-    desc: isRTL ? "تواصل مع العملاء قبل انتهاء اشتراكاتهم." : "Reach out before their plans end.",
-    to: "/admin/customers",
-  });
-  if (s.approvedOrdersToday > 0) out.push({
-    id: "redemptions", priority: "medium", icon: Coffee,
-    title: isRTL ? `${s.approvedOrdersToday} استلام اليوم` : `${s.approvedOrdersToday} redemptions today`,
-    desc: isRTL ? "تدفّق سلس في الفروع." : "Steady flow across branches.",
-    to: "/admin/orders",
-  });
-  if (s.newCustomersToday > 0) out.push({
-    id: "inactive-followup", priority: "low", icon: UserPlus,
-    title: isRTL ? `${s.newCustomersToday} عميل جديد اليوم` : `${s.newCustomersToday} new customers today`,
-    desc: isRTL ? "رحّب بهم لتعزيز الولاء." : "Welcome them to build loyalty.",
-    to: "/admin/customers",
-  });
-  if (top && top.ordersWeek > 0) out.push({
-    id: "top-drink", priority: "low", icon: Flame,
-    title: isRTL ? `${top.nameAr ?? top.nameEn} الأكثر طلباً` : `${top.nameEn ?? top.nameAr} is trending`,
-    desc: isRTL ? "ركّز عليه في العروض." : "Feature it in a promo.",
-    to: "/admin/drinks",
-  });
-  return out.slice(0, 4);
+  const cards: Card[] = [];
+  if (s.pendingOrders > 0)
+    cards.push({
+      id: "pending",
+      priority: "high",
+      icon: Clock,
+      title: isRTL ? `${s.pendingOrders} استخدام بانتظار المراجعة` : `${s.pendingOrders} redemptions awaiting review`,
+      desc: isRTL ? "راجع الاستخدامات المعلقة اليوم." : "Review today's pending redemptions.",
+      to: "/admin/orders",
+    });
+  if (s.expiringSubscriptions > 0)
+    cards.push({
+      id: "expiring",
+      priority: "high",
+      icon: AlertCircle,
+      title: isRTL
+        ? `${s.expiringSubscriptions} اشتراك ينتهي قريباً`
+        : `${s.expiringSubscriptions} memberships expiring soon`,
+      desc: isRTL ? "تابع التجديدات قبل انتهاء العضوية." : "Follow up before memberships expire.",
+      to: "/admin/customers",
+    });
+  if (s.availableCoupons === 0)
+    cards.push({
+      id: "inventory",
+      priority: "medium",
+      icon: Ticket,
+      title: isRTL ? "مخزون الاشتراكات فارغ" : "Subscription inventory is empty",
+      desc: isRTL
+        ? "أنشئ رموز اشتراك جديدة قبل عملية البيع التالية."
+        : "Generate new subscription codes before the next sale.",
+      to: "/admin/subscriptions",
+    });
+  if (top && top.ordersWeek > 0)
+    cards.push({
+      id: "top-drink",
+      priority: "low",
+      icon: Flame,
+      title: isRTL ? `${top.nameAr ?? top.nameEn} الأكثر طلباً` : `${top.nameEn ?? top.nameAr} is trending`,
+      desc: isRTL ? "راجع توفره في جميع الفروع." : "Check availability across every branch.",
+      to: "/admin/drinks",
+    });
+  return cards.slice(0, 4);
 }
 
 function buildOpportunities(data: DashboardPayload, isRTL: boolean): Card[] {
   const s = data.stats;
-  const out: Card[] = [];
-  if (s.expiringSubscriptions > 0) out.push({
-    id: "renew", priority: "high", icon: WalletCards,
-    title: isRTL ? `${s.expiringSubscriptions} فرصة تجديد` : `${s.expiringSubscriptions} renewal opportunities`,
-    desc: isRTL ? "اعرض تجديدات مبكرة لهؤلاء العملاء." : "Offer early renewals to these customers.",
-    to: "/admin/customers",
-  });
-  if (s.activeSubscriptions > 0) out.push({
-    id: "upsell-annual", priority: "medium", icon: TrendingUp,
-    title: isRTL ? "ترقية إلى الخطة السنوية" : "Upsell annual plans",
-    desc: isRTL ? "ادعُ الأعضاء النشطين للترقية." : "Invite active members to upgrade.",
-    to: "/admin/plans",
-  });
-  if (s.availableCoupons > 0) out.push({
-    id: "unused-coupons", priority: "medium", icon: Ticket,
-    title: isRTL ? `${s.availableCoupons} كوبون غير مباع` : `${s.availableCoupons} unused coupons`,
-    desc: isRTL ? "حوّل المخزون إلى إيراد." : "Convert inventory into revenue.",
-    to: "/admin/coupons",
-  });
-  out.push({
-    id: "inactive", priority: "low", icon: Users,
-    title: isRTL ? "أعضاء غير نشطين" : "Inactive members",
-    desc: isRTL ? "استعرض قائمة الفلترة داخل مركز العملاء." : "Use the filter inside Customer Hub.",
-    to: "/admin/customers",
-  });
-  return out.slice(0, 4);
+  const cards: Card[] = [];
+  if (s.expiringSubscriptions > 0)
+    cards.push({
+      id: "renewals",
+      priority: "high",
+      icon: WalletCards,
+      title: isRTL ? `${s.expiringSubscriptions} فرصة تجديد` : `${s.expiringSubscriptions} renewal opportunities`,
+      desc: isRTL ? "استهدف العملاء قبل نهاية اشتراكهم." : "Reach customers before their memberships end.",
+      to: "/admin/customers",
+    });
+  if (s.activeSubscriptions > 0)
+    cards.push({
+      id: "upgrade",
+      priority: "medium",
+      icon: TrendingUp,
+      title: isRTL ? "ترقية الأعضاء النشطين" : "Upgrade active members",
+      desc: isRTL ? "اعرض الخطط الأطول على الأعضاء المنتظمين." : "Offer longer plans to consistent members.",
+      to: "/admin/subscriptions",
+    });
+  if (s.availableCoupons > 0)
+    cards.push({
+      id: "inventory",
+      priority: "medium",
+      icon: Layers3,
+      title: isRTL ? `${s.availableCoupons} رمز اشتراك متاح` : `${s.availableCoupons} subscription codes available`,
+      desc: isRTL
+        ? "حوّل المخزون المتاح إلى اشتراكات مفعلة."
+        : "Convert available inventory into activated memberships.",
+      to: "/admin/subscriptions",
+    });
+  return cards.slice(0, 3);
 }
-
-function buildAlerts(data: DashboardPayload, isRTL: boolean): Card[] {
-  const s = data.stats;
-  const out: Card[] = [];
-  if (s.pendingOrders > 0) out.push({
-    id: "pending", priority: "high", icon: Clock,
-    title: isRTL ? `${s.pendingOrders} طلب بانتظار الموافقة` : `${s.pendingOrders} orders awaiting approval`,
-    desc: isRTL ? "افتح الاستحقاقات اليومية لمراجعتها." : "Review pending redemptions now.",
-    to: "/admin/orders",
-  });
-  const delta = pctDelta(s.revenueToday, s.revenueYesterday);
-  if (s.revenueYesterday > 0 && delta <= -20) out.push({
-    id: "rev-drop", priority: "high", icon: TrendingDown,
-    title: isRTL ? `إيراد اليوم منخفض ${Math.abs(delta)}%` : `Revenue is down ${Math.abs(delta)}% today`,
-    desc: isRTL ? "قارن الأداء في التقارير." : "Compare performance in Reports.",
-    to: "/admin/reports",
-  });
-  if (s.availableCoupons === 0) out.push({
-    id: "no-coupons", priority: "medium", icon: Ticket,
-    title: isRTL ? "لا يوجد كوبونات متاحة" : "No coupons available",
-    desc: isRTL ? "أنشئ دفعة جديدة قبل البيع." : "Generate a new batch before selling.",
-    to: "/admin/coupons",
-  });
-  return out;
-}
-
-type ActivityItem = { id: string; title: string; subtitle: string; time: string; kind: "order" | "customer" };
 
 function buildActivity(data: DashboardPayload, isRTL: boolean): ActivityItem[] {
   const items: ActivityItem[] = [];
-  for (const o of data.latestOrders.slice(0, 10)) {
-    const drink = isRTL ? o.drink?.name_ar : o.drink?.name_en;
-    const branch = isRTL ? o.branch?.name_ar : o.branch?.name_en;
-    const verb = o.status === "approved"
-      ? isRTL ? "استلم" : "redeemed"
-      : o.status === "rejected"
-        ? isRTL ? "رُفض طلب" : "rejected"
-        : isRTL ? "طلب" : "requested";
+  for (const order of data.latestOrders.slice(0, 10)) {
+    const drink = isRTL ? order.drink?.name_ar : order.drink?.name_en;
+    const branch = isRTL ? order.branch?.name_ar : order.branch?.name_en;
+    const verb =
+      order.status === "approved"
+        ? isRTL
+          ? "استخدم"
+          : "redeemed"
+        : order.status === "rejected"
+          ? isRTL
+            ? "رُفض طلب"
+            : "was rejected for"
+          : isRTL
+            ? "طلب"
+            : "requested";
     items.push({
-      id: `o-${o.id}`,
+      id: `order-${order.id}`,
       kind: "order",
-      title: `${o.customer?.name ?? (isRTL ? "عميل" : "Customer")} ${verb} ${drink ?? ""}`.trim(),
+      title: `${order.customer?.name ?? (isRTL ? "عميل" : "Customer")} ${verb} ${drink ?? ""}`.trim(),
       subtitle: branch ?? "",
-      time: o.created_at,
+      time: order.created_at,
     });
   }
-  for (const c of data.recentCustomers.slice(0, 4)) {
+  for (const customer of data.recentCustomers.slice(0, 4)) {
     items.push({
-      id: `c-${c.id}`,
+      id: `customer-${customer.id}`,
       kind: "customer",
-      title: `${isRTL ? "عميل جديد" : "New customer"}: ${c.name}`,
+      title: `${isRTL ? "عميل جديد" : "New customer"}: ${customer.name}`,
       subtitle: "",
-      time: c.created_at,
+      time: customer.created_at,
     });
   }
-  return items.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 8);
+  return items.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 9);
 }
 
-/* Component ---------------------------------------------------------- */
+function getUserName(session: ReturnType<typeof useOrganization>["session"], isRTL: boolean) {
+  const metadata = session?.user?.user_metadata ?? {};
+  return (
+    metadata.full_name ??
+    metadata.name ??
+    metadata.display_name ??
+    session?.user?.email?.split("@")[0] ??
+    (isRTL ? "باسم" : "Basim")
+  );
+}
+
 export default function CommandCenter() {
   const { lang, fmtNum } = useI18n();
   const isRTL = lang === "ar";
-  const { organization } = useOrganization();
-  const now = useNow(30_000);
+  const { session } = useOrganization();
+  const { markUpdating, markUpdated, markError } = useLiveStatus();
+  const now = useNow();
 
   const [data, setData] = useState<DashboardPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [online, setOnline] = useState<boolean>(typeof navigator === "undefined" ? true : navigator.onLine);
-  const [connError, setConnError] = useState(false);
   const firstLoadRef = useRef(true);
 
-  async function tick() {
+  async function refreshDashboard() {
+    markUpdating(isRTL ? "تحديث لوحة التحكم" : "Updating dashboard");
     try {
-      const { payload, error: e } = await loadCompanyDashboard();
-      setData(payload);
-      setError(e);
-      setLastUpdated(new Date());
-      setConnError(false);
-    } catch {
-      setConnError(true);
+      const result = await loadCompanyDashboard();
+      setData(result.payload);
+      setError(result.error);
+      if (result.error) markError(result.error);
+      else markUpdated(new Date());
+    } catch (loadError) {
+      const message =
+        loadError instanceof Error
+          ? loadError.message
+          : isRTL
+            ? "تعذر تحميل لوحة التحكم."
+            : "Could not load the dashboard.";
+      setError(message);
+      markError(message);
     } finally {
       firstLoadRef.current = false;
     }
   }
 
   useEffect(() => {
-    void tick();
-    const id = window.setInterval(() => {
-      if (document.visibilityState !== "visible") return;
-      void tick();
+    void refreshDashboard();
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") void refreshDashboard();
     }, POLL_MS);
-    const onOnline = () => { setOnline(true); void tick(); };
-    const onOffline = () => setOnline(false);
-    window.addEventListener("online", onOnline);
-    window.addEventListener("offline", onOffline);
-    return () => {
-      window.clearInterval(id);
-      window.removeEventListener("online", onOnline);
-      window.removeEventListener("offline", onOffline);
-    };
-  }, []);
+    return () => window.clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isRTL]);
 
-  const drinkPop = useMemo(() => (data ? buildDrinkPopularity(data) : []), [data]);
-  const focus = useMemo(() => (data ? buildFocus(data, drinkPop[0] ?? null, isRTL) : []), [data, drinkPop, isRTL]);
+  const drinkPopularity = useMemo(() => (data ? buildDrinkPopularity(data) : []), [data]);
+  const topDrink = drinkPopularity[0] ?? null;
+  const focus = useMemo(() => (data ? buildFocus(data, topDrink, isRTL) : []), [data, topDrink, isRTL]);
   const opportunities = useMemo(() => (data ? buildOpportunities(data, isRTL) : []), [data, isRTL]);
-  const alerts = useMemo(() => (data ? buildAlerts(data, isRTL) : []), [data, isRTL]);
   const activity = useMemo(() => (data ? buildActivity(data, isRTL) : []), [data, isRTL]);
 
-  const fmtCurrency = (n: number) => `${fmtNum(Math.round(n))} ${isRTL ? "ر.س" : "SAR"}`;
-  const dateLabel = now.toLocaleDateString(isRTL ? "ar-SA" : "en-US", { weekday: "long", day: "numeric", month: "long" });
+  const fmtCurrency = (value: number) => `${fmtNum(Math.round(value))} ${isRTL ? "ر.س" : "SAR"}`;
+  const userName = getUserName(session, isRTL);
+  const dateLabel = now.toLocaleDateString(isRTL ? "ar-SA" : "en-US", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
   const timeLabel = now.toLocaleTimeString(isRTL ? "ar-SA" : "en-US", { hour: "2-digit", minute: "2-digit" });
-  const orgName = organization?.nameAr && isRTL ? organization.nameAr : organization?.nameEn ?? organization?.nameAr ?? "";
+  const showSkeleton = firstLoadRef.current && !data;
 
-  const top = drinkPop[0] ?? null;
-  const showFirstSkeleton = firstLoadRef.current && !data;
-
-  const kpis = data ? [
-    {
-      key: "redemptions",
-      label: isRTL ? "استحقاقات اليوم" : "Today's Redemptions",
-      value: data.stats.approvedOrdersToday,
-      fmt: fmtNum,
-      icon: Coffee,
-      to: "/admin/orders",
-      hint: isRTL ? "افتح الاستحقاقات اليومية" : "Go to Daily Redemptions",
-    },
-    {
-      key: "members",
-      label: isRTL ? "أعضاء نشطون" : "Active Members",
-      value: data.stats.activeSubscriptions,
-      fmt: fmtNum,
-      icon: Users,
-      to: "/admin/customers",
-      hint: isRTL ? "افتح مركز العملاء" : "Open Customer Hub",
-    },
-    {
-      key: "expiring",
-      label: isRTL ? "اشتراكات تنتهي" : "Expiring Memberships",
-      value: data.stats.expiringSubscriptions,
-      fmt: fmtNum,
-      icon: WalletCards,
-      to: "/admin/customers",
-      hint: isRTL ? "قائمة التجديدات" : "Renewals filter",
-    },
-    {
-      key: "revenue",
-      label: isRTL ? "إيراد اليوم" : "Revenue Today",
-      value: data.stats.revenueToday,
-      fmt: fmtCurrency,
-      icon: BadgeDollarSign,
-      to: "/admin/reports",
-      hint: isRTL ? "افتح التقارير" : "Open Reports",
-    },
-    {
-      key: "coupons",
-      label: isRTL ? "كوبونات متاحة" : "Available Coupons",
-      value: data.stats.availableCoupons,
-      fmt: fmtNum,
-      icon: Ticket,
-      to: "/admin/coupons",
-      hint: isRTL ? "إدارة الكوبونات" : "Manage coupons",
-    },
-    {
-      key: "top-drink",
-      label: isRTL ? "الأكثر طلباً" : "Top Drink",
-      value: top?.ordersMonth ?? 0,
-      fmt: (n: number) => (top ? `${fmtNum(n)}` : "—"),
-      subLabel: top ? (isRTL ? top.nameAr ?? top.nameEn : top.nameEn ?? top.nameAr) ?? undefined : undefined,
-      icon: Flame,
-      to: "/admin/drinks",
-      hint: isRTL ? "المشروبات" : "Drinks",
-    },
-  ] : [];
+  const groups: MetricGroup[] = data
+    ? [
+        {
+          key: "customers",
+          title: isRTL ? "العملاء" : "Customers",
+          subtitle: isRTL ? "نمو العملاء وحالة العضويات" : "Customer growth and membership health",
+          metrics: [
+            {
+              key: "total-customers",
+              label: isRTL ? "إجمالي العملاء" : "Total Customers",
+              value: data.stats.customers,
+              format: fmtNum,
+              icon: Users,
+              to: "/admin/customers",
+              note: isRTL
+                ? `+${fmtNum(data.stats.newCustomersMonth)} هذا الشهر`
+                : `+${fmtNum(data.stats.newCustomersMonth)} this month`,
+            },
+            {
+              key: "new-today",
+              label: isRTL ? "عملاء جدد اليوم" : "New Today",
+              value: data.stats.newCustomersToday,
+              format: fmtNum,
+              icon: UserPlus,
+              to: "/admin/customers",
+              note: isRTL
+                ? `+${fmtNum(data.stats.newCustomersWeek)} هذا الأسبوع`
+                : `+${fmtNum(data.stats.newCustomersWeek)} this week`,
+            },
+            {
+              key: "active-members",
+              label: isRTL ? "عضويات نشطة" : "Active Memberships",
+              value: data.stats.activeSubscriptions,
+              format: fmtNum,
+              icon: WalletCards,
+              to: "/admin/customers",
+              note: isRTL ? "عرض العملاء النشطين" : "View active customers",
+            },
+            {
+              key: "expiring",
+              label: isRTL ? "تنتهي قريباً" : "Expiring Soon",
+              value: data.stats.expiringSubscriptions,
+              format: fmtNum,
+              icon: AlertCircle,
+              to: "/admin/customers",
+              note: isRTL ? "خلال 7 أيام" : "Within 7 days",
+            },
+          ],
+        },
+        {
+          key: "subscriptions",
+          title: isRTL ? "الاشتراكات والمخزون" : "Subscriptions & Inventory",
+          subtitle: isRTL ? "حالة الاشتراكات ورموز البيع" : "Membership lifecycle and sellable inventory",
+          metrics: [
+            {
+              key: "available",
+              label: isRTL ? "رموز متاحة" : "Available Codes",
+              value: data.stats.availableCoupons,
+              format: fmtNum,
+              icon: Ticket,
+              to: "/admin/subscriptions",
+              note: isRTL ? "جاهزة للبيع" : "Ready to sell",
+            },
+            {
+              key: "reserved",
+              label: isRTL ? "محجوزة" : "Reserved",
+              value: data.stats.reservedCoupons,
+              format: fmtNum,
+              icon: Clock,
+              to: "/admin/subscriptions",
+              note: isRTL ? "بانتظار الإكمال" : "Awaiting completion",
+            },
+            {
+              key: "sold",
+              label: isRTL ? "تم بيعها" : "Sold",
+              value: data.stats.soldCouponsCount,
+              format: fmtNum,
+              icon: BadgeDollarSign,
+              to: "/admin/subscriptions",
+              note: isRTL ? "إجمالي الرموز المباعة" : "Total sold codes",
+            },
+            {
+              key: "expired",
+              label: isRTL ? "اشتراكات منتهية" : "Expired Memberships",
+              value: data.stats.expiredSubscriptions,
+              format: fmtNum,
+              icon: WalletCards,
+              to: "/admin/subscriptions",
+              note: isRTL
+                ? `${fmtNum(data.stats.cancelledSubscriptions)} ملغاة`
+                : `${fmtNum(data.stats.cancelledSubscriptions)} cancelled`,
+            },
+          ],
+        },
+        {
+          key: "operations",
+          title: isRTL ? "التشغيل" : "Operations",
+          subtitle: isRTL ? "الاستخدامات والفروع والمشروبات والموظفون" : "Redemptions, branches, drinks, and employees",
+          metrics: [
+            {
+              key: "redemptions",
+              label: isRTL ? "استخدامات اليوم" : "Today's Redemptions",
+              value: data.stats.approvedOrdersToday,
+              format: fmtNum,
+              icon: Coffee,
+              to: "/admin/orders",
+              note: isRTL ? `${fmtNum(data.stats.pendingOrders)} معلقة` : `${fmtNum(data.stats.pendingOrders)} pending`,
+            },
+            {
+              key: "branches",
+              label: isRTL ? "فروع نشطة" : "Active Branches",
+              value: data.stats.activeBranches,
+              format: fmtNum,
+              icon: Building2,
+              to: "/admin/branches",
+              note: isRTL ? "نقاط طلب فعالة" : "Active order points",
+            },
+            {
+              key: "drinks",
+              label: isRTL ? "مشروبات نشطة" : "Active Drinks",
+              value: data.stats.activeDrinks,
+              format: fmtNum,
+              icon: Coffee,
+              to: "/admin/drinks",
+              note: topDrink
+                ? isRTL
+                  ? `الأكثر: ${topDrink.nameAr ?? topDrink.nameEn}`
+                  : `Top: ${topDrink.nameEn ?? topDrink.nameAr}`
+                : undefined,
+            },
+            {
+              key: "employees",
+              label: isRTL ? "الموظفون" : "Employees",
+              value: data.stats.employees,
+              format: fmtNum,
+              icon: UserRoundCog,
+              to: "/admin/cashiers",
+              note: isRTL ? "جميع الحسابات المرتبطة" : "All linked staff accounts",
+            },
+          ],
+        },
+        {
+          key: "business",
+          title: isRTL ? "الأعمال" : "Business",
+          subtitle: isRTL ? "المبيعات والأداء المالي" : "Sales and financial performance",
+          metrics: [
+            {
+              key: "revenue-today",
+              label: isRTL ? "إيراد اليوم" : "Revenue Today",
+              value: data.stats.revenueToday,
+              format: fmtCurrency,
+              icon: BadgeDollarSign,
+              to: "/admin/reports",
+              trend: pctDelta(data.stats.revenueToday, data.stats.revenueYesterday),
+              note: isRTL ? "مقارنة بالأمس" : "Compared with yesterday",
+            },
+            {
+              key: "revenue-month",
+              label: isRTL ? "إيراد الشهر" : "Revenue This Month",
+              value: data.stats.revenueMonth,
+              format: fmtCurrency,
+              icon: TrendingUp,
+              to: "/admin/reports",
+              note: isRTL ? "مبيعات الاشتراكات" : "Subscription sales",
+            },
+            {
+              key: "orders-today",
+              label: isRTL ? "طلبات اليوم" : "Requests Today",
+              value: data.stats.ordersToday,
+              format: fmtNum,
+              icon: Activity,
+              to: "/admin/orders",
+              note: isRTL
+                ? `${fmtNum(data.stats.approvedOrdersToday)} مكتملة`
+                : `${fmtNum(data.stats.approvedOrdersToday)} completed`,
+            },
+            {
+              key: "top-drink",
+              label: isRTL ? "المشروب الأعلى" : "Top Drink",
+              value: topDrink?.ordersMonth ?? 0,
+              format: fmtNum,
+              icon: Flame,
+              to: "/admin/drinks",
+              note: topDrink
+                ? isRTL
+                  ? (topDrink.nameAr ?? topDrink.nameEn ?? undefined)
+                  : (topDrink.nameEn ?? topDrink.nameAr ?? undefined)
+                : isRTL
+                  ? "لا توجد بيانات"
+                  : "No data yet",
+            },
+          ],
+        },
+      ]
+    : [];
 
   return (
-    <div className="cmd-page" dir={isRTL ? "rtl" : "ltr"}>
-      {/* Greeting */}
-      <header className="cmd-header">
-        <div className="cmd-header-copy">
-          <span className="cmd-eyebrow">{dateLabel} · {timeLabel}</span>
+    <div className="cmd-page cmd-page-full" dir={isRTL ? "rtl" : "ltr"}>
+      <header className="cmd-plain-header">
+        <div>
           <h1>
-            {greeting(now.getHours(), isRTL)}
-            {orgName ? <span className="cmd-org-name">, {orgName}</span> : null}
+            {greeting(now.getHours(), isRTL)}, <span>{userName}</span>
           </h1>
-          <p>{isRTL ? "ما الذي يحتاج انتباهك اليوم؟" : "What needs your attention today?"}</p>
+          <p>
+            {dateLabel} · {timeLabel}
+          </p>
         </div>
-        <div className="cmd-live">
-          {!online || connError ? (
-            <span className="cmd-live-badge offline" role="status">
-              <WifiOff className="h-3.5 w-3.5" />
-              {isRTL ? "غير متصل" : "Offline"}
-            </span>
-          ) : (
-            <>
-              <span className="cmd-live-badge live" role="status">
-                <span className="cmd-pulse" aria-hidden /> {isRTL ? "مباشر" : "Live"}
-              </span>
-              <span className="cmd-live-time">
-                {isRTL ? "آخر تحديث " : "Updated "}
-                {lastUpdated ? relativeTime(lastUpdated.toISOString(), now, isRTL) : (isRTL ? "الآن" : "just now")}
-              </span>
-            </>
-          )}
-        </div>
+        <span className="cmd-header-message">
+          {isRTL ? "هذه نظرة شاملة على أداء شركتك اليوم." : "Here is the complete view of your company today."}
+        </span>
       </header>
 
-      {error && <div className="company-alert error">{error}</div>}
+      {error ? <div className="company-alert error">{error}</div> : null}
 
-      {/* Interactive KPI cards */}
-      <section className="cmd-section">
-        <div className="cmd-kpi-grid">
-          {(showFirstSkeleton ? Array.from({ length: 6 }) : kpis).map((k: any, i) => (
-            !k ? <div key={i} className="cmd-kpi-card skeleton" /> : (
-              <Link key={k.key} to={k.to} className="cmd-kpi-card cmd-kpi-link" title={k.hint}>
-                <div className="cmd-kpi-icon"><k.icon className="h-4 w-4" /></div>
-                <span className="cmd-kpi-label">{k.label}</span>
-                <strong className="cmd-kpi-value">
-                  <AnimatedNumber value={k.value} fmt={k.fmt} />
-                </strong>
-                {k.subLabel ? <small className="cmd-kpi-sub">{k.subLabel}</small> : null}
-              </Link>
-            )
-          ))}
-        </div>
-      </section>
+      <div className="cmd-metric-groups">
+        {(showSkeleton ? Array.from({ length: 4 }) : groups).map((group: any, index) =>
+          !group ? (
+            <section className="cmd-metric-group" key={index}>
+              <div className="cmd-group-heading skeleton-line" />
+              <div className="cmd-group-grid">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div className="cmd-metric-card skeleton" key={i} />
+                ))}
+              </div>
+            </section>
+          ) : (
+            <section className="cmd-metric-group" key={group.key}>
+              <div className="cmd-group-heading">
+                <div>
+                  <h2>{group.title}</h2>
+                  <p>{group.subtitle}</p>
+                </div>
+              </div>
+              <div className="cmd-group-grid">
+                {group.metrics.map((metric: Metric) => {
+                  const Icon = metric.icon;
+                  const positive = typeof metric.trend === "number" && metric.trend >= 0;
+                  return (
+                    <Link to={metric.to} key={metric.key} className="cmd-metric-card">
+                      <div className="cmd-metric-top">
+                        <span className="cmd-metric-icon">
+                          <Icon className="h-4 w-4" />
+                        </span>
+                        {typeof metric.trend === "number" ? (
+                          <span className={`cmd-trend ${positive ? "positive" : "negative"}`}>
+                            {positive ? (
+                              <TrendingUp className="h-3.5 w-3.5" />
+                            ) : (
+                              <TrendingDown className="h-3.5 w-3.5" />
+                            )}
+                            {Math.abs(metric.trend)}%
+                          </span>
+                        ) : null}
+                      </div>
+                      <span className="cmd-metric-label">{metric.label}</span>
+                      <strong className="cmd-metric-value">
+                        <AnimatedNumber value={metric.value} fmt={metric.format} />
+                      </strong>
+                      {metric.note ? <small>{metric.note}</small> : null}
+                    </Link>
+                  );
+                })}
+              </div>
+            </section>
+          ),
+        )}
+      </div>
 
-      {/* Today's Focus */}
       <section className="cmd-section">
         <div className="cmd-section-head">
-          <span className="cmd-kicker">{isRTL ? "أولوية اليوم" : "Today's Focus"}</span>
-          <h2>{isRTL ? "ما الذي يحتاج انتباهك؟" : "What needs your attention?"}</h2>
+          <span className="cmd-kicker">{isRTL ? "مركز الإجراءات" : "Action Center"}</span>
+          <h2>{isRTL ? "ما الذي يحتاج انتباهك الآن؟" : "What needs your attention now?"}</h2>
         </div>
-        {showFirstSkeleton ? (
-          <div className="cmd-focus-grid">{[0, 1, 2].map((i) => <div key={i} className="cmd-focus-card skeleton" />)}</div>
+        {showSkeleton ? (
+          <div className="cmd-focus-grid">
+            {[0, 1, 2].map((item) => (
+              <div key={item} className="cmd-focus-card skeleton" />
+            ))}
+          </div>
         ) : focus.length === 0 ? (
           <div className="cmd-focus-empty">
             <CheckCircle2 className="h-5 w-5" />
-            <span>{isRTL ? "لا توجد بنود عاجلة." : "Nothing urgent right now."}</span>
+            {isRTL ? "لا توجد إجراءات عاجلة الآن." : "Nothing urgent right now."}
           </div>
         ) : (
           <div className="cmd-focus-grid">
-            {focus.map((f) => {
-              const Icon = f.icon;
+            {focus.map((item) => {
+              const Icon = item.icon;
               return (
-                <Link key={f.id} to={f.to} className="cmd-focus-card cmd-focus-link" data-priority={f.priority}>
-                  <div className="cmd-focus-icon"><Icon className="h-4 w-4" /></div>
+                <Link
+                  to={item.to}
+                  key={item.id}
+                  className="cmd-focus-card cmd-focus-link"
+                  data-priority={item.priority}
+                >
+                  <div className="cmd-focus-icon">
+                    <Icon className="h-4 w-4" />
+                  </div>
                   <div className="cmd-focus-copy">
-                    <strong>{f.title}</strong>
-                    <p>{f.desc}</p>
+                    <strong>{item.title}</strong>
+                    <p>{item.desc}</p>
                   </div>
                 </Link>
               );
@@ -418,57 +621,56 @@ export default function CommandCenter() {
         )}
       </section>
 
-      {/* Live Activity + Opportunities */}
-      <section className="cmd-two">
-        <article className="cmd-panel">
+      <section className="cmd-two cmd-two-wide">
+        <article className="cmd-panel cmd-activity-panel">
           <header>
             <div>
-              <span className="cmd-kicker">{isRTL ? "نشاط مباشر" : "Live Activity"}</span>
-              <h3>{isRTL ? "آخر الاستحقاقات" : "Recent redemptions"}</h3>
+              <span className="cmd-kicker">{isRTL ? "النشاط التشغيلي" : "Operational Feed"}</span>
+              <h3>{isRTL ? "آخر الأنشطة" : "Latest activity"}</h3>
             </div>
             <Activity className="h-4 w-4" />
           </header>
-          <ul className="cmd-activity">
-            {activity.length === 0 && !showFirstSkeleton && (
-              <li className="cmd-empty">{isRTL ? "لا نشاط بعد." : "No activity yet."}</li>
-            )}
-            {activity.map((a) => (
-              <li key={a.id}>
-                <div className="cmd-activity-icon" data-kind={a.kind}>
-                  {a.kind === "customer" ? <UserPlus className="h-3.5 w-3.5" /> : <Coffee className="h-3.5 w-3.5" />}
+          <ol className="cmd-timeline">
+            {activity.length === 0 && !showSkeleton ? (
+              <li className="cmd-empty">{isRTL ? "لا يوجد نشاط بعد." : "No activity yet."}</li>
+            ) : null}
+            {activity.map((item) => (
+              <li key={item.id}>
+                <span className="cmd-timeline-dot" data-kind={item.kind}>
+                  {item.kind === "customer" ? <UserPlus className="h-3.5 w-3.5" /> : <Coffee className="h-3.5 w-3.5" />}
+                </span>
+                <div>
+                  <strong>{item.title}</strong>
+                  {item.subtitle ? <small>{item.subtitle}</small> : null}
                 </div>
-                <div className="cmd-activity-copy">
-                  <strong>{a.title}</strong>
-                  {a.subtitle && <small>{a.subtitle}</small>}
-                </div>
-                <span className="cmd-activity-time">{relativeTime(a.time, now, isRTL)}</span>
+                <time>{relativeTime(item.time, now, isRTL)}</time>
               </li>
             ))}
-          </ul>
+          </ol>
         </article>
 
         <article className="cmd-panel">
           <header>
             <div>
               <span className="cmd-kicker">{isRTL ? "فرص الأعمال" : "Business Opportunities"}</span>
-              <h3>{isRTL ? "زد إيراداتك" : "Grow revenue"}</h3>
+              <h3>{isRTL ? "فرص للنمو" : "Growth opportunities"}</h3>
             </div>
             <Zap className="h-4 w-4" />
           </header>
-          <ul className="cmd-opp-list">
-            {opportunities.length === 0 && !showFirstSkeleton && (
-              <li className="cmd-empty">{isRTL ? "لا توجد فرص الآن." : "No opportunities right now."}</li>
-            )}
-            {opportunities.map((o) => {
-              const Icon = o.icon;
+          <ul className="cmd-opportunity-cards">
+            {opportunities.map((item) => {
+              const Icon = item.icon;
               return (
-                <li key={o.id}>
-                  <Link to={o.to} className="cmd-opp-link">
-                    <div className="cmd-opp-icon"><Icon className="h-4 w-4" /></div>
-                    <div className="cmd-opp-copy">
-                      <strong>{o.title}</strong>
-                      <small>{o.desc}</small>
-                    </div>
+                <li key={item.id}>
+                  <Link to={item.to}>
+                    <span className="cmd-opp-icon">
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <span>
+                      <strong>{item.title}</strong>
+                      <small>{item.desc}</small>
+                    </span>
+                    <Sparkles className="h-4 w-4" />
                   </Link>
                 </li>
               );
@@ -476,31 +678,6 @@ export default function CommandCenter() {
           </ul>
         </article>
       </section>
-
-      {/* Smart Alerts */}
-      {alerts.length > 0 && (
-        <section className="cmd-section">
-          <div className="cmd-section-head">
-            <span className="cmd-kicker">{isRTL ? "تنبيهات ذكية" : "Smart Alerts"}</span>
-            <h2>{isRTL ? "تحتاج إلى تصرّف" : "Requires action"}</h2>
-          </div>
-          <div className="cmd-alerts">
-            {alerts.map((a) => {
-              const Icon = a.icon;
-              return (
-                <Link key={a.id} to={a.to} className="cmd-alert" data-priority={a.priority}>
-                  <div className="cmd-alert-icon"><Icon className="h-4 w-4" /></div>
-                  <div className="cmd-alert-copy">
-                    <strong>{a.title}</strong>
-                    <small>{a.desc}</small>
-                  </div>
-                  <Sparkles className="h-3.5 w-3.5 cmd-alert-spark" aria-hidden />
-                </Link>
-              );
-            })}
-          </div>
-        </section>
-      )}
     </div>
   );
 }
