@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
+import type { CompanyRoute } from "@/features/company/access";
 import { useOrganization } from "@/providers/OrganizationProvider";
 import { useLiveStatus } from "@/providers/LiveStatusProvider";
 import {
@@ -94,7 +95,7 @@ type Card = {
   title: string;
   desc: string;
   priority: "high" | "medium" | "low";
-  to: string;
+  to: CompanyRoute;
   icon: typeof AlertCircle;
 };
 
@@ -104,7 +105,7 @@ type Metric = {
   value: number;
   format: (value: number) => string;
   icon: typeof Users;
-  to: string;
+  to: CompanyRoute;
   note?: string;
   trend?: number;
 };
