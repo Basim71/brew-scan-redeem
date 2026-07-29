@@ -1,22 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import {
-  AlertCircle,
-  Award,
-  Coffee,
-  Crown,
-  Grid3x3,
-  Lightbulb,
-  List,
-  PlusCircle,
-  Search,
-  Sparkles,
-  UserPlus,
-  Users,
-} from "lucide-react";
+import { Crown, Grid3x3, List, PlusCircle, Search, Users } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
-import { aggregateCustomers, orgInsights, type CustomerAggregate } from "./aggregate";
+import { aggregateCustomers, type CustomerAggregate } from "./aggregate";
 import { loadCustomerHub, type HubBundle } from "./service";
 import { getSavedView, saveView } from "./notes";
 import { CustomerDrawer } from "./CustomerDrawer";
@@ -31,7 +18,6 @@ export function CustomerHub() {
   const isAr = lang === "ar";
   const [bundle, setBundle] = useState<HubBundle | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [updated, setUpdated] = useState<number>(Date.now());
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -50,7 +36,6 @@ export function CustomerHub() {
       const b = await loadCustomerHub();
       setBundle(b);
       setError(null);
-      setUpdated(Date.now());
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed");
     } finally {
@@ -73,34 +58,7 @@ export function CustomerHub() {
 
   useEffect(() => saveView(view), [view]);
 
-  const aggregates = useMemo<CustomerAggregate[]>(
-    () => (bundle ? aggregateCustomers(bundle) : []),
-    [bundle],
-  );
-
-  // Metrics
-  const metrics = useMemo(() => {
-    const now = Date.now();
-    const monthStart = new Date();
-    monthStart.setDate(1);
-    monthStart.setHours(0, 0, 0, 0);
-    let total = aggregates.length,
-      active = 0,
-      newCount = 0,
-      expiring = 0,
-      inactive = 0,
-      vip = 0;
-    for (const a of aggregates) {
-      if (a.status === "active") active += 1;
-      if (a.status === "expiring") expiring += 1;
-      if (a.status === "inactive" || a.status === "expired") inactive += 1;
-      if (a.isVip) vip += 1;
-      if (new Date(a.customer.created_at).getTime() >= monthStart.getTime()) newCount += 1;
-    }
-    return { total, active, newCount, expiring, inactive, vip, now };
-  }, [aggregates]);
-
-  const insightCards = useMemo(() => orgInsights(aggregates), [aggregates]);
+  const aggregates = useMemo<CustomerAggregate[]>(() => (bundle ? aggregateCustomers(bundle) : []), [bundle]);
 
   const filteredSorted = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -122,11 +80,16 @@ export function CustomerHub() {
     });
     list = list.sort((a, b) => {
       switch (sort) {
-        case "newest": return b.customer.created_at.localeCompare(a.customer.created_at);
-        case "oldest": return a.customer.created_at.localeCompare(b.customer.created_at);
-        case "spend": return b.totalSpend - a.totalSpend;
-        case "orders": return b.approvedCount - a.approvedCount;
-        case "recent": return (b.lastVisit ?? "").localeCompare(a.lastVisit ?? "");
+        case "newest":
+          return b.customer.created_at.localeCompare(a.customer.created_at);
+        case "oldest":
+          return a.customer.created_at.localeCompare(b.customer.created_at);
+        case "spend":
+          return b.totalSpend - a.totalSpend;
+        case "orders":
+          return b.approvedCount - a.approvedCount;
+        case "recent":
+          return (b.lastVisit ?? "").localeCompare(a.lastVisit ?? "");
       }
     });
     return list;
@@ -150,53 +113,21 @@ export function CustomerHub() {
     return Array.from(map.values());
   }, [aggregates, isAr]);
 
-  const secondsSince = Math.floor((Date.now() - updated) / 1000);
-
   return (
     <div className="hub-page" dir={isAr ? "rtl" : "ltr"}>
       <header className="hub-header">
         <div>
           <span className="hub-eyebrow">{isAr ? "الإدارة" : "Command"}</span>
           <h1>{isAr ? "مركز العملاء" : "Customer Hub"}</h1>
-          <p>{isAr ? "كل ما تحتاج معرفته عن عميلك في مكان واحد." : "Everything about a customer in one place."}</p>
-        </div>
-        <div className="hub-live">
-          <span className="hub-live-dot" />
-          <span>{isAr ? "مباشر" : "Live"}</span>
-          <small>
-            {isAr ? "آخر تحديث" : "Updated"} {secondsSince <= 2 ? (isAr ? "الآن" : "just now") : `${secondsSince}s`}
-          </small>
+          <p>
+            {isAr
+              ? "ابحث عن العملاء واستعرض معلوماتهم من مكان واحد."
+              : "Search customers and review their information in one place."}
+          </p>
         </div>
       </header>
 
       {error && <div className="hub-alert error">{error}</div>}
-
-      <section className="hub-metrics">
-        <Metric icon={<Users />} label={isAr ? "إجمالي العملاء" : "Total Customers"} value={fmtNum(metrics.total)} tone="brand" />
-        <Metric icon={<Award />} label={isAr ? "الأعضاء النشطون" : "Active Members"} value={fmtNum(metrics.active)} tone="success" />
-        <Metric icon={<UserPlus />} label={isAr ? "عملاء جدد (الشهر)" : "New (Month)"} value={fmtNum(metrics.newCount)} tone="info" />
-        <Metric icon={<AlertCircle />} label={isAr ? "قارب على الانتهاء" : "Expiring Soon"} value={fmtNum(metrics.expiring)} tone="warning" />
-        <Metric icon={<Coffee />} label={isAr ? "غير نشط" : "Inactive"} value={fmtNum(metrics.inactive)} tone="muted" />
-        <Metric icon={<Crown />} label={isAr ? "عملاء VIP" : "VIP"} value={fmtNum(metrics.vip)} tone="gold" />
-      </section>
-
-      {insightCards.length > 0 && (
-        <section className="hub-insights">
-          <h2><Lightbulb className="h-4 w-4" />{isAr ? "رؤى ذكية" : "Smart Insights"}</h2>
-          <div className="hub-insight-grid">
-            {insightCards.map((c) => (
-              <article key={c.id} className="hub-insight-card">
-                <Sparkles className="h-4 w-4 hub-insight-icon" />
-                <strong>{isAr ? c.titleAr : c.titleEn}</strong>
-                <p>{isAr ? c.descAr : c.descEn}</p>
-                <button className="hub-btn ghost" onClick={() => setFilter(c.filter as FilterKey)}>
-                  {isAr ? "عرض" : "View"}
-                </button>
-              </article>
-            ))}
-          </div>
-        </section>
-      )}
 
       <section className="hub-toolbar">
         <label className="hub-search">
@@ -208,11 +139,27 @@ export function CustomerHub() {
           />
         </label>
         <div className="hub-chips">
-          {(["all","vip","active","expiring","expired","inactive","new"] as FilterKey[]).map((k) => (
+          {(["all", "vip", "active", "expiring", "expired", "inactive", "new"] as FilterKey[]).map((k) => (
             <button key={k} data-active={filter === k} onClick={() => setFilter(k)}>
               {isAr
-                ? { all:"الكل", vip:"VIP", active:"نشط", expiring:"قارب على الانتهاء", expired:"منتهي", inactive:"غير نشط", new:"جديد" }[k]
-                : { all:"All", vip:"VIP", active:"Active", expiring:"Expiring", expired:"Expired", inactive:"Inactive", new:"New" }[k]}
+                ? {
+                    all: "الكل",
+                    vip: "VIP",
+                    active: "نشط",
+                    expiring: "قارب على الانتهاء",
+                    expired: "منتهي",
+                    inactive: "غير نشط",
+                    new: "جديد",
+                  }[k]
+                : {
+                    all: "All",
+                    vip: "VIP",
+                    active: "Active",
+                    expiring: "Expiring",
+                    expired: "Expired",
+                    inactive: "Inactive",
+                    new: "New",
+                  }[k]}
             </button>
           ))}
         </div>
@@ -220,19 +167,25 @@ export function CustomerHub() {
           <select value={branchId} onChange={(e) => setBranchId(e.target.value)}>
             <option value="all">{isAr ? "كل الفروع" : "All Branches"}</option>
             {(bundle?.branches ?? []).map((b) => (
-              <option key={b.id} value={b.id}>{isAr ? b.name_ar : b.name_en}</option>
+              <option key={b.id} value={b.id}>
+                {isAr ? b.name_ar : b.name_en}
+              </option>
             ))}
           </select>
           <select value={planId} onChange={(e) => setPlanId(e.target.value)}>
             <option value="all">{isAr ? "كل الخطط" : "All Plans"}</option>
             {(bundle?.plans ?? []).map((p) => (
-              <option key={p.id} value={p.id}>{isAr ? p.name_ar : p.name_en}</option>
+              <option key={p.id} value={p.id}>
+                {isAr ? p.name_ar : p.name_en}
+              </option>
             ))}
           </select>
           <select value={drinkId} onChange={(e) => setDrinkId(e.target.value)}>
             <option value="all">{isAr ? "كل المشروبات" : "All Drinks"}</option>
             {drinkOptions.map((d) => (
-              <option key={d.id} value={d.id}>{d.label}</option>
+              <option key={d.id} value={d.id}>
+                {d.label}
+              </option>
             ))}
           </select>
           <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)}>
@@ -243,20 +196,33 @@ export function CustomerHub() {
             <option value="recent">{isAr ? "الأكثر نشاطًا" : "Recently Active"}</option>
           </select>
           <div className="hub-view-toggle" role="tablist">
-            <button data-active={view === "table"} onClick={() => setView("table")} aria-label="Table"><List className="h-4 w-4" /></button>
-            <button data-active={view === "grid"} onClick={() => setView("grid")} aria-label="Grid"><Grid3x3 className="h-4 w-4" /></button>
+            <button data-active={view === "table"} onClick={() => setView("table")} aria-label="Table">
+              <List className="h-4 w-4" />
+            </button>
+            <button data-active={view === "grid"} onClick={() => setView("grid")} aria-label="Grid">
+              <Grid3x3 className="h-4 w-4" />
+            </button>
           </div>
-          <Link to="/admin/sell-coupon" className="hub-btn primary"><PlusCircle className="h-4 w-4" />{isAr ? "بيع عضوية" : "Sell Membership"}</Link>
+          <Link to="/admin/sell-coupon" className="hub-btn primary">
+            <PlusCircle className="h-4 w-4" />
+            {isAr ? "بيع عضوية" : "Sell Membership"}
+          </Link>
         </div>
       </section>
 
       <section className="hub-results">
         <div className="hub-results-head">
-          <span>{fmtNum(filteredSorted.length)} {isAr ? "عميل" : "customers"}</span>
+          <span>
+            {fmtNum(filteredSorted.length)} {isAr ? "عميل" : "customers"}
+          </span>
         </div>
 
         {loading && !bundle ? (
-          <div className="hub-skeleton">{Array.from({ length: 6 }).map((_, i) => <div key={i} />)}</div>
+          <div className="hub-skeleton">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} />
+            ))}
+          </div>
         ) : filteredSorted.length === 0 ? (
           <div className="hub-empty-panel">
             <Users className="h-6 w-6" />
@@ -287,16 +253,39 @@ export function CustomerHub() {
                           <strong>{a.customer.name}</strong>
                           <small dir="ltr">{a.customer.phone}</small>
                         </div>
-                        {a.isVip && <span className="hub-tag vip"><Crown className="h-3 w-3" />VIP</span>}
+                        {a.isVip && (
+                          <span className="hub-tag vip">
+                            <Crown className="h-3 w-3" />
+                            VIP
+                          </span>
+                        )}
                       </div>
                     </td>
-                    <td>{a.activeSubscription ? (isAr ? a.activeSubscription.plan?.name_ar : a.activeSubscription.plan?.name_en) : "—"}</td>
-                    <td><span className={`hub-tag ${a.status}`}>{a.status}</span></td>
+                    <td>
+                      {a.activeSubscription
+                        ? isAr
+                          ? a.activeSubscription.plan?.name_ar
+                          : a.activeSubscription.plan?.name_en
+                        : "—"}
+                    </td>
+                    <td>
+                      <span className={`hub-tag ${a.status}`}>{a.status}</span>
+                    </td>
                     <td>{a.lastVisit ? new Date(a.lastVisit).toLocaleDateString(isAr ? "ar-SA" : "en-US") : "—"}</td>
                     <td>{a.favoriteDrink ? (isAr ? a.favoriteDrink.name_ar : a.favoriteDrink.name_en) : "—"}</td>
                     <td>{fmtNum(a.totalSpend)}</td>
                     <td>{fmtNum(a.approvedCount)}</td>
-                    <td><button className="hub-btn ghost" onClick={(e) => { e.stopPropagation(); setSelectedId(a.customer.id); }}>{isAr ? "عرض" : "View"}</button></td>
+                    <td>
+                      <button
+                        className="hub-btn ghost"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedId(a.customer.id);
+                        }}
+                      >
+                        {isAr ? "عرض" : "View"}
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -312,16 +301,29 @@ export function CustomerHub() {
                     <strong>{a.customer.name}</strong>
                     <small dir="ltr">{a.customer.phone}</small>
                   </div>
-                  {a.isVip && <span className="hub-tag vip"><Crown className="h-3 w-3" /></span>}
+                  {a.isVip && (
+                    <span className="hub-tag vip">
+                      <Crown className="h-3 w-3" />
+                    </span>
+                  )}
                 </div>
                 <div className="hub-card-meta">
                   <span className={`hub-tag ${a.status}`}>{a.status}</span>
                   <small>{a.favoriteDrink ? (isAr ? a.favoriteDrink.name_ar : a.favoriteDrink.name_en) : "—"}</small>
                 </div>
                 <div className="hub-card-stats">
-                  <div><b>{fmtNum(a.approvedCount)}</b><span>{isAr ? "طلب" : "orders"}</span></div>
-                  <div><b>{fmtNum(a.totalSpend)}</b><span>{isAr ? "إنفاق" : "spend"}</span></div>
-                  <div><b>{fmtNum(a.loyalty.score)}</b><span>{isAr ? "ولاء" : "loyalty"}</span></div>
+                  <div>
+                    <b>{fmtNum(a.approvedCount)}</b>
+                    <span>{isAr ? "طلب" : "orders"}</span>
+                  </div>
+                  <div>
+                    <b>{fmtNum(a.totalSpend)}</b>
+                    <span>{isAr ? "إنفاق" : "spend"}</span>
+                  </div>
+                  <div>
+                    <b>{fmtNum(a.loyalty.score)}</b>
+                    <span>{isAr ? "ولاء" : "loyalty"}</span>
+                  </div>
                 </div>
               </button>
             ))}
@@ -329,29 +331,7 @@ export function CustomerHub() {
         )}
       </section>
 
-      <CustomerDrawer aggregate={selected} onClose={() => setSelectedId(null)} onChanged={() => void refresh()} />
+      <CustomerDrawer aggregate={selected} onClose={() => setSelectedId(null)} />
     </div>
-  );
-}
-
-function Metric({
-  icon,
-  label,
-  value,
-  tone,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  tone: "brand" | "success" | "info" | "warning" | "muted" | "gold";
-}) {
-  return (
-    <article className="hub-metric" data-tone={tone}>
-      <span className="hub-metric-icon" aria-hidden>{icon}</span>
-      <div>
-        <small>{label}</small>
-        <strong>{value}</strong>
-      </div>
-    </article>
   );
 }

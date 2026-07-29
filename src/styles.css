@@ -11910,3 +11910,128 @@ html[dir="rtl"] .app-island-live-popover {
     grid-template-columns: 1fr;
   }
 }
+
+/* ===== Customer Hub refinement: operational view only ===== */
+.hub-page {
+  width: 100%;
+  max-width: none;
+  padding-inline: clamp(18px, 2.75vw, 52px);
+}
+
+.hub-header {
+  padding-block: 2px 4px;
+}
+
+.hub-header > div {
+  max-width: 760px;
+}
+
+.hub-toolbar {
+  display: grid;
+  grid-template-columns: minmax(260px, 1.45fr) auto minmax(520px, auto);
+  align-items: center;
+}
+
+.hub-search {
+  width: 100%;
+}
+
+.hub-selects {
+  justify-content: flex-end;
+}
+
+.hub-drawer-scrim {
+  top: 94px;
+  z-index: 110;
+  background: rgba(42, 28, 18, 0.16);
+  backdrop-filter: blur(1.5px);
+}
+
+.hub-drawer {
+  top: 94px;
+  bottom: 18px;
+  inset-inline-end: 18px;
+  width: min(520px, calc(100vw - 36px));
+  border: 1px solid rgba(91, 60, 36, 0.1);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 30px 70px rgba(69, 45, 28, 0.2);
+  z-index: 111;
+}
+
+.hub-drawer-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 16px 18px;
+  background: rgba(255, 253, 249, 0.96);
+  backdrop-filter: blur(18px);
+}
+
+.hub-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+}
+
+.hub-membership-owner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 12px;
+  padding: 11px 12px;
+  border: 1px solid rgba(138, 106, 59, 0.14);
+  border-radius: 12px;
+  background: rgba(138, 106, 59, 0.06);
+}
+
+.hub-membership-owner span {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.hub-membership-owner strong {
+  color: #5f4327;
+  font-size: 12px;
+  text-align: end;
+}
+
+@media (max-width: 1320px) {
+  .hub-toolbar {
+    grid-template-columns: minmax(240px, 1fr) auto;
+  }
+
+  .hub-selects {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 760px) {
+  .hub-page {
+    padding-inline: 14px;
+  }
+
+  .hub-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .hub-chips,
+  .hub-selects {
+    grid-column: auto;
+    justify-content: flex-start;
+  }
+
+  .hub-drawer-scrim {
+    top: 82px;
+  }
+
+  .hub-drawer {
+    top: 82px;
+    bottom: 8px;
+    inset-inline: 8px;
+    width: auto;
+    border-radius: 20px;
+  }
+}
