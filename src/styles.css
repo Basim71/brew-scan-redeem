@@ -8203,3 +8203,116 @@ body:has(.kob-auth-page) {
 .hub-insights-list { list-style:disc; padding-inline-start:20px; display:flex; flex-direction:column; gap:4px; font-size:13px; color:#334155; }
 .hub-textarea { width:100%; min-height:80px; padding:10px 12px; border-radius:10px; border:1px solid rgba(0,0,0,.1); font-size:13px; font-family:inherit; resize:vertical; }
 @media (max-width: 640px) { .hub-grid-2 { grid-template-columns:1fr; } .hub-drawer { width:100vw; } }
+
+/* --- Command Center v2 additions ---------------------------------- */
+.cmd-kpi-link {
+  text-decoration: none;
+  cursor: pointer;
+  will-change: transform;
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms ease,
+    background 220ms ease;
+}
+.cmd-kpi-link:hover {
+  transform: translateY(-3px) scale(1.015);
+  box-shadow:
+    0 22px 40px -26px rgba(58, 38, 23, 0.32),
+    0 4px 14px -10px rgba(58, 38, 23, 0.14);
+  background: linear-gradient(180deg, #fff, #fbf5ec);
+}
+.cmd-kpi-link:hover .cmd-kpi-icon {
+  background: linear-gradient(145deg, #f7e5c9, #e8c78f);
+  color: #6a3d19;
+  transform: rotate(-4deg) scale(1.05);
+}
+.cmd-kpi-icon {
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), background 220ms ease, color 220ms ease;
+}
+.cmd-kpi-link:active { transform: translateY(-1px) scale(0.99); }
+.cmd-kpi-sub {
+  color: var(--kob-espresso-soft);
+  font-size: 11.5px;
+  margin-top: -2px;
+}
+
+/* Focus card as full clickable link */
+.cmd-focus-link {
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms ease,
+    background 220ms ease;
+}
+.cmd-focus-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 38px -26px rgba(58, 38, 23, 0.3);
+}
+.cmd-focus-link:active { transform: translateY(0); }
+
+/* Opportunity link */
+.cmd-opp-link {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  padding: 12px;
+  border-radius: 12px;
+  background: #fdfaf5;
+  border: 1px solid rgba(58, 38, 23, 0.06);
+  transition:
+    transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 200ms ease,
+    background 200ms ease;
+}
+.cmd-opp-link:hover {
+  transform: translateY(-1px);
+  background: #fff;
+  box-shadow: 0 14px 24px -20px rgba(58, 38, 23, 0.28);
+}
+.cmd-opp-list li { background: transparent; border: none; padding: 0; }
+
+/* Smart alerts */
+.cmd-alerts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+.cmd-alert {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: 14px;
+  text-decoration: none;
+  color: inherit;
+  background: linear-gradient(180deg, #fff, #fdf6ea);
+  border: 1px solid rgba(200, 68, 46, 0.14);
+  box-shadow: 0 10px 26px -22px rgba(200, 68, 46, 0.35);
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms ease;
+}
+.cmd-alert:hover { transform: translateY(-2px); box-shadow: 0 18px 34px -22px rgba(200, 68, 46, 0.4); }
+.cmd-alert[data-priority="medium"] {
+  border-color: rgba(217, 155, 43, 0.2);
+  box-shadow: 0 10px 26px -22px rgba(217, 155, 43, 0.35);
+}
+.cmd-alert[data-priority="low"] {
+  border-color: rgba(58, 38, 23, 0.1);
+  box-shadow: 0 10px 26px -22px rgba(58, 38, 23, 0.28);
+}
+.cmd-alert-icon {
+  width: 34px; height: 34px; border-radius: 10px;
+  display: grid; place-items: center;
+  background: rgba(200, 68, 46, 0.12); color: #a4331f;
+}
+.cmd-alert[data-priority="medium"] .cmd-alert-icon { background: rgba(217, 155, 43, 0.18); color: #8a6015; }
+.cmd-alert[data-priority="low"] .cmd-alert-icon { background: var(--kob-cream); color: var(--kob-espresso); }
+.cmd-alert-copy strong { display: block; color: var(--kob-espresso); font-size: 13.5px; }
+.cmd-alert-copy small { color: var(--kob-espresso-soft); font-size: 12px; }
+.cmd-alert-spark { color: var(--kob-gold-deep); opacity: 0.7; }
