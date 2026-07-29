@@ -1,27 +1,15 @@
 import { Link } from "@tanstack/react-router";
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
   AlertCircle,
-  ArrowDownRight,
   ArrowUpRight,
   BadgeDollarSign,
-  BarChart3,
-  Building2,
   CheckCircle2,
   Clock,
   Coffee,
-  Coins,
   Flame,
-  Gift,
-  HeadphonesIcon,
-  LifeBuoy,
-  Minus,
-  Package,
-  Plus,
-  ShoppingBag,
   Sparkles,
-  Store,
   Ticket,
   TrendingDown,
   TrendingUp,
@@ -35,18 +23,11 @@ import {
 import { useI18n } from "@/lib/i18n";
 import { useOrganization } from "@/providers/OrganizationProvider";
 import {
-  buildBranchPerformance,
-  buildDailyRevenue,
   buildDrinkPopularity,
   loadCompanyDashboard,
-  type BranchPerformance,
   type DashboardPayload,
   type DrinkPopularity,
 } from "@/features/company/dashboard/service";
-
-const RevenueAreaChart = lazy(async () => ({
-  default: (await import("@/components/charts/DashboardCharts")).RevenueAreaChart,
-}));
 
 const POLL_MS = 5000;
 
