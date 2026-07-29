@@ -58,6 +58,14 @@ export function FloatingIsland({
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
   const groupWrapRef = useRef<HTMLDivElement | null>(null);
   const pathname = useRouterState({ select: (r) => r.location.pathname });
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     if (!activeGroup) return;
@@ -84,7 +92,11 @@ export function FloatingIsland({
 
   return (
     <header className="app-island-anchor">
-      <div className="app-island" data-open={open ? "true" : "false"}>
+      <div
+        className="app-island"
+        data-open={open ? "true" : "false"}
+        data-scrolled={scrolled ? "true" : "false"}
+      >
         <Link
           to={homeTo as never}
           className="app-island-brand"
