@@ -12,7 +12,6 @@ import {
   LogOut,
   Menu,
   Settings,
-  ShoppingBag,
   ShoppingCart,
   Ticket,
   UserRoundCog,
@@ -35,7 +34,6 @@ export type CompanyNavItem = {
 const NAV_ITEMS: CompanyNavItem[] = [
   { to: "/admin", labelKey: { ar: "لوحة التحكم", en: "Overview" }, icon: LayoutDashboard, exact: true },
   { to: "/admin/customers", labelKey: { ar: "مركز العملاء", en: "Customer Hub" }, icon: Users },
-  { to: "/admin/orders", labelKey: { ar: "الطلبات", en: "Orders" }, icon: ShoppingBag },
   { to: "/admin/drinks", labelKey: { ar: "المشروبات", en: "Drinks" }, icon: Coffee },
   { to: "/admin/coupons", labelKey: { ar: "الكوبونات", en: "Coupons" }, icon: Ticket },
   { to: "/admin/sell-coupon", labelKey: { ar: "بيع كوبون", en: "Sell Coupon" }, icon: ShoppingCart },

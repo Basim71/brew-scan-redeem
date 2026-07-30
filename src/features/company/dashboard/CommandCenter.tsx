@@ -135,7 +135,7 @@ function buildFocus(data: DashboardPayload, top: DrinkPopularity | null, isRTL: 
       icon: Clock,
       title: isRTL ? `${s.pendingOrders} استخدام بانتظار المراجعة` : `${s.pendingOrders} redemptions awaiting review`,
       desc: isRTL ? "راجع الاستخدامات المعلقة اليوم." : "Review today's pending redemptions.",
-      to: "/admin/orders",
+      to: "/admin/reports",
     });
   if (s.expiringSubscriptions > 0)
     cards.push({
@@ -418,7 +418,7 @@ export default function CommandCenter() {
               value: data.stats.approvedOrdersToday,
               format: fmtNum,
               icon: Coffee,
-              to: "/admin/orders",
+              to: "/admin/reports",
               note: isRTL ? `${fmtNum(data.stats.pendingOrders)} معلقة` : `${fmtNum(data.stats.pendingOrders)} pending`,
             },
             {
@@ -484,7 +484,7 @@ export default function CommandCenter() {
               value: data.stats.ordersToday,
               format: fmtNum,
               icon: Activity,
-              to: "/admin/orders",
+              to: "/admin/reports",
               note: isRTL
                 ? `${fmtNum(data.stats.approvedOrdersToday)} مكتملة`
                 : `${fmtNum(data.stats.approvedOrdersToday)} completed`,

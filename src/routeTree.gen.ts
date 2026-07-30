@@ -24,7 +24,6 @@ import { Route as AdminCustomerSuccessRouteImport } from './routes/admin.custome
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminDrinksRouteImport } from './routes/admin.drinks'
 import { Route as AdminFinancialReportsRouteImport } from './routes/admin.financial-reports'
-import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminPlansRouteImport } from './routes/admin.plans'
 import { Route as AdminReportsRouteImport } from './routes/admin.reports'
 import { Route as AdminSellCouponRouteImport } from './routes/admin.sell-coupon'
@@ -119,11 +118,6 @@ const AdminDrinksRoute = AdminDrinksRouteImport.update({
 const AdminFinancialReportsRoute = AdminFinancialReportsRouteImport.update({
   id: '/financial-reports',
   path: '/financial-reports',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminOrdersRoute = AdminOrdersRouteImport.update({
-  id: '/orders',
-  path: '/orders',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminPlansRoute = AdminPlansRouteImport.update({
@@ -245,7 +239,6 @@ export interface FileRoutesByFullPath {
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/drinks': typeof AdminDrinksRoute
   '/admin/financial-reports': typeof AdminFinancialReportsRoute
-  '/admin/orders': typeof AdminOrdersRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/sell-coupon': typeof AdminSellCouponRoute
@@ -280,7 +273,6 @@ export interface FileRoutesByTo {
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/drinks': typeof AdminDrinksRoute
   '/admin/financial-reports': typeof AdminFinancialReportsRoute
-  '/admin/orders': typeof AdminOrdersRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/sell-coupon': typeof AdminSellCouponRoute
@@ -319,7 +311,6 @@ export interface FileRoutesById {
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/drinks': typeof AdminDrinksRoute
   '/admin/financial-reports': typeof AdminFinancialReportsRoute
-  '/admin/orders': typeof AdminOrdersRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/sell-coupon': typeof AdminSellCouponRoute
@@ -359,7 +350,6 @@ export interface FileRouteTypes {
     | '/admin/customers'
     | '/admin/drinks'
     | '/admin/financial-reports'
-    | '/admin/orders'
     | '/admin/plans'
     | '/admin/reports'
     | '/admin/sell-coupon'
@@ -394,7 +384,6 @@ export interface FileRouteTypes {
     | '/admin/customers'
     | '/admin/drinks'
     | '/admin/financial-reports'
-    | '/admin/orders'
     | '/admin/plans'
     | '/admin/reports'
     | '/admin/sell-coupon'
@@ -432,7 +421,6 @@ export interface FileRouteTypes {
     | '/admin/customers'
     | '/admin/drinks'
     | '/admin/financial-reports'
-    | '/admin/orders'
     | '/admin/plans'
     | '/admin/reports'
     | '/admin/sell-coupon'
@@ -571,13 +559,6 @@ declare module '@tanstack/react-router' {
       path: '/financial-reports'
       fullPath: '/admin/financial-reports'
       preLoaderRoute: typeof AdminFinancialReportsRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/orders': {
-      id: '/admin/orders'
-      path: '/orders'
-      fullPath: '/admin/orders'
-      preLoaderRoute: typeof AdminOrdersRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/plans': {
@@ -742,7 +723,6 @@ interface AdminRouteChildren {
   AdminCustomersRoute: typeof AdminCustomersRoute
   AdminDrinksRoute: typeof AdminDrinksRoute
   AdminFinancialReportsRoute: typeof AdminFinancialReportsRoute
-  AdminOrdersRoute: typeof AdminOrdersRoute
   AdminPlansRoute: typeof AdminPlansRoute
   AdminReportsRoute: typeof AdminReportsRoute
   AdminSellCouponRoute: typeof AdminSellCouponRoute
@@ -759,7 +739,6 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminCustomersRoute: AdminCustomersRoute,
   AdminDrinksRoute: AdminDrinksRoute,
   AdminFinancialReportsRoute: AdminFinancialReportsRoute,
-  AdminOrdersRoute: AdminOrdersRoute,
   AdminPlansRoute: AdminPlansRoute,
   AdminReportsRoute: AdminReportsRoute,
   AdminSellCouponRoute: AdminSellCouponRoute,
