@@ -12989,3 +12989,69 @@ html[dir="rtl"] .app-island-live-popover {
     height: 100%;
   }
 }
+
+/* Drink Studio final layout refinements */
+.ds-toolbar > .btn-brass {
+  min-width: 0;
+  height: 42px;
+  padding-inline: 1.1rem;
+  white-space: nowrap;
+}
+
+/* Keep all drink dialogs below the Floating Island without touching it. */
+.ds-modal-overlay {
+  inset: 0;
+  padding: 86px 18px 18px;
+  place-items: start center;
+  overflow-y: auto;
+}
+
+.ds-modal {
+  width: min(1100px, 100%);
+  height: min(760px, calc(100vh - 104px));
+  max-height: calc(100vh - 104px);
+}
+
+.ds-modal-header {
+  padding: 0.85rem 1.15rem 0.7rem;
+}
+
+.ds-progress {
+  padding: 0.55rem 1.15rem;
+  gap: 0.25rem;
+}
+
+.ds-progress li button {
+  padding: 0.34rem 0.62rem;
+}
+
+.ds-modal-main {
+  padding: 0.95rem 1.1rem;
+}
+
+.ds-modal-side {
+  padding: 0.95rem;
+}
+
+.ds-modal-footer {
+  padding: 0.7rem 1.1rem;
+}
+
+.ds-step {
+  gap: 0.8rem;
+}
+
+.ds-grid-2 {
+  gap: 0.7rem;
+}
+
+@media (max-width: 900px) {
+  .ds-modal-overlay {
+    padding: 82px 10px 10px;
+  }
+
+  .ds-modal {
+    height: calc(100vh - 92px);
+    max-height: calc(100vh - 92px);
+  }
+}

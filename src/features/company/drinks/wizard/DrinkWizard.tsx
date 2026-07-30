@@ -4,10 +4,10 @@ import { ArrowLeft, ArrowRight, Check, Loader2, X } from "lucide-react";
 import { emptyDraft } from "../constants";
 import { saveDrinkDraft, uploadDrinkImage } from "../service";
 import type { DrinkDraft } from "../types";
-import { AllergensStep, IdentityStep, NutritionStep, OptionsStep, PreviewStep, VisualStep } from "./steps";
+import { AllergensStep, IdentityStep, NutritionStep, OptionsStep, VisualStep } from "./steps";
 import { LivePreview } from "./LivePreview";
 
-const STEPS = ["Identity", "Visual", "Nutrition", "Allergens", "Options", "Preview"] as const;
+const STEPS = ["Identity", "Visual", "Nutrition", "Allergens", "Options"] as const;
 const DRAFT_STORAGE_PREFIX = "kob:drink-draft:";
 
 type Props = {
@@ -136,7 +136,6 @@ export function DrinkWizard({ initialDraft, lastUpdated, onClose, onSaved }: Pro
             {step === 2 && <NutritionStep draft={draft} patch={patch} />}
             {step === 3 && <AllergensStep draft={draft} patch={patch} />}
             {step === 4 && <OptionsStep draft={draft} patch={patch} />}
-            {step === 5 && <PreviewStep draft={draft} />}
           </div>
           <aside className="ds-modal-side">
             <span className="ds-side-title">Live preview</span>
@@ -145,12 +144,22 @@ export function DrinkWizard({ initialDraft, lastUpdated, onClose, onSaved }: Pro
         </div>
 
         <footer className="ds-modal-footer">
-          <button type="button" className="btn-ghost-brass px-5 py-2.5" disabled={step === 0} onClick={() => goTo(step - 1)}>
+          <button
+            type="button"
+            className="btn-ghost-brass px-5 py-2.5"
+            disabled={step === 0}
+            onClick={() => goTo(step - 1)}
+          >
             <ArrowLeft className="h-4 w-4" />
             Back
           </button>
           <div className="ds-footer-actions">
-            <button type="button" className="btn-ghost-brass px-5 py-2.5" disabled={busy} onClick={() => void save(false)}>
+            <button
+              type="button"
+              className="btn-ghost-brass px-5 py-2.5"
+              disabled={busy}
+              onClick={() => void save(false)}
+            >
               Save Draft
             </button>
             {step < STEPS.length - 1 ? (
