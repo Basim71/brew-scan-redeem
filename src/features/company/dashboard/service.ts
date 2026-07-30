@@ -14,7 +14,7 @@ export type DashboardStats = {
   approvedOrdersToday: number;
   newCustomersToday: number;
   availableCoupons: number;
-  reservedCoupons: number;
+  expiredCoupons: number;
   soldCouponsCount: number;
   expiredSubscriptions: number;
   cancelledSubscriptions: number;
@@ -102,7 +102,7 @@ const EMPTY_STATS: DashboardStats = {
   approvedOrdersToday: 0,
   newCustomersToday: 0,
   availableCoupons: 0,
-  reservedCoupons: 0,
+  expiredCoupons: 0,
   soldCouponsCount: 0,
   expiredSubscriptions: 0,
   cancelledSubscriptions: 0,
@@ -158,7 +158,7 @@ export async function loadCompanyDashboard(): Promise<{
     expiringListResult,
     recentCustomersResult,
     activeSubsListResult,
-    reservedCouponsResult,
+    expiredCouponsResult,
     soldCouponsCountResult,
     expiredSubsResult,
     cancelledSubsResult,
@@ -214,7 +214,7 @@ export async function loadCompanyDashboard(): Promise<{
       .limit(20),
     supabase.from("customers").select("id,name,created_at").order("created_at", { ascending: false }).limit(10),
     supabase.from("subscriptions").select("id,branch_id").eq("status", "active"),
-    supabase.from("coupons").select("*", { count: "exact", head: true }).eq("status", "reserved"),
+    supabase.from("coupons").select("*", { count: "exact", head: true }).eq("status", "expired"),
     supabase.from("coupons").select("*", { count: "exact", head: true }).eq("status", "sold"),
     supabase.from("subscriptions").select("*", { count: "exact", head: true }).eq("status", "expired"),
     supabase.from("subscriptions").select("*", { count: "exact", head: true }).eq("status", "cancelled"),
@@ -242,7 +242,7 @@ export async function loadCompanyDashboard(): Promise<{
     expiringListResult.error ??
     recentCustomersResult.error ??
     activeSubsListResult.error ??
-    reservedCouponsResult.error ??
+    expiredCouponsResult.error ??
     soldCouponsCountResult.error ??
     expiredSubsResult.error ??
     cancelledSubsResult.error ??
@@ -273,7 +273,7 @@ export async function loadCompanyDashboard(): Promise<{
     approvedOrdersToday: approvedTodayResult.count ?? 0,
     newCustomersToday: newCustomersTodayResult.count ?? 0,
     availableCoupons: availableCouponsResult.count ?? 0,
-    reservedCoupons: reservedCouponsResult.count ?? 0,
+    expiredCoupons: expiredCouponsResult.count ?? 0,
     soldCouponsCount: soldCouponsCountResult.count ?? 0,
     expiredSubscriptions: expiredSubsResult.count ?? 0,
     cancelledSubscriptions: cancelledSubsResult.count ?? 0,
