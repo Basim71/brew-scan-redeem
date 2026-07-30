@@ -153,63 +153,74 @@ export function PlanBuilder({
         dir={lang === "ar" ? "rtl" : "ltr"}
       >
         <header className="pb-dialog-head">
-          <div>
+          <div className="pb-dialog-heading">
+            <span className="pb-dialog-eyebrow">{steps[step]}</span>
             <h2 className="pb-dialog-title">{editing ? S.edit_plan[lang] : S.new_plan[lang]}</h2>
-            <div className="pb-dim">
-              {S.step_of[lang].replace("{a}", String(step + 1)).replace("{b}", "7")} · {steps[step]}
-            </div>
           </div>
-          <button type="button" className="pb-btn-ghost" onClick={onClose} disabled={busy}>
+          <button
+            type="button"
+            className="pb-dialog-close"
+            onClick={onClose}
+            disabled={busy}
+            aria-label={lang === "ar" ? "إغلاق" : "Close"}
+          >
             ✕
           </button>
         </header>
 
-        <nav className="pb-stepper">
-          {steps.map((label, i) => (
-            <button
-              key={i}
-              type="button"
-              className={`pb-stepper-item ${i === step ? "active" : ""} ${i < step ? "done" : ""}`}
-              onClick={() => setStep(i)}
-            >
-              <span className="pb-stepper-num">{i + 1}</span>
-              <span className="pb-stepper-label">{label}</span>
-            </button>
-          ))}
-        </nav>
+        <div className="pb-builder-layout">
+          <nav className="pb-stepper" aria-label={lang === "ar" ? "خطوات الخطة" : "Plan steps"}>
+            {steps.map((label, i) => (
+              <button
+                key={i}
+                type="button"
+                className={`pb-stepper-item ${i === step ? "active" : ""} ${i < step ? "done" : ""}`}
+                onClick={() => setStep(i)}
+              >
+                <span className="pb-stepper-num">{i < step ? "✓" : i + 1}</span>
+                <span className="pb-stepper-copy">
+                  <small>{String(i + 1).padStart(2, "0")}</small>
+                  <span className="pb-stepper-label">{label}</span>
+                </span>
+              </button>
+            ))}
+          </nav>
 
-        <div className="pb-dialog-body">{stepEl}</div>
+          <div className="pb-builder-main">
+            <div className="pb-dialog-body">{stepEl}</div>
 
-        <footer className="pb-dialog-footer">
-          <button
-            type="button"
-            className="pb-btn-ghost"
-            onClick={() => setStep((s) => Math.max(0, s - 1))}
-            disabled={step === 0 || busy}
-          >
-            {S.back[lang]}
-          </button>
-          {step < 6 ? (
-            <button
-              type="button"
-              className="pb-btn-primary"
-              onClick={() => {
-                if (!canAdvance()) {
-                  toast.error(S[stepIssues(step)[0].key as keyof typeof S][lang]);
-                  return;
-                }
-                setStep((s) => Math.min(6, s + 1));
-              }}
-              disabled={busy}
-            >
-              {S.next[lang]}
-            </button>
-          ) : (
-            <button type="button" className="pb-btn-primary" onClick={save} disabled={busy || issues.length > 0}>
-              {S.save_plan[lang]}
-            </button>
-          )}
-        </footer>
+            <footer className="pb-dialog-footer">
+              <button
+                type="button"
+                className="pb-btn-ghost"
+                onClick={() => setStep((s) => Math.max(0, s - 1))}
+                disabled={step === 0 || busy}
+              >
+                {S.back[lang]}
+              </button>
+              {step < 6 ? (
+                <button
+                  type="button"
+                  className="pb-btn-primary"
+                  onClick={() => {
+                    if (!canAdvance()) {
+                      toast.error(S[stepIssues(step)[0].key as keyof typeof S][lang]);
+                      return;
+                    }
+                    setStep((s) => Math.min(6, s + 1));
+                  }}
+                  disabled={busy}
+                >
+                  {S.next[lang]}
+                </button>
+              ) : (
+                <button type="button" className="pb-btn-primary" onClick={save} disabled={busy || issues.length > 0}>
+                  {S.save_plan[lang]}
+                </button>
+              )}
+            </footer>
+          </div>
+        </div>
       </div>
     </div>
   );
