@@ -377,13 +377,13 @@ export default function CommandCenter() {
               note: isRTL ? "جاهزة للبيع" : "Ready to sell",
             },
             {
-              key: "reserved",
-              label: isRTL ? "محجوزة" : "Reserved",
-              value: data.stats.reservedCoupons,
+              key: "expired",
+              label: isRTL ? "منتهية" : "Expired",
+              value: data.stats.expiredCoupons,
               format: fmtNum,
               icon: Clock,
               to: "/admin/subscriptions",
-              note: isRTL ? "بانتظار الإكمال" : "Awaiting completion",
+              note: isRTL ? "رموز منتهية الصلاحية" : "Expired codes",
             },
             {
               key: "sold",
