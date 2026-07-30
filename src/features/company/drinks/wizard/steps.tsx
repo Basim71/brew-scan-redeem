@@ -49,15 +49,19 @@ export function IdentityStep({ draft, patch }: StepProps) {
       <div className="ds-grid-2">
         <label className="ds-field">
           <span>English name</span>
-          <input value={draft.name_en} onChange={(e) => patch({ name_en: e.target.value })} placeholder="Flat White" />
+          <input
+            value={draft.name_en}
+            onChange={(e) => patch({ name_en: e.target.value })}
+            placeholder="Enter English name"
+          />
         </label>
-        <label className="ds-field">
+        <label className="ds-field ds-field-rtl" dir="rtl">
           <span>الاسم بالعربية</span>
           <input
             dir="rtl"
             value={draft.name_ar}
             onChange={(e) => patch({ name_ar: e.target.value })}
-            placeholder="فلات وايت"
+            placeholder="أدخل الاسم بالعربية"
           />
         </label>
       </div>
@@ -125,7 +129,7 @@ export function VisualStep({
       >
         <ImagePlus className="h-8 w-8" />
         <strong>{uploading ? "Uploading image…" : "Drag & drop an image"}</strong>
-        <p>Recommended 1200 × 1600 px · Portrait 3:4 · PNG, JPG or WEBP up to 5 MB</p>
+        <p>PNG, JPG or WEBP up to 5 MB</p>
         <button type="button" className="btn-ghost-brass px-4 py-2" onClick={() => inputRef.current?.click()}>
           Choose image
         </button>

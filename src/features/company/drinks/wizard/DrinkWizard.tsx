@@ -37,7 +37,6 @@ function relativeTime(iso: string | null | undefined): string | null {
 export function DrinkWizard({ initialDraft, lastUpdated, onClose, onSaved }: Props) {
   const [draft, setDraft] = useState<DrinkDraft>(() => initialDraft ?? emptyDraft());
   const [step, setStep] = useState(0);
-  const [savedAt, setSavedAt] = useState<Date | null>(null);
   const [uploading, setUploading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,7 +50,6 @@ export function DrinkWizard({ initialDraft, lastUpdated, onClose, onSaved }: Pro
     if (!stored) return;
     try {
       setDraft(JSON.parse(stored) as DrinkDraft);
-      setSavedAt(new Date());
     } catch {
       window.localStorage.removeItem(`${DRAFT_STORAGE_PREFIX}new`);
     }
@@ -59,7 +57,6 @@ export function DrinkWizard({ initialDraft, lastUpdated, onClose, onSaved }: Pro
 
   const persistDraft = useCallback(() => {
     window.localStorage.setItem(storageKey, JSON.stringify(draftRef.current));
-    setSavedAt(new Date());
   }, [storageKey]);
 
   const patch = useCallback((value: Partial<DrinkDraft>) => setDraft((current) => ({ ...current, ...value })), []);
@@ -117,7 +114,6 @@ export function DrinkWizard({ initialDraft, lastUpdated, onClose, onSaved }: Pro
             <p>{updatedLabel ? `Last updated ${updatedLabel}` : "Build the drink customers will see."}</p>
           </div>
           <div className="ds-modal-header-side">
-            {savedAt && <span className="ds-draft-flag">Draft saved just now</span>}
             <button type="button" className="ds-icon-button" onClick={onClose} aria-label="Close">
               <X className="h-4 w-4" />
             </button>
@@ -139,9 +135,6 @@ export function DrinkWizard({ initialDraft, lastUpdated, onClose, onSaved }: Pro
           <div className="ds-modal-main" data-step={step}>
             <div className="ds-step-shell">
               <div className="ds-step-heading">
-                <span>
-                  Step {step + 1} of {STEPS.length}
-                </span>
                 <h3>{STEP_META[step].title}</h3>
                 <p>{STEP_META[step].description}</p>
               </div>
@@ -162,12 +155,13 @@ export function DrinkWizard({ initialDraft, lastUpdated, onClose, onSaved }: Pro
         <footer className="ds-modal-footer">
           <button
             type="button"
-            className="btn-ghost-brass px-5 py-2.5"
+            className="ds-nav-button ds-nav-button--back"
             disabled={step === 0}
             onClick={() => goTo(step - 1)}
+            aria-label="Previous step"
+            title="Previous step"
           >
-            <ArrowLeft className="h-4 w-4" />
-            Back
+            <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="ds-footer-actions">
             <button
@@ -179,9 +173,14 @@ export function DrinkWizard({ initialDraft, lastUpdated, onClose, onSaved }: Pro
               Save Draft
             </button>
             {step < STEPS.length - 1 ? (
-              <button type="button" className="btn-brass px-6 py-2.5" onClick={() => goTo(step + 1)}>
-                Next
-                <ArrowRight className="h-4 w-4" />
+              <button
+                type="button"
+                className="ds-nav-button ds-nav-button--next"
+                onClick={() => goTo(step + 1)}
+                aria-label="Next step"
+                title="Next step"
+              >
+                <ArrowRight className="h-5 w-5" />
               </button>
             ) : (
               <button type="button" className="btn-brass px-6 py-2.5" disabled={busy} onClick={() => void save(true)}>

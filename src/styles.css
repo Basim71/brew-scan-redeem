@@ -12126,9 +12126,7 @@ html[dir="rtl"] .app-island-live-popover {
   background: var(--kob-surface);
   border: 1px solid var(--kob-border);
   box-shadow: var(--kob-shadow-sm);
-  transition:
-    transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
-    box-shadow 0.22s ease;
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.22s ease;
 }
 .ds-tile:hover {
   transform: translateY(-6px);
@@ -12900,9 +12898,7 @@ html[dir="rtl"] .app-island-live-popover {
 
 .ds-tile-media img {
   object-position: center;
-  transition:
-    transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
-    filter 0.25s ease;
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.25s ease;
 }
 
 .ds-tile-media:hover img,
@@ -12935,9 +12931,7 @@ html[dir="rtl"] .app-island-live-popover {
   transform: translate(-50%, -42%);
   pointer-events: none;
   backdrop-filter: blur(10px);
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .ds-tile-media:hover .ds-tile-edit-cue,
@@ -13241,3 +13235,4 @@ html[dir="rtl"] .app-island-live-popover {
     margin-inline: 0;
   }
 }
+\n\n/* Drink Wizard final polish */\n.ds-step-heading > span {\n  display: none;\n}\n\n.ds-field-rtl {\n  direction: rtl;\n  text-align: right;\n}\n\n.ds-field-rtl > span {\n  width: 100%;\n  text-align: right;\n}\n\n.ds-field-rtl input {\n  direction: rtl;\n  text-align: right;\n}\n\n.ds-field-rtl input::placeholder {\n  direction: rtl;\n  text-align: right;\n}\n\n.ds-nav-button {\n  display: inline-grid;\n  place-items: center;\n  width: 3.15rem;\n  height: 3.15rem;\n  padding: 0;\n  border-radius: 1rem;\n  transition:\n    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),\n    box-shadow 180ms ease,\n    border-color 180ms ease,\n    filter 180ms ease;\n}\n\n.ds-nav-button--back {\n  border: 1px solid rgb(118 83 57 / 0.17);\n  background: linear-gradient(180deg, #fffdfa, #f8f1e9);\n  color: #704834;\n  box-shadow:\n    0 10px 24px -18px rgb(71 43 27 / 0.45),\n    inset 0 1px 0 rgb(255 255 255 / 0.9);\n}\n\n.ds-nav-button--next {\n  border: 1px solid rgb(151 86 33 / 0.28);\n  background: linear-gradient(135deg, #d58a3e, #b86628);\n  color: #fff;\n  box-shadow:\n    0 16px 30px -18px rgb(121 66 24 / 0.9),\n    inset 0 1px 0 rgb(255 255 255 / 0.35);\n}\n\n.ds-nav-button:not(:disabled):hover {\n  transform: translateY(-2px) scale(1.02);\n}\n\n.ds-nav-button--next:not(:disabled):hover {\n  filter: brightness(1.045) saturate(1.04);\n  box-shadow: 0 19px 32px -17px rgb(121 66 24 / 0.95);\n}\n\n.ds-nav-button--back:not(:disabled):hover {\n  border-color: rgb(194 119 53 / 0.42);\n  color: #a65e28;\n}\n\n.ds-nav-button:active:not(:disabled) {\n  transform: translateY(0) scale(0.96);\n}\n\n.ds-nav-button:disabled {\n  opacity: 0.34;\n  cursor: not-allowed;\n  box-shadow: none;\n}\n\n.ds-step-heading {\n  margin-bottom: 0.1rem;\n}\n\n.ds-step-heading h3 {\n  margin-top: 0;\n}\n
