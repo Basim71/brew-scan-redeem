@@ -21,103 +21,86 @@ export function PlanCard({
   plan,
   lang,
   preview,
-  onEdit,
-  onDuplicate,
-  onArchive,
-  onUnarchive,
-  onDelete,
-  onPreview,
-  onToggleActive,
+  onClick,
   drinkCount,
   branchCount,
 }: {
   plan: Plan;
   lang?: "ar" | "en";
   preview?: boolean;
-  onEdit?: () => void;
-  onDuplicate?: () => void;
-  onArchive?: () => void;
-  onUnarchive?: () => void;
-  onDelete?: () => void;
-  onPreview?: () => void;
-  onToggleActive?: () => void;
+  onClick?: () => void;
   drinkCount?: number;
   branchCount?: number;
 }) {
   const i = useI18n();
   const l = lang ?? i.lang;
-  const displayName = l === "ar" ? plan.name_ar : plan.name_en;
+  const displayName = (l === "ar" ? plan.name_ar : plan.name_en) || plan.name;
   const displayDesc = l === "ar" ? plan.description_ar : plan.description_en;
   const isArchived = !!plan.archived_at;
+  const interactive = !preview && !!onClick;
 
   return (
-    <article className="pb-card" style={{ borderTopColor: plan.color }}>
+    <article
+      className={`pb-card ${interactive ? "pb-card-interactive" : ""}`}
+      style={{ borderTopColor: plan.color }}
+      onClick={interactive ? onClick : undefined}
+      onKeyDown={
+        interactive
+          ? (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onClick();
+              }
+            }
+          : undefined
+      }
+      role={interactive ? "button" : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      aria-label={interactive ? `${S.edit[l]}: ${displayName}` : undefined}
+    >
       <header className="pb-card-head">
         <div className="pb-card-top">
+          <span className={`pb-card-status ${plan.is_active ? "on" : "off"}`}>
+            <span className="pb-card-status-dot" aria-hidden="true" />
+            {plan.is_active ? S.active_label[l] : S.disabled[l]}
+            {isArchived && ` · ${S.archive[l]}`}
+          </span>
           {plan.badge && (
             <span className="pb-card-badge" style={{ background: plan.color }}>
               {S[BADGE_LABEL[plan.badge]]?.[l] ?? plan.badge}
             </span>
           )}
-          <span className={`pb-card-status ${plan.is_active ? "on" : "off"}`}>
-            {plan.is_active ? S.active_label[l] : S.disabled[l]}
-            {isArchived && ` · ${S.archive[l]}`}
-          </span>
         </div>
         <h3 className="pb-card-name">{displayName}</h3>
         {displayDesc && <p className="pb-card-desc">{displayDesc}</p>}
       </header>
 
       <div className="pb-card-price">
-        <span className="pb-card-amount">
-          {Number(plan.price).toLocaleString(l === "ar" ? "ar-SA" : "en-US")}
-        </span>
+        <span className="pb-card-amount">{Number(plan.price).toLocaleString(l === "ar" ? "ar-SA" : "en-US")}</span>
         <span className="pb-card-currency">{plan.currency}</span>
         <span className="pb-card-per">
           / {plan.duration_days} {S.days[l]}
         </span>
       </div>
 
-      <ul className="pb-card-facts">
-        <li>
+      <div className="pb-card-facts" aria-label={l === "ar" ? "تفاصيل الخطة" : "Plan details"}>
+        <span className="pb-card-fact">
           <b>{plan.drinks_per_redemption}</b> {S.drinks_per_redemption[l]}
-        </li>
-        <li>{S[FREQ_LABEL[plan.redemption_frequency]][l]}</li>
-        <li>
+        </span>
+        <span className="pb-card-fact">{S[FREQ_LABEL[plan.redemption_frequency]][l]}</span>
+        <span className="pb-card-fact">
           <b>{drinkCount ?? (plan.allowed_drink_ids.length || "∞")}</b> {S.step_drinks[l]}
-        </li>
-        <li>
+        </span>
+        <span className="pb-card-fact">
           <b>{branchCount ?? (plan.allowed_branch_ids.length || "∞")}</b> {S.step_branches[l]}
-        </li>
-      </ul>
+        </span>
+      </div>
 
-      {!preview && (
-        <footer className="pb-card-actions">
-          <button className="pb-btn-ghost" onClick={onPreview}>
-            {S.preview[l]}
-          </button>
-          <button className="pb-btn-ghost" onClick={onEdit}>
-            {S.edit[l]}
-          </button>
-          <button className="pb-btn-ghost" onClick={onDuplicate}>
-            {S.duplicate[l]}
-          </button>
-          <button className="pb-btn-ghost" onClick={onToggleActive}>
-            {plan.is_active ? S.disabled[l] : S.active_label[l]}
-          </button>
-          {isArchived ? (
-            <button className="pb-btn-ghost" onClick={onUnarchive}>
-              {S.unarchive[l]}
-            </button>
-          ) : (
-            <button className="pb-btn-ghost" onClick={onArchive}>
-              {S.archive[l]}
-            </button>
-          )}
-          <button className="pb-btn-danger" onClick={onDelete}>
-            {S.del[l]}
-          </button>
-        </footer>
+      {interactive && (
+        <div className="pb-card-open-hint" aria-hidden="true">
+          <span>{l === "ar" ? "اضغط للتعديل" : "Click to edit"}</span>
+          <span className="pb-card-arrow">{l === "ar" ? "←" : "→"}</span>
+        </div>
       )}
     </article>
   );

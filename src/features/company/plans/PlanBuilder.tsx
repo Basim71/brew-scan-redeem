@@ -56,8 +56,7 @@ export function PlanBuilder({
       };
     }
     try {
-      const raw =
-        typeof window !== "undefined" ? window.sessionStorage.getItem(DRAFT_KEY) : null;
+      const raw = typeof window !== "undefined" ? window.sessionStorage.getItem(DRAFT_KEY) : null;
       if (raw) return { ...emptyDraft(defaultCurrency), ...JSON.parse(raw) };
     } catch {
       /* ignore */
@@ -74,10 +73,7 @@ export function PlanBuilder({
     }
   }, [draft, editing, duplicating]);
 
-  const update = useCallback(
-    (patch: Partial<PlanInput>) => setDraft((d) => ({ ...d, ...patch })),
-    [],
-  );
+  const update = useCallback((patch: Partial<PlanInput>) => setDraft((d) => ({ ...d, ...patch })), []);
 
   const issues = useMemo(() => validatePlan(draft), [draft]);
   const stepIssues = (n: number) => issues.filter((i) => i.step === n);
@@ -116,10 +112,8 @@ export function PlanBuilder({
     } catch (e) {
       const msg = (e as Error).message ?? "";
       if (msg.includes("plans_org_name")) toast.error(S.err_duplicate_name[lang]);
-      else if (msg.includes("plan_max_daily_below_redemption"))
-        toast.error(S.err_max_daily_below[lang]);
-      else if (msg.includes("plan_custom_frequency_days_required"))
-        toast.error(S.err_freq_custom[lang]);
+      else if (msg.includes("plan_max_daily_below_redemption")) toast.error(S.err_max_daily_below[lang]);
+      else if (msg.includes("plan_custom_frequency_days_required")) toast.error(S.err_freq_custom[lang]);
       else if (msg.includes("plan_carry_days_required")) toast.error(S.err_carry_days[lang]);
       else if (msg.includes("plan_invalid_time_window")) toast.error(S.err_time_window[lang]);
       else if (msg.includes("plan_invalid_duration")) toast.error(S.err_duration[lang]);
@@ -160,14 +154,9 @@ export function PlanBuilder({
       >
         <header className="pb-dialog-head">
           <div>
-            <h2 className="pb-dialog-title">
-              {editing ? S.edit_plan[lang] : S.new_plan[lang]}
-            </h2>
+            <h2 className="pb-dialog-title">{editing ? S.edit_plan[lang] : S.new_plan[lang]}</h2>
             <div className="pb-dim">
-              {S.step_of[lang]
-                .replace("{a}", String(step + 1))
-                .replace("{b}", "7")}{" "}
-              · {steps[step]}
+              {S.step_of[lang].replace("{a}", String(step + 1)).replace("{b}", "7")} · {steps[step]}
             </div>
           </div>
           <button type="button" className="pb-btn-ghost" onClick={onClose} disabled={busy}>
@@ -216,12 +205,7 @@ export function PlanBuilder({
               {S.next[lang]}
             </button>
           ) : (
-            <button
-              type="button"
-              className="pb-btn-primary"
-              onClick={save}
-              disabled={busy || issues.length > 0}
-            >
+            <button type="button" className="pb-btn-primary" onClick={save} disabled={busy || issues.length > 0}>
               {S.save_plan[lang]}
             </button>
           )}
