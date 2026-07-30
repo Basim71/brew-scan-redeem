@@ -7,7 +7,6 @@ import {
   Headphones,
   LayoutDashboard,
   Settings,
-  ShoppingBag,
   UserRoundCog,
   Users,
 } from "lucide-react";
@@ -42,7 +41,6 @@ const PRIMARY: Array<{
 }> = [
   { to: "/admin", labelAr: "لوحة التحكم", labelEn: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/customers", labelAr: "العملاء", labelEn: "Customers", icon: Users },
-  { to: "/admin/orders", labelAr: "الاستخدامات", labelEn: "Redemptions", icon: ShoppingBag },
   { to: "/admin/drinks", labelAr: "المشروبات", labelEn: "Drinks", icon: Coffee },
   { to: "/admin/subscriptions", labelAr: "الاشتراكات", labelEn: "Subscriptions", icon: Layers3 },
   { to: "/admin/reports", labelAr: "التقارير", labelEn: "Reports", icon: BarChart3 },
