@@ -153,7 +153,7 @@ function DrinkStudioPage() {
         </div>
         <button type="button" className="btn-brass px-5 py-2.5" onClick={() => setWizard({ updatedAt: null })}>
           <Plus className="h-4 w-4" />
-          Add Drink
+          Add
         </button>
       </div>
 

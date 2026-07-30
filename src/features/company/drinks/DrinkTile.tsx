@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Coffee, Copy, Edit3, Eye, Flame, MoreHorizontal, Power, Trash2 } from "lucide-react";
+import { Coffee, Copy, Eye, Flame, MoreHorizontal, Pencil, Power, Trash2 } from "lucide-react";
 
 import { ALLERGEN_CARDS } from "./constants";
 import type { DrinkRecord, DrinkViewMode } from "./types";
@@ -37,7 +37,19 @@ export function DrinkTile({ drink, view, onPreview, onEdit, onToggle, onDuplicat
 
   return (
     <article className="ds-tile" data-view={view}>
-      <div className="ds-tile-media">
+      <div
+        className="ds-tile-media"
+        role="button"
+        tabIndex={0}
+        onClick={onEdit}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            onEdit();
+          }
+        }}
+        aria-label={`Edit ${drink.name_en}`}
+      >
         {drink.image_url ? (
           <img src={drink.image_url} alt={drink.name_en} loading="lazy" />
         ) : (
@@ -48,12 +60,13 @@ export function DrinkTile({ drink, view, onPreview, onEdit, onToggle, onDuplicat
         <span className="ds-tile-status" data-active={drink.is_active ? "true" : "false"}>
           {drink.is_active ? "Active" : "Inactive"}
         </span>
-        <div className="ds-tile-actions">
+        <span className="ds-tile-edit-cue" aria-hidden="true">
+          <Pencil className="h-4 w-4" />
+          Edit
+        </span>
+        <div className="ds-tile-actions" onClick={(event) => event.stopPropagation()}>
           <button type="button" onClick={onPreview} title="Preview">
             <Eye className="h-4 w-4" />
-          </button>
-          <button type="button" onClick={onEdit} title="Edit">
-            <Edit3 className="h-4 w-4" />
           </button>
           <div className="ds-tile-more" ref={menuRef}>
             <button type="button" onClick={() => setMenuOpen((open) => !open)} title="More" aria-haspopup="menu">

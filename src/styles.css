@@ -12126,7 +12126,9 @@ html[dir="rtl"] .app-island-live-popover {
   background: var(--kob-surface);
   border: 1px solid var(--kob-border);
   box-shadow: var(--kob-shadow-sm);
-  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.22s ease;
+  transition:
+    transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.22s ease;
 }
 .ds-tile:hover {
   transform: translateY(-6px);
@@ -12867,5 +12869,123 @@ html[dir="rtl"] .app-island-live-popover {
   }
   .ds-modal-side {
     display: none;
+  }
+}
+
+/* Drink Studio refinement: consistent imagery, compact add action and clearer wizard */
+.ds-toolbar > .btn-brass {
+  min-height: 2.75rem;
+  height: 2.75rem;
+  padding-inline: 1.1rem;
+  border-radius: 0.9rem;
+  white-space: nowrap;
+  box-shadow: 0 10px 24px -14px color-mix(in oklab, var(--kob-accent) 70%, transparent);
+}
+
+.ds-tile-media {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  text-align: initial;
+  cursor: pointer;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+}
+
+.ds-tile[data-view="list"] .ds-tile-media {
+  width: 220px;
+  aspect-ratio: 3 / 4;
+}
+
+.ds-tile-media img {
+  object-position: center;
+  transition:
+    transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 0.25s ease;
+}
+
+.ds-tile-media:hover img,
+.ds-tile-media:focus-visible img {
+  transform: scale(1.025);
+  filter: brightness(0.84);
+}
+
+.ds-tile-media:focus-visible {
+  outline: 3px solid color-mix(in oklab, var(--kob-accent) 48%, transparent);
+  outline-offset: -3px;
+}
+
+.ds-tile-edit-cue {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.34);
+  background: rgb(25 16 10 / 0.72);
+  color: #fffaf4;
+  font-size: 0.78rem;
+  font-weight: 650;
+  opacity: 0;
+  transform: translate(-50%, -42%);
+  pointer-events: none;
+  backdrop-filter: blur(10px);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.ds-tile-media:hover .ds-tile-edit-cue,
+.ds-tile-media:focus-visible .ds-tile-edit-cue {
+  opacity: 1;
+  transform: translate(-50%, -50%);
+}
+
+.ds-modal-overlay {
+  background: rgb(39 28 20 / 0.68);
+  backdrop-filter: blur(12px) saturate(0.86);
+}
+
+.ds-modal {
+  width: min(1180px, calc(100vw - 48px));
+  height: min(820px, calc(100vh - 110px));
+  background: #fbf8f4;
+  border-color: rgb(118 83 57 / 0.22);
+  box-shadow: 0 34px 96px rgb(35 22 14 / 0.34);
+}
+
+.ds-modal-header,
+.ds-progress,
+.ds-modal-footer {
+  background: #fbf8f4;
+}
+
+.ds-modal-main {
+  background: #fdfbf8;
+}
+
+.ds-modal-side {
+  background: #f4ede5;
+  border-inline-start-color: rgb(118 83 57 / 0.18);
+}
+
+.ds-field input[type="text"],
+.ds-field input:not([type]),
+.ds-field input[inputmode="numeric"],
+.ds-dropzone,
+.ds-group,
+.ds-preview-options {
+  background: #fffdfa;
+}
+
+@media (max-width: 900px) {
+  .ds-modal {
+    width: 100%;
+    height: 100%;
   }
 }

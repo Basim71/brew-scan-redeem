@@ -53,7 +53,12 @@ export function IdentityStep({ draft, patch }: StepProps) {
         </label>
         <label className="ds-field">
           <span>الاسم بالعربية</span>
-          <input dir="rtl" value={draft.name_ar} onChange={(e) => patch({ name_ar: e.target.value })} placeholder="فلات وايت" />
+          <input
+            dir="rtl"
+            value={draft.name_ar}
+            onChange={(e) => patch({ name_ar: e.target.value })}
+            placeholder="فلات وايت"
+          />
         </label>
       </div>
       <div className="ds-field">
@@ -120,7 +125,7 @@ export function VisualStep({
       >
         <ImagePlus className="h-8 w-8" />
         <strong>{uploading ? "Uploading image…" : "Drag & drop an image"}</strong>
-        <p>PNG, JPG or WEBP up to 5 MB</p>
+        <p>Recommended 1200 × 1600 px · Portrait 3:4 · PNG, JPG or WEBP up to 5 MB</p>
         <button type="button" className="btn-ghost-brass px-4 py-2" onClick={() => inputRef.current?.click()}>
           Choose image
         </button>
@@ -222,14 +227,20 @@ export function NutritionStep({ draft, patch }: StepProps) {
       <div className="ds-grid-2">
         <div className="ds-field">
           <span>Caffeine level</span>
-          <Pills<IntensityLevel> value={draft.caffeine} options={INTENSITY} onChange={(caffeine) => patch({ caffeine })} />
+          <Pills<IntensityLevel>
+            value={draft.caffeine}
+            options={INTENSITY}
+            onChange={(caffeine) => patch({ caffeine })}
+          />
         </div>
         <div className="ds-field">
           <span>Sugar level</span>
           <Pills<IntensityLevel> value={draft.sugar} options={INTENSITY} onChange={(sugar) => patch({ sugar })} />
         </div>
       </div>
-      <p className="ds-hint">Serving, temperature, caffeine and sugar guide your team — only calories are stored on the drink record.</p>
+      <p className="ds-hint">
+        Serving, temperature, caffeine and sugar guide your team — only calories are stored on the drink record.
+      </p>
     </div>
   );
 }
@@ -449,9 +460,7 @@ export function OptionsStep({ draft, patch }: StepProps) {
                     type="button"
                     className="ds-icon-danger"
                     title="Remove option"
-                    onClick={() =>
-                      updateGroup(index, { options: group.options.filter((_, i) => i !== optionIndex) })
-                    }
+                    onClick={() => updateGroup(index, { options: group.options.filter((_, i) => i !== optionIndex) })}
                   >
                     <X className="h-4 w-4" />
                   </button>
