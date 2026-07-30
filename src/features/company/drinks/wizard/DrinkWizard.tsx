@@ -8,6 +8,13 @@ import { AllergensStep, IdentityStep, NutritionStep, OptionsStep, VisualStep } f
 import { LivePreview } from "./LivePreview";
 
 const STEPS = ["Identity", "Visual", "Nutrition", "Allergens", "Options"] as const;
+const STEP_META = [
+  { title: "Drink identity", description: "Add the names, category and availability status." },
+  { title: "Drink visual", description: "Upload and position the image customers will see." },
+  { title: "Nutrition", description: "Set calories, serving information and drink characteristics." },
+  { title: "Allergens", description: "Select every allergen that applies to this drink." },
+  { title: "Drink options", description: "Configure milk, sugar, shots, syrups and other choices." },
+] as const;
 const DRAFT_STORAGE_PREFIX = "kob:drink-draft:";
 
 type Props = {
@@ -120,8 +127,8 @@ export function DrinkWizard({ initialDraft, lastUpdated, onClose, onSaved }: Pro
         <ol className="ds-progress">
           {STEPS.map((label, index) => (
             <li key={label} data-state={index === step ? "current" : index < step ? "done" : "todo"}>
-              <button type="button" onClick={() => goTo(index)}>
-                <span>{index + 1}</span>
+              <button type="button" onClick={() => goTo(index)} aria-current={index === step ? "step" : undefined}>
+                <span>{index < step ? <Check className="h-3 w-3" /> : index + 1}</span>
                 {label}
               </button>
             </li>
@@ -129,13 +136,22 @@ export function DrinkWizard({ initialDraft, lastUpdated, onClose, onSaved }: Pro
         </ol>
 
         <div className="ds-modal-body">
-          <div className="ds-modal-main">
-            {error && <div className="ds-error">{error}</div>}
-            {step === 0 && <IdentityStep draft={draft} patch={patch} />}
-            {step === 1 && <VisualStep draft={draft} patch={patch} onPickFile={pickFile} uploading={uploading} />}
-            {step === 2 && <NutritionStep draft={draft} patch={patch} />}
-            {step === 3 && <AllergensStep draft={draft} patch={patch} />}
-            {step === 4 && <OptionsStep draft={draft} patch={patch} />}
+          <div className="ds-modal-main" data-step={step}>
+            <div className="ds-step-shell">
+              <div className="ds-step-heading">
+                <span>
+                  Step {step + 1} of {STEPS.length}
+                </span>
+                <h3>{STEP_META[step].title}</h3>
+                <p>{STEP_META[step].description}</p>
+              </div>
+              {error && <div className="ds-error">{error}</div>}
+              {step === 0 && <IdentityStep draft={draft} patch={patch} />}
+              {step === 1 && <VisualStep draft={draft} patch={patch} onPickFile={pickFile} uploading={uploading} />}
+              {step === 2 && <NutritionStep draft={draft} patch={patch} />}
+              {step === 3 && <AllergensStep draft={draft} patch={patch} />}
+              {step === 4 && <OptionsStep draft={draft} patch={patch} />}
+            </div>
           </div>
           <aside className="ds-modal-side">
             <span className="ds-side-title">Live preview</span>

@@ -13055,3 +13055,189 @@ html[dir="rtl"] .app-island-live-popover {
     max-height: calc(100vh - 92px);
   }
 }
+
+/* Drink Studio wizard usability refinement */
+.ds-progress {
+  justify-content: center;
+  gap: 0.55rem;
+  padding-block: 0.7rem;
+}
+
+.ds-progress li button {
+  position: relative;
+  min-height: 2.45rem;
+  padding: 0.45rem 0.85rem;
+  border: 1px solid transparent;
+  font-weight: 600;
+}
+
+.ds-progress li button span {
+  flex: 0 0 auto;
+  background: #eee5dc;
+  color: #76543f;
+  border: 1px solid rgb(118 83 57 / 0.14);
+}
+
+.ds-progress li[data-state="current"] button {
+  color: #fffaf4;
+  background: linear-gradient(135deg, #c77b32, #a85f25);
+  border-color: rgb(124 72 31 / 0.28);
+  box-shadow: 0 8px 20px -12px rgb(121 66 24 / 0.8);
+}
+
+.ds-progress li[data-state="current"] button span {
+  color: #8d4f20;
+  background: #fff8ef;
+  border-color: transparent;
+}
+
+.ds-progress li[data-state="done"] button {
+  color: #27764d;
+  background: rgb(47 145 91 / 0.08);
+}
+
+.ds-progress li[data-state="done"] button span {
+  color: #fff;
+  background: #3a9a67;
+  border-color: transparent;
+}
+
+.ds-modal-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 1.35rem;
+}
+
+.ds-step-shell {
+  width: min(100%, 760px);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.ds-step-heading {
+  text-align: center;
+  max-width: 620px;
+  margin-inline: auto;
+}
+
+.ds-step-heading > span {
+  display: inline-flex;
+  margin-bottom: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: rgb(190 116 49 / 0.1);
+  color: #a45d25;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ds-step-heading h3 {
+  margin: 0;
+  color: var(--kob-foreground);
+  font-size: 1.22rem;
+  font-weight: 700;
+}
+
+.ds-step-heading p {
+  margin: 0.25rem auto 0;
+  color: var(--kob-muted-foreground);
+  font-size: 0.84rem;
+}
+
+.ds-step {
+  width: 100%;
+  gap: 0.9rem;
+}
+
+.ds-field > span {
+  color: #513a2c;
+  font-weight: 700;
+}
+
+.ds-field input[type="text"],
+.ds-field input:not([type]),
+.ds-field input[inputmode="numeric"] {
+  min-height: 2.8rem;
+  border-color: rgb(118 83 57 / 0.2);
+  background: #fffdfa;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.7);
+}
+
+.ds-field input:focus {
+  outline: none;
+  border-color: #c27735;
+  box-shadow: 0 0 0 3px rgb(194 119 53 / 0.13);
+}
+
+.ds-pills {
+  gap: 0.55rem;
+}
+
+.ds-pill {
+  min-height: 2.4rem;
+  padding-inline: 1rem;
+  border-color: rgb(118 83 57 / 0.2);
+  background: #fffdfa;
+  color: #694b38;
+  font-weight: 600;
+  box-shadow: 0 2px 7px rgb(77 48 29 / 0.04);
+}
+
+.ds-pill:hover {
+  border-color: rgb(194 119 53 / 0.55);
+  background: #fff8ef;
+}
+
+.ds-pill[data-active="true"] {
+  border-color: #a95f25;
+  background: linear-gradient(135deg, #c77b32, #a85f25);
+  color: #fff;
+  box-shadow: 0 8px 18px -12px rgb(121 66 24 / 0.85);
+}
+
+.ds-allergen-card[data-active="true"] {
+  border-width: 2px;
+  border-color: #a95f25;
+  background: #fff4e8;
+  box-shadow: 0 10px 22px -16px rgb(121 66 24 / 0.8);
+}
+
+.ds-template:focus-visible,
+.ds-allergen-card:focus-visible,
+.ds-pill:focus-visible,
+.ds-progress button:focus-visible {
+  outline: 3px solid rgb(194 119 53 / 0.24);
+  outline-offset: 2px;
+}
+
+/* Short steps stay visually centered; long options remain naturally scrollable. */
+.ds-modal-main[data-step="0"],
+.ds-modal-main[data-step="2"],
+.ds-modal-main[data-step="3"] {
+  align-items: center;
+}
+
+.ds-modal-main[data-step="1"],
+.ds-modal-main[data-step="4"] {
+  align-items: flex-start;
+}
+
+@media (max-width: 900px) {
+  .ds-progress {
+    justify-content: flex-start;
+  }
+  .ds-modal-main {
+    align-items: flex-start;
+    padding: 1rem;
+  }
+  .ds-step-heading {
+    text-align: start;
+    margin-inline: 0;
+  }
+}
