@@ -23,7 +23,7 @@ export type Plan = {
   price: number;
   currency: string;
   auto_renewal: boolean;
-  grace_period_days: number | null;
+  bonus_days: number;
   drinks_per_redemption: number;
   redemption_frequency: RedemptionFrequency;
   redemption_frequency_days: number | null;
@@ -61,7 +61,7 @@ export type PlanInput = Omit<
 const SELECT = `
   id,name,name_ar,name_en,description_ar,description_en,color,badge,
   is_active,is_hidden,display_order,duration_days,price,currency,
-  auto_renewal,grace_period_days,drinks_per_redemption,
+  auto_renewal,bonus_days,drinks_per_redemption,
   redemption_frequency,redemption_frequency_days,max_redemptions_per_period,
   max_drinks_per_day,max_drinks_per_redemption,carry_unused,max_carry_days,
   redemption_window_start,redemption_window_end,allowed_weekdays,
@@ -114,7 +114,7 @@ function toRow(payload: PlanInput) {
     price: payload.price,
     currency: payload.currency,
     auto_renewal: payload.auto_renewal,
-    grace_period_days: payload.grace_period_days,
+    bonus_days: payload.bonus_days,
     drinks_per_redemption: payload.drinks_per_redemption,
     redemption_frequency: payload.redemption_frequency,
     redemption_frequency_days: payload.redemption_frequency_days,
