@@ -99,11 +99,26 @@ export default function BasicsStep({ lang, value, onChange }: Props) {
 
       <div className="pb-grid-2">
         <div className="pb-stack">
-          <Toggle
-            label={S.active_label[lang]}
-            checked={value.is_active}
-            onChange={(v) => onChange({ is_active: v })}
-          />
+          <Field label={S.plan_status[lang]}>
+            <div className="ds-pills">
+              <button
+                type="button"
+                className="ds-pill"
+                data-active={value.is_active}
+                onClick={() => onChange({ is_active: true })}
+              >
+                {S.status_active[lang]}
+              </button>
+              <button
+                type="button"
+                className="ds-pill"
+                data-active={!value.is_active}
+                onClick={() => onChange({ is_active: false })}
+              >
+                {S.status_inactive[lang]}
+              </button>
+            </div>
+          </Field>
           <Toggle
             label={S.hidden_label[lang]}
             checked={value.is_hidden}

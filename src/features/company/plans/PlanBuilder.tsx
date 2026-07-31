@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ArrowLeft, ArrowRight, Check, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import type { Plan, PlanInput } from "@/services/company/plans.service";
@@ -13,8 +14,8 @@ import PricingStep from "./steps/PricingStep";
 import ConsumptionStep from "./steps/ConsumptionStep";
 import DrinksStep from "./steps/DrinksStep";
 import BranchesStep from "./steps/BranchesStep";
-import CustomizationStep from "./steps/CustomizationStep";
 import ReviewStep from "./steps/ReviewStep";
+import { PlanCard } from "./PlanCard";
 
 const DRAFT_KEY = "kob.planBuilder.draft";
 
@@ -84,9 +85,9 @@ export function PlanBuilder({
     S.step_consumption[lang],
     S.step_drinks[lang],
     S.step_branches[lang],
-    S.step_custom[lang],
     S.step_review[lang],
   ];
+  const last = steps.length - 1;
 
   function canAdvance() {
     return stepIssues(step).length === 0;
@@ -113,8 +114,6 @@ export function PlanBuilder({
       const msg = (e as Error).message ?? "";
       if (msg.includes("plans_org_name")) toast.error(S.err_duplicate_name[lang]);
       else if (msg.includes("plan_max_daily_below_redemption")) toast.error(S.err_max_daily_below[lang]);
-      else if (msg.includes("plan_custom_frequency_days_required")) toast.error(S.err_freq_custom[lang]);
-      else if (msg.includes("plan_carry_days_required")) toast.error(S.err_carry_days[lang]);
       else if (msg.includes("plan_invalid_time_window")) toast.error(S.err_time_window[lang]);
       else if (msg.includes("plan_invalid_duration")) toast.error(S.err_duration[lang]);
       else if (msg.includes("plan_invalid_price")) toast.error(S.err_price[lang]);
@@ -137,91 +136,121 @@ export function PlanBuilder({
       case 4:
         return <BranchesStep lang={lang} value={draft} onChange={update} branches={branches} />;
       case 5:
-        return <CustomizationStep lang={lang} value={draft} onChange={update} />;
-      case 6:
         return <ReviewStep lang={lang} value={draft} drinks={drinks} branches={branches} />;
       default:
         return null;
     }
   })();
 
+  const previewPlan: Plan = {
+    ...draft,
+    id: "preview",
+    name: draft.name_en || draft.name_ar,
+    created_at: new Date().toISOString(),
+  };
+
   return (
-    <div className="pb-overlay" onClick={busy ? undefined : onClose}>
-      <div
-        className="pb-dialog pb-dialog-wide"
-        onClick={(e) => e.stopPropagation()}
+    <div
+      className="ds-modal-overlay pb-below-island"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget && !busy) onClose();
+      }}
+    >
+      <section
+        className="ds-modal"
+        role="dialog"
+        aria-modal="true"
         dir={lang === "ar" ? "rtl" : "ltr"}
+        aria-label={editing ? S.edit_plan[lang] : S.new_plan[lang]}
       >
-        <header className="pb-dialog-head">
-          <div className="pb-dialog-heading">
-            <span className="pb-dialog-eyebrow">{steps[step]}</span>
-            <h2 className="pb-dialog-title">{editing ? S.edit_plan[lang] : S.new_plan[lang]}</h2>
+        <header className="ds-modal-header">
+          <div>
+            <h2>{editing ? S.edit_plan[lang] : S.new_plan[lang]}</h2>
+            <p>{S.subtitle[lang]}</p>
           </div>
-          <button
-            type="button"
-            className="pb-dialog-close"
-            onClick={onClose}
-            disabled={busy}
-            aria-label={lang === "ar" ? "إغلاق" : "Close"}
-          >
-            ✕
-          </button>
+          <div className="ds-modal-header-side">
+            <button
+              type="button"
+              className="ds-icon-button"
+              onClick={onClose}
+              disabled={busy}
+              aria-label={lang === "ar" ? "إغلاق" : "Close"}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </header>
 
-        <div className="pb-builder-layout">
-          <nav className="pb-stepper" aria-label={lang === "ar" ? "خطوات الخطة" : "Plan steps"}>
-            {steps.map((label, i) => (
-              <button
-                key={i}
-                type="button"
-                className={`pb-stepper-item ${i === step ? "active" : ""} ${i < step ? "done" : ""}`}
-                onClick={() => setStep(i)}
-              >
-                <span className="pb-stepper-num">{i < step ? "✓" : i + 1}</span>
-                <span className="pb-stepper-copy">
-                  <small>{String(i + 1).padStart(2, "0")}</small>
-                  <span className="pb-stepper-label">{label}</span>
-                </span>
+        <ol className="ds-progress">
+          {steps.map((label, i) => (
+            <li key={label} data-state={i === step ? "current" : i < step ? "done" : "todo"}>
+              <button type="button" onClick={() => setStep(i)} aria-current={i === step ? "step" : undefined}>
+                <span>{i < step ? <Check className="h-3 w-3" /> : i + 1}</span>
+                {label}
               </button>
-            ))}
-          </nav>
+            </li>
+          ))}
+        </ol>
 
-          <div className="pb-builder-main">
-            <div className="pb-dialog-body">{stepEl}</div>
-
-            <footer className="pb-dialog-footer">
-              <button
-                type="button"
-                className="pb-btn-ghost"
-                onClick={() => setStep((s) => Math.max(0, s - 1))}
-                disabled={step === 0 || busy}
-              >
-                {S.back[lang]}
-              </button>
-              {step < 6 ? (
-                <button
-                  type="button"
-                  className="pb-btn-primary"
-                  onClick={() => {
-                    if (!canAdvance()) {
-                      toast.error(S[stepIssues(step)[0].key as keyof typeof S][lang]);
-                      return;
-                    }
-                    setStep((s) => Math.min(6, s + 1));
-                  }}
-                  disabled={busy}
-                >
-                  {S.next[lang]}
-                </button>
-              ) : (
-                <button type="button" className="pb-btn-primary" onClick={save} disabled={busy || issues.length > 0}>
-                  {S.save_plan[lang]}
-                </button>
-              )}
-            </footer>
+        <div className="ds-modal-body">
+          <div className="ds-modal-main" data-step={step}>
+            <div className="ds-step-shell">
+              <div className="ds-step-heading">
+                <h3>{steps[step]}</h3>
+                <p>{S.step_of[lang].replace("{a}", String(step + 1)).replace("{b}", String(steps.length))}</p>
+              </div>
+              {stepEl}
+            </div>
           </div>
+          <aside className="ds-modal-side">
+            <span className="ds-side-title">{S.preview[lang]}</span>
+            <PlanCard plan={previewPlan} lang={lang} preview />
+          </aside>
         </div>
-      </div>
+
+        <footer className="ds-modal-footer">
+          <button
+            type="button"
+            className="ds-nav-button ds-nav-button--back"
+            onClick={() => setStep((s) => Math.max(0, s - 1))}
+            disabled={step === 0 || busy}
+            aria-label={S.back[lang]}
+            title={S.back[lang]}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <div className="ds-footer-actions">
+            {step < last ? (
+              <button
+                type="button"
+                className="ds-nav-button ds-nav-button--next"
+                onClick={() => {
+                  if (!canAdvance()) {
+                    toast.error(S[stepIssues(step)[0].key as keyof typeof S][lang]);
+                    return;
+                  }
+                  setStep((s) => Math.min(last, s + 1));
+                }}
+                disabled={busy}
+                aria-label={S.next[lang]}
+                title={S.next[lang]}
+              >
+                <ArrowRight className="h-5 w-5" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn-brass px-6 py-2.5"
+                onClick={save}
+                disabled={busy || issues.length > 0}
+              >
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                {editing ? S.save_changes[lang] : S.create_plan[lang]}
+              </button>
+            )}
+          </div>
+        </footer>
+      </section>
     </div>
   );
 }
