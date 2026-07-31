@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import type { PlanInput } from "@/services/company/plans.service";
 import type { DrinkTypeRow } from "@/services/company/drinks.service";
 import { S } from "../strings";
-import { Field } from "../ui";
 
 export default function DrinksStep({
   lang,
@@ -35,8 +34,10 @@ export default function DrinksStep({
   }
 
   return (
-    <div className="pb-step">
-      <p className="pb-hint">{S.drinks_hint[lang]}</p>
+    <div className="ds-step">
+      <p className="ds-hint">
+        {value.allowed_drink_ids.length === 0 ? S.drinks_none_selected[lang] : S.drinks_hint[lang]}
+      </p>
       <div className="pb-toolbar">
         <input
           className="pb-input"
@@ -73,21 +74,6 @@ export default function DrinksStep({
           );
         })}
       </div>
-
-      <Field label={S.max_selectable[lang]}>
-        <input
-          type="number"
-          min={1}
-          className="pb-input"
-          placeholder="—"
-          value={value.max_selectable_drinks ?? ""}
-          onChange={(e) =>
-            onChange({
-              max_selectable_drinks: e.target.value === "" ? null : Number(e.target.value),
-            })
-          }
-        />
-      </Field>
     </div>
   );
 }

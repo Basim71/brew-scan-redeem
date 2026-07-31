@@ -13663,3 +13663,17 @@ html[dir="rtl"] .app-island-live-popover {
     padding: 10px 16px;
   }
 }
+
+/* Plan Builder — Drink Studio shell, offset below the floating island */
+.ds-modal-overlay.pb-below-island {
+  align-items: start;
+  padding-top: 6.5rem;
+}
+.ds-modal-overlay.pb-below-island .ds-modal {
+  height: min(85vh, calc(100vh - 8rem));
+}
+.pb-status-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}

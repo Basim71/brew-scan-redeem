@@ -1,14 +1,7 @@
 import { useI18n } from "@/lib/i18n";
-import type { Plan, RedemptionFrequency } from "@/services/company/plans.service";
+import type { Plan } from "@/services/company/plans.service";
 import { S } from "./strings";
 
-const FREQ_LABEL: Record<RedemptionFrequency, keyof typeof S> = {
-  daily: "freq_daily",
-  every_2_days: "freq_every_2_days",
-  every_3_days: "freq_every_3_days",
-  weekly: "freq_weekly",
-  custom: "freq_custom",
-};
 const BADGE_LABEL: Record<string, keyof typeof S> = {
   most_popular: "b_most_popular",
   best_value: "b_best_value",
@@ -62,7 +55,7 @@ export function PlanCard({
         <div className="pb-card-top">
           <span className={`pb-card-status ${plan.is_active ? "on" : "off"}`}>
             <span className="pb-card-status-dot" aria-hidden="true" />
-            {plan.is_active ? S.active_label[l] : S.disabled[l]}
+            {plan.is_active ? S.status_active[l] : S.status_inactive[l]}
             {isArchived && ` · ${S.archive[l]}`}
           </span>
           {plan.badge && (
@@ -85,14 +78,20 @@ export function PlanCard({
 
       <div className="pb-card-facts" aria-label={l === "ar" ? "تفاصيل الخطة" : "Plan details"}>
         <span className="pb-card-fact">
-          <b>{plan.drinks_per_redemption}</b> {S.drinks_per_redemption[l]}
+          <b>{plan.max_drinks_per_day}</b> {S.daily_limit[l]}
         </span>
-        <span className="pb-card-fact">{S[FREQ_LABEL[plan.redemption_frequency]][l]}</span>
+        {plan.bonus_days > 0 && (
+          <span className="pb-card-fact">
+            <b>+{plan.bonus_days}</b> {S.bonus_days[l]}
+          </span>
+        )}
         <span className="pb-card-fact">
-          <b>{drinkCount ?? (plan.allowed_drink_ids.length || "∞")}</b> {S.step_drinks[l]}
+          <b>{plan.allowed_drink_ids.length === 0 ? "∞" : (drinkCount ?? plan.allowed_drink_ids.length)}</b>{" "}
+          {S.step_drinks[l]}
         </span>
         <span className="pb-card-fact">
-          <b>{branchCount ?? (plan.allowed_branch_ids.length || "∞")}</b> {S.step_branches[l]}
+          <b>{plan.allowed_branch_ids.length === 0 ? "∞" : (branchCount ?? plan.allowed_branch_ids.length)}</b>{" "}
+          {S.step_branches[l]}
         </span>
       </div>
 

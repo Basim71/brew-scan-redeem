@@ -945,6 +945,7 @@ export type Database = {
           archived_at: string | null
           auto_renewal: boolean
           badge: string | null
+          bonus_days: number
           carry_unused: boolean
           color: string
           created_at: string
@@ -954,7 +955,6 @@ export type Database = {
           display_order: number
           drinks_per_redemption: number
           duration_days: number
-          grace_period_days: number | null
           id: string
           is_active: boolean
           is_hidden: boolean
@@ -984,6 +984,7 @@ export type Database = {
           archived_at?: string | null
           auto_renewal?: boolean
           badge?: string | null
+          bonus_days?: number
           carry_unused?: boolean
           color?: string
           created_at?: string
@@ -993,7 +994,6 @@ export type Database = {
           display_order?: number
           drinks_per_redemption?: number
           duration_days: number
-          grace_period_days?: number | null
           id?: string
           is_active?: boolean
           is_hidden?: boolean
@@ -1023,6 +1023,7 @@ export type Database = {
           archived_at?: string | null
           auto_renewal?: boolean
           badge?: string | null
+          bonus_days?: number
           carry_unused?: boolean
           color?: string
           created_at?: string
@@ -1032,7 +1033,6 @@ export type Database = {
           display_order?: number
           drinks_per_redemption?: number
           duration_days?: number
-          grace_period_days?: number | null
           id?: string
           is_active?: boolean
           is_hidden?: boolean
@@ -1165,6 +1165,7 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          bonus_days: number
           branch_id: string
           coupon_id: string
           created_at: string
@@ -1177,6 +1178,7 @@ export type Database = {
           status: Database["public"]["Enums"]["subscription_status"]
         }
         Insert: {
+          bonus_days?: number
           branch_id: string
           coupon_id: string
           created_at?: string
@@ -1189,6 +1191,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["subscription_status"]
         }
         Update: {
+          bonus_days?: number
           branch_id?: string
           coupon_id?: string
           created_at?: string

@@ -1,8 +1,8 @@
-import type { PlanInput, RedemptionFrequency } from "@/services/company/plans.service";
+import type { PlanInput } from "@/services/company/plans.service";
 
-export type WizardStep = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+export type WizardStep = 0 | 1 | 2 | 3 | 4 | 5;
 
-export const STEPS: WizardStep[] = [0, 1, 2, 3, 4, 5, 6];
+export const STEPS: WizardStep[] = [0, 1, 2, 3, 4, 5];
 
 export const BADGE_PRESETS = ["most_popular", "best_value", "new", "limited", "premium"] as const;
 export type BadgePreset = (typeof BADGE_PRESETS)[number];
@@ -16,14 +16,6 @@ export const COLOR_SWATCHES = [
   "#4B3F72",
   "#8B1A1A",
   "#D4A017",
-];
-
-export const FREQUENCY_OPTIONS: RedemptionFrequency[] = [
-  "daily",
-  "every_2_days",
-  "every_3_days",
-  "weekly",
-  "custom",
 ];
 
 export function emptyDraft(defaultCurrency = "SAR"): PlanInput {
@@ -41,7 +33,7 @@ export function emptyDraft(defaultCurrency = "SAR"): PlanInput {
     price: 0,
     currency: defaultCurrency,
     auto_renewal: false,
-    grace_period_days: null,
+    bonus_days: 0,
     drinks_per_redemption: 1,
     redemption_frequency: "daily",
     redemption_frequency_days: null,
