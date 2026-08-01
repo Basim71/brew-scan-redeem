@@ -13677,3 +13677,330 @@ html[dir="rtl"] .app-island-live-popover {
   align-items: center;
   gap: 0.6rem;
 }
+
+/* ============================================================
+   Company Settings (Manage) — KOB Premium Light
+   ============================================================ */
+.cs-shell {
+  width: 100%;
+  max-width: var(--kob-container-xl);
+  margin-inline: auto;
+  padding: 1.25rem 1rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  color: var(--kob-espresso);
+}
+.cs-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.4rem 1.5rem;
+  border-radius: var(--kob-radius-xl);
+  background: linear-gradient(140deg, var(--kob-warm-white), var(--kob-soft-cream));
+  border: 1px solid color-mix(in oklab, var(--kob-gold) 22%, transparent);
+  box-shadow: var(--kob-shadow-md);
+}
+.cs-eyebrow {
+  display: inline-block;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--kob-gold) 70%, var(--kob-espresso));
+}
+.cs-header h1 {
+  margin: 0.25rem 0 0.35rem;
+  font-family: var(--kob-font-display);
+  font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+  line-height: var(--kob-leading-tight);
+}
+.cs-header p {
+  margin: 0;
+  max-width: 46ch;
+  font-size: 0.85rem;
+  color: var(--kob-medium-brown);
+}
+.cs-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--kob-radius-pill);
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+.cs-save-busy {
+  background: color-mix(in oklab, var(--kob-gold) 16%, white);
+  color: color-mix(in oklab, var(--kob-gold) 55%, var(--kob-espresso));
+}
+.cs-save-ok {
+  background: color-mix(in oklab, var(--kob-success) 18%, white);
+  color: color-mix(in oklab, var(--kob-success) 55%, var(--kob-espresso));
+}
+.cs-save-err {
+  background: color-mix(in oklab, var(--kob-error) 14%, white);
+  color: color-mix(in oklab, var(--kob-error) 60%, var(--kob-espresso));
+}
+.cs-readonly,
+.cs-error-panel,
+.cs-empty {
+  padding: 0.75rem 1rem;
+  border-radius: var(--kob-radius-md);
+  font-size: 0.83rem;
+}
+.cs-readonly {
+  background: color-mix(in oklab, var(--kob-info) 12%, white);
+  color: color-mix(in oklab, var(--kob-info) 55%, var(--kob-espresso));
+  border: 1px solid color-mix(in oklab, var(--kob-info) 25%, transparent);
+}
+.cs-error-panel {
+  background: color-mix(in oklab, var(--kob-error) 10%, white);
+  color: color-mix(in oklab, var(--kob-error) 60%, var(--kob-espresso));
+  border: 1px solid color-mix(in oklab, var(--kob-error) 25%, transparent);
+}
+.cs-empty {
+  background: var(--kob-soft-cream);
+  color: var(--kob-medium-brown);
+  text-align: center;
+}
+.cs-layout {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .cs-layout { grid-template-columns: minmax(0, 1fr); }
+}
+.cs-nav {
+  position: sticky;
+  top: 5.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.6rem;
+  border-radius: var(--kob-radius-lg);
+  background: var(--kob-warm-white);
+  border: 1px solid color-mix(in oklab, var(--kob-gold) 16%, transparent);
+  box-shadow: var(--kob-shadow-sm);
+}
+@media (max-width: 900px) {
+  .cs-nav {
+    position: static;
+    flex-direction: row;
+    overflow-x: auto;
+  }
+}
+.cs-nav button {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.6rem 0.75rem;
+  border: 0;
+  border-radius: var(--kob-radius-md);
+  background: transparent;
+  color: var(--kob-medium-brown);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+.cs-nav button:hover { background: var(--kob-soft-cream); color: var(--kob-espresso); }
+.cs-nav button[data-active="true"] {
+  background: linear-gradient(120deg, color-mix(in oklab, var(--kob-gold) 24%, white), var(--kob-soft-cream));
+  color: var(--kob-espresso);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--kob-gold) 35%, transparent);
+}
+.cs-content { min-width: 0; }
+.cs-stack { display: flex; flex-direction: column; gap: 1rem; }
+.cs-card {
+  border-radius: var(--kob-radius-lg);
+  background: var(--kob-warm-white);
+  border: 1px solid color-mix(in oklab, var(--kob-gold) 14%, transparent);
+  box-shadow: var(--kob-shadow-sm);
+  overflow: hidden;
+}
+.cs-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  background: linear-gradient(180deg, var(--kob-soft-cream), transparent);
+  border-bottom: 1px solid color-mix(in oklab, var(--kob-gold) 12%, transparent);
+}
+.cs-card-head h3 {
+  margin: 0;
+  font-family: var(--kob-font-display);
+  font-size: 1rem;
+}
+.cs-card-head p {
+  margin: 0.25rem 0 0;
+  font-size: 0.78rem;
+  color: var(--kob-medium-brown);
+}
+.cs-card-body { padding: 0.35rem 1.1rem 1rem; }
+.cs-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 18rem);
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.7rem 0;
+  border-bottom: 1px dashed color-mix(in oklab, var(--kob-gold) 14%, transparent);
+}
+.cs-row:last-child { border-bottom: 0; }
+@media (max-width: 640px) {
+  .cs-row { grid-template-columns: minmax(0, 1fr); }
+}
+.cs-row-label span { font-size: 0.87rem; font-weight: 600; }
+.cs-row-label small {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.72rem;
+  color: var(--kob-soft-gray);
+}
+.cs-row-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  justify-self: end;
+  width: 100%;
+  max-width: 18rem;
+}
+[dir="rtl"] .cs-row-control { justify-self: start; }
+.cs-error { font-size: 0.72rem; color: color-mix(in oklab, var(--kob-error) 65%, var(--kob-espresso)); }
+.cs-hint { font-size: 0.7rem; color: var(--kob-soft-gray); }
+.cs-input {
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  border-radius: var(--kob-radius-sm);
+  border: 1px solid color-mix(in oklab, var(--kob-gold) 22%, transparent);
+  background: white;
+  color: var(--kob-espresso);
+  font-size: 0.85rem;
+  font-family: inherit;
+}
+.cs-input:focus-visible { outline: none; box-shadow: var(--kob-focus-ring); }
+.cs-input:disabled { background: var(--kob-soft-cream); color: var(--kob-soft-gray); cursor: not-allowed; }
+.cs-toggle {
+  position: relative;
+  width: 2.9rem;
+  height: 1.6rem;
+  border-radius: var(--kob-radius-pill);
+  border: 1px solid color-mix(in oklab, var(--kob-gold) 25%, transparent);
+  background: color-mix(in oklab, var(--kob-espresso) 8%, white);
+  cursor: pointer;
+  transition: background 0.18s ease;
+  justify-self: end;
+}
+.cs-toggle[data-on="true"] {
+  background: linear-gradient(120deg, var(--kob-gold), var(--kob-gold-bright));
+}
+.cs-toggle:disabled { opacity: 0.5; cursor: not-allowed; }
+.cs-toggle-knob {
+  position: absolute;
+  top: 0.15rem;
+  inset-inline-start: 0.15rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  background: white;
+  box-shadow: var(--kob-shadow-sm);
+  transition: inset-inline-start 0.18s ease;
+}
+.cs-toggle[data-on="true"] .cs-toggle-knob { inset-inline-start: 1.45rem; }
+.cs-segmented {
+  display: inline-flex;
+  padding: 0.2rem;
+  border-radius: var(--kob-radius-pill);
+  background: var(--kob-soft-cream);
+  border: 1px solid color-mix(in oklab, var(--kob-gold) 16%, transparent);
+  width: 100%;
+}
+.cs-segmented button {
+  flex: 1;
+  padding: 0.4rem 0.6rem;
+  border: 0;
+  border-radius: var(--kob-radius-pill);
+  background: transparent;
+  color: var(--kob-medium-brown);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.cs-segmented button[data-active="true"] {
+  background: white;
+  color: var(--kob-espresso);
+  box-shadow: var(--kob-shadow-sm);
+}
+.cs-segmented button:disabled { opacity: 0.55; cursor: not-allowed; }
+.cs-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.6rem 0; }
+.cs-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--kob-radius-pill);
+  border: 1px solid color-mix(in oklab, var(--kob-gold) 22%, transparent);
+  background: white;
+  color: var(--kob-medium-brown);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cs-chip[data-on="true"] {
+  background: color-mix(in oklab, var(--kob-gold) 18%, white);
+  color: var(--kob-espresso);
+}
+.cs-chip:disabled { opacity: 0.55; cursor: not-allowed; }
+.cs-chip-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.25rem;
+  border: 1px solid color-mix(in oklab, var(--kob-gold) 35%, transparent);
+  background: white;
+}
+.cs-logo-row { display: flex; align-items: center; gap: 0.6rem; width: 100%; }
+.cs-logo-row img,
+.cs-logo-empty {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: var(--kob-radius-sm);
+  object-fit: cover;
+  background: var(--kob-soft-cream);
+  border: 1px solid color-mix(in oklab, var(--kob-gold) 20%, transparent);
+  flex: none;
+}
+.cs-link {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: color-mix(in oklab, var(--kob-gold) 62%, var(--kob-espresso));
+  text-decoration: none;
+  white-space: nowrap;
+}
+.cs-link:hover { text-decoration: underline; }
+.cs-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.cs-table th {
+  text-align: start;
+  padding: 0.55rem 0.5rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--kob-soft-gray);
+  border-bottom: 1px solid color-mix(in oklab, var(--kob-gold) 16%, transparent);
+}
+.cs-table td {
+  padding: 0.55rem 0.5rem;
+  border-bottom: 1px dashed color-mix(in oklab, var(--kob-gold) 12%, transparent);
+  vertical-align: middle;
+}
+.cs-table td small { display: block; font-size: 0.7rem; color: var(--kob-soft-gray); }
+.cs-loading { display: flex; justify-content: center; padding: 2rem; color: var(--kob-gold); }
