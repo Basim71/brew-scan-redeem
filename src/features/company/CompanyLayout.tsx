@@ -1,6 +1,9 @@
 import { useMemo, type ReactNode } from "react";
 import {
   BarChart3,
+  Bell,
+  ClipboardList,
+  ShieldCheck,
   Layers3,
   Building2,
   Coffee,
@@ -46,11 +49,20 @@ const PRIMARY: Array<{
   { to: "/admin/reports", labelAr: "التقارير", labelEn: "Reports", icon: BarChart3 },
 ];
 
-const OPERATIONS: Array<{ to: CompanyRoute; labelAr: string; labelEn: string; icon: any }> = [
-  { to: "/admin/branches", labelAr: "الفروع", labelEn: "Branches", icon: Building2 },
-  { to: "/admin/cashiers", labelAr: "الموظفون", labelEn: "Employees", icon: UserRoundCog },
-  { to: "/admin/customer-success", labelAr: "نجاح العملاء", labelEn: "Customer Success", icon: Headphones },
+const OPERATIONS: Array<{
+  to: CompanyRoute;
+  labelAr: string;
+  labelEn: string;
+  icon: any;
+  hash?: string;
+}> = [
   { to: "/admin/settings", labelAr: "الإعدادات", labelEn: "Settings", icon: Settings },
+  { to: "/admin/cashiers", labelAr: "الموظفون", labelEn: "Employees", icon: UserRoundCog },
+  { to: "/admin/settings", labelAr: "الأدوار والصلاحيات", labelEn: "Roles & Permissions", icon: ShieldCheck, hash: "employees" },
+  { to: "/admin/branches", labelAr: "الفروع", labelEn: "Branches", icon: Building2 },
+  { to: "/admin/settings", labelAr: "التنبيهات", labelEn: "Notifications", icon: Bell, hash: "notifications" },
+  { to: "/admin/settings", labelAr: "سجل التغييرات", labelEn: "Audit Log", icon: ClipboardList, hash: "audit" },
+  { to: "/admin/customer-success", labelAr: "نجاح العملاء", labelEn: "Customer Success", icon: Headphones },
 ];
 
 export function CompanyLayout({ title, subtitle, onSignOut, children }: Props) {
@@ -70,6 +82,7 @@ export function CompanyLayout({ title, subtitle, onSignOut, children }: Props) {
     const operations = OPERATIONS.filter((it) => canAccessCompanyRoute(it.to, role)).map((it) => ({
       kind: "link" as const,
       to: it.to,
+      hash: it.hash,
       label: isAr ? it.labelAr : it.labelEn,
       icon: it.icon,
     }));

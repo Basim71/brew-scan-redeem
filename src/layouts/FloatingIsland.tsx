@@ -24,6 +24,7 @@ export type FloatingIslandLink = {
   label: string;
   icon: LucideIcon;
   exact?: boolean;
+  hash?: string;
 };
 
 export type FloatingIslandGroup = {
@@ -197,8 +198,9 @@ export function FloatingIsland({ title, subtitle, homeTo, items, onSignOut }: Fl
                       const ChildIcon = child.icon;
                       return (
                         <Link
-                          key={child.to}
+                          key={child.to + (child.hash ?? "")}
                           to={child.to as never}
+                          hash={child.hash as never}
                           role="menuitem"
                           activeOptions={{ exact: Boolean(child.exact) }}
                           className="app-island-dropdown-item"

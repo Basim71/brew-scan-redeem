@@ -731,55 +731,229 @@ export type Database = {
       }
       organization_settings: {
         Row: {
+          address: string | null
+          allow_multiple_active_orders: boolean
+          allowed_ip_addresses: string[]
+          audit_log_enabled: boolean
+          auto_renewal: boolean
           background_url: string | null
+          branch_qr_mode: string
           created_at: string
           currency: string
           customer_comments_enabled: boolean
           customer_registration_enabled: boolean
+          default_activation: string
+          default_bonus_days: number
+          default_branch_id: string | null
+          default_employee_role: string
           default_language: string
+          default_payment_method: string
+          employee_invite_mode: string
+          integrations: Json
+          login_restriction: string
           logo_url: string | null
+          loyalty_message_ar: string | null
+          loyalty_message_en: string | null
+          notify_email: boolean
+          notify_low_stock: boolean
+          notify_orders: boolean
+          notify_push: boolean
+          notify_sms: boolean
+          notify_subscription_expiry: boolean
+          notify_training: boolean
           one_drink_per_day: boolean
+          order_completed_message_ar: string | null
+          order_completed_message_en: string | null
+          order_number_format: string
+          order_prep_minutes: number
           organization_id: string
+          password_policy: string
+          password_reset_policy: string
+          payment_methods: string[]
           primary_color: string | null
+          queue_behavior: string
+          sales_channel_cashier: boolean
+          sales_channel_customer_app: boolean
+          sales_channel_external_api: boolean
+          sales_channel_website: boolean
           secondary_color: string | null
+          session_timeout_minutes: number
+          tax_enabled: boolean
+          tax_included: boolean
+          tax_percentage: number
           timezone: string
+          two_factor_required: boolean
           updated_at: string
+          welcome_message_ar: string | null
+          welcome_message_en: string | null
         }
         Insert: {
+          address?: string | null
+          allow_multiple_active_orders?: boolean
+          allowed_ip_addresses?: string[]
+          audit_log_enabled?: boolean
+          auto_renewal?: boolean
           background_url?: string | null
+          branch_qr_mode?: string
           created_at?: string
           currency?: string
           customer_comments_enabled?: boolean
           customer_registration_enabled?: boolean
+          default_activation?: string
+          default_bonus_days?: number
+          default_branch_id?: string | null
+          default_employee_role?: string
           default_language?: string
+          default_payment_method?: string
+          employee_invite_mode?: string
+          integrations?: Json
+          login_restriction?: string
           logo_url?: string | null
+          loyalty_message_ar?: string | null
+          loyalty_message_en?: string | null
+          notify_email?: boolean
+          notify_low_stock?: boolean
+          notify_orders?: boolean
+          notify_push?: boolean
+          notify_sms?: boolean
+          notify_subscription_expiry?: boolean
+          notify_training?: boolean
           one_drink_per_day?: boolean
+          order_completed_message_ar?: string | null
+          order_completed_message_en?: string | null
+          order_number_format?: string
+          order_prep_minutes?: number
           organization_id: string
+          password_policy?: string
+          password_reset_policy?: string
+          payment_methods?: string[]
           primary_color?: string | null
+          queue_behavior?: string
+          sales_channel_cashier?: boolean
+          sales_channel_customer_app?: boolean
+          sales_channel_external_api?: boolean
+          sales_channel_website?: boolean
           secondary_color?: string | null
+          session_timeout_minutes?: number
+          tax_enabled?: boolean
+          tax_included?: boolean
+          tax_percentage?: number
           timezone?: string
+          two_factor_required?: boolean
           updated_at?: string
+          welcome_message_ar?: string | null
+          welcome_message_en?: string | null
         }
         Update: {
+          address?: string | null
+          allow_multiple_active_orders?: boolean
+          allowed_ip_addresses?: string[]
+          audit_log_enabled?: boolean
+          auto_renewal?: boolean
           background_url?: string | null
+          branch_qr_mode?: string
           created_at?: string
           currency?: string
           customer_comments_enabled?: boolean
           customer_registration_enabled?: boolean
+          default_activation?: string
+          default_bonus_days?: number
+          default_branch_id?: string | null
+          default_employee_role?: string
           default_language?: string
+          default_payment_method?: string
+          employee_invite_mode?: string
+          integrations?: Json
+          login_restriction?: string
           logo_url?: string | null
+          loyalty_message_ar?: string | null
+          loyalty_message_en?: string | null
+          notify_email?: boolean
+          notify_low_stock?: boolean
+          notify_orders?: boolean
+          notify_push?: boolean
+          notify_sms?: boolean
+          notify_subscription_expiry?: boolean
+          notify_training?: boolean
           one_drink_per_day?: boolean
+          order_completed_message_ar?: string | null
+          order_completed_message_en?: string | null
+          order_number_format?: string
+          order_prep_minutes?: number
           organization_id?: string
+          password_policy?: string
+          password_reset_policy?: string
+          payment_methods?: string[]
           primary_color?: string | null
+          queue_behavior?: string
+          sales_channel_cashier?: boolean
+          sales_channel_customer_app?: boolean
+          sales_channel_external_api?: boolean
+          sales_channel_website?: boolean
           secondary_color?: string | null
+          session_timeout_minutes?: number
+          tax_enabled?: boolean
+          tax_included?: boolean
+          tax_percentage?: number
           timezone?: string
+          two_factor_required?: boolean
           updated_at?: string
+          welcome_message_ar?: string | null
+          welcome_message_en?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "organization_settings_default_branch_id_fkey"
+            columns: ["default_branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "organization_settings_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_settings_audit: {
+        Row: {
+          actor_user_id: string | null
+          created_at: string
+          field: string
+          id: string
+          new_value: string | null
+          old_value: string | null
+          organization_id: string
+          section: string
+        }
+        Insert: {
+          actor_user_id?: string | null
+          created_at?: string
+          field: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          organization_id: string
+          section: string
+        }
+        Update: {
+          actor_user_id?: string | null
+          created_at?: string
+          field?: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          organization_id?: string
+          section?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_settings_audit_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
