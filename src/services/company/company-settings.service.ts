@@ -189,6 +189,7 @@ export async function updateOrganizationSettings(
   organizationId: string,
   patch: SettingsPatch,
   section = "settings",
+  previous?: Record<string, unknown> | null,
 ): Promise<OrganizationSettingsRow> {
   const { data, error } = await db()
     .from("organization_settings")
@@ -196,7 +197,7 @@ export async function updateOrganizationSettings(
     .select(SETTINGS_SELECT)
     .single();
   if (error) throw error;
-  await logSettingsChange(organizationId, section, patch as Record<string, unknown>);
+  await logSettingsChange(organizationId, section, patch as Record<string, unknown>, previous ?? null);
   return data as OrganizationSettingsRow;
 }
 
