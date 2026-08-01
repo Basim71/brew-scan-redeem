@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Bell,
@@ -98,10 +98,12 @@ export function CompanySettingsShell() {
     if (visible.length && !visible.some((s) => s.key === section)) setSection(visible[0]!.key);
   }, [visible, section]);
 
+  // Deep links from the Manage dropdown (/admin/settings#audit, #notifications, …)
+  const routeHash = useRouterState({ select: (state) => state.location.hash });
   useEffect(() => {
-    const hash = typeof window !== "undefined" ? window.location.hash.replace("#", "") : "";
-    if (hash && SECTIONS.some((s) => s.key === hash)) setSection(hash as SectionKey);
-  }, []);
+    const key = (routeHash || "").replace("#", "");
+    if (key && SECTIONS.some((s) => s.key === key)) setSection(key as SectionKey);
+  }, [routeHash]);
 
   const { settings, isLoading, error, save } = useCompanySettings();
   const [saveState, setSaveState] = useState<SaveState>("idle");
