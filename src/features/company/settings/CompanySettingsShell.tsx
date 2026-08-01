@@ -1,1043 +1,1058 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  AlertTriangle,
   Bell,
   Building2,
   ClipboardList,
-  Coffee,
-  ExternalLink,
+  CreditCard,
   Globe2,
-  Headphones,
-  Image as ImageIcon,
-  LayoutGrid,
   Loader2,
-  Lock,
   Plug,
-  Save,
+  Settings2,
   ShieldCheck,
+  ShoppingBag,
+  Sparkles,
   UserCog,
-  Users,
   WalletCards,
 } from "lucide-react";
 
-import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { useOrganization, type OrganizationRole } from "@/providers/OrganizationProvider";
 import {
   getOrganizationProfile,
-  getOrganizationSettings,
+  listSettingsAudit,
   updateOrganizationProfile,
-  upsertOrganizationSettings,
   type OrganizationProfileRow,
   type OrganizationSettingsRow,
+  type PaymentMethod,
+  type SettingsPatch,
 } from "@/services/company/company-settings.service";
 import {
   listCompanyMembers,
   setMemberStatus,
   updateMemberRole,
   type CompanyMemberRole,
-  type CompanyMemberRow,
 } from "@/services/company/company-members.service";
-import { listBranches, type BranchRow } from "@/services/company/branches.service";
+import { listBranches } from "@/services/company/branches.service";
+import { useCompanySettings } from "./useCompanySettings";
+import { Card, CheckChip, Row, SaveIndicator, Segmented, Toggle, type SaveState } from "./parts";
 
 type SectionKey =
-  | "profile"
-  | "branding"
-  | "branches"
-  | "subscription"
+  | "general"
+  | "business"
+  | "membership"
   | "ordering"
+  | "experience"
   | "notifications"
-  | "team"
-  | "customer-success"
   | "security"
-  | "localization"
+  | "employees"
+  | "branches"
   | "integrations"
-  | "audit"
-  | "danger";
+  | "audit";
 
-type SectionDef = {
+const SECTIONS: Array<{
   key: SectionKey;
-  labelAr: string;
-  labelEn: string;
-  icon: React.ComponentType<{ className?: string }>;
+  ar: string;
+  en: string;
+  icon: any;
   roles: OrganizationRole[];
-};
-
-const SECTIONS: SectionDef[] = [
-  { key: "profile", labelAr: "ملف الشركة", labelEn: "Company Profile", icon: Building2, roles: ["owner", "admin", "manager"] },
-  { key: "branding", labelAr: "الهوية البصرية", labelEn: "Branding", icon: ImageIcon, roles: ["owner", "admin"] },
-  { key: "branches", labelAr: "الفروع", labelEn: "Branches", icon: LayoutGrid, roles: ["owner", "admin", "manager"] },
-  { key: "subscription", labelAr: "قواعد الاشتراك", labelEn: "Subscription Rules", icon: WalletCards, roles: ["owner", "admin", "manager"] },
-  { key: "ordering", labelAr: "قواعد الطلبات", labelEn: "Ordering Rules", icon: Coffee, roles: ["owner", "admin", "manager"] },
-  { key: "notifications", labelAr: "التنبيهات", labelEn: "Notifications", icon: Bell, roles: ["owner", "admin"] },
-  { key: "team", labelAr: "الفريق والصلاحيات", labelEn: "Team & Permissions", icon: Users, roles: ["owner", "admin"] },
-  { key: "customer-success", labelAr: "دعم العملاء", labelEn: "Customer Success", icon: Headphones, roles: ["owner", "admin", "manager"] },
-  { key: "security", labelAr: "الأمان", labelEn: "Security", icon: ShieldCheck, roles: ["owner", "admin"] },
-  { key: "localization", labelAr: "اللغة والمنطقة", labelEn: "Localization", icon: Globe2, roles: ["owner", "admin", "manager"] },
-  { key: "integrations", labelAr: "التكاملات", labelEn: "Integrations", icon: Plug, roles: ["owner", "admin"] },
-  { key: "audit", labelAr: "سجل النشاط", labelEn: "Audit Activity", icon: ClipboardList, roles: ["owner", "admin"] },
-  { key: "danger", labelAr: "منطقة الخطر", labelEn: "Danger Zone", icon: AlertTriangle, roles: ["owner"] },
+}> = [
+  { key: "general", ar: "عام", en: "General", icon: Settings2, roles: ["owner", "admin", "manager"] },
+  { key: "business", ar: "الأعمال", en: "Business", icon: WalletCards, roles: ["owner", "admin"] },
+  { key: "membership", ar: "العضوية", en: "Membership", icon: CreditCard, roles: ["owner", "admin"] },
+  { key: "ordering", ar: "الطلبات", en: "Ordering", icon: ShoppingBag, roles: ["owner", "admin", "manager"] },
+  { key: "experience", ar: "تجربة العميل", en: "Customer Experience", icon: Sparkles, roles: ["owner", "admin", "manager"] },
+  { key: "notifications", ar: "التنبيهات", en: "Notifications", icon: Bell, roles: ["owner", "admin"] },
+  { key: "security", ar: "الأمان", en: "Security", icon: ShieldCheck, roles: ["owner", "admin"] },
+  { key: "employees", ar: "الموظفون", en: "Employees", icon: UserCog, roles: ["owner", "admin"] },
+  { key: "branches", ar: "الفروع", en: "Branches", icon: Building2, roles: ["owner", "admin"] },
+  { key: "integrations", ar: "التكاملات", en: "Integrations", icon: Plug, roles: ["owner", "admin"] },
+  { key: "audit", ar: "سجل التغييرات", en: "Audit Log", icon: ClipboardList, roles: ["owner", "admin"] },
 ];
 
-type Draft = {
-  profile: Partial<OrganizationProfileRow>;
-  settings: Partial<OrganizationSettingsRow>;
-};
+const PAYMENT_METHODS: Array<{ value: PaymentMethod; ar: string; en: string }> = [
+  { value: "cash", ar: "نقدي", en: "Cash" },
+  { value: "card", ar: "بطاقة", en: "Card" },
+  { value: "apple_pay", ar: "Apple Pay", en: "Apple Pay" },
+  { value: "stc_pay", ar: "STC Pay", en: "STC Pay" },
+  { value: "mada", ar: "مدى", en: "Mada" },
+  { value: "bank_transfer", ar: "تحويل بنكي", en: "Bank Transfer" },
+];
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const PHONE_RE = /^(05\d{8}|\+9665\d{8})$/;
 
 export function CompanySettingsShell() {
   const { lang } = useI18n();
-  const isRTL = lang === "ar";
-  const { organization, role, session } = useOrganization();
-  const [profile, setProfile] = useState<OrganizationProfileRow | null>(null);
-  const [settings, setSettings] = useState<OrganizationSettingsRow | null>(null);
-  const [members, setMembers] = useState<CompanyMemberRow[]>([]);
-  const [branches, setBranches] = useState<BranchRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [section, setSection] = useState<SectionKey>("profile");
-  const [draft, setDraft] = useState<Draft>({ profile: {}, settings: {} });
-  const [saving, setSaving] = useState(false);
-  const [flash, setFlash] = useState<{ tone: "success" | "error"; text: string } | null>(null);
-  const initialLoaded = useRef(false);
+  const isAr = lang === "ar";
+  const { organization, role } = useOrganization();
+  const organizationId = organization?.id ?? null;
+  const queryClient = useQueryClient();
 
-  const visibleSections = useMemo(
-    () => SECTIONS.filter((s) => (role ? s.roles.includes(role) : false)),
-    [role],
+  const canEdit = role === "owner" || role === "admin";
+  const visible = useMemo(() => SECTIONS.filter((s) => (role ? s.roles.includes(role) : false)), [role]);
+  const [section, setSection] = useState<SectionKey>("general");
+
+  useEffect(() => {
+    if (visible.length && !visible.some((s) => s.key === section)) setSection(visible[0]!.key);
+  }, [visible, section]);
+
+  useEffect(() => {
+    const hash = typeof window !== "undefined" ? window.location.hash.replace("#", "") : "";
+    if (hash && SECTIONS.some((s) => s.key === hash)) setSection(hash as SectionKey);
+  }, []);
+
+  const { settings, isLoading, error, save } = useCompanySettings();
+  const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const resetTimer = useRef<number | null>(null);
+
+  const flashSaved = useCallback(() => {
+    setSaveState("saved");
+    if (resetTimer.current) window.clearTimeout(resetTimer.current);
+    resetTimer.current = window.setTimeout(() => setSaveState("idle"), 1800);
+  }, []);
+
+  const commit = useCallback(
+    async (patch: SettingsPatch, sectionName: string) => {
+      if (!canEdit) return;
+      setSaveState("saving");
+      setSaveMessage(null);
+      try {
+        await save(patch, sectionName);
+        flashSaved();
+      } catch (err: any) {
+        setSaveState("error");
+        setSaveMessage(translateError(err?.message, isAr));
+      }
+    },
+    [canEdit, flashSaved, isAr, save],
   );
 
-  const loadAll = useCallback(async () => {
-    if (!organization?.id) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const [p, s, m, b] = await Promise.all([
-        getOrganizationProfile(organization.id),
-        getOrganizationSettings(organization.id),
-        listCompanyMembers(organization.id),
-        listBranches(),
-      ]);
-      setProfile(p);
-      setSettings(
-        s ?? {
-          organization_id: organization.id,
-          default_language: "ar",
-          currency: "SAR",
-          timezone: "Asia/Riyadh",
-          logo_url: null,
-          background_url: null,
-          primary_color: null,
-          secondary_color: null,
-          customer_registration_enabled: true,
-          customer_comments_enabled: true,
-          one_drink_per_day: true,
-        },
-      );
-      setMembers(m);
-      setBranches(b);
-      setDraft({ profile: {}, settings: {} });
-      initialLoaded.current = true;
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setLoading(false);
-    }
-  }, [organization?.id]);
+  /* ---- profile ---- */
+  const profileQuery = useQuery({
+    queryKey: ["company-profile", organizationId],
+    enabled: Boolean(organizationId),
+    queryFn: () => getOrganizationProfile(organizationId as string),
+  });
+  const profile = profileQuery.data ?? null;
 
-  useEffect(() => {
-    void loadAll();
-  }, [loadAll]);
-
-  useEffect(() => {
-    if (!flash) return;
-    const t = setTimeout(() => setFlash(null), 3200);
-    return () => clearTimeout(t);
-  }, [flash]);
-
-  const hasChanges =
-    Object.keys(draft.profile).length > 0 || Object.keys(draft.settings).length > 0;
-
-  useEffect(() => {
-    if (!hasChanges) return;
-    const handler = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = "";
-    };
-    window.addEventListener("beforeunload", handler);
-    return () => window.removeEventListener("beforeunload", handler);
-  }, [hasChanges]);
-
-  const currentProfile = { ...profile, ...draft.profile } as OrganizationProfileRow;
-  const currentSettings = { ...settings, ...draft.settings } as OrganizationSettingsRow;
-
-  function patchProfile(patch: Partial<OrganizationProfileRow>) {
-    setDraft((d) => ({ ...d, profile: { ...d.profile, ...patch } }));
-  }
-  function patchSettings(patch: Partial<OrganizationSettingsRow>) {
-    setDraft((d) => ({ ...d, settings: { ...d.settings, ...patch } }));
-  }
-
-  async function save() {
-    if (!organization?.id || !hasChanges) return;
-    setSaving(true);
-    setFlash(null);
-    try {
-      if (Object.keys(draft.profile).length > 0) {
-        // Strip fields users cannot modify.
-        const { id: _id, organization_type: _t, status: _s, owner_user_id: _o, organization_code: _c, slug: _sl, created_at: _ca, updated_at: _ua, ...safe } =
-          draft.profile as OrganizationProfileRow;
-        await updateOrganizationProfile(organization.id, safe);
+  const commitProfile = useCallback(
+    async (patch: Partial<OrganizationProfileRow>) => {
+      if (!canEdit || !organizationId) return;
+      const previous = profile;
+      setSaveState("saving");
+      setSaveMessage(null);
+      queryClient.setQueryData(["company-profile", organizationId], { ...previous, ...patch });
+      try {
+        const row = await updateOrganizationProfile(organizationId, patch as any);
+        queryClient.setQueryData(["company-profile", organizationId], row);
+        void queryClient.invalidateQueries({ predicate: (q) => q.queryKey[0] !== "company-profile" });
+        flashSaved();
+      } catch (err: any) {
+        queryClient.setQueryData(["company-profile", organizationId], previous);
+        setSaveState("error");
+        setSaveMessage(translateError(err?.message, isAr));
       }
-      if (Object.keys(draft.settings).length > 0) {
-        const { organization_id: _oid, ...safeSettings } = draft.settings as OrganizationSettingsRow;
-        await upsertOrganizationSettings(organization.id, safeSettings);
-      }
-      await loadAll();
-      setFlash({ tone: "success", text: isRTL ? "تم حفظ التغييرات" : "Changes saved" });
-    } catch (e) {
-      setFlash({ tone: "error", text: e instanceof Error ? e.message : String(e) });
-    } finally {
-      setSaving(false);
-    }
-  }
+    },
+    [canEdit, flashSaved, isAr, organizationId, profile, queryClient],
+  );
 
-  function discard() {
-    setDraft({ profile: {}, settings: {} });
-  }
-
-  if (!organization) {
-    return <div className="company-page">{isRTL ? "لا توجد شركة نشطة" : "No active organization"}</div>;
-  }
-
-  if (loading) {
-    return (
-      <div className="company-page" dir={isRTL ? "rtl" : "ltr"}>
-        <div className="settings-skeleton">
-          <div className="settings-skeleton-row" />
-          <div className="settings-skeleton-row" />
-          <div className="settings-skeleton-row" />
-        </div>
-      </div>
-    );
-  }
-
-  const active = visibleSections.find((s) => s.key === section) ?? visibleSections[0];
-  if (!active) {
-    return <div className="company-page">{isRTL ? "لا توجد صلاحية" : "No access"}</div>;
-  }
+  if (!organizationId) return null;
 
   return (
-    <div className="company-page settings-shell" dir={isRTL ? "rtl" : "ltr"}>
-      <header className="company-page-header">
+    <div className="cs-shell" dir={isAr ? "rtl" : "ltr"}>
+      <header className="cs-header">
         <div>
-          <span className="company-kicker">{isRTL ? "الإعدادات" : "Settings"}</span>
-          <h1>{isRTL ? "إعدادات الشركة" : "Company Settings"}</h1>
+          <span className="cs-eyebrow">{isAr ? "لوحة الشركة" : "Company"}</span>
+          <h1>{isAr ? "إعدادات الشركة" : "Company Settings"}</h1>
           <p>
-            {isRTL
-              ? "تحكم في هوية شركتك، فرقك، قواعد الطلبات، وتفضيلاتك."
-              : "Manage your company identity, teams, ordering rules, and preferences."}
+            {isAr
+              ? "مصدر واحد لكل إعدادات الشركة — كل تغيير يُحفظ فورًا ويُطبَّق على النظام بالكامل."
+              : "One source of truth for company configuration — every change saves instantly and applies everywhere."}
           </p>
         </div>
+        <SaveIndicator state={saveState} lang={isAr ? "ar" : "en"} message={saveMessage} />
       </header>
 
-      {error && <div className="settings-banner error">{error}</div>}
+      {!canEdit ? (
+        <div className="cs-readonly">
+          {isAr
+            ? "لديك صلاحية عرض فقط. تعديل إعدادات الشركة متاح لمالك الشركة والمشرفين."
+            : "You have read-only access. Only company owners and admins can edit settings."}
+        </div>
+      ) : null}
 
-      <div className="settings-layout">
-        <aside className="settings-nav" aria-label="Settings navigation">
+      <div className="cs-layout">
+        <nav className="cs-nav" aria-label={isAr ? "أقسام الإعدادات" : "Settings sections"}>
+          {visible.map((s) => (
+            <button
+              key={s.key}
+              type="button"
+              data-active={s.key === section ? "true" : "false"}
+              onClick={() => setSection(s.key)}
+            >
+              <s.icon className="h-4 w-4" />
+              <span>{isAr ? s.ar : s.en}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="cs-content">
+          {isLoading ? (
+            <div className="cs-loading">
+              <Loader2 className="h-5 w-5 animate-spin" />
+            </div>
+          ) : error ? (
+            <div className="cs-error-panel">{error.message}</div>
+          ) : settings ? (
+            <SectionBody
+              section={section}
+              settings={settings}
+              profile={profile}
+              organizationId={organizationId}
+              isAr={isAr}
+              canEdit={canEdit}
+              commit={commit}
+              commitProfile={commitProfile}
+            />
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function translateError(code: string | undefined, isAr: boolean): string {
+  const map: Record<string, [string, string]> = {
+    settings_invalid_currency: ["العملة غير صحيحة", "Invalid currency code"],
+    settings_invalid_tax: ["نسبة الضريبة غير صحيحة", "Tax percentage must be 0–100"],
+    settings_no_payment_method: ["يجب تفعيل وسيلة دفع واحدة على الأقل", "At least one payment method is required"],
+    settings_default_payment_not_enabled: [
+      "وسيلة الدفع الافتراضية غير مفعّلة",
+      "Default payment method must be enabled",
+    ],
+    settings_invalid_bonus_days: ["أيام المكافأة غير صحيحة", "Bonus days must be 0–365"],
+    settings_invalid_prep_time: ["مدة التحضير غير صحيحة", "Preparation time must be 0–240 minutes"],
+    settings_invalid_session_timeout: ["مدة الجلسة غير صحيحة", "Session timeout must be 15–10080 minutes"],
+    cannot_demote_last_owner: ["لا يمكن تنزيل آخر مالك", "Cannot demote the last owner"],
+  };
+  if (code && map[code]) return isAr ? map[code]![0] : map[code]![1];
+  return code || (isAr ? "تعذر الحفظ" : "Could not save");
+}
+
+/* ------------------------------------------------------------------ inputs */
+
+function TextInput({
+  value,
+  onCommit,
+  validate,
+  disabled,
+  type = "text",
+  placeholder,
+  isAr,
+}: {
+  value: string;
+  onCommit: (value: string) => void;
+  validate?: (value: string) => string | null;
+  disabled?: boolean;
+  type?: string;
+  placeholder?: string;
+  isAr: boolean;
+}) {
+  const [local, setLocal] = useState(value);
+  const [error, setError] = useState<string | null>(null);
+  const timer = useRef<number | null>(null);
+
+  useEffect(() => setLocal(value), [value]);
+
+  const push = (next: string) => {
+    const message = validate ? validate(next) : null;
+    setError(message);
+    if (message) return;
+    if (next === value) return;
+    onCommit(next);
+  };
+
+  return (
+    <>
+      <input
+        className="cs-input"
+        type={type}
+        value={local}
+        disabled={disabled}
+        placeholder={placeholder}
+        onChange={(e) => {
+          const next = e.target.value;
+          setLocal(next);
+          if (timer.current) window.clearTimeout(timer.current);
+          timer.current = window.setTimeout(() => push(next), 800);
+        }}
+        onBlur={() => {
+          if (timer.current) window.clearTimeout(timer.current);
+          push(local);
+        }}
+      />
+      {error ? <span className="cs-error">{error}</span> : null}
+      {!error && local !== value ? (
+        <span className="cs-hint">{isAr ? "سيتم الحفظ تلقائيًا…" : "Saves automatically…"}</span>
+      ) : null}
+    </>
+  );
+}
+
+function NumberInput({
+  value,
+  onCommit,
+  min,
+  max,
+  disabled,
+  isAr,
+}: {
+  value: number;
+  onCommit: (value: number) => void;
+  min: number;
+  max: number;
+  disabled?: boolean;
+  isAr: boolean;
+}) {
+  return (
+    <TextInput
+      isAr={isAr}
+      type="number"
+      disabled={disabled}
+      value={String(value)}
+      validate={(raw) => {
+        const n = Number(raw);
+        if (raw.trim() === "" || Number.isNaN(n)) return isAr ? "قيمة غير صحيحة" : "Invalid number";
+        if (n < min || n > max) return isAr ? `القيمة بين ${min} و ${max}` : `Value must be ${min}–${max}`;
+        return null;
+      }}
+      onCommit={(raw) => onCommit(Number(raw))}
+    />
+  );
+}
+
+/* ----------------------------------------------------------------- sections */
+
+type BodyProps = {
+  section: SectionKey;
+  settings: OrganizationSettingsRow;
+  profile: OrganizationProfileRow | null;
+  organizationId: string;
+  isAr: boolean;
+  canEdit: boolean;
+  commit: (patch: SettingsPatch, section: string) => Promise<void>;
+  commitProfile: (patch: Partial<OrganizationProfileRow>) => Promise<void>;
+};
+
+function SectionBody(props: BodyProps) {
+  switch (props.section) {
+    case "general":
+      return <GeneralSection {...props} />;
+    case "business":
+      return <BusinessSection {...props} />;
+    case "membership":
+      return <MembershipSection {...props} />;
+    case "ordering":
+      return <OrderingSection {...props} />;
+    case "experience":
+      return <ExperienceSection {...props} />;
+    case "notifications":
+      return <NotificationsSection {...props} />;
+    case "security":
+      return <SecuritySection {...props} />;
+    case "employees":
+      return <EmployeesSection {...props} />;
+    case "branches":
+      return <BranchesSection {...props} />;
+    case "integrations":
+      return <IntegrationsSection {...props} />;
+    case "audit":
+      return <AuditSection {...props} />;
+    default:
+      return null;
+  }
+}
+
+function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfile }: BodyProps) {
+  const d = canEdit ? undefined : true;
+  return (
+    <div className="cs-stack">
+      <Card
+        title={isAr ? "هوية الشركة" : "Company identity"}
+        description={isAr ? "تظهر هذه البيانات في كل الواجهات والفواتير." : "Used across every screen and invoice."}
+      >
+        <Row label={isAr ? "شعار الشركة" : "Company logo"} hint={isAr ? "رابط صورة مباشر" : "Direct image URL"}>
+          <div className="cs-logo-row">
+            {profile?.logo_url ? <img src={profile.logo_url} alt={isAr ? "شعار الشركة" : "Company logo"} /> : <div className="cs-logo-empty" />}
+            <TextInput
+              isAr={isAr}
+              disabled={d}
+              value={profile?.logo_url ?? ""}
+              placeholder="https://…"
+              validate={(v) => (v && !/^https?:\/\//.test(v) ? (isAr ? "رابط غير صحيح" : "Must be a valid URL") : null)}
+              onCommit={(v) => commitProfile({ logo_url: v || null })}
+            />
+          </div>
+        </Row>
+        <Row label={isAr ? "الاسم بالعربية" : "Company name (Arabic)"}>
+          <TextInput
+            isAr={isAr}
+            disabled={d}
+            value={profile?.name_ar ?? ""}
+            validate={(v) => (v.trim().length < 2 ? (isAr ? "الاسم مطلوب" : "Name is required") : null)}
+            onCommit={(v) => commitProfile({ name_ar: v.trim() })}
+          />
+        </Row>
+        <Row label={isAr ? "الاسم بالإنجليزية" : "Company name (English)"}>
+          <TextInput isAr={isAr} disabled={d} value={profile?.name_en ?? ""} onCommit={(v) => commitProfile({ name_en: v.trim() || null })} />
+        </Row>
+        <Row label={isAr ? "رمز الشركة" : "Company code"} hint={isAr ? "للقراءة فقط" : "Read only"}>
+          <input className="cs-input" value={profile?.organization_code ?? ""} readOnly disabled />
+        </Row>
+        <Row label={isAr ? "البريد الإلكتروني" : "Email"}>
+          <TextInput
+            isAr={isAr}
+            disabled={d}
+            value={profile?.email ?? ""}
+            validate={(v) => (v && !EMAIL_RE.test(v) ? (isAr ? "بريد غير صحيح" : "Invalid email") : null)}
+            onCommit={(v) => commitProfile({ email: v.trim() || null })}
+          />
+        </Row>
+        <Row label={isAr ? "رقم الجوال" : "Phone"} hint="05XXXXXXXX">
+          <TextInput
+            isAr={isAr}
+            disabled={d}
+            value={profile?.phone ?? ""}
+            validate={(v) => (v && !PHONE_RE.test(v.trim()) ? (isAr ? "رقم غير صحيح" : "Invalid phone number") : null)}
+            onCommit={(v) => commitProfile({ phone: v.trim() || null })}
+          />
+        </Row>
+        <Row label={isAr ? "العنوان" : "Address"}>
+          <TextInput isAr={isAr} disabled={d} value={settings.address ?? ""} onCommit={(v) => commit({ address: v.trim() || null }, "general")} />
+        </Row>
+      </Card>
+
+      <Card title={isAr ? "المنطقة واللغة" : "Locale"} description={isAr ? "تتحكم في التواريخ والعملة والواجهات." : "Controls dates, currency and default UI language."}>
+        <Row label={isAr ? "المنطقة الزمنية" : "Time zone"}>
           <select
-            className="settings-nav-mobile"
-            value={active.key}
-            onChange={(e) => setSection(e.target.value as SectionKey)}
+            className="cs-input"
+            disabled={d}
+            value={settings.timezone}
+            onChange={(e) => commit({ timezone: e.target.value }, "general")}
           >
-            {visibleSections.map((s) => (
-              <option key={s.key} value={s.key}>
-                {isRTL ? s.labelAr : s.labelEn}
+            {["Asia/Riyadh", "Asia/Dubai", "Asia/Kuwait", "Asia/Qatar", "Africa/Cairo", "UTC"].map((tz) => (
+              <option key={tz} value={tz}>
+                {tz}
               </option>
             ))}
           </select>
-          <ul className="settings-nav-list">
-            {visibleSections.map((s) => {
-              const Icon = s.icon;
-              const on = s.key === active.key;
-              return (
-                <li key={s.key}>
-                  <button
-                    type="button"
-                    className={on ? "settings-nav-item active" : "settings-nav-item"}
-                    onClick={() => setSection(s.key)}
-                    aria-current={on ? "page" : undefined}
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{isRTL ? s.labelAr : s.labelEn}</span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </aside>
-
-        <section className="settings-content">
-          {active.key === "profile" && (
-            <ProfileSection
-              isRTL={isRTL}
-              role={role}
-              profile={currentProfile}
-              onChange={patchProfile}
-            />
-          )}
-          {active.key === "branding" && (
-            <BrandingSection
-              isRTL={isRTL}
-              profile={currentProfile}
-              settings={currentSettings}
-              onChangeProfile={patchProfile}
-              onChangeSettings={patchSettings}
-            />
-          )}
-          {active.key === "branches" && <BranchesSection isRTL={isRTL} branches={branches} />}
-          {active.key === "subscription" && (
-            <SubscriptionSection isRTL={isRTL} settings={currentSettings} onChange={patchSettings} />
-          )}
-          {active.key === "ordering" && (
-            <OrderingSection isRTL={isRTL} settings={currentSettings} onChange={patchSettings} />
-          )}
-          {active.key === "notifications" && <NotificationsSection isRTL={isRTL} />}
-          {active.key === "team" && (
-            <TeamSection
-              isRTL={isRTL}
-              organizationId={organization.id}
-              role={role}
-              members={members}
-              onReload={loadAll}
-              setFlash={setFlash}
-            />
-          )}
-          {active.key === "customer-success" && <CustomerSuccessSection isRTL={isRTL} />}
-          {active.key === "security" && (
-            <SecuritySection isRTL={isRTL} email={session?.user?.email ?? null} />
-          )}
-          {active.key === "localization" && (
-            <LocalizationSection isRTL={isRTL} settings={currentSettings} onChange={patchSettings} />
-          )}
-          {active.key === "integrations" && <IntegrationsSection isRTL={isRTL} />}
-          {active.key === "audit" && <AuditSection isRTL={isRTL} />}
-          {active.key === "danger" && (
-            <DangerZoneSection isRTL={isRTL} profile={profile} setFlash={setFlash} />
-          )}
-        </section>
-      </div>
-
-      {hasChanges && (
-        <div className="settings-save-bar" role="status" aria-live="polite">
-          <div className="settings-save-bar-msg">
-            <AlertTriangle className="h-4 w-4" />
-            {isRTL ? "لديك تغييرات غير محفوظة" : "You have unsaved changes"}
-          </div>
-          <div className="settings-save-bar-actions">
-            <button className="company-btn-ghost" onClick={discard} disabled={saving}>
-              {isRTL ? "تجاهل" : "Discard"}
-            </button>
-            <button className="company-btn-primary" onClick={() => void save()} disabled={saving}>
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              {saving ? (isRTL ? "جارٍ الحفظ…" : "Saving…") : isRTL ? "حفظ" : "Save"}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {flash && (
-        <div className={`settings-flash ${flash.tone}`} role="status">
-          {flash.text}
-        </div>
-      )}
+        </Row>
+        <Row label={isAr ? "اللغة الافتراضية" : "Language"}>
+          <Segmented
+            disabled={d}
+            value={settings.default_language}
+            onChange={(v) => commit({ default_language: v }, "general")}
+            options={[
+              { value: "ar" as const, label: "العربية" },
+              { value: "en" as const, label: "English" },
+            ]}
+          />
+        </Row>
+        <Row label={isAr ? "العملة" : "Currency"} hint={isAr ? "رمز من ٣ أحرف" : "3-letter code"}>
+          <TextInput
+            isAr={isAr}
+            disabled={d}
+            value={settings.currency}
+            validate={(v) => (!/^[A-Za-z]{3}$/.test(v.trim()) ? (isAr ? "رمز عملة غير صحيح" : "Invalid currency code") : null)}
+            onCommit={(v) => commit({ currency: v.trim().toUpperCase() }, "general")}
+          />
+        </Row>
+      </Card>
     </div>
   );
 }
 
-// ————————————————————————————————— Sections
+function BusinessSection({ settings, isAr, canEdit, commit }: BodyProps) {
+  const d = canEdit ? undefined : true;
+  const toggleMethod = (method: PaymentMethod, on: boolean) => {
+    const next = on
+      ? Array.from(new Set([...settings.payment_methods, method]))
+      : settings.payment_methods.filter((m) => m !== method);
+    if (next.length === 0) return;
+    const patch: SettingsPatch = { payment_methods: next };
+    if (!next.includes(settings.default_payment_method)) patch.default_payment_method = next[0];
+    void commit(patch, "business");
+  };
 
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  children: ReactNode;
-}) {
   return (
-    <label className="company-field">
-      <span>{label}</span>
-      {children}
-      {hint && <em className="settings-hint">{hint}</em>}
-    </label>
-  );
-}
-
-function ProfileSection({
-  isRTL,
-  role,
-  profile,
-  onChange,
-}: {
-  isRTL: boolean;
-  role: OrganizationRole | null;
-  profile: OrganizationProfileRow;
-  onChange: (p: Partial<OrganizationProfileRow>) => void;
-}) {
-  const readOnly = role === "manager";
-  return (
-    <div className="settings-section">
-      <SectionHeader
-        title={isRTL ? "ملف الشركة" : "Company Profile"}
-        subtitle={isRTL ? "المعلومات الأساسية لشركتك." : "Core identity of your company."}
-      />
-      <div className="company-card-grid two">
-        <div className="company-card">
-          <h3>{isRTL ? "الهوية" : "Identity"}</h3>
-          <Field label={isRTL ? "الاسم بالعربية" : "Arabic name"}>
-            <input
-              value={profile.name_ar ?? ""}
-              disabled={readOnly}
-              onChange={(e) => onChange({ name_ar: e.target.value })}
+    <div className="cs-stack">
+      <Card
+        title={isAr ? "قنوات البيع" : "Sales channels"}
+        description={isAr ? "تحدد أين يمكن بيع الاشتراكات فعليًا." : "Controls where subscriptions can actually be sold."}
+      >
+        {(
+          [
+            ["sales_channel_customer_app", isAr ? "تطبيق العميل" : "Customer App"],
+            ["sales_channel_cashier", isAr ? "الكاشير" : "Cashier"],
+            ["sales_channel_website", isAr ? "الموقع الإلكتروني" : "Website"],
+            ["sales_channel_external_api", isAr ? "واجهة خارجية (API)" : "External API"],
+          ] as const
+        ).map(([key, label]) => (
+          <Row key={key} label={label}>
+            <Toggle
+              label={label}
+              disabled={d}
+              checked={settings[key] as boolean}
+              onChange={(v) => commit({ [key]: v } as SettingsPatch, "business")}
             />
-          </Field>
-          <Field label={isRTL ? "الاسم بالإنجليزية" : "English name"}>
-            <input
-              value={profile.name_en ?? ""}
-              disabled={readOnly}
-              onChange={(e) => onChange({ name_en: e.target.value })}
+          </Row>
+        ))}
+      </Card>
+
+      <Card
+        title={isAr ? "وسائل الدفع" : "Payment methods"}
+        description={isAr ? "الكاشير وصفحة الدفع يعرضان الوسائل المفعّلة فقط." : "Cashier and checkout only show enabled methods."}
+      >
+        <div className="cs-chips">
+          {PAYMENT_METHODS.map((m) => (
+            <CheckChip
+              key={m.value}
+              disabled={d}
+              label={isAr ? m.ar : m.en}
+              checked={settings.payment_methods.includes(m.value)}
+              onChange={(v) => toggleMethod(m.value, v)}
             />
-          </Field>
-          <Field label={isRTL ? "رمز الشركة" : "Company code"} hint={isRTL ? "للقراءة فقط" : "Read-only"}>
-            <input value={profile.organization_code ?? ""} readOnly />
-          </Field>
-          <Field label={isRTL ? "الحالة" : "Status"} hint={isRTL ? "للقراءة فقط" : "Read-only"}>
-            <input value={profile.status ?? ""} readOnly />
-          </Field>
+          ))}
         </div>
-        <div className="company-card">
-          <h3>{isRTL ? "التواصل" : "Contact"}</h3>
-          <Field label={isRTL ? "البريد الإلكتروني" : "Contact email"}>
-            <input
-              type="email"
-              value={profile.email ?? ""}
-              disabled={readOnly}
-              onChange={(e) => onChange({ email: e.target.value || null })}
-            />
-          </Field>
-          <Field label={isRTL ? "الهاتف" : "Contact phone"}>
-            <input
-              value={profile.phone ?? ""}
-              disabled={readOnly}
-              onChange={(e) => onChange({ phone: e.target.value || null })}
-            />
-          </Field>
-        </div>
-      </div>
+        <Row label={isAr ? "وسيلة الدفع الافتراضية" : "Default payment method"}>
+          <select
+            className="cs-input"
+            disabled={d}
+            value={settings.default_payment_method}
+            onChange={(e) => commit({ default_payment_method: e.target.value as PaymentMethod }, "business")}
+          >
+            {PAYMENT_METHODS.filter((m) => settings.payment_methods.includes(m.value)).map((m) => (
+              <option key={m.value} value={m.value}>
+                {isAr ? m.ar : m.en}
+              </option>
+            ))}
+          </select>
+        </Row>
+      </Card>
+
+      <Card title={isAr ? "الضريبة" : "Tax"} description={isAr ? "تُطبَّق على كل الفواتير والتقارير." : "Applied to every invoice and report."}>
+        <Row label={isAr ? "تفعيل الضريبة" : "Tax enabled"}>
+          <Toggle label="tax" disabled={d} checked={settings.tax_enabled} onChange={(v) => commit({ tax_enabled: v }, "business")} />
+        </Row>
+        <Row label={isAr ? "نسبة الضريبة %" : "Tax percentage %"}>
+          <NumberInput
+            isAr={isAr}
+            disabled={d || !settings.tax_enabled}
+            value={Number(settings.tax_percentage)}
+            min={0}
+            max={100}
+            onCommit={(v) => commit({ tax_percentage: v }, "business")}
+          />
+        </Row>
+        <Row label={isAr ? "السعر شامل الضريبة" : "Prices include tax"}>
+          <Toggle
+            label="tax included"
+            disabled={d || !settings.tax_enabled}
+            checked={settings.tax_included}
+            onChange={(v) => commit({ tax_included: v }, "business")}
+          />
+        </Row>
+      </Card>
     </div>
   );
 }
 
-function BrandingSection({
-  isRTL,
-  profile,
-  settings,
-  onChangeProfile,
-  onChangeSettings,
-}: {
-  isRTL: boolean;
-  profile: OrganizationProfileRow;
-  settings: OrganizationSettingsRow;
-  onChangeProfile: (p: Partial<OrganizationProfileRow>) => void;
-  onChangeSettings: (p: Partial<OrganizationSettingsRow>) => void;
-}) {
+function MembershipSection({ settings, isAr, canEdit, commit }: BodyProps) {
+  const d = canEdit ? undefined : true;
   return (
-    <div className="settings-section">
-      <SectionHeader
-        title={isRTL ? "الهوية البصرية" : "Branding"}
-        subtitle={isRTL ? "الشعار والألوان الظاهرة للعملاء." : "Logo and colors shown to customers."}
-      />
-      <div className="company-card-grid two">
-        <div className="company-card">
-          <h3>{isRTL ? "الشعار" : "Logo"}</h3>
-          <div className="settings-logo-preview" aria-hidden>
-            {profile.logo_url ? (
-              <img src={profile.logo_url} alt="logo" />
-            ) : (
-              <div className="settings-logo-empty">
-                <ImageIcon className="h-6 w-6" />
-              </div>
-            )}
-          </div>
-          <Field label={isRTL ? "رابط الشعار" : "Logo URL"} hint={isRTL ? "استخدم رابطًا مباشرًا لصورة" : "Use a direct image URL"}>
-            <input
-              value={profile.logo_url ?? ""}
-              onChange={(e) => onChangeProfile({ logo_url: e.target.value || null })}
-              placeholder="https://…"
-            />
-          </Field>
-        </div>
-        <div className="company-card">
-          <h3>{isRTL ? "الألوان" : "Colors"}</h3>
-          <Field label={isRTL ? "اللون الأساسي" : "Primary color"}>
-            <input
-              type="text"
-              value={profile.primary_color ?? ""}
-              placeholder="#3A2617"
-              onChange={(e) => onChangeProfile({ primary_color: e.target.value || null })}
-            />
-          </Field>
-          <Field label={isRTL ? "اللون الثانوي" : "Secondary color"}>
-            <input
-              type="text"
-              value={profile.secondary_color ?? ""}
-              placeholder="#C8963C"
-              onChange={(e) => onChangeProfile({ secondary_color: e.target.value || null })}
-            />
-          </Field>
-          <Field label={isRTL ? "خلفية عرض العميل" : "Customer background URL"}>
-            <input
-              value={settings.background_url ?? ""}
-              onChange={(e) => onChangeSettings({ background_url: e.target.value || null })}
-              placeholder="https://…"
-            />
-          </Field>
-        </div>
-      </div>
+    <div className="cs-stack">
+      <Card title={isAr ? "تفعيل الاشتراك" : "Subscription activation"}>
+        <Row label={isAr ? "التفعيل الافتراضي" : "Default activation"}>
+          <Segmented
+            disabled={d}
+            value={settings.default_activation}
+            onChange={(v) => commit({ default_activation: v }, "membership")}
+            options={[
+              { value: "immediate" as const, label: isAr ? "فوري" : "Immediately" },
+              { value: "manual" as const, label: isAr ? "يدوي" : "Manual" },
+              { value: "scheduled" as const, label: isAr ? "مجدول" : "Scheduled" },
+            ]}
+          />
+        </Row>
+        <Row label={isAr ? "التجديد التلقائي" : "Auto renewal"}>
+          <Toggle label="auto renewal" disabled={d} checked={settings.auto_renewal} onChange={(v) => commit({ auto_renewal: v }, "membership")} />
+        </Row>
+        <Row
+          label={isAr ? "أيام المكافأة الافتراضية" : "Default bonus days"}
+          hint={isAr ? "يمكن لكل خطة تجاوزها" : "Each plan can override this"}
+        >
+          <NumberInput isAr={isAr} disabled={d} value={settings.default_bonus_days} min={0} max={365} onCommit={(v) => commit({ default_bonus_days: v }, "membership")} />
+        </Row>
+        <Row label={isAr ? "مشروب واحد يوميًا" : "One drink per day"}>
+          <Toggle label="one per day" disabled={d} checked={settings.one_drink_per_day} onChange={(v) => commit({ one_drink_per_day: v }, "membership")} />
+        </Row>
+      </Card>
     </div>
   );
 }
 
-function BranchesSection({ isRTL, branches }: { isRTL: boolean; branches: BranchRow[] }) {
+function OrderingSection({ settings, isAr, canEdit, commit }: BodyProps) {
+  const d = canEdit ? undefined : true;
   return (
-    <div className="settings-section">
-      <SectionHeader
-        title={isRTL ? "الفروع" : "Branches"}
-        subtitle={isRTL ? "ملخص فروعك، والإدارة الكاملة في صفحة الفروع." : "Summary view; full management on the Branches page."}
-      />
-      <div className="company-card">
-        {branches.length === 0 ? (
-          <div className="settings-empty">{isRTL ? "لا توجد فروع بعد" : "No branches yet"}</div>
-        ) : (
-          <table className="settings-table">
-            <thead>
-              <tr>
-                <th>{isRTL ? "الاسم" : "Name"}</th>
-                <th>{isRTL ? "العنوان" : "Address"}</th>
-                <th>{isRTL ? "الحالة" : "Status"}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {branches.map((b) => (
-                <tr key={b.id}>
-                  <td>{isRTL ? b.name_ar : b.name_en}</td>
-                  <td>{(isRTL ? b.address_ar : b.address_en) ?? "—"}</td>
-                  <td>{b.is_active ? (isRTL ? "نشط" : "Active") : isRTL ? "متوقف" : "Inactive"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-        <div className="settings-inline-action">
-          <Link to="/admin/branches" className="company-btn-primary">
-            <ExternalLink className="h-4 w-4" />
-            {isRTL ? "إدارة الفروع" : "Manage Branches"}
-          </Link>
-        </div>
-      </div>
+    <div className="cs-stack">
+      <Card title={isAr ? "قواعد الطلبات" : "Ordering rules"}>
+        <Row label={isAr ? "مدة تحضير الطلب (دقيقة)" : "Order preparation time (minutes)"}>
+          <NumberInput isAr={isAr} disabled={d} value={settings.order_prep_minutes} min={0} max={240} onCommit={(v) => commit({ order_prep_minutes: v }, "ordering")} />
+        </Row>
+        <Row label={isAr ? "صيغة رقم الطلب" : "Order number format"}>
+          <Segmented
+            disabled={d}
+            value={settings.order_number_format}
+            onChange={(v) => commit({ order_number_format: v }, "ordering")}
+            options={[
+              { value: "sequential" as const, label: isAr ? "تسلسلي" : "Sequential" },
+              { value: "daily" as const, label: isAr ? "يومي" : "Daily" },
+              { value: "branch_prefixed" as const, label: isAr ? "برمز الفرع" : "Branch prefixed" },
+            ]}
+          />
+        </Row>
+        <Row label={isAr ? "سلوك الطابور" : "Queue behaviour"}>
+          <Segmented
+            disabled={d}
+            value={settings.queue_behavior}
+            onChange={(v) => commit({ queue_behavior: v }, "ordering")}
+            options={[
+              { value: "fifo" as const, label: isAr ? "الأقدم أولًا" : "FIFO" },
+              { value: "priority" as const, label: isAr ? "حسب الأولوية" : "Priority" },
+              { value: "manual" as const, label: isAr ? "يدوي" : "Manual" },
+            ]}
+          />
+        </Row>
+        <Row label={isAr ? "تسجيل العملاء الذاتي" : "Customer self-registration"}>
+          <Toggle
+            label="registration"
+            disabled={d}
+            checked={settings.customer_registration_enabled}
+            onChange={(v) => commit({ customer_registration_enabled: v }, "ordering")}
+          />
+        </Row>
+        <Row label={isAr ? "تعليقات العملاء" : "Customer comments"}>
+          <Toggle
+            label="comments"
+            disabled={d}
+            checked={settings.customer_comments_enabled}
+            onChange={(v) => commit({ customer_comments_enabled: v }, "ordering")}
+          />
+        </Row>
+        <Row label={isAr ? "السماح بأكثر من طلب نشط" : "Allow multiple active orders"}>
+          <Toggle
+            label="multiple orders"
+            disabled={d}
+            checked={settings.allow_multiple_active_orders}
+            onChange={(v) => commit({ allow_multiple_active_orders: v }, "ordering")}
+          />
+        </Row>
+      </Card>
     </div>
   );
 }
 
-function SubscriptionSection({
-  isRTL,
-  settings,
-  onChange,
-}: {
-  isRTL: boolean;
-  settings: OrganizationSettingsRow;
-  onChange: (p: Partial<OrganizationSettingsRow>) => void;
-}) {
-  return (
-    <div className="settings-section">
-      <SectionHeader
-        title={isRTL ? "قواعد الاشتراك" : "Subscription Rules"}
-        subtitle={
-          isRTL
-            ? "قواعد ثابتة تحكم تنفيذ الاشتراكات اليومية."
-            : "Rules that govern how subscriptions are consumed each day."
-        }
-      />
-      <div className="company-card">
-        <Toggle
-          label={isRTL ? "مشروب واحد فقط لكل يوم" : "One drink per day"}
-          hint={
-            isRTL
-              ? "قاعدة عمل ثابتة على مستوى المنصة. لا يمكن إيقافها حاليًا."
-              : "Platform-wide business rule. Cannot be disabled at this time."
-          }
-          checked={settings.one_drink_per_day}
-          disabled
-          onChange={(v) => onChange({ one_drink_per_day: v })}
-        />
-        <p className="settings-hint">
-          {isRTL
-            ? "الحصة اليومية غير المستخدمة لا تُرحَّل. تُبدأ الاشتراكات فور بيع الكوبون."
-            : "Unused daily entitlement does not carry forward. Subscriptions activate on coupon sale."}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function OrderingSection({
-  isRTL,
-  settings,
-  onChange,
-}: {
-  isRTL: boolean;
-  settings: OrganizationSettingsRow;
-  onChange: (p: Partial<OrganizationSettingsRow>) => void;
-}) {
-  return (
-    <div className="settings-section">
-      <SectionHeader
-        title={isRTL ? "قواعد الطلبات" : "Ordering Rules"}
-        subtitle={isRTL ? "تجربة العميل عند تقديم الطلب." : "Customer experience when placing an order."}
-      />
-      <div className="company-card">
-        <Toggle
-          label={isRTL ? "السماح بتسجيل العملاء" : "Allow customer registration"}
-          checked={settings.customer_registration_enabled}
-          onChange={(v) => onChange({ customer_registration_enabled: v })}
-        />
-        <Toggle
-          label={isRTL ? "السماح بملاحظات العميل" : "Allow customer notes on orders"}
-          checked={settings.customer_comments_enabled}
-          onChange={(v) => onChange({ customer_comments_enabled: v })}
-        />
-      </div>
-    </div>
-  );
-}
-
-function NotificationsSection({ isRTL }: { isRTL: boolean }) {
-  return (
-    <div className="settings-section">
-      <SectionHeader
-        title={isRTL ? "التنبيهات" : "Notifications"}
-        subtitle={isRTL ? "قنوات التنبيه الحالية." : "Current notification channels."}
-      />
-      <div className="company-card">
-        <div className="settings-empty">
-          {isRTL
-            ? "لا توجد بنية تنبيهات مفعّلة حاليًا. سيتم دعم هذا القسم بعد ربط قناة التنبيهات."
-            : "No notification backend is wired yet. This section will activate once a notification channel is enabled."}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function TeamSection({
-  isRTL,
-  organizationId,
-  role,
-  members,
-  onReload,
-  setFlash,
-}: {
-  isRTL: boolean;
-  organizationId: string;
-  role: OrganizationRole | null;
-  members: CompanyMemberRow[];
-  onReload: () => Promise<void>;
-  setFlash: (f: { tone: "success" | "error"; text: string }) => void;
-}) {
-  const [busyId, setBusyId] = useState<string | null>(null);
-  const isOwner = role === "owner";
-
-  async function change(memberId: string, newRole: CompanyMemberRole) {
-    setBusyId(memberId);
-    try {
-      await updateMemberRole(organizationId, memberId, newRole);
-      await onReload();
-      setFlash({ tone: "success", text: isRTL ? "تم تحديث الدور" : "Role updated" });
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      setFlash({
-        tone: "error",
-        text:
-          msg === "cannot_demote_last_owner"
-            ? isRTL
-              ? "لا يمكن تخفيض آخر مالك"
-              : "Cannot demote the last owner"
-            : msg,
-      });
-    } finally {
-      setBusyId(null);
-    }
-  }
-
-  async function toggleStatus(row: CompanyMemberRow) {
-    setBusyId(row.id);
-    try {
-      await setMemberStatus(organizationId, row.id, row.status === "active" ? "inactive" : "active");
-      await onReload();
-    } catch (e) {
-      setFlash({ tone: "error", text: e instanceof Error ? e.message : String(e) });
-    } finally {
-      setBusyId(null);
-    }
-  }
-
-  return (
-    <div className="settings-section">
-      <SectionHeader
-        title={isRTL ? "الفريق والصلاحيات" : "Team & Permissions"}
-        subtitle={isRTL ? "أعضاء الشركة وأدوارهم." : "Company members and their roles."}
-      />
-      <div className="company-card">
-        {members.length === 0 ? (
-          <div className="settings-empty">{isRTL ? "لا يوجد أعضاء" : "No members"}</div>
-        ) : (
-          <table className="settings-table">
-            <thead>
-              <tr>
-                <th>{isRTL ? "العضو" : "Member"}</th>
-                <th>{isRTL ? "البريد" : "Email"}</th>
-                <th>{isRTL ? "الدور" : "Role"}</th>
-                <th>{isRTL ? "الحالة" : "Status"}</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {members.map((m) => (
-                <tr key={m.id}>
-                  <td>{m.profile?.full_name ?? "—"}</td>
-                  <td>{m.profile?.email ?? "—"}</td>
-                  <td>
-                    <select
-                      value={m.role}
-                      disabled={busyId === m.id || (!isOwner && m.role === "owner")}
-                      onChange={(e) => void change(m.id, e.target.value as CompanyMemberRole)}
-                    >
-                      {(isOwner ? ["owner", "admin", "manager", "cashier"] : ["admin", "manager", "cashier"]).map((r) => (
-                        <option key={r} value={r}>
-                          {r}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td>{m.status}</td>
-                  <td>
-                    <button
-                      className="company-btn-ghost"
-                      disabled={busyId === m.id || m.role === "owner"}
-                      onClick={() => void toggleStatus(m)}
-                    >
-                      {m.status === "active" ? (isRTL ? "تعطيل" : "Disable") : isRTL ? "تفعيل" : "Enable"}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-        <p className="settings-hint">
-          {isRTL
-            ? "الدعوات وإسناد الفروع تُدار من صفحة الكاشير الحالية."
-            : "Invitations and branch assignment are handled from the Cashiers page today."}
-        </p>
-        <div className="settings-inline-action">
-          <Link to="/admin/cashiers" className="company-btn-primary">
-            <UserCog className="h-4 w-4" />
-            {isRTL ? "إدارة الكاشير" : "Manage Cashiers"}
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function CustomerSuccessSection({ isRTL }: { isRTL: boolean }) {
-  return (
-    <div className="settings-section">
-      <SectionHeader
-        title={isRTL ? "دعم العملاء" : "Customer Success"}
-        subtitle={isRTL ? "روابط سريعة لإدارة الحالات والدعم." : "Quick links to your support workspace."}
-      />
-      <div className="company-card">
-        <p className="settings-hint">
-          {isRTL
-            ? "تُدار الحالات وطلبات الدعم من مساحة نجاح العملاء."
-            : "Cases and support requests are managed inside the Customer Success workspace."}
-        </p>
-        <div className="settings-inline-action">
-          <Link to="/admin/customer-success" className="company-btn-primary">
-            <Headphones className="h-4 w-4" />
-            {isRTL ? "فتح مساحة الدعم" : "Open Customer Success"}
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SecuritySection({ isRTL, email }: { isRTL: boolean; email: string | null }) {
-  const [sending, setSending] = useState(false);
-  const [status, setStatus] = useState<string | null>(null);
-
-  async function requestPasswordReset() {
-    if (!email) return;
-    setSending(true);
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth`,
-      });
-      setStatus(
-        error ? error.message : isRTL ? "تم إرسال رابط تغيير كلمة المرور" : "Password reset email sent",
-      );
-    } finally {
-      setSending(false);
-    }
-  }
-
-  async function signOutAll() {
-    setSending(true);
-    try {
-      await supabase.auth.signOut({ scope: "global" as any });
-      setStatus(isRTL ? "تم تسجيل الخروج من جميع الأجهزة" : "Signed out from all devices");
-    } finally {
-      setSending(false);
-    }
-  }
-
-  return (
-    <div className="settings-section">
-      <SectionHeader
-        title={isRTL ? "الأمان" : "Security"}
-        subtitle={isRTL ? "إدارة الحساب وجلسات الدخول." : "Account and session controls."}
-      />
-      <div className="company-card">
-        <Field label={isRTL ? "بريدك الإلكتروني" : "Your email"} hint={isRTL ? "للقراءة" : "Read-only"}>
-          <input value={email ?? ""} readOnly />
-        </Field>
-        <div className="settings-inline-action">
-          <button className="company-btn-primary" onClick={() => void requestPasswordReset()} disabled={sending || !email}>
-            <Lock className="h-4 w-4" />
-            {isRTL ? "إرسال رابط تغيير كلمة المرور" : "Send password reset email"}
-          </button>
-          <button className="company-btn-ghost" onClick={() => void signOutAll()} disabled={sending}>
-            {isRTL ? "تسجيل الخروج من كل الأجهزة" : "Sign out all devices"}
-          </button>
-        </div>
-        {status && <p className="settings-hint">{status}</p>}
-      </div>
-    </div>
-  );
-}
-
-function LocalizationSection({
-  isRTL,
-  settings,
-  onChange,
-}: {
-  isRTL: boolean;
-  settings: OrganizationSettingsRow;
-  onChange: (p: Partial<OrganizationSettingsRow>) => void;
-}) {
-  return (
-    <div className="settings-section">
-      <SectionHeader
-        title={isRTL ? "اللغة والمنطقة" : "Localization"}
-        subtitle={isRTL ? "اللغة، العملة، والمنطقة الزمنية." : "Language, currency, and timezone."}
-      />
-      <div className="company-card-grid two">
-        <div className="company-card">
-          <Field label={isRTL ? "اللغة الافتراضية" : "Default language"}>
-            <select
-              value={settings.default_language}
-              onChange={(e) => onChange({ default_language: e.target.value })}
-            >
-              <option value="ar">العربية</option>
-              <option value="en">English</option>
-            </select>
-          </Field>
-          <Field label={isRTL ? "العملة" : "Currency"}>
-            <input value={settings.currency} onChange={(e) => onChange({ currency: e.target.value })} />
-          </Field>
-        </div>
-        <div className="company-card">
-          <Field label={isRTL ? "المنطقة الزمنية" : "Timezone"}>
-            <input value={settings.timezone} onChange={(e) => onChange({ timezone: e.target.value })} />
-          </Field>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function IntegrationsSection({ isRTL }: { isRTL: boolean }) {
-  const items = [
-    {
-      key: "backend",
-      title: isRTL ? "الخدمة الخلفية" : "Backend",
-      value: isRTL ? "متصلة" : "Connected",
-      tone: "ok",
-    },
-    {
-      key: "storage",
-      title: isRTL ? "تخزين الصور" : "Image storage",
-      value: isRTL ? "متاح (drink-images)" : "Available (drink-images)",
-      tone: "ok",
-    },
-    {
-      key: "email",
-      title: isRTL ? "بريد المصادقة" : "Auth email",
-      value: isRTL ? "عبر المنصة" : "Managed by platform",
-      tone: "ok",
-    },
-    {
-      key: "webrtc",
-      title: isRTL ? "جلسات الدعم الحية" : "Live support (WebRTC)",
-      value: isRTL ? "غير مفعّل بعد" : "Not yet enabled",
-      tone: "muted",
-    },
+function ExperienceSection({ settings, isAr, canEdit, commit }: BodyProps) {
+  const d = canEdit ? undefined : true;
+  const fields: Array<[keyof OrganizationSettingsRow, string]> = [
+    ["welcome_message_ar", isAr ? "رسالة الترحيب (عربي)" : "Welcome message (Arabic)"],
+    ["welcome_message_en", isAr ? "رسالة الترحيب (إنجليزي)" : "Welcome message (English)"],
+    ["order_completed_message_ar", isAr ? "رسالة اكتمال الطلب (عربي)" : "Order completed (Arabic)"],
+    ["order_completed_message_en", isAr ? "رسالة اكتمال الطلب (إنجليزي)" : "Order completed (English)"],
+    ["loyalty_message_ar", isAr ? "رسالة الولاء (عربي)" : "Loyalty message (Arabic)"],
+    ["loyalty_message_en", isAr ? "رسالة الولاء (إنجليزي)" : "Loyalty message (English)"],
   ];
   return (
-    <div className="settings-section">
-      <SectionHeader
-        title={isRTL ? "التكاملات" : "Integrations"}
-        subtitle={isRTL ? "الخدمات المتصلة بمساحتك." : "Services connected to your workspace."}
-      />
-      <div className="company-card">
-        <ul className="settings-list">
-          {items.map((i) => (
-            <li key={i.key} className="settings-list-row">
-              <div>
-                <div className="settings-list-title">{i.title}</div>
-              </div>
-              <span className={`settings-pill ${i.tone}`}>{i.value}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+    <div className="cs-stack">
+      <Card
+        title={isAr ? "رسائل العميل" : "Customer messages"}
+        description={isAr ? "تظهر مباشرة في صفحات العميل بعد الحفظ." : "Shown on customer pages immediately after saving."}
+      >
+        {fields.map(([key, label]) => (
+          <Row key={String(key)} label={label}>
+            <TextInput
+              isAr={isAr}
+              disabled={d}
+              value={(settings[key] as string | null) ?? ""}
+              validate={(v) => (v.length > 200 ? (isAr ? "الحد ٢٠٠ حرف" : "Max 200 characters") : null)}
+              onCommit={(v) => commit({ [key]: v.trim() || null } as SettingsPatch, "experience")}
+            />
+          </Row>
+        ))}
+      </Card>
     </div>
   );
 }
 
-function AuditSection({ isRTL }: { isRTL: boolean }) {
+function NotificationsSection({ settings, isAr, canEdit, commit }: BodyProps) {
+  const d = canEdit ? undefined : true;
+  const channels: Array<[keyof OrganizationSettingsRow, string]> = [
+    ["notify_email", isAr ? "إشعارات البريد" : "Email notifications"],
+    ["notify_sms", isAr ? "الرسائل النصية" : "SMS notifications"],
+    ["notify_push", isAr ? "الإشعارات الفورية" : "Push notifications"],
+  ];
+  const events: Array<[keyof OrganizationSettingsRow, string]> = [
+    ["notify_orders", isAr ? "الطلبات" : "Order notifications"],
+    ["notify_subscription_expiry", isAr ? "انتهاء الاشتراكات" : "Subscription expiry"],
+    ["notify_low_stock", isAr ? "نقص المخزون" : "Low stock"],
+    ["notify_training", isAr ? "التدريب" : "Training"],
+  ];
   return (
-    <div className="settings-section">
-      <SectionHeader
-        title={isRTL ? "سجل النشاط" : "Audit Activity"}
-        subtitle={isRTL ? "أحداث الشركة القابلة للمراجعة." : "Company-scoped auditable events."}
-      />
-      <div className="company-card">
-        <div className="settings-empty">
-          {isRTL
-            ? "لم يتم تفعيل سجل نشاط عام على مستوى الشركة بعد. تتوفر سجلات الحالات ضمن نجاح العملاء."
-            : "A company-wide audit log is not yet enabled. Case-scoped events are available inside Customer Success."}
-        </div>
-      </div>
+    <div className="cs-stack">
+      <Card title={isAr ? "القنوات" : "Channels"}>
+        {channels.map(([key, label]) => (
+          <Row key={String(key)} label={label}>
+            <Toggle label={label} disabled={d} checked={settings[key] as boolean} onChange={(v) => commit({ [key]: v } as SettingsPatch, "notifications")} />
+          </Row>
+        ))}
+      </Card>
+      <Card title={isAr ? "الأحداث" : "Events"}>
+        {events.map(([key, label]) => (
+          <Row key={String(key)} label={label}>
+            <Toggle label={label} disabled={d} checked={settings[key] as boolean} onChange={(v) => commit({ [key]: v } as SettingsPatch, "notifications")} />
+          </Row>
+        ))}
+      </Card>
     </div>
   );
 }
 
-function DangerZoneSection({
-  isRTL,
-  profile,
-  setFlash,
-}: {
-  isRTL: boolean;
-  profile: OrganizationProfileRow | null;
-  setFlash: (f: { tone: "success" | "error"; text: string }) => void;
-}) {
-  const [confirming, setConfirming] = useState(false);
+function SecuritySection({ settings, isAr, canEdit, commit }: BodyProps) {
+  const d = canEdit ? undefined : true;
+  return (
+    <div className="cs-stack">
+      <Card title={isAr ? "الجلسات وكلمات المرور" : "Sessions & passwords"}>
+        <Row label={isAr ? "انتهاء الجلسة (دقيقة)" : "Session timeout (minutes)"}>
+          <NumberInput isAr={isAr} disabled={d} value={settings.session_timeout_minutes} min={15} max={10080} onCommit={(v) => commit({ session_timeout_minutes: v }, "security")} />
+        </Row>
+        <Row label={isAr ? "سياسة كلمة المرور" : "Password policy"}>
+          <Segmented
+            disabled={d}
+            value={settings.password_policy}
+            onChange={(v) => commit({ password_policy: v }, "security")}
+            options={[
+              { value: "standard" as const, label: isAr ? "قياسية" : "Standard" },
+              { value: "strong" as const, label: isAr ? "قوية" : "Strong" },
+              { value: "strict" as const, label: isAr ? "صارمة" : "Strict" },
+            ]}
+          />
+        </Row>
+        <Row label={isAr ? "التحقق بخطوتين" : "Two factor authentication"}>
+          <Toggle label="2fa" disabled={d} checked={settings.two_factor_required} onChange={(v) => commit({ two_factor_required: v }, "security")} />
+        </Row>
+      </Card>
+      <Card title={isAr ? "قيود الدخول" : "Login restrictions"}>
+        <Row label={isAr ? "نوع القيد" : "Restriction"}>
+          <Segmented
+            disabled={d}
+            value={settings.login_restriction}
+            onChange={(v) => commit({ login_restriction: v }, "security")}
+            options={[
+              { value: "none" as const, label: isAr ? "بدون" : "None" },
+              { value: "ip_allowlist" as const, label: isAr ? "قائمة IP" : "IP allowlist" },
+              { value: "business_hours" as const, label: isAr ? "ساعات العمل" : "Business hours" },
+            ]}
+          />
+        </Row>
+        <Row label={isAr ? "عناوين IP المسموحة" : "Allowed IP addresses"} hint={isAr ? "افصل بفاصلة" : "Comma separated"}>
+          <TextInput
+            isAr={isAr}
+            disabled={d || settings.login_restriction !== "ip_allowlist"}
+            value={settings.allowed_ip_addresses.join(", ")}
+            validate={(v) => {
+              const items = v.split(",").map((x) => x.trim()).filter(Boolean);
+              const ok = items.every((ip) => /^(\d{1,3}\.){3}\d{1,3}(\/\d{1,2})?$/.test(ip));
+              return ok ? null : isAr ? "عنوان IP غير صحيح" : "Invalid IP address";
+            }}
+            onCommit={(v) =>
+              commit({ allowed_ip_addresses: v.split(",").map((x) => x.trim()).filter(Boolean) }, "security")
+            }
+          />
+        </Row>
+        <Row label={isAr ? "تفعيل سجل التغييرات" : "Audit log enabled"}>
+          <Toggle label="audit" disabled={d} checked={settings.audit_log_enabled} onChange={(v) => commit({ audit_log_enabled: v }, "security")} />
+        </Row>
+      </Card>
+    </div>
+  );
+}
 
-  function requestSuspension() {
-    if (!confirming) {
-      setConfirming(true);
-      return;
+function EmployeesSection({ settings, organizationId, isAr, canEdit, commit }: BodyProps) {
+  const d = canEdit ? undefined : true;
+  const queryClient = useQueryClient();
+  const members = useQuery({
+    queryKey: ["company-members", organizationId],
+    queryFn: () => listCompanyMembers(organizationId),
+  });
+  const [busy, setBusy] = useState<string | null>(null);
+  const [rowError, setRowError] = useState<string | null>(null);
+
+  const changeRole = async (memberId: string, next: CompanyMemberRole) => {
+    setBusy(memberId);
+    setRowError(null);
+    try {
+      await updateMemberRole(organizationId, memberId, next);
+      await queryClient.invalidateQueries({ queryKey: ["company-members", organizationId] });
+    } catch (err: any) {
+      setRowError(translateError(err?.message, isAr));
+    } finally {
+      setBusy(null);
     }
-    setConfirming(false);
-    setFlash({
-      tone: "success",
-      text: isRTL
-        ? "تم تسجيل طلب الإيقاف. سيتواصل معك فريق منصة KOB."
-        : "Suspension request logged. The KOB platform team will follow up.",
-    });
-  }
+  };
+
+  const changeStatus = async (memberId: string, status: "active" | "inactive") => {
+    setBusy(memberId);
+    setRowError(null);
+    try {
+      await setMemberStatus(organizationId, memberId, status);
+      await queryClient.invalidateQueries({ queryKey: ["company-members", organizationId] });
+    } catch (err: any) {
+      setRowError(translateError(err?.message, isAr));
+    } finally {
+      setBusy(null);
+    }
+  };
 
   return (
-    <div className="settings-section">
-      <SectionHeader
-        title={isRTL ? "منطقة الخطر" : "Danger Zone"}
-        subtitle={isRTL ? "إجراءات حساسة تخص المالك فقط." : "Sensitive actions restricted to the owner."}
-      />
-      <div className="company-card settings-danger">
-        <div>
-          <h4>{isRTL ? "طلب إيقاف الشركة" : "Request company suspension"}</h4>
-          <p className="settings-hint">
-            {isRTL
-              ? "لا يمكن إيقاف الحساب مباشرة. يتطلب مراجعة من فريق منصة KOB."
-              : "Company suspension cannot be performed directly. It requires review by the KOB platform team."}
-          </p>
-          <button
-            className={confirming ? "company-btn-reject" : "company-btn-ghost"}
-            onClick={requestSuspension}
-            disabled={!profile}
-          >
-            {confirming
-              ? isRTL
-                ? "تأكيد طلب الإيقاف"
-                : "Confirm suspension request"
-              : isRTL
-                ? "طلب إيقاف الشركة"
-                : "Request suspension"}
-          </button>
-        </div>
-      </div>
+    <div className="cs-stack">
+      <Card title={isAr ? "الإعدادات الافتراضية للموظفين" : "Employee defaults"}>
+        <Row label={isAr ? "الدور الافتراضي" : "Default role"}>
+          <Segmented
+            disabled={d}
+            value={settings.default_employee_role}
+            onChange={(v) => commit({ default_employee_role: v }, "employees")}
+            options={[
+              { value: "cashier", label: isAr ? "كاشير" : "Cashier" },
+              { value: "manager", label: isAr ? "مدير فرع" : "Manager" },
+              { value: "admin", label: isAr ? "مشرف" : "Admin" },
+            ]}
+          />
+        </Row>
+        <Row label={isAr ? "دعوة الموظفين" : "Employee invitations"}>
+          <Segmented
+            disabled={d}
+            value={settings.employee_invite_mode}
+            onChange={(v) => commit({ employee_invite_mode: v }, "employees")}
+            options={[
+              { value: "admin_only" as const, label: isAr ? "المشرفون فقط" : "Admins only" },
+              { value: "managers_allowed" as const, label: isAr ? "المديرون أيضًا" : "Managers too" },
+              { value: "disabled" as const, label: isAr ? "معطّلة" : "Disabled" },
+            ]}
+          />
+        </Row>
+        <Row label={isAr ? "إعادة تعيين كلمة المرور" : "Password reset policy"}>
+          <Segmented
+            disabled={d}
+            value={settings.password_reset_policy}
+            onChange={(v) => commit({ password_reset_policy: v }, "employees")}
+            options={[
+              { value: "self_service" as const, label: isAr ? "ذاتية" : "Self service" },
+              { value: "admin_only" as const, label: isAr ? "عبر المشرف" : "Admin only" },
+            ]}
+          />
+        </Row>
+      </Card>
+
+      <Card
+        title={isAr ? "الفريق والصلاحيات" : "Team & permissions"}
+        aside={
+          <Link to="/admin/cashiers" className="cs-link">
+            {isAr ? "إدارة الموظفين" : "Manage employees"}
+          </Link>
+        }
+      >
+        {rowError ? <div className="cs-error-panel">{rowError}</div> : null}
+        {members.isLoading ? (
+          <div className="cs-loading">
+            <Loader2 className="h-4 w-4 animate-spin" />
+          </div>
+        ) : (
+          <table className="cs-table">
+            <thead>
+              <tr>
+                <th>{isAr ? "الموظف" : "Member"}</th>
+                <th>{isAr ? "الدور" : "Role"}</th>
+                <th>{isAr ? "الحالة" : "Status"}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(members.data ?? []).map((m) => (
+                <tr key={m.id}>
+                  <td>
+                    <strong>{m.profile?.full_name || m.profile?.email || m.user_id.slice(0, 8)}</strong>
+                    <small>{m.profile?.email}</small>
+                  </td>
+                  <td>
+                    <select
+                      className="cs-input"
+                      disabled={d || busy === m.id}
+                      value={m.role}
+                      onChange={(e) => changeRole(m.id, e.target.value as CompanyMemberRole)}
+                    >
+                      <option value="owner">{isAr ? "مالك" : "Owner"}</option>
+                      <option value="admin">{isAr ? "مشرف" : "Admin"}</option>
+                      <option value="manager">{isAr ? "مدير" : "Manager"}</option>
+                      <option value="cashier">{isAr ? "كاشير" : "Cashier"}</option>
+                    </select>
+                  </td>
+                  <td>
+                    <Toggle
+                      label="status"
+                      disabled={d || busy === m.id || m.role === "owner"}
+                      checked={m.status === "active"}
+                      onChange={(v) => changeStatus(m.id, v ? "active" : "inactive")}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </Card>
     </div>
   );
 }
 
-function Toggle({
-  label,
-  hint,
-  checked,
-  disabled,
-  onChange,
-}: {
-  label: string;
-  hint?: string;
-  checked: boolean;
-  disabled?: boolean;
-  onChange: (v: boolean) => void;
-}) {
+function BranchesSection({ settings, isAr, canEdit, commit }: BodyProps) {
+  const d = canEdit ? undefined : true;
+  const branches = useQuery({ queryKey: ["company-branches"], queryFn: () => listBranches() });
   return (
-    <label className="company-toggle">
-      <input
-        type="checkbox"
-        checked={checked}
-        disabled={disabled}
-        onChange={(e) => onChange(e.target.checked)}
-      />
-      <span>
-        {label}
-        {hint && <em className="settings-hint block">{hint}</em>}
-      </span>
-    </label>
+    <div className="cs-stack">
+      <Card
+        title={isAr ? "إعدادات الفروع" : "Branch settings"}
+        aside={
+          <Link to="/admin/branches" className="cs-link">
+            {isAr ? "إدارة الفروع" : "Manage branches"}
+          </Link>
+        }
+      >
+        <Row label={isAr ? "الفرع الافتراضي" : "Default branch"}>
+          <select
+            className="cs-input"
+            disabled={d}
+            value={settings.default_branch_id ?? ""}
+            onChange={(e) => commit({ default_branch_id: e.target.value || null }, "branches")}
+          >
+            <option value="">{isAr ? "بدون" : "None"}</option>
+            {(branches.data ?? []).map((b: any) => (
+              <option key={b.id} value={b.id}>
+                {isAr ? b.name_ar : b.name_en}
+              </option>
+            ))}
+          </select>
+        </Row>
+        <Row label={isAr ? "رمز QR" : "Branch QR"}>
+          <Segmented
+            disabled={d}
+            value={settings.branch_qr_mode}
+            onChange={(v) => commit({ branch_qr_mode: v }, "branches")}
+            options={[
+              { value: "per_branch" as const, label: isAr ? "رمز لكل فرع" : "Per branch" },
+              { value: "single" as const, label: isAr ? "رمز موحّد" : "Single code" },
+            ]}
+          />
+        </Row>
+      </Card>
+    </div>
   );
 }
 
-function SectionHeader({ title, subtitle }: { title: string; subtitle: string }) {
+const INTEGRATION_KEYS = ["payment_gateway", "pos", "accounting", "erp", "api_key"] as const;
+
+function IntegrationsSection({ settings, isAr, canEdit, commit }: BodyProps) {
+  const d = canEdit ? undefined : true;
+  const current = (settings.integrations ?? {}) as Record<string, string>;
+  const labels: Record<string, [string, string]> = {
+    payment_gateway: ["بوابة الدفع", "Payment gateway"],
+    pos: ["نقاط البيع", "POS"],
+    accounting: ["المحاسبة", "Accounting"],
+    erp: ["تخطيط الموارد", "ERP"],
+    api_key: ["مرجع مفتاح API", "API key reference"],
+  };
   return (
-    <div className="settings-section-header">
-      <h2>{title}</h2>
-      <p>{subtitle}</p>
+    <div className="cs-stack">
+      <Card
+        title={isAr ? "التكاملات" : "Integrations"}
+        description={
+          isAr
+            ? "احفظ مرجع كل تكامل هنا. لا تُخزَّن أي مفاتيح سرية في هذه الصفحة."
+            : "Store the reference for each integration. No secret keys are stored on this page."
+        }
+      >
+        {INTEGRATION_KEYS.map((key) => (
+          <Row key={key} label={isAr ? labels[key]![0] : labels[key]![1]}>
+            <TextInput
+              isAr={isAr}
+              disabled={d}
+              value={current[key] ?? ""}
+              validate={(v) => (v.length > 120 ? (isAr ? "الحد ١٢٠ حرف" : "Max 120 characters") : null)}
+              onCommit={(v) => {
+                const next = { ...current };
+                if (v.trim()) next[key] = v.trim();
+                else delete next[key];
+                void commit({ integrations: next }, "integrations");
+              }}
+            />
+          </Row>
+        ))}
+      </Card>
+    </div>
+  );
+}
+
+function AuditSection({ organizationId, isAr }: BodyProps) {
+  const audit = useQuery({
+    queryKey: ["company-settings-audit", organizationId],
+    queryFn: () => listSettingsAudit(organizationId, 100),
+  });
+  const fmt = (value: string | null) => (value === null ? "—" : value.length > 60 ? `${value.slice(0, 60)}…` : value);
+  return (
+    <div className="cs-stack">
+      <Card title={isAr ? "سجل تغييرات الإعدادات" : "Settings change log"}>
+        {audit.isLoading ? (
+          <div className="cs-loading">
+            <Loader2 className="h-4 w-4 animate-spin" />
+          </div>
+        ) : (audit.data ?? []).length === 0 ? (
+          <div className="cs-empty">{isAr ? "لا توجد تغييرات بعد." : "No changes recorded yet."}</div>
+        ) : (
+          <table className="cs-table">
+            <thead>
+              <tr>
+                <th>{isAr ? "التاريخ" : "When"}</th>
+                <th>{isAr ? "القسم" : "Section"}</th>
+                <th>{isAr ? "الإعداد" : "Setting"}</th>
+                <th>{isAr ? "من" : "From"}</th>
+                <th>{isAr ? "إلى" : "To"}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(audit.data ?? []).map((row) => (
+                <tr key={row.id}>
+                  <td>{new Date(row.created_at).toLocaleString(isAr ? "ar-SA" : "en-GB")}</td>
+                  <td>{row.section}</td>
+                  <td>{row.field}</td>
+                  <td>{fmt(row.old_value)}</td>
+                  <td>{fmt(row.new_value)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </Card>
     </div>
   );
 }
