@@ -166,9 +166,6 @@ export function branchComparison(data: AnalyticsDataset, isAr: boolean): SeriesP
 /** Placeholder heuristics — swap the body for a real AI call later. */
 export function buildInsights(data: AnalyticsDataset, kpis: Kpis, isAr: boolean): string[] {
   const out: string[] = [];
-  const trend = revenueTrend(data, { from: "", to: "" });
-  void trend;
-
   const drinks = drinkPopularity(data, isAr);
   const branches = branchComparison(data, isAr);
   const soon = data.subscriptions.filter((row) => {
