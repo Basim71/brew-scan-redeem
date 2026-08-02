@@ -1,0 +1,17 @@
+ALTER TABLE public.organization_settings
+  ADD COLUMN IF NOT EXISTS commercial_registration text,
+  ADD COLUMN IF NOT EXISTS tax_number text,
+  ADD COLUMN IF NOT EXISTS renewal_reminder_days integer NOT NULL DEFAULT 7,
+  ADD COLUMN IF NOT EXISTS expiration_grace_days integer NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS membership_auto_notifications boolean NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS opening_time time without time zone NOT NULL DEFAULT '07:00',
+  ADD COLUMN IF NOT EXISTS closing_time time without time zone NOT NULL DEFAULT '23:00',
+  ADD COLUMN IF NOT EXISTS working_days text[] NOT NULL DEFAULT ARRAY['sun','mon','tue','wed','thu','fri','sat']::text[],
+  ADD COLUMN IF NOT EXISTS holiday_exceptions jsonb NOT NULL DEFAULT '[]'::jsonb,
+  ADD COLUMN IF NOT EXISTS receipt_logo_url text,
+  ADD COLUMN IF NOT EXISTS receipt_footer_ar text,
+  ADD COLUMN IF NOT EXISTS receipt_footer_en text,
+  ADD COLUMN IF NOT EXISTS receipt_show_vat boolean NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS invoice_prefix text NOT NULL DEFAULT 'INV',
+  ADD COLUMN IF NOT EXISTS invoice_next_number integer NOT NULL DEFAULT 1,
+  ADD COLUMN IF NOT EXISTS notify_whatsapp boolean NOT NULL DEFAULT false;

@@ -44,9 +44,10 @@ const PRIMARY: Array<{
 }> = [
   { to: "/admin", labelAr: "لوحة التحكم", labelEn: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/customers", labelAr: "العملاء", labelEn: "Customers", icon: Users },
-  { to: "/admin/plans", labelAr: "خطط الاشتراك", labelEn: "Subscription Plans", icon: Layers3 },
   { to: "/admin/drinks", labelAr: "المشروبات", labelEn: "Drinks", icon: Coffee },
-  { to: "/admin/reports", labelAr: "التقارير", labelEn: "Reports", icon: BarChart3 },
+  { to: "/admin/plans", labelAr: "الاشتراكات", labelEn: "Subscriptions", icon: Layers3 },
+  { to: "/admin/reports", labelAr: "تحليلات الأعمال", labelEn: "Business Analytics", icon: BarChart3 },
+  { to: "/admin/settings", labelAr: "إعدادات الشركة", labelEn: "Company Settings", icon: Settings },
 ];
 
 const OPERATIONS: Array<{
