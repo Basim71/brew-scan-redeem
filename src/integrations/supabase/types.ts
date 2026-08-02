@@ -738,6 +738,8 @@ export type Database = {
           auto_renewal: boolean
           background_url: string | null
           branch_qr_mode: string
+          closing_time: string
+          commercial_registration: string | null
           created_at: string
           currency: string
           customer_comments_enabled: boolean
@@ -749,11 +751,16 @@ export type Database = {
           default_language: string
           default_payment_method: string
           employee_invite_mode: string
+          expiration_grace_days: number
+          holiday_exceptions: Json
           integrations: Json
+          invoice_next_number: number
+          invoice_prefix: string
           login_restriction: string
           logo_url: string | null
           loyalty_message_ar: string | null
           loyalty_message_en: string | null
+          membership_auto_notifications: boolean
           notify_email: boolean
           notify_low_stock: boolean
           notify_orders: boolean
@@ -761,7 +768,9 @@ export type Database = {
           notify_sms: boolean
           notify_subscription_expiry: boolean
           notify_training: boolean
+          notify_whatsapp: boolean
           one_drink_per_day: boolean
+          opening_time: string
           order_completed_message_ar: string | null
           order_completed_message_en: string | null
           order_number_format: string
@@ -772,6 +781,11 @@ export type Database = {
           payment_methods: string[]
           primary_color: string | null
           queue_behavior: string
+          receipt_footer_ar: string | null
+          receipt_footer_en: string | null
+          receipt_logo_url: string | null
+          receipt_show_vat: boolean
+          renewal_reminder_days: number
           sales_channel_cashier: boolean
           sales_channel_customer_app: boolean
           sales_channel_external_api: boolean
@@ -780,12 +794,14 @@ export type Database = {
           session_timeout_minutes: number
           tax_enabled: boolean
           tax_included: boolean
+          tax_number: string | null
           tax_percentage: number
           timezone: string
           two_factor_required: boolean
           updated_at: string
           welcome_message_ar: string | null
           welcome_message_en: string | null
+          working_days: string[]
         }
         Insert: {
           address?: string | null
@@ -795,6 +811,8 @@ export type Database = {
           auto_renewal?: boolean
           background_url?: string | null
           branch_qr_mode?: string
+          closing_time?: string
+          commercial_registration?: string | null
           created_at?: string
           currency?: string
           customer_comments_enabled?: boolean
@@ -806,11 +824,16 @@ export type Database = {
           default_language?: string
           default_payment_method?: string
           employee_invite_mode?: string
+          expiration_grace_days?: number
+          holiday_exceptions?: Json
           integrations?: Json
+          invoice_next_number?: number
+          invoice_prefix?: string
           login_restriction?: string
           logo_url?: string | null
           loyalty_message_ar?: string | null
           loyalty_message_en?: string | null
+          membership_auto_notifications?: boolean
           notify_email?: boolean
           notify_low_stock?: boolean
           notify_orders?: boolean
@@ -818,7 +841,9 @@ export type Database = {
           notify_sms?: boolean
           notify_subscription_expiry?: boolean
           notify_training?: boolean
+          notify_whatsapp?: boolean
           one_drink_per_day?: boolean
+          opening_time?: string
           order_completed_message_ar?: string | null
           order_completed_message_en?: string | null
           order_number_format?: string
@@ -829,6 +854,11 @@ export type Database = {
           payment_methods?: string[]
           primary_color?: string | null
           queue_behavior?: string
+          receipt_footer_ar?: string | null
+          receipt_footer_en?: string | null
+          receipt_logo_url?: string | null
+          receipt_show_vat?: boolean
+          renewal_reminder_days?: number
           sales_channel_cashier?: boolean
           sales_channel_customer_app?: boolean
           sales_channel_external_api?: boolean
@@ -837,12 +867,14 @@ export type Database = {
           session_timeout_minutes?: number
           tax_enabled?: boolean
           tax_included?: boolean
+          tax_number?: string | null
           tax_percentage?: number
           timezone?: string
           two_factor_required?: boolean
           updated_at?: string
           welcome_message_ar?: string | null
           welcome_message_en?: string | null
+          working_days?: string[]
         }
         Update: {
           address?: string | null
@@ -852,6 +884,8 @@ export type Database = {
           auto_renewal?: boolean
           background_url?: string | null
           branch_qr_mode?: string
+          closing_time?: string
+          commercial_registration?: string | null
           created_at?: string
           currency?: string
           customer_comments_enabled?: boolean
@@ -863,11 +897,16 @@ export type Database = {
           default_language?: string
           default_payment_method?: string
           employee_invite_mode?: string
+          expiration_grace_days?: number
+          holiday_exceptions?: Json
           integrations?: Json
+          invoice_next_number?: number
+          invoice_prefix?: string
           login_restriction?: string
           logo_url?: string | null
           loyalty_message_ar?: string | null
           loyalty_message_en?: string | null
+          membership_auto_notifications?: boolean
           notify_email?: boolean
           notify_low_stock?: boolean
           notify_orders?: boolean
@@ -875,7 +914,9 @@ export type Database = {
           notify_sms?: boolean
           notify_subscription_expiry?: boolean
           notify_training?: boolean
+          notify_whatsapp?: boolean
           one_drink_per_day?: boolean
+          opening_time?: string
           order_completed_message_ar?: string | null
           order_completed_message_en?: string | null
           order_number_format?: string
@@ -886,6 +927,11 @@ export type Database = {
           payment_methods?: string[]
           primary_color?: string | null
           queue_behavior?: string
+          receipt_footer_ar?: string | null
+          receipt_footer_en?: string | null
+          receipt_logo_url?: string | null
+          receipt_show_vat?: boolean
+          renewal_reminder_days?: number
           sales_channel_cashier?: boolean
           sales_channel_customer_app?: boolean
           sales_channel_external_api?: boolean
@@ -894,12 +940,14 @@ export type Database = {
           session_timeout_minutes?: number
           tax_enabled?: boolean
           tax_included?: boolean
+          tax_number?: string | null
           tax_percentage?: number
           timezone?: string
           two_factor_required?: boolean
           updated_at?: string
           welcome_message_ar?: string | null
           welcome_message_en?: string | null
+          working_days?: string[]
         }
         Relationships: [
           {
