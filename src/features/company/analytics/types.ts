@@ -108,6 +108,7 @@ export type AnalyticsDataset = {
   cashiers: Array<{ id: string; name: string }>;
   customerOptions: Array<{ id: string; name: string }>;
   paymentMethods: string[];
+  activeMembers: number;
 };
 
 export type Kpis = {
