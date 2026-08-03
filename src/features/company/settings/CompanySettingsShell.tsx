@@ -222,6 +222,7 @@ export function CompanySettingsShell() {
               organizationId={organizationId}
               isAr={isAr}
               canEdit={canEdit}
+              isOwner={role === "owner"}
               commit={commit}
               commitProfile={commitProfile}
             />
@@ -351,6 +352,7 @@ type BodyProps = {
   organizationId: string;
   isAr: boolean;
   canEdit: boolean;
+  isOwner: boolean;
   commit: (patch: SettingsPatch, section: string) => Promise<void>;
   commitProfile: (patch: Partial<OrganizationProfileRow>) => Promise<void>;
 };
