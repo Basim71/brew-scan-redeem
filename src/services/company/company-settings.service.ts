@@ -12,6 +12,7 @@ export type OrganizationProfileRow = {
   slug: string;
   email: string | null;
   phone: string | null;
+  website: string | null;
   logo_url: string | null;
   primary_color: string | null;
   secondary_color: string | null;
@@ -23,7 +24,7 @@ export type OrganizationProfileRow = {
 };
 
 const PROFILE_SELECT =
-  "id,organization_code,name_ar,name_en,slug,email,phone,logo_url,primary_color,secondary_color,status,organization_type,owner_user_id,created_at,updated_at";
+  "id,organization_code,name_ar,name_en,slug,email,phone,website,logo_url,primary_color,secondary_color,status,organization_type,owner_user_id,created_at,updated_at";
 
 export async function getOrganizationProfile(
   organizationId: string,
@@ -42,6 +43,7 @@ export type OrganizationProfileUpdate = {
   name_en?: string | null;
   email?: string | null;
   phone?: string | null;
+  website?: string | null;
   logo_url?: string | null;
   primary_color?: string | null;
   secondary_color?: string | null;
@@ -52,6 +54,7 @@ const PROFILE_WRITABLE: Array<keyof OrganizationProfileUpdate> = [
   "name_en",
   "email",
   "phone",
+  "website",
   "logo_url",
   "primary_color",
   "secondary_color",
