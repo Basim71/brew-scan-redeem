@@ -37,6 +37,12 @@ import {
 import { listBranches } from "@/services/company/branches.service";
 import { useCompanySettings } from "./useCompanySettings";
 import { Card, CheckChip, Row, SaveIndicator, Segmented, Toggle, type SaveState } from "./parts";
+import { CustomerExperienceSection } from "./CustomerExperience";
+import { NotificationsSection } from "./NotificationsSection";
+import { EmployeeManagementSection } from "./EmployeeManagement";
+import { BranchManagementSection } from "./BranchManagement";
+import { IntegrationsSection } from "./IntegrationsSection";
+import { AuditLogSection } from "./AuditLog";
 
 type SectionKey =
   | "general"
@@ -360,19 +366,19 @@ function SectionBody(props: BodyProps) {
     case "ordering":
       return <OrderingSection {...props} />;
     case "experience":
-      return <ExperienceSection {...props} />;
+      return <CustomerExperienceSection {...props} />;
     case "notifications":
       return <NotificationsSection {...props} />;
     case "security":
       return <SecuritySection {...props} />;
     case "employees":
-      return <EmployeesSection {...props} />;
+      return <EmployeeManagementSection {...props} />;
     case "branches":
-      return <BranchesSection {...props} />;
+      return <BranchManagementSection {...props} />;
     case "integrations":
       return <IntegrationsSection {...props} />;
     case "audit":
-      return <AuditSection {...props} />;
+      return <AuditLogSection {...props} />;
     default:
       return null;
   }
