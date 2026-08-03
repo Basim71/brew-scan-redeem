@@ -18,32 +18,59 @@ export type Database = {
         Row: {
           address_ar: string | null
           address_en: string | null
+          branch_code: string | null
+          closing_time: string
           created_at: string
           id: string
           is_active: boolean
+          logo_url: string | null
+          maps_url: string | null
           name_ar: string
           name_en: string
+          opening_time: string
           organization_id: string
+          phone: string | null
+          qr_token: string
+          updated_at: string
+          working_days: string[]
         }
         Insert: {
           address_ar?: string | null
           address_en?: string | null
+          branch_code?: string | null
+          closing_time?: string
           created_at?: string
           id?: string
           is_active?: boolean
+          logo_url?: string | null
+          maps_url?: string | null
           name_ar: string
           name_en: string
+          opening_time?: string
           organization_id?: string
+          phone?: string | null
+          qr_token?: string
+          updated_at?: string
+          working_days?: string[]
         }
         Update: {
           address_ar?: string | null
           address_en?: string | null
+          branch_code?: string | null
+          closing_time?: string
           created_at?: string
           id?: string
           is_active?: boolean
+          logo_url?: string | null
+          maps_url?: string | null
           name_ar?: string
           name_en?: string
+          opening_time?: string
           organization_id?: string
+          phone?: string | null
+          qr_token?: string
+          updated_at?: string
+          working_days?: string[]
         }
         Relationships: [
           {
@@ -733,8 +760,10 @@ export type Database = {
         Row: {
           address: string | null
           allow_multiple_active_orders: boolean
+          allowed_countries: string[]
           allowed_ip_addresses: string[]
           audit_log_enabled: boolean
+          auto_logout_enabled: boolean
           auto_renewal: boolean
           background_url: string | null
           branch_qr_mode: string
@@ -744,14 +773,23 @@ export type Database = {
           currency: string
           customer_comments_enabled: boolean
           customer_registration_enabled: boolean
+          date_format: string
           default_activation: string
           default_bonus_days: number
           default_branch_id: string | null
           default_employee_role: string
           default_language: string
           default_payment_method: string
+          device_restriction: string
           employee_invite_mode: string
+          empty_subscription_message_ar: string | null
+          empty_subscription_message_en: string | null
           expiration_grace_days: number
+          expired_subscription_message_ar: string | null
+          expired_subscription_message_en: string | null
+          failed_login_protection: boolean
+          failed_login_threshold: number
+          force_password_reset_days: number
           holiday_exceptions: Json
           integrations: Json
           invoice_next_number: number
@@ -760,7 +798,11 @@ export type Database = {
           logo_url: string | null
           loyalty_message_ar: string | null
           loyalty_message_en: string | null
+          max_concurrent_sessions: number
           membership_auto_notifications: boolean
+          notification_events: Json
+          notification_providers: Json
+          notification_templates: Json
           notify_email: boolean
           notify_low_stock: boolean
           notify_orders: boolean
@@ -769,6 +811,7 @@ export type Database = {
           notify_subscription_expiry: boolean
           notify_training: boolean
           notify_whatsapp: boolean
+          number_format: string
           one_drink_per_day: boolean
           opening_time: string
           order_completed_message_ar: string | null
@@ -785,6 +828,9 @@ export type Database = {
           receipt_footer_en: string | null
           receipt_logo_url: string | null
           receipt_show_vat: boolean
+          redeem_success_message_ar: string | null
+          redeem_success_message_en: string | null
+          remember_devices: boolean
           renewal_reminder_days: number
           sales_channel_cashier: boolean
           sales_channel_customer_app: boolean
@@ -792,22 +838,30 @@ export type Database = {
           sales_channel_website: boolean
           secondary_color: string | null
           session_timeout_minutes: number
+          suspicious_login_detection: boolean
           tax_enabled: boolean
           tax_included: boolean
           tax_number: string | null
           tax_percentage: number
+          temporary_lock_minutes: number
+          thank_you_message_ar: string | null
+          thank_you_message_en: string | null
           timezone: string
           two_factor_required: boolean
           updated_at: string
           welcome_message_ar: string | null
           welcome_message_en: string | null
+          welcome_subtitle_ar: string | null
+          welcome_subtitle_en: string | null
           working_days: string[]
         }
         Insert: {
           address?: string | null
           allow_multiple_active_orders?: boolean
+          allowed_countries?: string[]
           allowed_ip_addresses?: string[]
           audit_log_enabled?: boolean
+          auto_logout_enabled?: boolean
           auto_renewal?: boolean
           background_url?: string | null
           branch_qr_mode?: string
@@ -817,14 +871,23 @@ export type Database = {
           currency?: string
           customer_comments_enabled?: boolean
           customer_registration_enabled?: boolean
+          date_format?: string
           default_activation?: string
           default_bonus_days?: number
           default_branch_id?: string | null
           default_employee_role?: string
           default_language?: string
           default_payment_method?: string
+          device_restriction?: string
           employee_invite_mode?: string
+          empty_subscription_message_ar?: string | null
+          empty_subscription_message_en?: string | null
           expiration_grace_days?: number
+          expired_subscription_message_ar?: string | null
+          expired_subscription_message_en?: string | null
+          failed_login_protection?: boolean
+          failed_login_threshold?: number
+          force_password_reset_days?: number
           holiday_exceptions?: Json
           integrations?: Json
           invoice_next_number?: number
@@ -833,7 +896,11 @@ export type Database = {
           logo_url?: string | null
           loyalty_message_ar?: string | null
           loyalty_message_en?: string | null
+          max_concurrent_sessions?: number
           membership_auto_notifications?: boolean
+          notification_events?: Json
+          notification_providers?: Json
+          notification_templates?: Json
           notify_email?: boolean
           notify_low_stock?: boolean
           notify_orders?: boolean
@@ -842,6 +909,7 @@ export type Database = {
           notify_subscription_expiry?: boolean
           notify_training?: boolean
           notify_whatsapp?: boolean
+          number_format?: string
           one_drink_per_day?: boolean
           opening_time?: string
           order_completed_message_ar?: string | null
@@ -858,6 +926,9 @@ export type Database = {
           receipt_footer_en?: string | null
           receipt_logo_url?: string | null
           receipt_show_vat?: boolean
+          redeem_success_message_ar?: string | null
+          redeem_success_message_en?: string | null
+          remember_devices?: boolean
           renewal_reminder_days?: number
           sales_channel_cashier?: boolean
           sales_channel_customer_app?: boolean
@@ -865,22 +936,30 @@ export type Database = {
           sales_channel_website?: boolean
           secondary_color?: string | null
           session_timeout_minutes?: number
+          suspicious_login_detection?: boolean
           tax_enabled?: boolean
           tax_included?: boolean
           tax_number?: string | null
           tax_percentage?: number
+          temporary_lock_minutes?: number
+          thank_you_message_ar?: string | null
+          thank_you_message_en?: string | null
           timezone?: string
           two_factor_required?: boolean
           updated_at?: string
           welcome_message_ar?: string | null
           welcome_message_en?: string | null
+          welcome_subtitle_ar?: string | null
+          welcome_subtitle_en?: string | null
           working_days?: string[]
         }
         Update: {
           address?: string | null
           allow_multiple_active_orders?: boolean
+          allowed_countries?: string[]
           allowed_ip_addresses?: string[]
           audit_log_enabled?: boolean
+          auto_logout_enabled?: boolean
           auto_renewal?: boolean
           background_url?: string | null
           branch_qr_mode?: string
@@ -890,14 +969,23 @@ export type Database = {
           currency?: string
           customer_comments_enabled?: boolean
           customer_registration_enabled?: boolean
+          date_format?: string
           default_activation?: string
           default_bonus_days?: number
           default_branch_id?: string | null
           default_employee_role?: string
           default_language?: string
           default_payment_method?: string
+          device_restriction?: string
           employee_invite_mode?: string
+          empty_subscription_message_ar?: string | null
+          empty_subscription_message_en?: string | null
           expiration_grace_days?: number
+          expired_subscription_message_ar?: string | null
+          expired_subscription_message_en?: string | null
+          failed_login_protection?: boolean
+          failed_login_threshold?: number
+          force_password_reset_days?: number
           holiday_exceptions?: Json
           integrations?: Json
           invoice_next_number?: number
@@ -906,7 +994,11 @@ export type Database = {
           logo_url?: string | null
           loyalty_message_ar?: string | null
           loyalty_message_en?: string | null
+          max_concurrent_sessions?: number
           membership_auto_notifications?: boolean
+          notification_events?: Json
+          notification_providers?: Json
+          notification_templates?: Json
           notify_email?: boolean
           notify_low_stock?: boolean
           notify_orders?: boolean
@@ -915,6 +1007,7 @@ export type Database = {
           notify_subscription_expiry?: boolean
           notify_training?: boolean
           notify_whatsapp?: boolean
+          number_format?: string
           one_drink_per_day?: boolean
           opening_time?: string
           order_completed_message_ar?: string | null
@@ -931,6 +1024,9 @@ export type Database = {
           receipt_footer_en?: string | null
           receipt_logo_url?: string | null
           receipt_show_vat?: boolean
+          redeem_success_message_ar?: string | null
+          redeem_success_message_en?: string | null
+          remember_devices?: boolean
           renewal_reminder_days?: number
           sales_channel_cashier?: boolean
           sales_channel_customer_app?: boolean
@@ -938,15 +1034,21 @@ export type Database = {
           sales_channel_website?: boolean
           secondary_color?: string | null
           session_timeout_minutes?: number
+          suspicious_login_detection?: boolean
           tax_enabled?: boolean
           tax_included?: boolean
           tax_number?: string | null
           tax_percentage?: number
+          temporary_lock_minutes?: number
+          thank_you_message_ar?: string | null
+          thank_you_message_en?: string | null
           timezone?: string
           two_factor_required?: boolean
           updated_at?: string
           welcome_message_ar?: string | null
           welcome_message_en?: string | null
+          welcome_subtitle_ar?: string | null
+          welcome_subtitle_en?: string | null
           working_days?: string[]
         }
         Relationships: [
@@ -1024,6 +1126,7 @@ export type Database = {
           slug: string
           status: string
           updated_at: string
+          website: string | null
         }
         Insert: {
           created_at?: string
@@ -1041,6 +1144,7 @@ export type Database = {
           slug: string
           status?: string
           updated_at?: string
+          website?: string | null
         }
         Update: {
           created_at?: string
@@ -1058,6 +1162,7 @@ export type Database = {
           slug?: string
           status?: string
           updated_at?: string
+          website?: string | null
         }
         Relationships: []
       }
