@@ -14079,3 +14079,103 @@ html[dir="rtl"] .app-island-live-popover {
 .cs-btn { display: inline-flex; align-items: center; gap: 7px; border-radius: 12px; border: 1px solid #b3743a; background: linear-gradient(160deg,#d5924c,#b3743a); color: #fff; padding: 9px 16px; font-size: .85rem; font-weight: 700; box-shadow: 0 6px 16px rgba(179,116,58,.24); transition: all .16s ease; }
 .cs-btn:hover:not(:disabled) { transform: translateY(-1px); }
 .cs-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+/* ------------------------------------- Company Settings V2 ------------------------------------- */
+.cs-upload-wrap { display: flex; flex-direction: column; gap: .45rem; }
+.cs-dropzone { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .4rem; min-height: 96px; padding: .6rem; border-radius: 14px; border: 1.5px dashed var(--kob-line, #e6dccd); background: var(--kob-soft-cream, #faf6f0); color: var(--kob-soft-gray, #8b7f70); font-size: .75rem; text-align: center; cursor: pointer; transition: all .16s ease; position: relative; }
+.cs-dropzone[data-over="true"] { border-color: #b3743a; background: #fdf3e6; }
+.cs-dropzone[data-disabled="true"] { cursor: not-allowed; opacity: .6; }
+.cs-dropzone img { max-height: 84px; max-width: 100%; object-fit: contain; border-radius: 10px; }
+.cs-dropzone-busy { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(255,255,255,.6); border-radius: 14px; }
+.cs-ghost-btn { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; border-radius: 10px; border: 1px solid var(--kob-line, #e6dccd); background: #fff; color: var(--kob-espresso, #3b2a1d); padding: 6px 11px; font-size: .74rem; font-weight: 600; }
+.cs-ghost-btn:hover { background: var(--kob-soft-cream, #faf6f0); }
+.cs-toolbar { display: flex; flex-wrap: wrap; gap: .5rem; padding: .6rem 0; align-items: center; }
+.cs-search-field { display: flex; align-items: center; gap: 6px; flex: 1 1 200px; border: 1px solid var(--kob-line, #e6dccd); border-radius: 12px; background: #fff; padding: 0 .6rem; color: var(--kob-soft-gray, #8b7f70); }
+.cs-search-field input { flex: 1; border: 0; background: transparent; padding: .5rem 0; font-size: .82rem; outline: none; }
+.cs-table-scroll { overflow-x: auto; }
+.cs-matrix-cell { text-align: center; }
+.cs-yes { color: #2f7a4d; display: inline-block; }
+.cs-no { color: #c9bfb1; display: inline-block; }
+.cs-inline-note { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; color: var(--kob-soft-gray, #8b7f70); }
+
+/* journey + phone preview */
+.cs-journey { display: flex; flex-wrap: wrap; gap: .4rem; padding: .6rem 0; }
+.cs-journey button { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; border: 1px solid var(--kob-line, #e6dccd); background: #fff; padding: 6px 12px; font-size: .76rem; font-weight: 600; color: var(--kob-espresso, #3b2a1d); }
+.cs-journey button b { display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--kob-soft-cream, #faf6f0); font-size: .66rem; }
+.cs-journey button[data-active="true"] { border-color: #b3743a; background: linear-gradient(160deg,#d5924c,#b3743a); color: #fff; }
+.cs-journey button[data-active="true"] b { background: rgba(255,255,255,.25); color: #fff; }
+.cs-xp { display: grid; grid-template-columns: minmax(0,1fr) 260px; gap: 1rem; align-items: start; }
+.cs-bilingual { display: contents; }
+.cs-phone-wrap { display: flex; flex-direction: column; gap: .5rem; align-items: center; }
+.cs-phone-toolbar { display: flex; align-items: center; gap: .4rem; color: var(--kob-soft-gray, #8b7f70); }
+.cs-phone { width: 235px; border-radius: 30px; border: 8px solid #2b2118; background: #2b2118; box-shadow: 0 18px 40px rgba(43,33,24,.28); padding-top: 6px; }
+.cs-phone-notch { width: 58px; height: 5px; border-radius: 999px; background: #4b3a2a; margin: 0 auto 6px; }
+.cs-phone-screen { border-radius: 22px; background: linear-gradient(180deg,#fffdf9,#f7efe3); min-height: 380px; padding: 1rem .85rem; }
+.cs-pv { display: flex; flex-direction: column; gap: .6rem; text-align: center; }
+.cs-pv h4 { font-size: .95rem; font-weight: 800; color: var(--kob-espresso, #3b2a1d); }
+.cs-pv p { font-size: .78rem; color: #5b4a3a; }
+.cs-pv p.muted { font-size: .72rem; color: #94897a; }
+.cs-pv small { font-size: .68rem; color: #94897a; }
+.cs-pv-btn { border-radius: 12px; border: 1px solid #b3743a; background: linear-gradient(160deg,#d5924c,#b3743a); color: #fff; padding: 9px; font-size: .8rem; font-weight: 700; }
+.cs-pv-btn.ghost { background: #fff; color: #7a5636; }
+.cs-pv-field { border-radius: 12px; border: 1px solid #e6dccd; background: #fff; padding: 10px; font-size: .78rem; color: #94897a; }
+.cs-pv-card { border-radius: 14px; border: 1px solid #e6dccd; background: #fff; padding: .7rem; display: flex; flex-direction: column; gap: 2px; }
+.cs-pv-card b { font-size: .82rem; }
+.cs-pv-card span { font-size: .72rem; color: #94897a; }
+.cs-pv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; }
+.cs-pv-grid span { border-radius: 12px; border: 1px solid #e6dccd; background: #fff; padding: 14px 4px; font-size: .74rem; }
+.cs-pv-tick { width: 44px; height: 44px; margin: 0 auto; border-radius: 50%; display: grid; place-items: center; background: #e8f4ec; color: #2f7a4d; font-size: 1.2rem; font-weight: 800; }
+
+/* providers / integrations */
+.cs-provider-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(210px,1fr)); gap: .7rem; padding: .6rem 0; }
+.cs-provider { display: flex; flex-direction: column; gap: .35rem; border-radius: 14px; border: 1px solid var(--kob-line, #e6dccd); background: #fff; padding: .75rem; }
+.cs-provider[data-on="true"] { border-color: #d5b48c; box-shadow: 0 6px 18px rgba(179,116,58,.12); }
+.cs-provider header { display: flex; align-items: center; gap: .4rem; }
+.cs-provider header b { font-size: .82rem; flex: 1; }
+.cs-provider label { font-size: .7rem; color: var(--kob-soft-gray, #8b7f70); }
+.cs-provider-status { font-size: .66rem; font-weight: 700; border-radius: 999px; padding: 2px 8px; background: #f2ede6; color: #8b7f70; }
+.cs-provider-status[data-connected="true"] { background: #e8f4ec; color: #2f7a4d; }
+
+/* branches */
+.cs-branch-list { display: flex; flex-direction: column; gap: .6rem; padding: .4rem 0; }
+.cs-branch { border-radius: 14px; border: 1px solid var(--kob-line, #e6dccd); background: #fff; overflow: hidden; }
+.cs-branch > header { display: flex; align-items: center; gap: .5rem; padding: .55rem .75rem; }
+.cs-branch-head { display: flex; align-items: center; gap: .6rem; flex: 1; text-align: start; }
+.cs-branch-code { font-size: .7rem; font-weight: 800; border-radius: 8px; background: var(--kob-soft-cream,#faf6f0); padding: 4px 8px; color: #7a5636; }
+.cs-branch-name { display: flex; flex-direction: column; }
+.cs-branch-name b { font-size: .85rem; }
+.cs-branch-name small { font-size: .68rem; color: #94897a; }
+.cs-branch-state { font-size: .66rem; font-weight: 700; border-radius: 999px; padding: 2px 8px; background: #f2ede6; color: #8b7f70; }
+.cs-branch-state[data-on="true"] { background: #e8f4ec; color: #2f7a4d; }
+.cs-branch-body { display: grid; grid-template-columns: minmax(0,1fr) 210px; gap: 1rem; padding: .3rem .85rem 1rem; border-top: 1px solid var(--kob-line, #e6dccd); }
+.cs-branch-side { display: flex; flex-direction: column; gap: .6rem; }
+.cs-qr { display: flex; flex-direction: column; gap: .4rem; align-items: center; border-radius: 14px; border: 1px solid var(--kob-line,#e6dccd); background: var(--kob-soft-cream,#faf6f0); padding: .7rem; }
+.cs-qr img { width: 130px; height: 130px; background: #fff; border-radius: 10px; }
+.cs-qr code { font-size: .62rem; color: #8b7f70; word-break: break-all; text-align: center; }
+.cs-qr-actions { display: flex; gap: .4rem; flex-wrap: wrap; justify-content: center; }
+.cs-danger-confirm { display: flex; flex-direction: column; gap: .4rem; font-size: .74rem; }
+.cs-danger-btn { border-radius: 10px; border: 1px solid #c2564a; background: #c2564a; color: #fff; padding: 6px 11px; font-size: .74rem; font-weight: 700; }
+
+/* audit */
+.cs-audit-stats { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: .6rem; padding: .6rem 0; }
+.cs-audit-stats article { border-radius: 14px; border: 1px solid var(--kob-line,#e6dccd); background: #fff; padding: .7rem .8rem; }
+.cs-audit-stats b { display: block; font-size: 1.3rem; font-weight: 800; color: var(--kob-espresso,#3b2a1d); }
+.cs-audit-stats span { display: inline-flex; align-items: center; gap: 5px; font-size: .72rem; color: #8b7f70; }
+.cs-timeline { display: flex; flex-direction: column; gap: .35rem; padding: .4rem 0; }
+.cs-timeline button { display: grid; grid-template-columns: 150px 130px 90px minmax(0,1fr); gap: .5rem; align-items: center; width: 100%; text-align: start; border-radius: 12px; border: 1px solid var(--kob-line,#e6dccd); background: #fff; padding: .5rem .65rem; font-size: .74rem; }
+.cs-timeline button:hover { background: var(--kob-soft-cream,#faf6f0); }
+.cs-timeline time { color: #94897a; font-size: .7rem; }
+.cs-timeline-section { font-size: .66rem; font-weight: 700; border-radius: 999px; padding: 2px 8px; background: #f2ede6; color: #8b7f70; justify-self: start; }
+.cs-timeline-section[data-security="true"] { background: #fdeceb; color: #b23b2e; }
+.cs-timeline-diff { color: #6b5c4c; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cs-drawer-backdrop { position: fixed; inset: 0; background: rgba(43,33,24,.35); z-index: 60; display: flex; justify-content: flex-end; }
+.cs-drawer { width: min(400px,92vw); height: 100%; background: #fffdf9; padding: 1rem; overflow-y: auto; box-shadow: -12px 0 40px rgba(43,33,24,.2); }
+.cs-drawer header { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .8rem; }
+.cs-drawer dl { display: grid; grid-template-columns: 110px minmax(0,1fr); gap: .45rem .6rem; font-size: .78rem; }
+.cs-drawer dt { color: #94897a; }
+.cs-drawer dd code { word-break: break-all; font-size: .72rem; }
+
+@media (max-width: 900px) {
+  .cs-xp, .cs-branch-body { grid-template-columns: minmax(0,1fr); }
+  .cs-timeline button { grid-template-columns: minmax(0,1fr); }
+}
