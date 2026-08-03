@@ -36,6 +36,7 @@ import {
 } from "@/services/company/company-members.service";
 import { listBranches } from "@/services/company/branches.service";
 import { useCompanySettings } from "./useCompanySettings";
+import { LogoUploader } from "./LogoUploader";
 import { Card, CheckChip, Row, SaveIndicator, Segmented, Toggle, type SaveState } from "./parts";
 import { CustomerExperienceSection } from "./CustomerExperience";
 import { NotificationsSection } from "./NotificationsSection";
@@ -395,17 +396,13 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
         description={isAr ? "تظهر هذه البيانات في كل الواجهات والفواتير." : "Used across every screen and invoice."}
       >
         <Row label={isAr ? "شعار الشركة" : "Company logo"} hint={isAr ? "رابط صورة مباشر" : "Direct image URL"}>
-          <div className="cs-logo-row">
-            {profile?.logo_url ? <img src={profile.logo_url} alt={isAr ? "شعار الشركة" : "Company logo"} /> : <div className="cs-logo-empty" />}
-            <TextInput
-              isAr={isAr}
-              disabled={d}
-              value={profile?.logo_url ?? ""}
-              placeholder="https://…"
-              validate={(v) => (v && !/^https?:\/\//.test(v) ? (isAr ? "رابط غير صحيح" : "Must be a valid URL") : null)}
-              onCommit={(v) => commitProfile({ logo_url: v || null })}
-            />
-          </div>
+          <LogoUploader
+            isAr={isAr}
+            disabled={d}
+            folder={`logos/${profile?.id ?? "company"}`}
+            value={profile?.logo_url ?? null}
+            onChange={(url) => commitProfile({ logo_url: url })}
+          />
         </Row>
         <Row label={isAr ? "الاسم بالعربية" : "Company name (Arabic)"}>
           <TextInput
@@ -443,6 +440,32 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
         <Row label={isAr ? "العنوان" : "Address"}>
           <TextInput isAr={isAr} disabled={d} value={settings.address ?? ""} onCommit={(v) => commit({ address: v.trim() || null }, "general")} />
         </Row>
+        <Row label={isAr ? "الموقع الإلكتروني" : "Website"}>
+          <TextInput
+            isAr={isAr}
+            disabled={d}
+            value={profile?.website ?? ""}
+            placeholder="https://…"
+            validate={(v) => (v && !/^https?:\/\//.test(v) ? (isAr ? "رابط غير صحيح" : "Invalid URL") : null)}
+            onCommit={(v) => commitProfile({ website: v.trim() || null })}
+          />
+        </Row>
+        <Row label={isAr ? "السجل التجاري" : "Commercial registration"}>
+          <TextInput
+            isAr={isAr}
+            disabled={d}
+            value={settings.commercial_registration ?? ""}
+            onCommit={(v) => commit({ commercial_registration: v.trim() || null }, "general")}
+          />
+        </Row>
+        <Row label={isAr ? "الرقم الضريبي" : "VAT number"}>
+          <TextInput
+            isAr={isAr}
+            disabled={d}
+            value={settings.tax_number ?? ""}
+            onCommit={(v) => commit({ tax_number: v.trim() || null }, "general")}
+          />
+        </Row>
       </Card>
 
       <Card title={isAr ? "المنطقة واللغة" : "Locale"} description={isAr ? "تتحكم في التواريخ والعملة والواجهات." : "Controls dates, currency and default UI language."}>
@@ -478,6 +501,29 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
             value={settings.currency}
             validate={(v) => (!/^[A-Za-z]{3}$/.test(v.trim()) ? (isAr ? "رمز عملة غير صحيح" : "Invalid currency code") : null)}
             onCommit={(v) => commit({ currency: v.trim().toUpperCase() }, "general")}
+          />
+        </Row>
+        <Row label={isAr ? "صيغة التاريخ" : "Date format"}>
+          <Segmented
+            disabled={d}
+            value={settings.date_format}
+            onChange={(v) => commit({ date_format: v }, "general")}
+            options={[
+              { value: "dd/MM/yyyy", label: "31/12/2026" },
+              { value: "yyyy-MM-dd", label: "2026-12-31" },
+              { value: "MM/dd/yyyy", label: "12/31/2026" },
+            ]}
+          />
+        </Row>
+        <Row label={isAr ? "صيغة الأرقام" : "Number format"}>
+          <Segmented
+            disabled={d}
+            value={settings.number_format}
+            onChange={(v) => commit({ number_format: v }, "general")}
+            options={[
+              { value: "western" as const, label: "1234" },
+              { value: "arabic" as const, label: "١٢٣٤" },
+            ]}
           />
         </Row>
       </Card>
