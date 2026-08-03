@@ -36,7 +36,14 @@ import {
 } from "@/services/company/company-members.service";
 import { listBranches } from "@/services/company/branches.service";
 import { useCompanySettings } from "./useCompanySettings";
+import { LogoUploader } from "./LogoUploader";
 import { Card, CheckChip, Row, SaveIndicator, Segmented, Toggle, type SaveState } from "./parts";
+import { CustomerExperienceSection } from "./CustomerExperience";
+import { NotificationsSection } from "./NotificationsSection";
+import { EmployeeManagementSection } from "./EmployeeManagement";
+import { BranchManagementSection } from "./BranchManagement";
+import { IntegrationsSection } from "./IntegrationsSection";
+import { AuditLogSection } from "./AuditLog";
 
 type SectionKey =
   | "general"
@@ -216,6 +223,7 @@ export function CompanySettingsShell() {
               organizationId={organizationId}
               isAr={isAr}
               canEdit={canEdit}
+              isOwner={role === "owner"}
               commit={commit}
               commitProfile={commitProfile}
             />
@@ -345,6 +353,7 @@ type BodyProps = {
   organizationId: string;
   isAr: boolean;
   canEdit: boolean;
+  isOwner: boolean;
   commit: (patch: SettingsPatch, section: string) => Promise<void>;
   commitProfile: (patch: Partial<OrganizationProfileRow>) => Promise<void>;
 };
@@ -360,19 +369,19 @@ function SectionBody(props: BodyProps) {
     case "ordering":
       return <OrderingSection {...props} />;
     case "experience":
-      return <ExperienceSection {...props} />;
+      return <CustomerExperienceSection {...props} />;
     case "notifications":
       return <NotificationsSection {...props} />;
     case "security":
       return <SecuritySection {...props} />;
     case "employees":
-      return <EmployeesSection {...props} />;
+      return <EmployeeManagementSection {...props} />;
     case "branches":
-      return <BranchesSection {...props} />;
+      return <BranchManagementSection {...props} />;
     case "integrations":
       return <IntegrationsSection {...props} />;
     case "audit":
-      return <AuditSection {...props} />;
+      return <AuditLogSection {...props} />;
     default:
       return null;
   }
@@ -387,17 +396,13 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
         description={isAr ? "تظهر هذه البيانات في كل الواجهات والفواتير." : "Used across every screen and invoice."}
       >
         <Row label={isAr ? "شعار الشركة" : "Company logo"} hint={isAr ? "رابط صورة مباشر" : "Direct image URL"}>
-          <div className="cs-logo-row">
-            {profile?.logo_url ? <img src={profile.logo_url} alt={isAr ? "شعار الشركة" : "Company logo"} /> : <div className="cs-logo-empty" />}
-            <TextInput
-              isAr={isAr}
-              disabled={d}
-              value={profile?.logo_url ?? ""}
-              placeholder="https://…"
-              validate={(v) => (v && !/^https?:\/\//.test(v) ? (isAr ? "رابط غير صحيح" : "Must be a valid URL") : null)}
-              onCommit={(v) => commitProfile({ logo_url: v || null })}
-            />
-          </div>
+          <LogoUploader
+            isAr={isAr}
+            disabled={d}
+            folder={`logos/${profile?.id ?? "company"}`}
+            value={profile?.logo_url ?? null}
+            onChange={(url) => commitProfile({ logo_url: url })}
+          />
         </Row>
         <Row label={isAr ? "الاسم بالعربية" : "Company name (Arabic)"}>
           <TextInput
@@ -435,6 +440,32 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
         <Row label={isAr ? "العنوان" : "Address"}>
           <TextInput isAr={isAr} disabled={d} value={settings.address ?? ""} onCommit={(v) => commit({ address: v.trim() || null }, "general")} />
         </Row>
+        <Row label={isAr ? "الموقع الإلكتروني" : "Website"}>
+          <TextInput
+            isAr={isAr}
+            disabled={d}
+            value={profile?.website ?? ""}
+            placeholder="https://…"
+            validate={(v) => (v && !/^https?:\/\//.test(v) ? (isAr ? "رابط غير صحيح" : "Invalid URL") : null)}
+            onCommit={(v) => commitProfile({ website: v.trim() || null })}
+          />
+        </Row>
+        <Row label={isAr ? "السجل التجاري" : "Commercial registration"}>
+          <TextInput
+            isAr={isAr}
+            disabled={d}
+            value={settings.commercial_registration ?? ""}
+            onCommit={(v) => commit({ commercial_registration: v.trim() || null }, "general")}
+          />
+        </Row>
+        <Row label={isAr ? "الرقم الضريبي" : "VAT number"}>
+          <TextInput
+            isAr={isAr}
+            disabled={d}
+            value={settings.tax_number ?? ""}
+            onCommit={(v) => commit({ tax_number: v.trim() || null }, "general")}
+          />
+        </Row>
       </Card>
 
       <Card title={isAr ? "المنطقة واللغة" : "Locale"} description={isAr ? "تتحكم في التواريخ والعملة والواجهات." : "Controls dates, currency and default UI language."}>
@@ -470,6 +501,29 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
             value={settings.currency}
             validate={(v) => (!/^[A-Za-z]{3}$/.test(v.trim()) ? (isAr ? "رمز عملة غير صحيح" : "Invalid currency code") : null)}
             onCommit={(v) => commit({ currency: v.trim().toUpperCase() }, "general")}
+          />
+        </Row>
+        <Row label={isAr ? "صيغة التاريخ" : "Date format"}>
+          <Segmented
+            disabled={d}
+            value={settings.date_format}
+            onChange={(v) => commit({ date_format: v }, "general")}
+            options={[
+              { value: "dd/MM/yyyy", label: "31/12/2026" },
+              { value: "yyyy-MM-dd", label: "2026-12-31" },
+              { value: "MM/dd/yyyy", label: "12/31/2026" },
+            ]}
+          />
+        </Row>
+        <Row label={isAr ? "صيغة الأرقام" : "Number format"}>
+          <Segmented
+            disabled={d}
+            value={settings.number_format}
+            onChange={(v) => commit({ number_format: v }, "general")}
+            options={[
+              { value: "western" as const, label: "1234" },
+              { value: "arabic" as const, label: "١٢٣٤" },
+            ]}
           />
         </Row>
       </Card>
@@ -667,70 +721,6 @@ function OrderingSection({ settings, isAr, canEdit, commit }: BodyProps) {
   );
 }
 
-function ExperienceSection({ settings, isAr, canEdit, commit }: BodyProps) {
-  const d = canEdit ? undefined : true;
-  const fields: Array<[keyof OrganizationSettingsRow, string]> = [
-    ["welcome_message_ar", isAr ? "رسالة الترحيب (عربي)" : "Welcome message (Arabic)"],
-    ["welcome_message_en", isAr ? "رسالة الترحيب (إنجليزي)" : "Welcome message (English)"],
-    ["order_completed_message_ar", isAr ? "رسالة اكتمال الطلب (عربي)" : "Order completed (Arabic)"],
-    ["order_completed_message_en", isAr ? "رسالة اكتمال الطلب (إنجليزي)" : "Order completed (English)"],
-    ["loyalty_message_ar", isAr ? "رسالة الولاء (عربي)" : "Loyalty message (Arabic)"],
-    ["loyalty_message_en", isAr ? "رسالة الولاء (إنجليزي)" : "Loyalty message (English)"],
-  ];
-  return (
-    <div className="cs-stack">
-      <Card
-        title={isAr ? "رسائل العميل" : "Customer messages"}
-        description={isAr ? "تظهر مباشرة في صفحات العميل بعد الحفظ." : "Shown on customer pages immediately after saving."}
-      >
-        {fields.map(([key, label]) => (
-          <Row key={String(key)} label={label}>
-            <TextInput
-              isAr={isAr}
-              disabled={d}
-              value={(settings[key] as string | null) ?? ""}
-              validate={(v) => (v.length > 200 ? (isAr ? "الحد ٢٠٠ حرف" : "Max 200 characters") : null)}
-              onCommit={(v) => commit({ [key]: v.trim() || null } as SettingsPatch, "experience")}
-            />
-          </Row>
-        ))}
-      </Card>
-    </div>
-  );
-}
-
-function NotificationsSection({ settings, isAr, canEdit, commit }: BodyProps) {
-  const d = canEdit ? undefined : true;
-  const channels: Array<[keyof OrganizationSettingsRow, string]> = [
-    ["notify_email", isAr ? "إشعارات البريد" : "Email notifications"],
-    ["notify_sms", isAr ? "الرسائل النصية" : "SMS notifications"],
-    ["notify_push", isAr ? "الإشعارات الفورية" : "Push notifications"],
-  ];
-  const events: Array<[keyof OrganizationSettingsRow, string]> = [
-    ["notify_orders", isAr ? "الطلبات" : "Order notifications"],
-    ["notify_subscription_expiry", isAr ? "انتهاء الاشتراكات" : "Subscription expiry"],
-    ["notify_low_stock", isAr ? "نقص المخزون" : "Low stock"],
-    ["notify_training", isAr ? "التدريب" : "Training"],
-  ];
-  return (
-    <div className="cs-stack">
-      <Card title={isAr ? "القنوات" : "Channels"}>
-        {channels.map(([key, label]) => (
-          <Row key={String(key)} label={label}>
-            <Toggle label={label} disabled={d} checked={settings[key] as boolean} onChange={(v) => commit({ [key]: v } as SettingsPatch, "notifications")} />
-          </Row>
-        ))}
-      </Card>
-      <Card title={isAr ? "الأحداث" : "Events"}>
-        {events.map(([key, label]) => (
-          <Row key={String(key)} label={label}>
-            <Toggle label={label} disabled={d} checked={settings[key] as boolean} onChange={(v) => commit({ [key]: v } as SettingsPatch, "notifications")} />
-          </Row>
-        ))}
-      </Card>
-    </div>
-  );
-}
 
 function SecuritySection({ settings, isAr, canEdit, commit }: BodyProps) {
   const d = canEdit ? undefined : true;
@@ -792,269 +782,3 @@ function SecuritySection({ settings, isAr, canEdit, commit }: BodyProps) {
   );
 }
 
-function EmployeesSection({ settings, organizationId, isAr, canEdit, commit }: BodyProps) {
-  const d = canEdit ? undefined : true;
-  const queryClient = useQueryClient();
-  const members = useQuery({
-    queryKey: ["company-members", organizationId],
-    queryFn: () => listCompanyMembers(organizationId),
-  });
-  const [busy, setBusy] = useState<string | null>(null);
-  const [rowError, setRowError] = useState<string | null>(null);
-
-  const changeRole = async (memberId: string, next: CompanyMemberRole) => {
-    setBusy(memberId);
-    setRowError(null);
-    try {
-      await updateMemberRole(organizationId, memberId, next);
-      await queryClient.invalidateQueries({ queryKey: ["company-members", organizationId] });
-    } catch (err: any) {
-      setRowError(translateError(err?.message, isAr));
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  const changeStatus = async (memberId: string, status: "active" | "inactive") => {
-    setBusy(memberId);
-    setRowError(null);
-    try {
-      await setMemberStatus(organizationId, memberId, status);
-      await queryClient.invalidateQueries({ queryKey: ["company-members", organizationId] });
-    } catch (err: any) {
-      setRowError(translateError(err?.message, isAr));
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  return (
-    <div className="cs-stack">
-      <Card title={isAr ? "الإعدادات الافتراضية للموظفين" : "Employee defaults"}>
-        <Row label={isAr ? "الدور الافتراضي" : "Default role"}>
-          <Segmented
-            disabled={d}
-            value={settings.default_employee_role}
-            onChange={(v) => commit({ default_employee_role: v }, "employees")}
-            options={[
-              { value: "cashier", label: isAr ? "كاشير" : "Cashier" },
-              { value: "manager", label: isAr ? "مدير فرع" : "Manager" },
-              { value: "admin", label: isAr ? "مشرف" : "Admin" },
-            ]}
-          />
-        </Row>
-        <Row label={isAr ? "دعوة الموظفين" : "Employee invitations"}>
-          <Segmented
-            disabled={d}
-            value={settings.employee_invite_mode}
-            onChange={(v) => commit({ employee_invite_mode: v }, "employees")}
-            options={[
-              { value: "admin_only" as const, label: isAr ? "المشرفون فقط" : "Admins only" },
-              { value: "managers_allowed" as const, label: isAr ? "المديرون أيضًا" : "Managers too" },
-              { value: "disabled" as const, label: isAr ? "معطّلة" : "Disabled" },
-            ]}
-          />
-        </Row>
-        <Row label={isAr ? "إعادة تعيين كلمة المرور" : "Password reset policy"}>
-          <Segmented
-            disabled={d}
-            value={settings.password_reset_policy}
-            onChange={(v) => commit({ password_reset_policy: v }, "employees")}
-            options={[
-              { value: "self_service" as const, label: isAr ? "ذاتية" : "Self service" },
-              { value: "admin_only" as const, label: isAr ? "عبر المشرف" : "Admin only" },
-            ]}
-          />
-        </Row>
-      </Card>
-
-      <Card
-        title={isAr ? "الفريق والصلاحيات" : "Team & permissions"}
-        aside={
-          <Link to="/admin/cashiers" className="cs-link">
-            {isAr ? "إدارة الموظفين" : "Manage employees"}
-          </Link>
-        }
-      >
-        {rowError ? <div className="cs-error-panel">{rowError}</div> : null}
-        {members.isLoading ? (
-          <div className="cs-loading">
-            <Loader2 className="h-4 w-4 animate-spin" />
-          </div>
-        ) : (
-          <table className="cs-table">
-            <thead>
-              <tr>
-                <th>{isAr ? "الموظف" : "Member"}</th>
-                <th>{isAr ? "الدور" : "Role"}</th>
-                <th>{isAr ? "الحالة" : "Status"}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(members.data ?? []).map((m) => (
-                <tr key={m.id}>
-                  <td>
-                    <strong>{m.profile?.full_name || m.profile?.email || m.user_id.slice(0, 8)}</strong>
-                    <small>{m.profile?.email}</small>
-                  </td>
-                  <td>
-                    <select
-                      className="cs-input"
-                      disabled={d || busy === m.id}
-                      value={m.role}
-                      onChange={(e) => changeRole(m.id, e.target.value as CompanyMemberRole)}
-                    >
-                      <option value="owner">{isAr ? "مالك" : "Owner"}</option>
-                      <option value="admin">{isAr ? "مشرف" : "Admin"}</option>
-                      <option value="manager">{isAr ? "مدير" : "Manager"}</option>
-                      <option value="cashier">{isAr ? "كاشير" : "Cashier"}</option>
-                    </select>
-                  </td>
-                  <td>
-                    <Toggle
-                      label="status"
-                      disabled={d || busy === m.id || m.role === "owner"}
-                      checked={m.status === "active"}
-                      onChange={(v) => changeStatus(m.id, v ? "active" : "inactive")}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </Card>
-    </div>
-  );
-}
-
-function BranchesSection({ settings, isAr, canEdit, commit }: BodyProps) {
-  const d = canEdit ? undefined : true;
-  const branches = useQuery({ queryKey: ["company-branches"], queryFn: () => listBranches() });
-  return (
-    <div className="cs-stack">
-      <Card
-        title={isAr ? "إعدادات الفروع" : "Branch settings"}
-        aside={
-          <Link to="/admin/branches" className="cs-link">
-            {isAr ? "إدارة الفروع" : "Manage branches"}
-          </Link>
-        }
-      >
-        <Row label={isAr ? "الفرع الافتراضي" : "Default branch"}>
-          <select
-            className="cs-input"
-            disabled={d}
-            value={settings.default_branch_id ?? ""}
-            onChange={(e) => commit({ default_branch_id: e.target.value || null }, "branches")}
-          >
-            <option value="">{isAr ? "بدون" : "None"}</option>
-            {(branches.data ?? []).map((b: any) => (
-              <option key={b.id} value={b.id}>
-                {isAr ? b.name_ar : b.name_en}
-              </option>
-            ))}
-          </select>
-        </Row>
-        <Row label={isAr ? "رمز QR" : "Branch QR"}>
-          <Segmented
-            disabled={d}
-            value={settings.branch_qr_mode}
-            onChange={(v) => commit({ branch_qr_mode: v }, "branches")}
-            options={[
-              { value: "per_branch" as const, label: isAr ? "رمز لكل فرع" : "Per branch" },
-              { value: "single" as const, label: isAr ? "رمز موحّد" : "Single code" },
-            ]}
-          />
-        </Row>
-      </Card>
-    </div>
-  );
-}
-
-const INTEGRATION_KEYS = ["payment_gateway", "pos", "accounting", "erp", "api_key"] as const;
-
-function IntegrationsSection({ settings, isAr, canEdit, commit }: BodyProps) {
-  const d = canEdit ? undefined : true;
-  const current = (settings.integrations ?? {}) as Record<string, string>;
-  const labels: Record<string, [string, string]> = {
-    payment_gateway: ["بوابة الدفع", "Payment gateway"],
-    pos: ["نقاط البيع", "POS"],
-    accounting: ["المحاسبة", "Accounting"],
-    erp: ["تخطيط الموارد", "ERP"],
-    api_key: ["مرجع مفتاح API", "API key reference"],
-  };
-  return (
-    <div className="cs-stack">
-      <Card
-        title={isAr ? "التكاملات" : "Integrations"}
-        description={
-          isAr
-            ? "احفظ مرجع كل تكامل هنا. لا تُخزَّن أي مفاتيح سرية في هذه الصفحة."
-            : "Store the reference for each integration. No secret keys are stored on this page."
-        }
-      >
-        {INTEGRATION_KEYS.map((key) => (
-          <Row key={key} label={isAr ? labels[key]![0] : labels[key]![1]}>
-            <TextInput
-              isAr={isAr}
-              disabled={d}
-              value={current[key] ?? ""}
-              validate={(v) => (v.length > 120 ? (isAr ? "الحد ١٢٠ حرف" : "Max 120 characters") : null)}
-              onCommit={(v) => {
-                const next = { ...current };
-                if (v.trim()) next[key] = v.trim();
-                else delete next[key];
-                void commit({ integrations: next }, "integrations");
-              }}
-            />
-          </Row>
-        ))}
-      </Card>
-    </div>
-  );
-}
-
-function AuditSection({ organizationId, isAr }: BodyProps) {
-  const audit = useQuery({
-    queryKey: ["company-settings-audit", organizationId],
-    queryFn: () => listSettingsAudit(organizationId, 100),
-  });
-  const fmt = (value: string | null) => (value === null ? "—" : value.length > 60 ? `${value.slice(0, 60)}…` : value);
-  return (
-    <div className="cs-stack">
-      <Card title={isAr ? "سجل تغييرات الإعدادات" : "Settings change log"}>
-        {audit.isLoading ? (
-          <div className="cs-loading">
-            <Loader2 className="h-4 w-4 animate-spin" />
-          </div>
-        ) : (audit.data ?? []).length === 0 ? (
-          <div className="cs-empty">{isAr ? "لا توجد تغييرات بعد." : "No changes recorded yet."}</div>
-        ) : (
-          <table className="cs-table">
-            <thead>
-              <tr>
-                <th>{isAr ? "التاريخ" : "When"}</th>
-                <th>{isAr ? "القسم" : "Section"}</th>
-                <th>{isAr ? "الإعداد" : "Setting"}</th>
-                <th>{isAr ? "من" : "From"}</th>
-                <th>{isAr ? "إلى" : "To"}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(audit.data ?? []).map((row) => (
-                <tr key={row.id}>
-                  <td>{new Date(row.created_at).toLocaleString(isAr ? "ar-SA" : "en-GB")}</td>
-                  <td>{row.section}</td>
-                  <td>{row.field}</td>
-                  <td>{fmt(row.old_value)}</td>
-                  <td>{fmt(row.new_value)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </Card>
-    </div>
-  );
-}

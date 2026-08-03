@@ -79,3 +79,17 @@ export async function setMemberStatus(
     .eq("organization_id", organizationId);
   if (error) throw error;
 }
+
+/** Assign a member to one branch, or to every branch when `branchId` is null. */
+export async function setMemberBranch(
+  organizationId: string,
+  memberId: string,
+  branchId: string | null,
+): Promise<void> {
+  const { error } = await (supabase as any)
+    .from("organization_members")
+    .update({ branch_id: branchId, updated_at: new Date().toISOString() })
+    .eq("id", memberId)
+    .eq("organization_id", organizationId);
+  if (error) throw error;
+}

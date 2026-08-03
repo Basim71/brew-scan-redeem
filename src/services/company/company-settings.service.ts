@@ -12,6 +12,7 @@ export type OrganizationProfileRow = {
   slug: string;
   email: string | null;
   phone: string | null;
+  website: string | null;
   logo_url: string | null;
   primary_color: string | null;
   secondary_color: string | null;
@@ -23,7 +24,7 @@ export type OrganizationProfileRow = {
 };
 
 const PROFILE_SELECT =
-  "id,organization_code,name_ar,name_en,slug,email,phone,logo_url,primary_color,secondary_color,status,organization_type,owner_user_id,created_at,updated_at";
+  "id,organization_code,name_ar,name_en,slug,email,phone,website,logo_url,primary_color,secondary_color,status,organization_type,owner_user_id,created_at,updated_at";
 
 export async function getOrganizationProfile(
   organizationId: string,
@@ -42,6 +43,7 @@ export type OrganizationProfileUpdate = {
   name_en?: string | null;
   email?: string | null;
   phone?: string | null;
+  website?: string | null;
   logo_url?: string | null;
   primary_color?: string | null;
   secondary_color?: string | null;
@@ -52,6 +54,7 @@ const PROFILE_WRITABLE: Array<keyof OrganizationProfileUpdate> = [
   "name_en",
   "email",
   "phone",
+  "website",
   "logo_url",
   "primary_color",
   "secondary_color",
@@ -91,7 +94,11 @@ export type OrganizationSettingsRow = {
   default_language: "ar" | "en";
   currency: string;
   timezone: string;
+  date_format: string;
+  number_format: "western" | "arabic";
   address: string | null;
+  commercial_registration: string | null;
+  tax_number: string | null;
   logo_url: string | null;
   background_url: string | null;
   primary_color: string | null;
@@ -123,6 +130,16 @@ export type OrganizationSettingsRow = {
 
   welcome_message_ar: string | null;
   welcome_message_en: string | null;
+  welcome_subtitle_ar: string | null;
+  welcome_subtitle_en: string | null;
+  empty_subscription_message_ar: string | null;
+  empty_subscription_message_en: string | null;
+  redeem_success_message_ar: string | null;
+  redeem_success_message_en: string | null;
+  expired_subscription_message_ar: string | null;
+  expired_subscription_message_en: string | null;
+  thank_you_message_ar: string | null;
+  thank_you_message_en: string | null;
   order_completed_message_ar: string | null;
   order_completed_message_en: string | null;
   loyalty_message_ar: string | null;
@@ -131,10 +148,14 @@ export type OrganizationSettingsRow = {
   notify_email: boolean;
   notify_sms: boolean;
   notify_push: boolean;
+  notify_whatsapp: boolean;
   notify_orders: boolean;
   notify_subscription_expiry: boolean;
   notify_low_stock: boolean;
   notify_training: boolean;
+  notification_providers: Record<string, { connected?: boolean; reference?: string }>;
+  notification_events: Record<string, boolean>;
+  notification_templates: Record<string, string>;
 
   session_timeout_minutes: number;
   password_policy: "standard" | "strong" | "strict";
@@ -142,6 +163,16 @@ export type OrganizationSettingsRow = {
   login_restriction: "none" | "ip_allowlist" | "business_hours";
   allowed_ip_addresses: string[];
   audit_log_enabled: boolean;
+  force_password_reset_days: number;
+  remember_devices: boolean;
+  allowed_countries: string[];
+  device_restriction: "none" | "single_device" | "trusted_only";
+  max_concurrent_sessions: number;
+  failed_login_protection: boolean;
+  failed_login_threshold: number;
+  temporary_lock_minutes: number;
+  auto_logout_enabled: boolean;
+  suspicious_login_detection: boolean;
 
   default_employee_role: string;
   employee_invite_mode: "admin_only" | "managers_allowed" | "disabled";
