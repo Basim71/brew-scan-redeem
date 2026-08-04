@@ -5970,6 +5970,7 @@ html[dir="rtl"] .kob-auth-input {
   align-items: center;
   gap: 10px;
   width: 100%;
+  box-sizing: border-box;
   padding: 10px 11px;
   border: 1px solid transparent;
   border-radius: 12px;
