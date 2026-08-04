@@ -50,10 +50,11 @@ type FloatingIslandProps = {
   subtitle?: string;
   homeTo: string;
   items: FloatingIslandItem[];
+  accountLinks?: FloatingIslandLink[];
   onSignOut: () => void | Promise<void>;
 };
 
-export function FloatingIsland({ title, subtitle, homeTo, items, onSignOut }: FloatingIslandProps) {
+export function FloatingIsland({ title, subtitle, homeTo, items, accountLinks, onSignOut }: FloatingIslandProps) {
   const { t, lang } = useI18n();
   const [open, setOpen] = useState(false);
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
@@ -326,6 +327,26 @@ export function FloatingIsland({ title, subtitle, homeTo, items, onSignOut }: Fl
                 <strong>{title}</strong>
                 <small>{subtitle}</small>
               </div>
+              {accountLinks?.length ? (
+                <div className="app-island-account-links">
+                  {accountLinks.map((link) => {
+                    const LinkIcon = link.icon;
+                    return (
+                      <Link
+                        key={link.to + (link.hash ?? "")}
+                        to={link.to as never}
+                        hash={link.hash as never}
+                        role="menuitem"
+                        className="app-island-account-action"
+                        onClick={() => setAccountOpen(false)}
+                      >
+                        <LinkIcon className="h-4 w-4" />
+                        <span>{link.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              ) : null}
               <div className="app-island-account-row">
                 <Languages className="h-4 w-4" />
                 <LanguageSwitcher />
