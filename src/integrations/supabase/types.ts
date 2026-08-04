@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_suggestions: {
+        Row: {
+          approved_by: string | null
+          audience: string
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: string
+          model: string | null
+          payload: Json
+          provider: string | null
+          session_id: string | null
+          status: string
+          ticket_id: string | null
+        }
+        Insert: {
+          approved_by?: string | null
+          audience?: string
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind: string
+          model?: string | null
+          payload?: Json
+          provider?: string | null
+          session_id?: string | null
+          status?: string
+          ticket_id?: string | null
+        }
+        Update: {
+          approved_by?: string | null
+          audience?: string
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          model?: string | null
+          payload?: Json
+          provider?: string | null
+          session_id?: string | null
+          status?: string
+          ticket_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_suggestions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_suggestions_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       branches: {
         Row: {
           address_ar: string | null
@@ -617,6 +680,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      kb_articles: {
+        Row: {
+          body_ar: string
+          body_en: string | null
+          category: string
+          created_at: string
+          excerpt_ar: string | null
+          excerpt_en: string | null
+          id: string
+          is_published: boolean
+          slug: string
+          tags: string[]
+          title_ar: string
+          title_en: string | null
+          updated_at: string
+          video_url: string | null
+          views: number
+        }
+        Insert: {
+          body_ar?: string
+          body_en?: string | null
+          category?: string
+          created_at?: string
+          excerpt_ar?: string | null
+          excerpt_en?: string | null
+          id?: string
+          is_published?: boolean
+          slug: string
+          tags?: string[]
+          title_ar: string
+          title_en?: string | null
+          updated_at?: string
+          video_url?: string | null
+          views?: number
+        }
+        Update: {
+          body_ar?: string
+          body_en?: string | null
+          category?: string
+          created_at?: string
+          excerpt_ar?: string | null
+          excerpt_en?: string | null
+          id?: string
+          is_published?: boolean
+          slug?: string
+          tags?: string[]
+          title_ar?: string
+          title_en?: string | null
+          updated_at?: string
+          video_url?: string | null
+          views?: number
+        }
+        Relationships: []
       }
       orders: {
         Row: {
@@ -1389,6 +1506,45 @@ export type Database = {
           },
         ]
       }
+      platform_ai_settings: {
+        Row: {
+          base_url: string | null
+          enabled: boolean
+          id: string
+          model: string
+          options: Json
+          provider: string
+          require_human_approval: boolean
+          temperature: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          base_url?: string | null
+          enabled?: boolean
+          id?: string
+          model?: string
+          options?: Json
+          provider?: string
+          require_human_approval?: boolean
+          temperature?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          base_url?: string | null
+          enabled?: boolean
+          id?: string
+          model?: string
+          options?: Json
+          provider?: string
+          require_human_approval?: boolean
+          temperature?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           branch_id: string | null
@@ -1486,6 +1642,88 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_permissions: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          granted: boolean
+          granted_at: string | null
+          granted_by_user_id: string | null
+          id: string
+          permission: string
+          revoked_at: string | null
+          session_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          granted?: boolean
+          granted_at?: string | null
+          granted_by_user_id?: string | null
+          id?: string
+          permission: string
+          revoked_at?: string | null
+          session_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          granted?: boolean
+          granted_at?: string | null
+          granted_by_user_id?: string | null
+          id?: string
+          permission?: string
+          revoked_at?: string | null
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_permissions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_signals: {
+        Row: {
+          created_at: string
+          id: number
+          kind: string
+          payload: Json
+          sender_user_id: string
+          session_id: string
+          target_user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          kind: string
+          payload?: Json
+          sender_user_id: string
+          session_id: string
+          target_user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          kind?: string
+          payload?: Json
+          sender_user_id?: string
+          session_id?: string
+          target_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_signals_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_sessions"
             referencedColumns: ["id"]
           },
         ]
@@ -1615,6 +1853,60 @@ export type Database = {
           },
         ]
       }
+      support_agents: {
+        Row: {
+          agent_role: string
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          max_concurrent_sessions: number
+          member_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          agent_role?: string
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          max_concurrent_sessions?: number
+          member_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          agent_role?: string
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          max_concurrent_sessions?: number
+          member_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_agents_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "organization_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_agents_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "platform_staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_messages: {
         Row: {
           attachments: Json
@@ -1649,6 +1941,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      support_presence: {
+        Row: {
+          current_session_id: string | null
+          current_ticket_id: string | null
+          last_seen_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          current_session_id?: string | null
+          current_ticket_id?: string | null
+          last_seen_at?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          current_session_id?: string | null
+          current_ticket_id?: string | null
+          last_seen_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       support_requests: {
         Row: {
@@ -1865,6 +2184,559 @@ export type Database = {
           },
         ]
       }
+      ticket_events: {
+        Row: {
+          actor_kind: string
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
+          from_status: string | null
+          id: number
+          message: string | null
+          metadata: Json
+          session_id: string | null
+          ticket_id: string
+          to_status: string | null
+        }
+        Insert: {
+          actor_kind?: string
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
+          from_status?: string | null
+          id?: number
+          message?: string | null
+          metadata?: Json
+          session_id?: string | null
+          ticket_id: string
+          to_status?: string | null
+        }
+        Update: {
+          actor_kind?: string
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          from_status?: string | null
+          id?: number
+          message?: string | null
+          metadata?: Json
+          session_id?: string | null
+          ticket_id?: string
+          to_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_events_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_events_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ticket_files: {
+        Row: {
+          bucket: string
+          created_at: string
+          file_name: string
+          id: string
+          kind: string
+          message_id: string | null
+          mime_type: string | null
+          path: string
+          size_bytes: number | null
+          ticket_id: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          bucket?: string
+          created_at?: string
+          file_name: string
+          id?: string
+          kind?: string
+          message_id?: string | null
+          mime_type?: string | null
+          path: string
+          size_bytes?: number | null
+          ticket_id: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          bucket?: string
+          created_at?: string
+          file_name?: string
+          id?: string
+          kind?: string
+          message_id?: string | null
+          mime_type?: string | null
+          path?: string
+          size_bytes?: number | null
+          ticket_id?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_files_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_files_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ticket_messages: {
+        Row: {
+          attachments: Json
+          body: string
+          created_at: string
+          edited_at: string | null
+          id: string
+          kind: string
+          language: string | null
+          metadata: Json
+          sender_kind: string
+          sender_user_id: string | null
+          session_id: string | null
+          ticket_id: string
+          visibility: string
+        }
+        Insert: {
+          attachments?: Json
+          body?: string
+          created_at?: string
+          edited_at?: string | null
+          id?: string
+          kind?: string
+          language?: string | null
+          metadata?: Json
+          sender_kind?: string
+          sender_user_id?: string | null
+          session_id?: string | null
+          ticket_id: string
+          visibility?: string
+        }
+        Update: {
+          attachments?: Json
+          body?: string
+          created_at?: string
+          edited_at?: string | null
+          id?: string
+          kind?: string
+          language?: string | null
+          metadata?: Json
+          sender_kind?: string
+          sender_user_id?: string | null
+          session_id?: string | null
+          ticket_id?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ticket_notes: {
+        Row: {
+          author_user_id: string | null
+          body: string
+          created_at: string
+          id: string
+          session_id: string | null
+          source: string
+          ticket_id: string
+          updated_at: string
+        }
+        Insert: {
+          author_user_id?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          session_id?: string | null
+          source?: string
+          ticket_id: string
+          updated_at?: string
+        }
+        Update: {
+          author_user_id?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          session_id?: string | null
+          source?: string
+          ticket_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_notes_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_notes_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ticket_ratings: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number
+          resolved: boolean
+          submitted_by_user_id: string | null
+          ticket_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating: number
+          resolved?: boolean
+          submitted_by_user_id?: string | null
+          ticket_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          resolved?: boolean
+          submitted_by_user_id?: string | null
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_ratings_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: true
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ticket_recordings: {
+        Row: {
+          bucket: string
+          created_at: string
+          created_by: string | null
+          duration_seconds: number | null
+          id: string
+          includes_audio: boolean
+          includes_chat: boolean
+          includes_input: boolean
+          includes_video: boolean
+          path: string | null
+          session_id: string | null
+          size_bytes: number | null
+          status: string
+          ticket_id: string
+          timeline: Json
+        }
+        Insert: {
+          bucket?: string
+          created_at?: string
+          created_by?: string | null
+          duration_seconds?: number | null
+          id?: string
+          includes_audio?: boolean
+          includes_chat?: boolean
+          includes_input?: boolean
+          includes_video?: boolean
+          path?: string | null
+          session_id?: string | null
+          size_bytes?: number | null
+          status?: string
+          ticket_id: string
+          timeline?: Json
+        }
+        Update: {
+          bucket?: string
+          created_at?: string
+          created_by?: string | null
+          duration_seconds?: number | null
+          id?: string
+          includes_audio?: boolean
+          includes_chat?: boolean
+          includes_input?: boolean
+          includes_video?: boolean
+          path?: string | null
+          session_id?: string | null
+          size_bytes?: number | null
+          status?: string
+          ticket_id?: string
+          timeline?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_recordings_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_recordings_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ticket_sessions: {
+        Row: {
+          agent_user_id: string
+          approval_expires_at: string | null
+          approved_at: string | null
+          approved_by_user_id: string | null
+          created_at: string
+          current_path: string | null
+          end_reason: string | null
+          ended_at: string | null
+          id: string
+          mode: string
+          organization_id: string
+          recording_active: boolean
+          rejected_at: string | null
+          remote_control_active: boolean
+          requested_at: string
+          screen_share_active: boolean
+          started_at: string | null
+          status: string
+          ticket_id: string
+          transferred_from_user_id: string | null
+          updated_at: string
+          video_active: boolean
+          voice_active: boolean
+        }
+        Insert: {
+          agent_user_id: string
+          approval_expires_at?: string | null
+          approved_at?: string | null
+          approved_by_user_id?: string | null
+          created_at?: string
+          current_path?: string | null
+          end_reason?: string | null
+          ended_at?: string | null
+          id?: string
+          mode?: string
+          organization_id: string
+          recording_active?: boolean
+          rejected_at?: string | null
+          remote_control_active?: boolean
+          requested_at?: string
+          screen_share_active?: boolean
+          started_at?: string | null
+          status?: string
+          ticket_id: string
+          transferred_from_user_id?: string | null
+          updated_at?: string
+          video_active?: boolean
+          voice_active?: boolean
+        }
+        Update: {
+          agent_user_id?: string
+          approval_expires_at?: string | null
+          approved_at?: string | null
+          approved_by_user_id?: string | null
+          created_at?: string
+          current_path?: string | null
+          end_reason?: string | null
+          ended_at?: string | null
+          id?: string
+          mode?: string
+          organization_id?: string
+          recording_active?: boolean
+          rejected_at?: string | null
+          remote_control_active?: boolean
+          requested_at?: string
+          screen_share_active?: boolean
+          started_at?: string | null
+          status?: string
+          ticket_id?: string
+          transferred_from_user_id?: string | null
+          updated_at?: string
+          video_active?: boolean
+          voice_active?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_sessions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_sessions_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tickets: {
+        Row: {
+          ai_duplicate_of: string | null
+          ai_suggested_category: string | null
+          ai_suggested_priority: string | null
+          ai_summary: string | null
+          allow_recording: boolean
+          allow_remote_control: boolean
+          allow_view: boolean
+          allow_voice: boolean
+          assigned_agent_user_id: string | null
+          assigned_at: string | null
+          branch_id: string | null
+          category: string
+          closed_at: string | null
+          context: Json
+          created_at: string
+          created_by_member_id: string | null
+          created_by_user_id: string | null
+          description: string
+          first_response_at: string | null
+          id: string
+          legacy_case_id: string | null
+          organization_id: string
+          priority: string
+          resolved_at: string | null
+          scheduled_at: string | null
+          session_preference: string
+          status: string
+          subject: string
+          ticket_number: string
+          updated_at: string
+        }
+        Insert: {
+          ai_duplicate_of?: string | null
+          ai_suggested_category?: string | null
+          ai_suggested_priority?: string | null
+          ai_summary?: string | null
+          allow_recording?: boolean
+          allow_remote_control?: boolean
+          allow_view?: boolean
+          allow_voice?: boolean
+          assigned_agent_user_id?: string | null
+          assigned_at?: string | null
+          branch_id?: string | null
+          category?: string
+          closed_at?: string | null
+          context?: Json
+          created_at?: string
+          created_by_member_id?: string | null
+          created_by_user_id?: string | null
+          description?: string
+          first_response_at?: string | null
+          id?: string
+          legacy_case_id?: string | null
+          organization_id: string
+          priority?: string
+          resolved_at?: string | null
+          scheduled_at?: string | null
+          session_preference?: string
+          status?: string
+          subject: string
+          ticket_number?: string
+          updated_at?: string
+        }
+        Update: {
+          ai_duplicate_of?: string | null
+          ai_suggested_category?: string | null
+          ai_suggested_priority?: string | null
+          ai_summary?: string | null
+          allow_recording?: boolean
+          allow_remote_control?: boolean
+          allow_view?: boolean
+          allow_voice?: boolean
+          assigned_agent_user_id?: string | null
+          assigned_at?: string | null
+          branch_id?: string | null
+          category?: string
+          closed_at?: string | null
+          context?: Json
+          created_at?: string
+          created_by_member_id?: string | null
+          created_by_user_id?: string | null
+          description?: string
+          first_response_at?: string | null
+          id?: string
+          legacy_case_id?: string | null
+          organization_id?: string
+          priority?: string
+          resolved_at?: string | null
+          scheduled_at?: string | null
+          session_preference?: string
+          status?: string
+          subject?: string
+          ticket_number?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_ai_duplicate_of_fkey"
+            columns: ["ai_duplicate_of"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_created_by_member_id_fkey"
+            columns: ["created_by_member_id"]
+            isOneToOne: false
+            referencedRelation: "organization_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_created_by_member_id_fkey"
+            columns: ["created_by_member_id"]
+            isOneToOne: false
+            referencedRelation: "platform_staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           branch_id: string | null
@@ -1993,11 +2865,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_support_agent: { Args: never; Returns: boolean }
+      is_support_manager: { Args: never; Returns: boolean }
       is_valid_platform_case_assignee: {
         Args: { target_member_id: string }
         Returns: boolean
       }
       next_customer_success_case_number: { Args: never; Returns: string }
+      next_ticket_number: { Args: never; Returns: string }
       platform_organization_id: { Args: never; Returns: string }
       resolve_login_organization: {
         Args: { login_identifier: string }
@@ -2045,6 +2920,7 @@ export type Database = {
         }
         Returns: string
       }
+      support_agent_level: { Args: never; Returns: string }
       verify_organization_login: {
         Args: { requested_organization_id: string }
         Returns: {
