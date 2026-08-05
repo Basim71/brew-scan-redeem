@@ -29,6 +29,7 @@ import { Route as AdminReportsRouteImport } from './routes/admin.reports'
 import { Route as AdminSellCouponRouteImport } from './routes/admin.sell-coupon'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
+import { Route as AdminSupportRouteImport } from './routes/admin.support'
 import { Route as CashierIndexRouteImport } from './routes/cashier.index'
 import { Route as CashierSellCouponRouteImport } from './routes/cashier.sell-coupon'
 import { Route as PlatformIndexRouteImport } from './routes/platform.index'
@@ -145,6 +146,11 @@ const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
   path: '/subscriptions',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSupportRoute = AdminSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => AdminRoute,
+} as any)
 const CashierIndexRoute = CashierIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -244,6 +250,7 @@ export interface FileRoutesByFullPath {
   '/admin/sell-coupon': typeof AdminSellCouponRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/admin/support': typeof AdminSupportRoute
   '/cashier/sell-coupon': typeof CashierSellCouponRoute
   '/platform/announcements': typeof PlatformAnnouncementsRoute
   '/platform/audit': typeof PlatformAuditRoute
@@ -278,6 +285,7 @@ export interface FileRoutesByTo {
   '/admin/sell-coupon': typeof AdminSellCouponRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/admin/support': typeof AdminSupportRoute
   '/cashier/sell-coupon': typeof CashierSellCouponRoute
   '/platform/announcements': typeof PlatformAnnouncementsRoute
   '/platform/audit': typeof PlatformAuditRoute
@@ -316,6 +324,7 @@ export interface FileRoutesById {
   '/admin/sell-coupon': typeof AdminSellCouponRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/admin/support': typeof AdminSupportRoute
   '/cashier/sell-coupon': typeof CashierSellCouponRoute
   '/platform/announcements': typeof PlatformAnnouncementsRoute
   '/platform/audit': typeof PlatformAuditRoute
@@ -355,6 +364,7 @@ export interface FileRouteTypes {
     | '/admin/sell-coupon'
     | '/admin/settings'
     | '/admin/subscriptions'
+    | '/admin/support'
     | '/cashier/sell-coupon'
     | '/platform/announcements'
     | '/platform/audit'
@@ -389,6 +399,7 @@ export interface FileRouteTypes {
     | '/admin/sell-coupon'
     | '/admin/settings'
     | '/admin/subscriptions'
+    | '/admin/support'
     | '/cashier/sell-coupon'
     | '/platform/announcements'
     | '/platform/audit'
@@ -426,6 +437,7 @@ export interface FileRouteTypes {
     | '/admin/sell-coupon'
     | '/admin/settings'
     | '/admin/subscriptions'
+    | '/admin/support'
     | '/cashier/sell-coupon'
     | '/platform/announcements'
     | '/platform/audit'
@@ -596,6 +608,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSubscriptionsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/support': {
+      id: '/admin/support'
+      path: '/support'
+      fullPath: '/admin/support'
+      preLoaderRoute: typeof AdminSupportRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/cashier/': {
       id: '/cashier/'
       path: '/'
@@ -728,6 +747,7 @@ interface AdminRouteChildren {
   AdminSellCouponRoute: typeof AdminSellCouponRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
+  AdminSupportRoute: typeof AdminSupportRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
@@ -744,6 +764,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminSellCouponRoute: AdminSellCouponRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
+  AdminSupportRoute: AdminSupportRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
