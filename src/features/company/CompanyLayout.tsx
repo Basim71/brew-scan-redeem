@@ -43,7 +43,7 @@ const ACCOUNT: Array<{
   icon: any;
   hash?: string;
 }> = [
-  { to: "/admin/customer-success", labelAr: "الدعم الفني", labelEn: "Technical Support", icon: Headphones },
+  { to: "/admin/support", labelAr: "الدعم الفني", labelEn: "Technical Support", icon: Headphones },
   { to: "/admin/settings", labelAr: "إعدادات الشركة", labelEn: "Company Settings", icon: Settings },
 ];
 

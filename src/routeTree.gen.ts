@@ -29,6 +29,7 @@ import { Route as AdminReportsRouteImport } from './routes/admin.reports'
 import { Route as AdminSellCouponRouteImport } from './routes/admin.sell-coupon'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
+import { Route as AdminSupportRouteImport } from './routes/admin.support'
 import { Route as CashierIndexRouteImport } from './routes/cashier.index'
 import { Route as CashierSellCouponRouteImport } from './routes/cashier.sell-coupon'
 import { Route as PlatformIndexRouteImport } from './routes/platform.index'
@@ -41,9 +42,12 @@ import { Route as PlatformSupportRouteImport } from './routes/platform.support'
 import { Route as PlatformTrainingRouteImport } from './routes/platform.training'
 import { Route as PlatformUsersRouteImport } from './routes/platform.users'
 import { Route as AdminCustomerSuccessCaseIdRouteImport } from './routes/admin.customer-success.$caseId'
+import { Route as AdminSupportIndexRouteImport } from './routes/admin.support.index'
+import { Route as AdminSupportTicketIdRouteImport } from './routes/admin.support.$ticketId'
 import { Route as PlatformCompaniesOrganizationIdRouteImport } from './routes/platform.companies.$organizationId'
 import { Route as PlatformCustomerSuccessCaseIdRouteImport } from './routes/platform.customer-success.$caseId'
-import { Route as PlatformSupportCaseIdRouteImport } from './routes/platform.support.$caseId'
+import { Route as PlatformSupportIndexRouteImport } from './routes/platform.support.index'
+import { Route as PlatformSupportTicketIdRouteImport } from './routes/platform.support.$ticketId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -145,6 +149,11 @@ const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
   path: '/subscriptions',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSupportRoute = AdminSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => AdminRoute,
+} as any)
 const CashierIndexRoute = CashierIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -206,6 +215,16 @@ const AdminCustomerSuccessCaseIdRoute =
     path: '/$caseId',
     getParentRoute: () => AdminCustomerSuccessRoute,
   } as any)
+const AdminSupportIndexRoute = AdminSupportIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminSupportRoute,
+} as any)
+const AdminSupportTicketIdRoute = AdminSupportTicketIdRouteImport.update({
+  id: '/$ticketId',
+  path: '/$ticketId',
+  getParentRoute: () => AdminSupportRoute,
+} as any)
 const PlatformCompaniesOrganizationIdRoute =
   PlatformCompaniesOrganizationIdRouteImport.update({
     id: '/$organizationId',
@@ -218,9 +237,14 @@ const PlatformCustomerSuccessCaseIdRoute =
     path: '/$caseId',
     getParentRoute: () => PlatformCustomerSuccessRoute,
   } as any)
-const PlatformSupportCaseIdRoute = PlatformSupportCaseIdRouteImport.update({
-  id: '/$caseId',
-  path: '/$caseId',
+const PlatformSupportIndexRoute = PlatformSupportIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PlatformSupportRoute,
+} as any)
+const PlatformSupportTicketIdRoute = PlatformSupportTicketIdRouteImport.update({
+  id: '/$ticketId',
+  path: '/$ticketId',
   getParentRoute: () => PlatformSupportRoute,
 } as any)
 
@@ -244,6 +268,7 @@ export interface FileRoutesByFullPath {
   '/admin/sell-coupon': typeof AdminSellCouponRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/admin/support': typeof AdminSupportRouteWithChildren
   '/cashier/sell-coupon': typeof CashierSellCouponRoute
   '/platform/announcements': typeof PlatformAnnouncementsRoute
   '/platform/audit': typeof PlatformAuditRoute
@@ -257,9 +282,12 @@ export interface FileRoutesByFullPath {
   '/cashier/': typeof CashierIndexRoute
   '/platform/': typeof PlatformIndexRoute
   '/admin/customer-success/$caseId': typeof AdminCustomerSuccessCaseIdRoute
+  '/admin/support/$ticketId': typeof AdminSupportTicketIdRoute
   '/platform/companies/$organizationId': typeof PlatformCompaniesOrganizationIdRoute
   '/platform/customer-success/$caseId': typeof PlatformCustomerSuccessCaseIdRoute
-  '/platform/support/$caseId': typeof PlatformSupportCaseIdRoute
+  '/platform/support/$ticketId': typeof PlatformSupportTicketIdRoute
+  '/admin/support/': typeof AdminSupportIndexRoute
+  '/platform/support/': typeof PlatformSupportIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -284,16 +312,18 @@ export interface FileRoutesByTo {
   '/platform/companies': typeof PlatformCompaniesRouteWithChildren
   '/platform/customer-success': typeof PlatformCustomerSuccessRouteWithChildren
   '/platform/settings': typeof PlatformSettingsRoute
-  '/platform/support': typeof PlatformSupportRouteWithChildren
   '/platform/training': typeof PlatformTrainingRoute
   '/platform/users': typeof PlatformUsersRoute
   '/admin': typeof AdminIndexRoute
   '/cashier': typeof CashierIndexRoute
   '/platform': typeof PlatformIndexRoute
   '/admin/customer-success/$caseId': typeof AdminCustomerSuccessCaseIdRoute
+  '/admin/support/$ticketId': typeof AdminSupportTicketIdRoute
   '/platform/companies/$organizationId': typeof PlatformCompaniesOrganizationIdRoute
   '/platform/customer-success/$caseId': typeof PlatformCustomerSuccessCaseIdRoute
-  '/platform/support/$caseId': typeof PlatformSupportCaseIdRoute
+  '/platform/support/$ticketId': typeof PlatformSupportTicketIdRoute
+  '/admin/support': typeof AdminSupportIndexRoute
+  '/platform/support': typeof PlatformSupportIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -316,6 +346,7 @@ export interface FileRoutesById {
   '/admin/sell-coupon': typeof AdminSellCouponRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/admin/support': typeof AdminSupportRouteWithChildren
   '/cashier/sell-coupon': typeof CashierSellCouponRoute
   '/platform/announcements': typeof PlatformAnnouncementsRoute
   '/platform/audit': typeof PlatformAuditRoute
@@ -329,9 +360,12 @@ export interface FileRoutesById {
   '/cashier/': typeof CashierIndexRoute
   '/platform/': typeof PlatformIndexRoute
   '/admin/customer-success/$caseId': typeof AdminCustomerSuccessCaseIdRoute
+  '/admin/support/$ticketId': typeof AdminSupportTicketIdRoute
   '/platform/companies/$organizationId': typeof PlatformCompaniesOrganizationIdRoute
   '/platform/customer-success/$caseId': typeof PlatformCustomerSuccessCaseIdRoute
-  '/platform/support/$caseId': typeof PlatformSupportCaseIdRoute
+  '/platform/support/$ticketId': typeof PlatformSupportTicketIdRoute
+  '/admin/support/': typeof AdminSupportIndexRoute
+  '/platform/support/': typeof PlatformSupportIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -355,6 +389,7 @@ export interface FileRouteTypes {
     | '/admin/sell-coupon'
     | '/admin/settings'
     | '/admin/subscriptions'
+    | '/admin/support'
     | '/cashier/sell-coupon'
     | '/platform/announcements'
     | '/platform/audit'
@@ -368,9 +403,12 @@ export interface FileRouteTypes {
     | '/cashier/'
     | '/platform/'
     | '/admin/customer-success/$caseId'
+    | '/admin/support/$ticketId'
     | '/platform/companies/$organizationId'
     | '/platform/customer-success/$caseId'
-    | '/platform/support/$caseId'
+    | '/platform/support/$ticketId'
+    | '/admin/support/'
+    | '/platform/support/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -395,16 +433,18 @@ export interface FileRouteTypes {
     | '/platform/companies'
     | '/platform/customer-success'
     | '/platform/settings'
-    | '/platform/support'
     | '/platform/training'
     | '/platform/users'
     | '/admin'
     | '/cashier'
     | '/platform'
     | '/admin/customer-success/$caseId'
+    | '/admin/support/$ticketId'
     | '/platform/companies/$organizationId'
     | '/platform/customer-success/$caseId'
-    | '/platform/support/$caseId'
+    | '/platform/support/$ticketId'
+    | '/admin/support'
+    | '/platform/support'
   id:
     | '__root__'
     | '/'
@@ -426,6 +466,7 @@ export interface FileRouteTypes {
     | '/admin/sell-coupon'
     | '/admin/settings'
     | '/admin/subscriptions'
+    | '/admin/support'
     | '/cashier/sell-coupon'
     | '/platform/announcements'
     | '/platform/audit'
@@ -439,9 +480,12 @@ export interface FileRouteTypes {
     | '/cashier/'
     | '/platform/'
     | '/admin/customer-success/$caseId'
+    | '/admin/support/$ticketId'
     | '/platform/companies/$organizationId'
     | '/platform/customer-success/$caseId'
-    | '/platform/support/$caseId'
+    | '/platform/support/$ticketId'
+    | '/admin/support/'
+    | '/platform/support/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -596,6 +640,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSubscriptionsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/support': {
+      id: '/admin/support'
+      path: '/support'
+      fullPath: '/admin/support'
+      preLoaderRoute: typeof AdminSupportRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/cashier/': {
       id: '/cashier/'
       path: '/'
@@ -680,6 +731,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCustomerSuccessCaseIdRouteImport
       parentRoute: typeof AdminCustomerSuccessRoute
     }
+    '/admin/support/': {
+      id: '/admin/support/'
+      path: '/'
+      fullPath: '/admin/support/'
+      preLoaderRoute: typeof AdminSupportIndexRouteImport
+      parentRoute: typeof AdminSupportRoute
+    }
+    '/admin/support/$ticketId': {
+      id: '/admin/support/$ticketId'
+      path: '/$ticketId'
+      fullPath: '/admin/support/$ticketId'
+      preLoaderRoute: typeof AdminSupportTicketIdRouteImport
+      parentRoute: typeof AdminSupportRoute
+    }
     '/platform/companies/$organizationId': {
       id: '/platform/companies/$organizationId'
       path: '/$organizationId'
@@ -694,11 +759,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlatformCustomerSuccessCaseIdRouteImport
       parentRoute: typeof PlatformCustomerSuccessRoute
     }
-    '/platform/support/$caseId': {
-      id: '/platform/support/$caseId'
-      path: '/$caseId'
-      fullPath: '/platform/support/$caseId'
-      preLoaderRoute: typeof PlatformSupportCaseIdRouteImport
+    '/platform/support/': {
+      id: '/platform/support/'
+      path: '/'
+      fullPath: '/platform/support/'
+      preLoaderRoute: typeof PlatformSupportIndexRouteImport
+      parentRoute: typeof PlatformSupportRoute
+    }
+    '/platform/support/$ticketId': {
+      id: '/platform/support/$ticketId'
+      path: '/$ticketId'
+      fullPath: '/platform/support/$ticketId'
+      preLoaderRoute: typeof PlatformSupportTicketIdRouteImport
       parentRoute: typeof PlatformSupportRoute
     }
   }
@@ -715,6 +787,20 @@ const AdminCustomerSuccessRouteChildren: AdminCustomerSuccessRouteChildren = {
 const AdminCustomerSuccessRouteWithChildren =
   AdminCustomerSuccessRoute._addFileChildren(AdminCustomerSuccessRouteChildren)
 
+interface AdminSupportRouteChildren {
+  AdminSupportTicketIdRoute: typeof AdminSupportTicketIdRoute
+  AdminSupportIndexRoute: typeof AdminSupportIndexRoute
+}
+
+const AdminSupportRouteChildren: AdminSupportRouteChildren = {
+  AdminSupportTicketIdRoute: AdminSupportTicketIdRoute,
+  AdminSupportIndexRoute: AdminSupportIndexRoute,
+}
+
+const AdminSupportRouteWithChildren = AdminSupportRoute._addFileChildren(
+  AdminSupportRouteChildren,
+)
+
 interface AdminRouteChildren {
   AdminBranchesRoute: typeof AdminBranchesRoute
   AdminCashiersRoute: typeof AdminCashiersRoute
@@ -728,6 +814,7 @@ interface AdminRouteChildren {
   AdminSellCouponRoute: typeof AdminSellCouponRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
+  AdminSupportRoute: typeof AdminSupportRouteWithChildren
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
@@ -744,6 +831,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminSellCouponRoute: AdminSellCouponRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
+  AdminSupportRoute: AdminSupportRouteWithChildren,
   AdminIndexRoute: AdminIndexRoute,
 }
 
@@ -788,11 +876,13 @@ const PlatformCustomerSuccessRouteWithChildren =
   )
 
 interface PlatformSupportRouteChildren {
-  PlatformSupportCaseIdRoute: typeof PlatformSupportCaseIdRoute
+  PlatformSupportTicketIdRoute: typeof PlatformSupportTicketIdRoute
+  PlatformSupportIndexRoute: typeof PlatformSupportIndexRoute
 }
 
 const PlatformSupportRouteChildren: PlatformSupportRouteChildren = {
-  PlatformSupportCaseIdRoute: PlatformSupportCaseIdRoute,
+  PlatformSupportTicketIdRoute: PlatformSupportTicketIdRoute,
+  PlatformSupportIndexRoute: PlatformSupportIndexRoute,
 }
 
 const PlatformSupportRouteWithChildren = PlatformSupportRoute._addFileChildren(

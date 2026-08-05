@@ -105,7 +105,7 @@ function PlatformDashboard() {
             <p>حالة الوصول إلى بيانات المنصة يتم فحصها في كل تحميل.</p>
             <div className="platform-quick-links">
               <Link to="/platform/companies"><Building2 /> الشركات</Link>
-              <Link to="/platform/customer-success"><Headphones /> نجاح العملاء</Link>
+              <Link to="/platform/support"><Headphones /> الدعم الفني</Link>
               <Link to="/platform/training"><CalendarClock /> التدريب</Link>
             </div>
           </div>
