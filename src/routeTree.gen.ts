@@ -9,67 +9,49 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AdminRouteImport } from './routes/admin'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as CashierRouteImport } from './routes/cashier'
-import { Route as PlatformRouteImport } from './routes/platform'
-import { Route as PlatformAuthRouteImport } from './routes/platform-auth'
 import { Route as ScanRouteImport } from './routes/scan'
-import { Route as AdminIndexRouteImport } from './routes/admin.index'
-import { Route as AdminBranchesRouteImport } from './routes/admin.branches'
-import { Route as AdminCashiersRouteImport } from './routes/admin.cashiers'
-import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
-import { Route as AdminCustomerSuccessRouteImport } from './routes/admin.customer-success'
-import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
-import { Route as AdminDrinksRouteImport } from './routes/admin.drinks'
-import { Route as AdminFinancialReportsRouteImport } from './routes/admin.financial-reports'
-import { Route as AdminPlansRouteImport } from './routes/admin.plans'
-import { Route as AdminReportsRouteImport } from './routes/admin.reports'
-import { Route as AdminSellCouponRouteImport } from './routes/admin.sell-coupon'
-import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
-import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
-import { Route as AdminSupportRouteImport } from './routes/admin.support'
-import { Route as CashierIndexRouteImport } from './routes/cashier.index'
-import { Route as CashierSellCouponRouteImport } from './routes/cashier.sell-coupon'
+import { Route as PlatformAuthRouteImport } from './routes/platform-auth'
+import { Route as PlatformRouteImport } from './routes/platform'
+import { Route as CashierRouteImport } from './routes/cashier'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlatformIndexRouteImport } from './routes/platform.index'
-import { Route as PlatformAnnouncementsRouteImport } from './routes/platform.announcements'
-import { Route as PlatformAuditRouteImport } from './routes/platform.audit'
-import { Route as PlatformCompaniesRouteImport } from './routes/platform.companies'
-import { Route as PlatformCustomerSuccessRouteImport } from './routes/platform.customer-success'
-import { Route as PlatformSettingsRouteImport } from './routes/platform.settings'
-import { Route as PlatformSupportRouteImport } from './routes/platform.support'
-import { Route as PlatformTrainingRouteImport } from './routes/platform.training'
+import { Route as CashierIndexRouteImport } from './routes/cashier.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as PlatformUsersRouteImport } from './routes/platform.users'
-import { Route as AdminCustomerSuccessCaseIdRouteImport } from './routes/admin.customer-success.$caseId'
-import { Route as AdminSupportTicketIdRouteImport } from './routes/admin.support.$ticketId'
-import { Route as PlatformCompaniesOrganizationIdRouteImport } from './routes/platform.companies.$organizationId'
-import { Route as PlatformCustomerSuccessCaseIdRouteImport } from './routes/platform.customer-success.$caseId'
+import { Route as PlatformTrainingRouteImport } from './routes/platform.training'
+import { Route as PlatformSupportRouteImport } from './routes/platform.support'
+import { Route as PlatformSettingsRouteImport } from './routes/platform.settings'
+import { Route as PlatformCustomerSuccessRouteImport } from './routes/platform.customer-success'
+import { Route as PlatformCompaniesRouteImport } from './routes/platform.companies'
+import { Route as PlatformAuditRouteImport } from './routes/platform.audit'
+import { Route as PlatformAnnouncementsRouteImport } from './routes/platform.announcements'
+import { Route as CashierSellCouponRouteImport } from './routes/cashier.sell-coupon'
+import { Route as AdminSupportRouteImport } from './routes/admin.support'
+import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
+import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminSellCouponRouteImport } from './routes/admin.sell-coupon'
+import { Route as AdminReportsRouteImport } from './routes/admin.reports'
+import { Route as AdminPlansRouteImport } from './routes/admin.plans'
+import { Route as AdminFinancialReportsRouteImport } from './routes/admin.financial-reports'
+import { Route as AdminDrinksRouteImport } from './routes/admin.drinks'
+import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
+import { Route as AdminCustomerSuccessRouteImport } from './routes/admin.customer-success'
+import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
+import { Route as AdminCashiersRouteImport } from './routes/admin.cashiers'
+import { Route as AdminBranchesRouteImport } from './routes/admin.branches'
+import { Route as PlatformSupportIndexRouteImport } from './routes/platform.support.index'
+import { Route as AdminSupportIndexRouteImport } from './routes/admin.support.index'
 import { Route as PlatformSupportTicketIdRouteImport } from './routes/platform.support.$ticketId'
+import { Route as PlatformCustomerSuccessCaseIdRouteImport } from './routes/platform.customer-success.$caseId'
+import { Route as PlatformCompaniesOrganizationIdRouteImport } from './routes/platform.companies.$organizationId'
+import { Route as AdminSupportTicketIdRouteImport } from './routes/admin.support.$ticketId'
+import { Route as AdminCustomerSuccessCaseIdRouteImport } from './routes/admin.customer-success.$caseId'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CashierRoute = CashierRouteImport.update({
-  id: '/cashier',
-  path: '/cashier',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PlatformRoute = PlatformRouteImport.update({
-  id: '/platform',
-  path: '/platform',
+const ScanRoute = ScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlatformAuthRoute = PlatformAuthRouteImport.update({
@@ -77,124 +59,49 @@ const PlatformAuthRoute = PlatformAuthRouteImport.update({
   path: '/platform-auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ScanRoute = ScanRouteImport.update({
-  id: '/scan',
-  path: '/scan',
+const PlatformRoute = PlatformRouteImport.update({
+  id: '/platform',
+  path: '/platform',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminIndexRoute = AdminIndexRouteImport.update({
+const CashierRoute = CashierRouteImport.update({
+  id: '/cashier',
+  path: '/cashier',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminBranchesRoute = AdminBranchesRouteImport.update({
-  id: '/branches',
-  path: '/branches',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminCashiersRoute = AdminCashiersRouteImport.update({
-  id: '/cashiers',
-  path: '/cashiers',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminCouponsRoute = AdminCouponsRouteImport.update({
-  id: '/coupons',
-  path: '/coupons',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminCustomerSuccessRoute = AdminCustomerSuccessRouteImport.update({
-  id: '/customer-success',
-  path: '/customer-success',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminCustomersRoute = AdminCustomersRouteImport.update({
-  id: '/customers',
-  path: '/customers',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminDrinksRoute = AdminDrinksRouteImport.update({
-  id: '/drinks',
-  path: '/drinks',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminFinancialReportsRoute = AdminFinancialReportsRouteImport.update({
-  id: '/financial-reports',
-  path: '/financial-reports',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminPlansRoute = AdminPlansRouteImport.update({
-  id: '/plans',
-  path: '/plans',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminReportsRoute = AdminReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminSellCouponRoute = AdminSellCouponRouteImport.update({
-  id: '/sell-coupon',
-  path: '/sell-coupon',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminSettingsRoute = AdminSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
-  id: '/subscriptions',
-  path: '/subscriptions',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminSupportRoute = AdminSupportRouteImport.update({
-  id: '/support',
-  path: '/support',
-  getParentRoute: () => AdminRoute,
-} as any)
-const CashierIndexRoute = CashierIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => CashierRoute,
-} as any)
-const CashierSellCouponRoute = CashierSellCouponRouteImport.update({
-  id: '/sell-coupon',
-  path: '/sell-coupon',
-  getParentRoute: () => CashierRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
 const PlatformIndexRoute = PlatformIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => PlatformRoute,
 } as any)
-const PlatformAnnouncementsRoute = PlatformAnnouncementsRouteImport.update({
-  id: '/announcements',
-  path: '/announcements',
-  getParentRoute: () => PlatformRoute,
+const CashierIndexRoute = CashierIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CashierRoute,
 } as any)
-const PlatformAuditRoute = PlatformAuditRouteImport.update({
-  id: '/audit',
-  path: '/audit',
-  getParentRoute: () => PlatformRoute,
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
-const PlatformCompaniesRoute = PlatformCompaniesRouteImport.update({
-  id: '/companies',
-  path: '/companies',
-  getParentRoute: () => PlatformRoute,
-} as any)
-const PlatformCustomerSuccessRoute = PlatformCustomerSuccessRouteImport.update({
-  id: '/customer-success',
-  path: '/customer-success',
-  getParentRoute: () => PlatformRoute,
-} as any)
-const PlatformSettingsRoute = PlatformSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => PlatformRoute,
-} as any)
-const PlatformSupportRoute = PlatformSupportRouteImport.update({
-  id: '/support',
-  path: '/support',
+const PlatformUsersRoute = PlatformUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
   getParentRoute: () => PlatformRoute,
 } as any)
 const PlatformTrainingRoute = PlatformTrainingRouteImport.update({
@@ -202,10 +109,137 @@ const PlatformTrainingRoute = PlatformTrainingRouteImport.update({
   path: '/training',
   getParentRoute: () => PlatformRoute,
 } as any)
-const PlatformUsersRoute = PlatformUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
+const PlatformSupportRoute = PlatformSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
   getParentRoute: () => PlatformRoute,
+} as any)
+const PlatformSettingsRoute = PlatformSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => PlatformRoute,
+} as any)
+const PlatformCustomerSuccessRoute = PlatformCustomerSuccessRouteImport.update({
+  id: '/customer-success',
+  path: '/customer-success',
+  getParentRoute: () => PlatformRoute,
+} as any)
+const PlatformCompaniesRoute = PlatformCompaniesRouteImport.update({
+  id: '/companies',
+  path: '/companies',
+  getParentRoute: () => PlatformRoute,
+} as any)
+const PlatformAuditRoute = PlatformAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => PlatformRoute,
+} as any)
+const PlatformAnnouncementsRoute = PlatformAnnouncementsRouteImport.update({
+  id: '/announcements',
+  path: '/announcements',
+  getParentRoute: () => PlatformRoute,
+} as any)
+const CashierSellCouponRoute = CashierSellCouponRouteImport.update({
+  id: '/sell-coupon',
+  path: '/sell-coupon',
+  getParentRoute: () => CashierRoute,
+} as any)
+const AdminSupportRoute = AdminSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
+  id: '/subscriptions',
+  path: '/subscriptions',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSellCouponRoute = AdminSellCouponRouteImport.update({
+  id: '/sell-coupon',
+  path: '/sell-coupon',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminReportsRoute = AdminReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPlansRoute = AdminPlansRouteImport.update({
+  id: '/plans',
+  path: '/plans',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminFinancialReportsRoute = AdminFinancialReportsRouteImport.update({
+  id: '/financial-reports',
+  path: '/financial-reports',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminDrinksRoute = AdminDrinksRouteImport.update({
+  id: '/drinks',
+  path: '/drinks',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCustomersRoute = AdminCustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCustomerSuccessRoute = AdminCustomerSuccessRouteImport.update({
+  id: '/customer-success',
+  path: '/customer-success',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCouponsRoute = AdminCouponsRouteImport.update({
+  id: '/coupons',
+  path: '/coupons',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCashiersRoute = AdminCashiersRouteImport.update({
+  id: '/cashiers',
+  path: '/cashiers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBranchesRoute = AdminBranchesRouteImport.update({
+  id: '/branches',
+  path: '/branches',
+  getParentRoute: () => AdminRoute,
+} as any)
+const PlatformSupportIndexRoute = PlatformSupportIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PlatformSupportRoute,
+} as any)
+const AdminSupportIndexRoute = AdminSupportIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminSupportRoute,
+} as any)
+const PlatformSupportTicketIdRoute = PlatformSupportTicketIdRouteImport.update({
+  id: '/$ticketId',
+  path: '/$ticketId',
+  getParentRoute: () => PlatformSupportRoute,
+} as any)
+const PlatformCustomerSuccessCaseIdRoute =
+  PlatformCustomerSuccessCaseIdRouteImport.update({
+    id: '/$caseId',
+    path: '/$caseId',
+    getParentRoute: () => PlatformCustomerSuccessRoute,
+  } as any)
+const PlatformCompaniesOrganizationIdRoute =
+  PlatformCompaniesOrganizationIdRouteImport.update({
+    id: '/$organizationId',
+    path: '/$organizationId',
+    getParentRoute: () => PlatformCompaniesRoute,
+  } as any)
+const AdminSupportTicketIdRoute = AdminSupportTicketIdRouteImport.update({
+  id: '/$ticketId',
+  path: '/$ticketId',
+  getParentRoute: () => AdminSupportRoute,
 } as any)
 const AdminCustomerSuccessCaseIdRoute =
   AdminCustomerSuccessCaseIdRouteImport.update({
@@ -213,28 +247,6 @@ const AdminCustomerSuccessCaseIdRoute =
     path: '/$caseId',
     getParentRoute: () => AdminCustomerSuccessRoute,
   } as any)
-const AdminSupportTicketIdRoute = AdminSupportTicketIdRouteImport.update({
-  id: '/$ticketId',
-  path: '/$ticketId',
-  getParentRoute: () => AdminSupportRoute,
-} as any)
-const PlatformCompaniesOrganizationIdRoute =
-  PlatformCompaniesOrganizationIdRouteImport.update({
-    id: '/$organizationId',
-    path: '/$organizationId',
-    getParentRoute: () => PlatformCompaniesRoute,
-  } as any)
-const PlatformCustomerSuccessCaseIdRoute =
-  PlatformCustomerSuccessCaseIdRouteImport.update({
-    id: '/$caseId',
-    path: '/$caseId',
-    getParentRoute: () => PlatformCustomerSuccessRoute,
-  } as any)
-const PlatformSupportTicketIdRoute = PlatformSupportTicketIdRouteImport.update({
-  id: '/$ticketId',
-  path: '/$ticketId',
-  getParentRoute: () => PlatformSupportRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -274,6 +286,8 @@ export interface FileRoutesByFullPath {
   '/platform/companies/$organizationId': typeof PlatformCompaniesOrganizationIdRoute
   '/platform/customer-success/$caseId': typeof PlatformCustomerSuccessCaseIdRoute
   '/platform/support/$ticketId': typeof PlatformSupportTicketIdRoute
+  '/admin/support/': typeof AdminSupportIndexRoute
+  '/platform/support/': typeof PlatformSupportIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -292,14 +306,12 @@ export interface FileRoutesByTo {
   '/admin/sell-coupon': typeof AdminSellCouponRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
-  '/admin/support': typeof AdminSupportRouteWithChildren
   '/cashier/sell-coupon': typeof CashierSellCouponRoute
   '/platform/announcements': typeof PlatformAnnouncementsRoute
   '/platform/audit': typeof PlatformAuditRoute
   '/platform/companies': typeof PlatformCompaniesRouteWithChildren
   '/platform/customer-success': typeof PlatformCustomerSuccessRouteWithChildren
   '/platform/settings': typeof PlatformSettingsRoute
-  '/platform/support': typeof PlatformSupportRouteWithChildren
   '/platform/training': typeof PlatformTrainingRoute
   '/platform/users': typeof PlatformUsersRoute
   '/admin': typeof AdminIndexRoute
@@ -310,6 +322,8 @@ export interface FileRoutesByTo {
   '/platform/companies/$organizationId': typeof PlatformCompaniesOrganizationIdRoute
   '/platform/customer-success/$caseId': typeof PlatformCustomerSuccessCaseIdRoute
   '/platform/support/$ticketId': typeof PlatformSupportTicketIdRoute
+  '/admin/support': typeof AdminSupportIndexRoute
+  '/platform/support': typeof PlatformSupportIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -350,6 +364,8 @@ export interface FileRoutesById {
   '/platform/companies/$organizationId': typeof PlatformCompaniesOrganizationIdRoute
   '/platform/customer-success/$caseId': typeof PlatformCustomerSuccessCaseIdRoute
   '/platform/support/$ticketId': typeof PlatformSupportTicketIdRoute
+  '/admin/support/': typeof AdminSupportIndexRoute
+  '/platform/support/': typeof PlatformSupportIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -391,6 +407,8 @@ export interface FileRouteTypes {
     | '/platform/companies/$organizationId'
     | '/platform/customer-success/$caseId'
     | '/platform/support/$ticketId'
+    | '/admin/support/'
+    | '/platform/support/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -409,14 +427,12 @@ export interface FileRouteTypes {
     | '/admin/sell-coupon'
     | '/admin/settings'
     | '/admin/subscriptions'
-    | '/admin/support'
     | '/cashier/sell-coupon'
     | '/platform/announcements'
     | '/platform/audit'
     | '/platform/companies'
     | '/platform/customer-success'
     | '/platform/settings'
-    | '/platform/support'
     | '/platform/training'
     | '/platform/users'
     | '/admin'
@@ -427,6 +443,8 @@ export interface FileRouteTypes {
     | '/platform/companies/$organizationId'
     | '/platform/customer-success/$caseId'
     | '/platform/support/$ticketId'
+    | '/admin/support'
+    | '/platform/support'
   id:
     | '__root__'
     | '/'
@@ -466,6 +484,8 @@ export interface FileRouteTypes {
     | '/platform/companies/$organizationId'
     | '/platform/customer-success/$caseId'
     | '/platform/support/$ticketId'
+    | '/admin/support/'
+    | '/platform/support/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -480,39 +500,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cashier': {
-      id: '/cashier'
-      path: '/cashier'
-      fullPath: '/cashier'
-      preLoaderRoute: typeof CashierRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/platform': {
-      id: '/platform'
-      path: '/platform'
-      fullPath: '/platform'
-      preLoaderRoute: typeof PlatformRouteImport
+    '/scan': {
+      id: '/scan'
+      path: '/scan'
+      fullPath: '/scan'
+      preLoaderRoute: typeof ScanRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/platform-auth': {
@@ -522,124 +514,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlatformAuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/scan': {
-      id: '/scan'
-      path: '/scan'
-      fullPath: '/scan'
-      preLoaderRoute: typeof ScanRouteImport
+    '/platform': {
+      id: '/platform'
+      path: '/platform'
+      fullPath: '/platform'
+      preLoaderRoute: typeof PlatformRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/': {
-      id: '/admin/'
+    '/cashier': {
+      id: '/cashier'
+      path: '/cashier'
+      fullPath: '/cashier'
+      preLoaderRoute: typeof CashierRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
       path: '/'
-      fullPath: '/admin/'
-      preLoaderRoute: typeof AdminIndexRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/branches': {
-      id: '/admin/branches'
-      path: '/branches'
-      fullPath: '/admin/branches'
-      preLoaderRoute: typeof AdminBranchesRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/cashiers': {
-      id: '/admin/cashiers'
-      path: '/cashiers'
-      fullPath: '/admin/cashiers'
-      preLoaderRoute: typeof AdminCashiersRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/coupons': {
-      id: '/admin/coupons'
-      path: '/coupons'
-      fullPath: '/admin/coupons'
-      preLoaderRoute: typeof AdminCouponsRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/customer-success': {
-      id: '/admin/customer-success'
-      path: '/customer-success'
-      fullPath: '/admin/customer-success'
-      preLoaderRoute: typeof AdminCustomerSuccessRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/customers': {
-      id: '/admin/customers'
-      path: '/customers'
-      fullPath: '/admin/customers'
-      preLoaderRoute: typeof AdminCustomersRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/drinks': {
-      id: '/admin/drinks'
-      path: '/drinks'
-      fullPath: '/admin/drinks'
-      preLoaderRoute: typeof AdminDrinksRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/financial-reports': {
-      id: '/admin/financial-reports'
-      path: '/financial-reports'
-      fullPath: '/admin/financial-reports'
-      preLoaderRoute: typeof AdminFinancialReportsRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/plans': {
-      id: '/admin/plans'
-      path: '/plans'
-      fullPath: '/admin/plans'
-      preLoaderRoute: typeof AdminPlansRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/reports': {
-      id: '/admin/reports'
-      path: '/reports'
-      fullPath: '/admin/reports'
-      preLoaderRoute: typeof AdminReportsRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/sell-coupon': {
-      id: '/admin/sell-coupon'
-      path: '/sell-coupon'
-      fullPath: '/admin/sell-coupon'
-      preLoaderRoute: typeof AdminSellCouponRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/settings': {
-      id: '/admin/settings'
-      path: '/settings'
-      fullPath: '/admin/settings'
-      preLoaderRoute: typeof AdminSettingsRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/subscriptions': {
-      id: '/admin/subscriptions'
-      path: '/subscriptions'
-      fullPath: '/admin/subscriptions'
-      preLoaderRoute: typeof AdminSubscriptionsRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/support': {
-      id: '/admin/support'
-      path: '/support'
-      fullPath: '/admin/support'
-      preLoaderRoute: typeof AdminSupportRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/cashier/': {
-      id: '/cashier/'
-      path: '/'
-      fullPath: '/cashier/'
-      preLoaderRoute: typeof CashierIndexRouteImport
-      parentRoute: typeof CashierRoute
-    }
-    '/cashier/sell-coupon': {
-      id: '/cashier/sell-coupon'
-      path: '/sell-coupon'
-      fullPath: '/cashier/sell-coupon'
-      preLoaderRoute: typeof CashierSellCouponRouteImport
-      parentRoute: typeof CashierRoute
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/platform/': {
       id: '/platform/'
@@ -648,46 +556,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlatformIndexRouteImport
       parentRoute: typeof PlatformRoute
     }
-    '/platform/announcements': {
-      id: '/platform/announcements'
-      path: '/announcements'
-      fullPath: '/platform/announcements'
-      preLoaderRoute: typeof PlatformAnnouncementsRouteImport
-      parentRoute: typeof PlatformRoute
+    '/cashier/': {
+      id: '/cashier/'
+      path: '/'
+      fullPath: '/cashier/'
+      preLoaderRoute: typeof CashierIndexRouteImport
+      parentRoute: typeof CashierRoute
     }
-    '/platform/audit': {
-      id: '/platform/audit'
-      path: '/audit'
-      fullPath: '/platform/audit'
-      preLoaderRoute: typeof PlatformAuditRouteImport
-      parentRoute: typeof PlatformRoute
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
-    '/platform/companies': {
-      id: '/platform/companies'
-      path: '/companies'
-      fullPath: '/platform/companies'
-      preLoaderRoute: typeof PlatformCompaniesRouteImport
-      parentRoute: typeof PlatformRoute
-    }
-    '/platform/customer-success': {
-      id: '/platform/customer-success'
-      path: '/customer-success'
-      fullPath: '/platform/customer-success'
-      preLoaderRoute: typeof PlatformCustomerSuccessRouteImport
-      parentRoute: typeof PlatformRoute
-    }
-    '/platform/settings': {
-      id: '/platform/settings'
-      path: '/settings'
-      fullPath: '/platform/settings'
-      preLoaderRoute: typeof PlatformSettingsRouteImport
-      parentRoute: typeof PlatformRoute
-    }
-    '/platform/support': {
-      id: '/platform/support'
-      path: '/support'
-      fullPath: '/platform/support'
-      preLoaderRoute: typeof PlatformSupportRouteImport
+    '/platform/users': {
+      id: '/platform/users'
+      path: '/users'
+      fullPath: '/platform/users'
+      preLoaderRoute: typeof PlatformUsersRouteImport
       parentRoute: typeof PlatformRoute
     }
     '/platform/training': {
@@ -697,33 +584,166 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlatformTrainingRouteImport
       parentRoute: typeof PlatformRoute
     }
-    '/platform/users': {
-      id: '/platform/users'
-      path: '/users'
-      fullPath: '/platform/users'
-      preLoaderRoute: typeof PlatformUsersRouteImport
+    '/platform/support': {
+      id: '/platform/support'
+      path: '/support'
+      fullPath: '/platform/support'
+      preLoaderRoute: typeof PlatformSupportRouteImport
       parentRoute: typeof PlatformRoute
     }
-    '/admin/customer-success/$caseId': {
-      id: '/admin/customer-success/$caseId'
-      path: '/$caseId'
-      fullPath: '/admin/customer-success/$caseId'
-      preLoaderRoute: typeof AdminCustomerSuccessCaseIdRouteImport
-      parentRoute: typeof AdminCustomerSuccessRoute
+    '/platform/settings': {
+      id: '/platform/settings'
+      path: '/settings'
+      fullPath: '/platform/settings'
+      preLoaderRoute: typeof PlatformSettingsRouteImport
+      parentRoute: typeof PlatformRoute
     }
-    '/admin/support/$ticketId': {
-      id: '/admin/support/$ticketId'
-      path: '/$ticketId'
-      fullPath: '/admin/support/$ticketId'
-      preLoaderRoute: typeof AdminSupportTicketIdRouteImport
+    '/platform/customer-success': {
+      id: '/platform/customer-success'
+      path: '/customer-success'
+      fullPath: '/platform/customer-success'
+      preLoaderRoute: typeof PlatformCustomerSuccessRouteImport
+      parentRoute: typeof PlatformRoute
+    }
+    '/platform/companies': {
+      id: '/platform/companies'
+      path: '/companies'
+      fullPath: '/platform/companies'
+      preLoaderRoute: typeof PlatformCompaniesRouteImport
+      parentRoute: typeof PlatformRoute
+    }
+    '/platform/audit': {
+      id: '/platform/audit'
+      path: '/audit'
+      fullPath: '/platform/audit'
+      preLoaderRoute: typeof PlatformAuditRouteImport
+      parentRoute: typeof PlatformRoute
+    }
+    '/platform/announcements': {
+      id: '/platform/announcements'
+      path: '/announcements'
+      fullPath: '/platform/announcements'
+      preLoaderRoute: typeof PlatformAnnouncementsRouteImport
+      parentRoute: typeof PlatformRoute
+    }
+    '/cashier/sell-coupon': {
+      id: '/cashier/sell-coupon'
+      path: '/sell-coupon'
+      fullPath: '/cashier/sell-coupon'
+      preLoaderRoute: typeof CashierSellCouponRouteImport
+      parentRoute: typeof CashierRoute
+    }
+    '/admin/support': {
+      id: '/admin/support'
+      path: '/support'
+      fullPath: '/admin/support'
+      preLoaderRoute: typeof AdminSupportRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/subscriptions': {
+      id: '/admin/subscriptions'
+      path: '/subscriptions'
+      fullPath: '/admin/subscriptions'
+      preLoaderRoute: typeof AdminSubscriptionsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/sell-coupon': {
+      id: '/admin/sell-coupon'
+      path: '/sell-coupon'
+      fullPath: '/admin/sell-coupon'
+      preLoaderRoute: typeof AdminSellCouponRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/reports': {
+      id: '/admin/reports'
+      path: '/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AdminReportsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/plans': {
+      id: '/admin/plans'
+      path: '/plans'
+      fullPath: '/admin/plans'
+      preLoaderRoute: typeof AdminPlansRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/financial-reports': {
+      id: '/admin/financial-reports'
+      path: '/financial-reports'
+      fullPath: '/admin/financial-reports'
+      preLoaderRoute: typeof AdminFinancialReportsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/drinks': {
+      id: '/admin/drinks'
+      path: '/drinks'
+      fullPath: '/admin/drinks'
+      preLoaderRoute: typeof AdminDrinksRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/customers': {
+      id: '/admin/customers'
+      path: '/customers'
+      fullPath: '/admin/customers'
+      preLoaderRoute: typeof AdminCustomersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/customer-success': {
+      id: '/admin/customer-success'
+      path: '/customer-success'
+      fullPath: '/admin/customer-success'
+      preLoaderRoute: typeof AdminCustomerSuccessRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/coupons': {
+      id: '/admin/coupons'
+      path: '/coupons'
+      fullPath: '/admin/coupons'
+      preLoaderRoute: typeof AdminCouponsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/cashiers': {
+      id: '/admin/cashiers'
+      path: '/cashiers'
+      fullPath: '/admin/cashiers'
+      preLoaderRoute: typeof AdminCashiersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/branches': {
+      id: '/admin/branches'
+      path: '/branches'
+      fullPath: '/admin/branches'
+      preLoaderRoute: typeof AdminBranchesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/platform/support/': {
+      id: '/platform/support/'
+      path: '/'
+      fullPath: '/platform/support/'
+      preLoaderRoute: typeof PlatformSupportIndexRouteImport
+      parentRoute: typeof PlatformSupportRoute
+    }
+    '/admin/support/': {
+      id: '/admin/support/'
+      path: '/'
+      fullPath: '/admin/support/'
+      preLoaderRoute: typeof AdminSupportIndexRouteImport
       parentRoute: typeof AdminSupportRoute
     }
-    '/platform/companies/$organizationId': {
-      id: '/platform/companies/$organizationId'
-      path: '/$organizationId'
-      fullPath: '/platform/companies/$organizationId'
-      preLoaderRoute: typeof PlatformCompaniesOrganizationIdRouteImport
-      parentRoute: typeof PlatformCompaniesRoute
+    '/platform/support/$ticketId': {
+      id: '/platform/support/$ticketId'
+      path: '/$ticketId'
+      fullPath: '/platform/support/$ticketId'
+      preLoaderRoute: typeof PlatformSupportTicketIdRouteImport
+      parentRoute: typeof PlatformSupportRoute
     }
     '/platform/customer-success/$caseId': {
       id: '/platform/customer-success/$caseId'
@@ -732,12 +752,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlatformCustomerSuccessCaseIdRouteImport
       parentRoute: typeof PlatformCustomerSuccessRoute
     }
-    '/platform/support/$ticketId': {
-      id: '/platform/support/$ticketId'
+    '/platform/companies/$organizationId': {
+      id: '/platform/companies/$organizationId'
+      path: '/$organizationId'
+      fullPath: '/platform/companies/$organizationId'
+      preLoaderRoute: typeof PlatformCompaniesOrganizationIdRouteImport
+      parentRoute: typeof PlatformCompaniesRoute
+    }
+    '/admin/support/$ticketId': {
+      id: '/admin/support/$ticketId'
       path: '/$ticketId'
-      fullPath: '/platform/support/$ticketId'
-      preLoaderRoute: typeof PlatformSupportTicketIdRouteImport
-      parentRoute: typeof PlatformSupportRoute
+      fullPath: '/admin/support/$ticketId'
+      preLoaderRoute: typeof AdminSupportTicketIdRouteImport
+      parentRoute: typeof AdminSupportRoute
+    }
+    '/admin/customer-success/$caseId': {
+      id: '/admin/customer-success/$caseId'
+      path: '/$caseId'
+      fullPath: '/admin/customer-success/$caseId'
+      preLoaderRoute: typeof AdminCustomerSuccessCaseIdRouteImport
+      parentRoute: typeof AdminCustomerSuccessRoute
     }
   }
 }
@@ -755,10 +789,12 @@ const AdminCustomerSuccessRouteWithChildren =
 
 interface AdminSupportRouteChildren {
   AdminSupportTicketIdRoute: typeof AdminSupportTicketIdRoute
+  AdminSupportIndexRoute: typeof AdminSupportIndexRoute
 }
 
 const AdminSupportRouteChildren: AdminSupportRouteChildren = {
   AdminSupportTicketIdRoute: AdminSupportTicketIdRoute,
+  AdminSupportIndexRoute: AdminSupportIndexRoute,
 }
 
 const AdminSupportRouteWithChildren = AdminSupportRoute._addFileChildren(
@@ -841,10 +877,12 @@ const PlatformCustomerSuccessRouteWithChildren =
 
 interface PlatformSupportRouteChildren {
   PlatformSupportTicketIdRoute: typeof PlatformSupportTicketIdRoute
+  PlatformSupportIndexRoute: typeof PlatformSupportIndexRoute
 }
 
 const PlatformSupportRouteChildren: PlatformSupportRouteChildren = {
   PlatformSupportTicketIdRoute: PlatformSupportTicketIdRoute,
+  PlatformSupportIndexRoute: PlatformSupportIndexRoute,
 }
 
 const PlatformSupportRouteWithChildren = PlatformSupportRoute._addFileChildren(
@@ -891,3 +929,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
