@@ -46,6 +46,7 @@ import { Route as AdminSupportTicketIdRouteImport } from './routes/admin.support
 import { Route as PlatformCompaniesOrganizationIdRouteImport } from './routes/platform.companies.$organizationId'
 import { Route as PlatformCustomerSuccessCaseIdRouteImport } from './routes/platform.customer-success.$caseId'
 import { Route as PlatformSupportCaseIdRouteImport } from './routes/platform.support.$caseId'
+import { Route as PlatformSupportTicketIdRouteImport } from './routes/platform.support.$ticketId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -235,6 +236,11 @@ const PlatformSupportCaseIdRoute = PlatformSupportCaseIdRouteImport.update({
   path: '/$caseId',
   getParentRoute: () => PlatformSupportRoute,
 } as any)
+const PlatformSupportTicketIdRoute = PlatformSupportTicketIdRouteImport.update({
+  id: '/$ticketId',
+  path: '/$ticketId',
+  getParentRoute: () => PlatformSupportRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -274,6 +280,7 @@ export interface FileRoutesByFullPath {
   '/platform/companies/$organizationId': typeof PlatformCompaniesOrganizationIdRoute
   '/platform/customer-success/$caseId': typeof PlatformCustomerSuccessCaseIdRoute
   '/platform/support/$caseId': typeof PlatformSupportCaseIdRoute
+  '/platform/support/$ticketId': typeof PlatformSupportTicketIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -310,6 +317,7 @@ export interface FileRoutesByTo {
   '/platform/companies/$organizationId': typeof PlatformCompaniesOrganizationIdRoute
   '/platform/customer-success/$caseId': typeof PlatformCustomerSuccessCaseIdRoute
   '/platform/support/$caseId': typeof PlatformSupportCaseIdRoute
+  '/platform/support/$ticketId': typeof PlatformSupportTicketIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -350,6 +358,7 @@ export interface FileRoutesById {
   '/platform/companies/$organizationId': typeof PlatformCompaniesOrganizationIdRoute
   '/platform/customer-success/$caseId': typeof PlatformCustomerSuccessCaseIdRoute
   '/platform/support/$caseId': typeof PlatformSupportCaseIdRoute
+  '/platform/support/$ticketId': typeof PlatformSupportTicketIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -391,6 +400,7 @@ export interface FileRouteTypes {
     | '/platform/companies/$organizationId'
     | '/platform/customer-success/$caseId'
     | '/platform/support/$caseId'
+    | '/platform/support/$ticketId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -427,6 +437,7 @@ export interface FileRouteTypes {
     | '/platform/companies/$organizationId'
     | '/platform/customer-success/$caseId'
     | '/platform/support/$caseId'
+    | '/platform/support/$ticketId'
   id:
     | '__root__'
     | '/'
@@ -466,6 +477,7 @@ export interface FileRouteTypes {
     | '/platform/companies/$organizationId'
     | '/platform/customer-success/$caseId'
     | '/platform/support/$caseId'
+    | '/platform/support/$ticketId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -739,6 +751,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlatformSupportCaseIdRouteImport
       parentRoute: typeof PlatformSupportRoute
     }
+    '/platform/support/$ticketId': {
+      id: '/platform/support/$ticketId'
+      path: '/$ticketId'
+      fullPath: '/platform/support/$ticketId'
+      preLoaderRoute: typeof PlatformSupportTicketIdRouteImport
+      parentRoute: typeof PlatformSupportRoute
+    }
   }
 }
 
@@ -841,10 +860,12 @@ const PlatformCustomerSuccessRouteWithChildren =
 
 interface PlatformSupportRouteChildren {
   PlatformSupportCaseIdRoute: typeof PlatformSupportCaseIdRoute
+  PlatformSupportTicketIdRoute: typeof PlatformSupportTicketIdRoute
 }
 
 const PlatformSupportRouteChildren: PlatformSupportRouteChildren = {
   PlatformSupportCaseIdRoute: PlatformSupportCaseIdRoute,
+  PlatformSupportTicketIdRoute: PlatformSupportTicketIdRoute,
 }
 
 const PlatformSupportRouteWithChildren = PlatformSupportRoute._addFileChildren(
