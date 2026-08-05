@@ -11,7 +11,7 @@ export const ALL_PLATFORM_ROLES: PlatformRole[] = [
 export const ROLE_MATRIX: Record<string, PlatformRole[]> = {
   "/platform": ALL_PLATFORM_ROLES,
   "/platform/companies": ["platform_owner", "platform_admin"],
-  "/platform/customer-success": ALL_PLATFORM_ROLES,
+  "/platform/support": ALL_PLATFORM_ROLES,
   "/platform/training": ["platform_owner", "platform_admin", "support_level_2", "support_level_3"],
   "/platform/users": ["platform_owner", "platform_admin"],
   "/platform/announcements": ALL_PLATFORM_ROLES,
