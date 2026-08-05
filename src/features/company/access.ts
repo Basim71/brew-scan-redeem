@@ -9,7 +9,7 @@ export type CompanyRoute =
   | "/admin/branches"
   | "/admin/cashiers"
   | "/admin/reports"
-  | "/admin/customer-success"
+  | "/admin/support"
   | "/admin/settings"
   | "/admin/plans"
   | "/admin/subscriptions";
@@ -30,7 +30,7 @@ export const COMPANY_ROLE_MATRIX: Record<CompanyRoute, OrganizationRole[]> = {
   "/admin/branches": ["owner", "admin"],
   "/admin/cashiers": ["owner", "admin"],
   "/admin/reports": ["owner", "admin", "manager"],
-  "/admin/customer-success": ["owner", "admin", "manager"],
+  "/admin/support": ["owner", "admin", "manager"],
   "/admin/settings": ["owner", "admin"],
 };
 

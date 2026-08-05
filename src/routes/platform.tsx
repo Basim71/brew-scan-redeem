@@ -22,7 +22,7 @@ export const Route = createFileRoute("/platform")({ component: PlatformLayout })
 const ALL_ITEMS = [
   { to: "/platform", label: "الرئيسية", icon: LayoutDashboard, exact: true },
   { to: "/platform/companies", label: "الشركات", icon: Building2 },
-  { to: "/platform/customer-success", label: "نجاح العملاء", icon: Headphones },
+  { to: "/platform/support", label: "الدعم الفني", icon: Headphones },
   { to: "/platform/training", label: "التدريب", icon: GraduationCap },
   { to: "/platform/users", label: "فريق المنصة", icon: UsersRound },
   { to: "/platform/announcements", label: "الإعلانات", icon: Bell },
