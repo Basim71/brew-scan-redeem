@@ -41,7 +41,7 @@ const NAV_ITEMS: CompanyNavItem[] = [
   { to: "/admin/branches", labelKey: { ar: "الفروع", en: "Branches" }, icon: Building2 },
   { to: "/admin/cashiers", labelKey: { ar: "الكاشير", en: "Cashiers" }, icon: UserRoundCog },
   { to: "/admin/reports", labelKey: { ar: "التقارير", en: "Reports" }, icon: BadgeDollarSign },
-  { to: "/admin/customer-success", labelKey: { ar: "نجاح العملاء", en: "Customer Success" }, icon: Headphones },
+  { to: "/admin/support", labelKey: { ar: "نجاح العملاء", en: "Customer Success" }, icon: Headphones },
   { to: "/admin/settings", labelKey: { ar: "الإعدادات", en: "Settings" }, icon: Settings },
 ];
 
