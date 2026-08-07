@@ -562,7 +562,7 @@ home_served: "تم التقديم",
   },
 } as const;
 
-export type TKey = keyof typeof dict.en;
+export type TKey = keyof typeof dict.en | (string & {});
 
 /* ---------------- Context ---------------- */
 type Ctx = {
@@ -573,6 +573,9 @@ type Ctx = {
   t: (k: TKey, vars?: Record<string, string | number>) => string;
   fmtNum: (n: number) => string;
   fmtDate: (d: string | Date) => string;
+  fmtCurrency: (amount: number, currency?: string) => string;
+  calendar: Calendar;
+  setCalendar: (c: Calendar) => void;
   timeAgo: (iso: string) => string;
 };
 
@@ -586,10 +589,15 @@ function getInitial(): Lang {
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>("en");
+  const [calendar, setCalendarState] = useState<Calendar>("gregorian");
 
   // Hydrate from localStorage on mount (avoids SSR mismatch)
   useEffect(() => {
     setLangState(getInitial());
+    try {
+      const c = window.localStorage.getItem(CALENDAR_KEY);
+      if (c === "hijri" || c === "gregorian") setCalendarState(c);
+    } catch {}
   }, []);
 
   const dir = lang === "ar" ? "rtl" : "ltr";
@@ -609,16 +617,39 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     setLang(lang === "en" ? "ar" : "en");
   }, [lang, setLang]);
 
+  const setCalendar = useCallback((c: Calendar) => {
+    setCalendarState(c);
+    try { window.localStorage.setItem(CALENDAR_KEY, c); } catch {}
+  }, []);
+
   const value = useMemo<Ctx>(() => {
-    const nf = new Intl.NumberFormat(lang === "ar" ? "ar-EG" : "en-US");
-    const df = new Intl.DateTimeFormat(lang === "ar" ? "ar-EG" : "en-US", { dateStyle: "medium", timeStyle: "short" });
+    const numLocale = lang === "ar" ? "ar-SA-u-nu-arab" : "en-US";
+    const dateLocale =
+      lang === "ar"
+        ? calendar === "hijri"
+          ? "ar-SA-u-nu-arab-ca-islamic-umalqura"
+          : "ar-SA-u-nu-arab-ca-gregory"
+        : "en-US";
+    const nf = new Intl.NumberFormat(numLocale);
+    const df = new Intl.DateTimeFormat(dateLocale, { dateStyle: "medium", timeStyle: "short" });
     const t = (k: TKey, vars?: Record<string, string | number>) => {
-      let s: string = (dict[lang] as any)[k] ?? (dict.en as any)[k] ?? k;
+      let s: string =
+        files[lang][k as string] ??
+        files.en[k as string] ??
+        (dict[lang] as any)[k] ??
+        (dict.en as any)[k] ??
+        (k as string);
       if (vars) for (const [key, v] of Object.entries(vars)) s = s.replaceAll(`{${key}}`, String(v));
       return s;
     };
     const fmtNum = (n: number) => nf.format(n);
     const fmtDate = (d: string | Date) => df.format(new Date(d));
+    const fmtCurrency = (amount: number, currency = "SAR") =>
+      new Intl.NumberFormat(numLocale, {
+        style: "currency",
+        currency,
+        maximumFractionDigits: 2,
+      }).format(amount);
     const timeAgo = (iso: string) => {
       const s = Math.round((Date.now() - new Date(iso).getTime()) / 1000);
       if (s < 60) return t("ago_s", { n: fmtNum(s) });
@@ -626,8 +657,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       if (s < 86400) return t("ago_h", { n: fmtNum(Math.round(s / 3600)) });
       return t("ago_d", { n: fmtNum(Math.round(s / 86400)) });
     };
-    return { lang, dir, setLang, toggle, t, fmtNum, fmtDate, timeAgo };
-  }, [lang, dir, setLang, toggle]);
+    return { lang, dir, setLang, toggle, t, fmtNum, fmtDate, fmtCurrency, calendar, setCalendar, timeAgo };
+  }, [lang, dir, setLang, toggle, calendar, setCalendar]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
