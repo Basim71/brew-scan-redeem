@@ -1,8 +1,31 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
+import enLocale from "@/locales/en.json";
+import arLocale from "@/locales/ar.json";
+
 export type Lang = "en" | "ar";
 
 const STORAGE_KEY = "kob.lang";
+const CALENDAR_KEY = "kob.calendar";
+
+export type Calendar = "gregorian" | "hijri";
+
+/* Locale JSON files are the source of truth for new strings.
+ * Dotted keys ("dashboard.title") resolve here first, then fall back
+ * to the legacy flat dictionary below. Never hardcode UI text. */
+function flatten(obj: any, prefix = "", out: Record<string, string> = {}) {
+  for (const [k, v] of Object.entries(obj ?? {})) {
+    const key = prefix ? `${prefix}.${k}` : k;
+    if (v && typeof v === "object") flatten(v, key, out);
+    else out[key] = String(v);
+  }
+  return out;
+}
+
+const files: Record<Lang, Record<string, string>> = {
+  en: flatten(enLocale),
+  ar: flatten(arLocale),
+};
 
 /* ---------------- Dictionary ---------------- */
 const dict = {
