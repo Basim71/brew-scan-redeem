@@ -673,18 +673,18 @@ export function useI18n(): Ctx {
 export function LanguageSwitcher({ className = "" }: { className?: string }) {
   const { lang, setLang } = useI18n();
   return (
-    <div className={"engraved inline-flex items-center text-xs font-semibold overflow-hidden " + className}>
+    <div className={"kob-lang-switch " + className}>
       <button
         onClick={() => setLang("ar")}
-        className={"px-3 py-1.5 transition " + (lang === "ar" ? "gold-text" : "text-cream-dim hover:text-caramel-bright")}
+        className=""
         aria-pressed={lang === "ar"}
       >
         العربية
       </button>
-      <span className="text-cream-dim opacity-40">|</span>
+      <span aria-hidden className="opacity-30">|</span>
       <button
         onClick={() => setLang("en")}
-        className={"px-3 py-1.5 transition " + (lang === "en" ? "gold-text" : "text-cream-dim hover:text-caramel-bright")}
+        className=""
         aria-pressed={lang === "en"}
       >
         English

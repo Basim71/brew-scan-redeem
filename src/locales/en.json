@@ -28,7 +28,8 @@
     "network": "Network error. Check your connection.",
     "required": "This field is required.",
     "invalid_phone": "Enter a valid Saudi number (05XXXXXXXX).",
-    "invalid_email": "Enter a valid email address."
+    "invalid_email": "Enter a valid email address.",
+    "title": "Something went wrong"
   },
   "dashboard": {
     "label": "Overview",
@@ -66,5 +67,20 @@
     "title": "Support Center",
     "subtitle": "Talk to the KOB team in real time.",
     "new_ticket": "New ticket"
+  },
+  "states": {
+    "loading": "Loading…",
+    "saving": "Saving…",
+    "noResults": "No matching results"
+  },
+  "toast": {
+    "saved": "Saved successfully",
+    "deleted": "Deleted",
+    "failed": "Action failed"
+  },
+  "dialog": {
+    "confirmTitle": "Please confirm",
+    "deleteTitle": "Delete this item?",
+    "deleteBody": "This action cannot be undone."
   }
 }
