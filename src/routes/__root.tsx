@@ -138,9 +138,11 @@ function RootComponent() {
             <Outlet />
             <Toaster
           theme="light"
-          position="top-center"
+          position="top-right"
+          richColors
+          closeButton
           toastOptions={{
-            className: "panel-warm !bg-[#fffdf9] !text-[#34251e] !border-[#ead9c9]",
+            className: "kob-toast",
           }}
             />
           </OrganizationProvider>
