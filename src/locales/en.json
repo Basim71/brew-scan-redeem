@@ -1,0 +1,70 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "loading": "Loading…",
+    "retry": "Retry",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "signOut": "Sign out",
+    "language": "Language",
+    "currency": "SAR"
+  },
+  "empty": {
+    "title": "Nothing here yet",
+    "description": "Once data is added it will appear in this space.",
+    "action": "Get started"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Network error. Check your connection.",
+    "required": "This field is required.",
+    "invalid_phone": "Enter a valid Saudi number (05XXXXXXXX).",
+    "invalid_email": "Enter a valid email address."
+  },
+  "dashboard": {
+    "label": "Overview",
+    "title": "Business Command Center",
+    "subtitle": "Live performance across every branch.",
+    "recent_activity": "Recent activity",
+    "quick_actions": "Quick actions"
+  },
+  "customers": {
+    "label": "Customers",
+    "title": "Customer Hub",
+    "subtitle": "Every subscriber in one place.",
+    "add": "Add customer"
+  },
+  "orders": {
+    "label": "Orders",
+    "title": "Orders",
+    "subtitle": "Approve and track daily cups.",
+    "create": "Create order"
+  },
+  "subscriptions": {
+    "label": "Subscriptions",
+    "title": "Subscription Plans",
+    "subtitle": "Design and price every plan.",
+    "active": "Active"
+  },
+  "settings": {
+    "label": "Manage",
+    "title": "Company Settings",
+    "subtitle": "Control how your company operates.",
+    "company": "Company"
+  },
+  "support": {
+    "label": "Support",
+    "title": "Support Center",
+    "subtitle": "Talk to the KOB team in real time.",
+    "new_ticket": "New ticket"
+  }
+}
