@@ -1,5 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 
+import { useI18n } from "@/lib/i18n";
+
 export type MetricCardProps = {
   label: string;
   value: number;
@@ -9,6 +11,7 @@ export type MetricCardProps = {
 };
 
 export function MetricCard({ label, value, icon: Icon, loading = false, hint }: MetricCardProps) {
+  const { fmtNum } = useI18n();
   return (
     <article className="metric-card" aria-busy={loading}>
       <div className="metric-card-icon" aria-hidden="true">
@@ -16,7 +19,7 @@ export function MetricCard({ label, value, icon: Icon, loading = false, hint }: 
       </div>
       <div className="metric-card-copy">
         <span>{label}</span>
-        <strong>{loading ? "—" : value.toLocaleString("ar-SA")}</strong>
+        <strong>{loading ? "—" : fmtNum(value)}</strong>
         {hint ? <small>{hint}</small> : null}
       </div>
     </article>
