@@ -14677,3 +14677,76 @@ html[dir="rtl"] .app-island-live-popover {
   padding: 0;
 }
 .sc-stars button.active { color: #d97706; }
+
+/* ============================================================
+ * KOB Design System — global conformance layer
+ * Palette, radii, motion and toast treatment enforced globally.
+ * ============================================================ */
+
+.kob-toast {
+  background: var(--card) !important;
+  color: var(--kob-primary-dark) !important;
+  border: 1px solid color-mix(in oklab, var(--kob-bronze) 22%, transparent) !important;
+  border-radius: var(--kob-radius-xl) !important;
+  box-shadow: var(--kob-shadow-lg) !important;
+  font-family: var(--kob-font-sans) !important;
+  animation: kob-toast-in var(--kob-duration) var(--kob-ease) both;
+}
+
+@keyframes kob-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Luxury motion baseline: 200ms on every interactive surface. */
+a,
+button,
+input,
+select,
+textarea,
+[role="button"],
+[role="switch"],
+[role="tab"] {
+  transition:
+    background-color var(--kob-duration) var(--kob-ease),
+    border-color var(--kob-duration) var(--kob-ease),
+    color var(--kob-duration) var(--kob-ease),
+    box-shadow var(--kob-duration) var(--kob-ease),
+    transform var(--kob-duration) var(--kob-ease),
+    opacity var(--kob-duration) var(--kob-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  [role="button"],
+  [role="switch"],
+  [role="tab"] {
+    transition-duration: 1ms;
+  }
+  .kob-toast {
+    animation: none;
+  }
+}
+
+/* Dialog / modal: blurred luxury backdrop. */
+[data-slot="dialog-overlay"],
+[data-slot="alert-dialog-overlay"] {
+  backdrop-filter: blur(10px) saturate(1.05);
+  background: color-mix(in oklab, var(--kob-primary-dark) 42%, transparent) !important;
+}
+
+[data-slot="dialog-content"],
+[data-slot="alert-dialog-content"] {
+  border-radius: var(--kob-radius-card) !important;
+  box-shadow: var(--kob-shadow-lg) !important;
+}
