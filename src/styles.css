@@ -7,39 +7,54 @@
  */
 
 :root {
-  --radius: 0.9rem;
+  /* Radius (spec): cards 22px, inputs 14px, buttons 16px, badges pill */
+  --radius: 1rem;
+  --kob-radius-card: 22px;
+  --kob-radius-input: 14px;
+  --kob-radius-button: 16px;
 
-  --espresso-950: oklch(0.14 0.022 45);
-  --espresso-900: oklch(0.18 0.028 45);
-  --espresso-800: oklch(0.22 0.032 45);
-  --espresso-700: oklch(0.27 0.036 48);
-  --espresso-600: oklch(0.33 0.038 52);
+  /* ---- KOB canonical palette (the ONLY colors allowed) ---- */
+  --kob-bg: #f8f4ef;
+  --kob-primary-dark: #2b1a12;
+  --kob-secondary: #5a3b22;
+  --kob-bronze: #8a5e2b;
+  --kob-champagne: #f2e6c9;
+  --kob-danger: #c0392b;
+  --kob-ok: #2e7d32;
+  --kob-warn: #f39c12;
+  --kob-blue: #3498db;
 
-  --caramel: oklch(0.74 0.14 66);
-  --caramel-bright: oklch(0.82 0.15 72);
-  --caramel-deep: oklch(0.55 0.12 55);
+  --espresso-950: var(--kob-primary-dark);
+  --espresso-900: #342116;
+  --espresso-800: #40291b;
+  --espresso-700: #4d3220;
+  --espresso-600: var(--kob-secondary);
 
-  --cream: oklch(0.94 0.028 82);
-  --cream-dim: oklch(0.78 0.03 78);
+  --caramel: #d4af37;
+  --caramel-bright: #e6c65c;
+  --caramel-deep: var(--kob-bronze);
 
-  --ember: oklch(0.65 0.18 32);
-  --leaf: oklch(0.68 0.12 155);
+  --cream: var(--kob-champagne);
+  --cream-dim: #d8c9a6;
 
-  --background: var(--espresso-950);
-  --foreground: var(--cream);
+  --ember: var(--kob-danger);
+  --leaf: var(--kob-ok);
 
-  --card: var(--espresso-800);
-  --card-foreground: var(--cream);
+  --background: var(--kob-bg);
+  --foreground: var(--kob-primary-dark);
 
-  --muted: var(--espresso-700);
-  --muted-foreground: var(--cream-dim);
+  --card: #ffffff;
+  --card-foreground: var(--kob-primary-dark);
 
-  --primary: var(--caramel);
-  --primary-foreground: var(--espresso-950);
+  --muted: #efe7dc;
+  --muted-foreground: var(--kob-secondary);
 
-  --accent: var(--caramel-bright);
+  --primary: var(--kob-primary-dark);
+  --primary-foreground: #ffffff;
 
-  --border: oklch(0.32 0.03 50 / 0.65);
+  --accent: var(--caramel);
+
+  --border: color-mix(in oklab, var(--kob-secondary) 22%, transparent);
 
   --ring: var(--caramel);
 
@@ -67,15 +82,15 @@
 
   --engrave: inset 0 1px 0 oklch(0.4 0.04 60 / 0.3), inset 0 -1px 0 oklch(0.05 0.02 40 / 0.8);
 
-  --font-display: "Playfair Display", "Cormorant Garamond", Georgia, serif;
+  --font-display: "Montserrat", ui-sans-serif, system-ui, sans-serif;
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
 }
 
 html[dir="rtl"] {
-  --font-display: "Noto Kufi Arabic", "Playfair Display", Georgia, serif;
+  --font-display: "Tajawal", "Noto Kufi Arabic", ui-sans-serif, system-ui, sans-serif;
 
-  --font-sans: "Noto Kufi Arabic", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Tajawal", "Noto Kufi Arabic", ui-sans-serif, system-ui, sans-serif;
 }
 
 /* ============================================================
