@@ -15030,6 +15030,8 @@ textarea,
 /* ---- Tables ---- */
 .kob-table-scroll {
   overflow-x: auto;
+  overflow-y: auto;
+  max-block-size: min(70dvh, 720px);
   border-radius: var(--kob-radius-lg);
   border: 1px solid color-mix(in oklab, var(--kob-primary-dark) 8%, transparent);
 }
@@ -15042,7 +15044,11 @@ textarea,
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--kob-secondary);
-  background: color-mix(in oklab, var(--kob-primary-dark) 4%, transparent);
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 2;
+  background: color-mix(in oklab, var(--kob-bg) 96%, var(--kob-primary-dark) 4%);
+  box-shadow: inset 0 -1px 0 color-mix(in oklab, var(--kob-primary-dark) 10%, transparent);
 }
 .kob-table tbody tr + tr { border-block-start: 1px solid color-mix(in oklab, var(--kob-primary-dark) 7%, transparent); }
 .kob-table tbody tr:hover { background: color-mix(in oklab, var(--kob-gold) 8%, transparent); }
