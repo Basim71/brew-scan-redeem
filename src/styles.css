@@ -15275,3 +15275,237 @@ textarea,
   border: 1px solid var(--kob-hairline); background: #fff;
 }
 .cs-permission span { font-size: 12.5px; font-weight: 600; color: var(--kob-espresso); }
+
+/* ================= Support Center — live session room ================= */
+.sc-room {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #fffdf9, #f7f1e8);
+  border: 1px solid rgba(43, 26, 18, 0.08);
+  box-shadow: 0 18px 40px -28px rgba(43, 26, 18, 0.5);
+}
+.sc-room-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+.sc-room-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sc-room-title h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+.sc-room-mode {
+  font-size: 0.72rem;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(212, 175, 55, 0.18);
+  color: #6b4b12;
+}
+.sc-live-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #d64545;
+  box-shadow: 0 0 0 4px rgba(214, 69, 69, 0.18);
+  animation: sc-pulse 1.6s ease-in-out infinite;
+}
+@keyframes sc-pulse {
+  50% { opacity: 0.4; }
+}
+.sc-room-presence {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 0.75rem;
+}
+.sc-room-presence span {
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(43, 26, 18, 0.12);
+}
+.sc-room-presence span.on { background: rgba(58, 150, 92, 0.16); color: #245c39; }
+.sc-room-presence span.off { opacity: 0.5; }
+.sc-room-presence em { opacity: 0.6; font-style: normal; }
+
+.sc-room-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(260px, 0.9fr);
+  gap: 14px;
+}
+@media (max-width: 980px) {
+  .sc-room-grid { grid-template-columns: 1fr; }
+}
+.sc-room-stage { display: grid; gap: 10px; }
+.sc-stage-video {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #2b1a12;
+  min-height: 320px;
+  display: grid;
+  place-items: center;
+  cursor: crosshair;
+}
+.sc-stage-video video { width: 100%; height: 100%; display: block; }
+.sc-stage-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 8px;
+  color: rgba(255, 253, 249, 0.7);
+  text-align: center;
+}
+.sc-stage-host {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px dashed rgba(43, 26, 18, 0.18);
+  background: #fffdf9;
+}
+.sc-stage-host h4 { margin: 0; }
+.sc-stage-host p { margin: 0; font-size: 0.84rem; opacity: 0.75; max-width: 60ch; }
+
+.sc-stage-tools { display: grid; gap: 10px; }
+.sc-stage-tools > button,
+.sc-cocontrol button {
+  border: 1px solid rgba(43, 26, 18, 0.14);
+  background: #fffdf9;
+  border-radius: 14px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.sc-stage-tools > button.active { background: rgba(214, 69, 69, 0.14); border-color: rgba(214, 69, 69, 0.4); }
+.sc-stage-tools > button:disabled,
+.sc-cocontrol button:disabled { opacity: 0.5; cursor: not-allowed; }
+.sc-cocontrol {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.28);
+}
+.sc-cocontrol > span { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; }
+.sc-cocontrol-quick,
+.sc-cocontrol-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.sc-cocontrol-row input {
+  flex: 1 1 160px;
+  border-radius: 12px;
+  border: 1px solid rgba(43, 26, 18, 0.16);
+  padding: 8px 10px;
+  background: #fffdf9;
+}
+
+.sc-room-side { display: grid; gap: 12px; align-content: start; }
+.sc-room-chat-body {
+  display: grid;
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 4px;
+}
+.sc-room-bubble {
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: #f7f1e8;
+  font-size: 0.82rem;
+}
+.sc-room-bubble.own { background: rgba(212, 175, 55, 0.16); }
+.sc-room-bubble b { display: block; font-size: 0.72rem; opacity: 0.65; }
+.sc-room-bubble p { margin: 2px 0 0; }
+.sc-room-composer { display: flex; gap: 6px; align-items: center; margin-top: 8px; }
+.sc-room-composer input {
+  flex: 1;
+  border-radius: 12px;
+  border: 1px solid rgba(43, 26, 18, 0.16);
+  padding: 9px 10px;
+  background: #fffdf9;
+}
+.sc-attach {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid rgba(43, 26, 18, 0.14);
+  cursor: pointer;
+}
+.sc-file-list, .sc-note-list, .sc-ai-list, .sc-audit { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
+.sc-file-list button {
+  background: none;
+  border: none;
+  color: #6b4b12;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 0.8rem;
+}
+.sc-audit li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.78rem;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: #f7f1e8;
+}
+.sc-audit time, .sc-ai-list time, .sc-note-list time { opacity: 0.55; font-size: 0.72rem; }
+.sc-ai-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.sc-ai-actions button {
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  background: rgba(212, 175, 55, 0.12);
+  border-radius: 12px;
+  padding: 7px 11px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.sc-ai-list li, .sc-note-list li {
+  padding: 9px 10px;
+  border-radius: 12px;
+  background: #f7f1e8;
+  font-size: 0.8rem;
+}
+.sc-ai-list p, .sc-note-list p { margin: 4px 0; white-space: pre-wrap; }
+
+.sc-session-panel { display: grid; gap: 10px; }
+.sc-session-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.sc-remote-cursor {
+  position: fixed;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #2b1a12;
+  color: #f8f4ef;
+  font-size: 0.7rem;
+  pointer-events: none;
+  box-shadow: 0 8px 20px -10px rgba(43, 26, 18, 0.8);
+}
+.kob-cocontrol-highlight {
+  outline: 3px solid #d4af37 !important;
+  outline-offset: 3px;
+  border-radius: 12px;
+  transition: outline-color 0.2s ease;
+}
