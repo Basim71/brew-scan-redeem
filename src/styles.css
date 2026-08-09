@@ -4106,6 +4106,7 @@ article.panel-warm:hover {
 }
 
 /* Customer scan page */
+main.min-h-dvh,
 main.min-h-screen {
   background:
     radial-gradient(circle at 50% -8%, rgba(255, 255, 255, 0.96), transparent 36%),

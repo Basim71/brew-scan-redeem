@@ -51,7 +51,7 @@ export function timeAgo(iso: string) {
 
 export function FullScreenLoader() {
   return (
-    <main className="min-h-screen flex items-center justify-center">
+    <main className="flex min-h-dvh items-center justify-center">
       <Loader2 className="w-8 h-8 animate-spin text-caramel" />
     </main>
   );
