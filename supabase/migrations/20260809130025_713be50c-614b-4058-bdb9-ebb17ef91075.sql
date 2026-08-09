@@ -1,0 +1,2 @@
+ALTER TABLE public.session_permissions DROP CONSTRAINT IF EXISTS session_permissions_permission_check;
+ALTER TABLE public.session_permissions ADD CONSTRAINT session_permissions_permission_check CHECK (permission = ANY (ARRAY['view_screen'::text,'screen_share'::text,'voice'::text,'video'::text,'remote_control'::text,'co_control'::text,'recording'::text,'clipboard'::text,'annotation'::text,'files'::text]));
