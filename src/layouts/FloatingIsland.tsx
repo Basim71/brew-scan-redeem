@@ -49,12 +49,21 @@ type FloatingIslandProps = {
   title: string;
   subtitle?: string;
   homeTo: string;
+  logoUrl?: string | null;
   items: FloatingIslandItem[];
   accountLinks?: FloatingIslandLink[];
   onSignOut: () => void | Promise<void>;
 };
 
-export function FloatingIsland({ title, subtitle, homeTo, items, accountLinks, onSignOut }: FloatingIslandProps) {
+export function FloatingIsland({
+  title,
+  subtitle,
+  homeTo,
+  logoUrl,
+  items,
+  accountLinks,
+  onSignOut,
+}: FloatingIslandProps) {
   const { t, lang } = useI18n();
   const [open, setOpen] = useState(false);
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
@@ -162,8 +171,8 @@ export function FloatingIsland({ title, subtitle, homeTo, items, accountLinks, o
               setActiveGroup(null);
             }}
           >
-            <span className="app-island-logo" aria-hidden="true">
-              K
+            <span className="app-island-logo" data-image={logoUrl ? "true" : "false"} aria-hidden="true">
+              {logoUrl ? <img src={logoUrl} alt="" loading="lazy" /> : "K"}
             </span>
             <span className="app-island-brand-copy">
               <strong>{title}</strong>
