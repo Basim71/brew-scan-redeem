@@ -69,7 +69,7 @@ export async function getCompanyCounts(organizationId: string) {
     s.from("organization_members").select("id", { count: "exact", head: true }).eq("organization_id", organizationId).eq("status", "active"),
     s.from("branches").select("id", { count: "exact", head: true }).eq("organization_id", organizationId),
     s.from("subscriptions").select("id", { count: "exact", head: true }).eq("organization_id", organizationId).eq("status", "active"),
-    s.from("customer_success_cases").select("id", { count: "exact", head: true }).eq("organization_id", organizationId).not("status", "in", "(closed,cancelled,resolved)"),
+    s.from("tickets").select("id", { count: "exact", head: true }).eq("organization_id", organizationId).not("status", "in", "(closed,cancelled,resolved)"),
   ]);
   return {
     members: members.count ?? 0,

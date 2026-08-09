@@ -859,7 +859,7 @@ function ScanPage() {
   return (
     <main
       dir={dir}
-      className="flex min-h-screen flex-col items-center overflow-x-hidden px-4 py-8"
+      className="flex min-h-dvh flex-col items-center overflow-x-hidden px-4 py-8"
     >
       <div className="w-full max-w-md">
         <div className="mb-6 flex items-center justify-between">
