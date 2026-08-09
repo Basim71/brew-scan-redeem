@@ -15535,3 +15535,15 @@ textarea,
   .sc-cocontrol-quick button,
   .sc-cocontrol-row button { flex: 1 1 auto; justify-content: center; }
 }
+
+/* Analytics charts lazy-load placeholder — reserves layout to avoid CLS */
+.an-charts-fallback {
+  min-height: 420px;
+  border-radius: var(--kob-radius-card);
+  background: linear-gradient(100deg, var(--muted) 30%, color-mix(in oklab, var(--card) 70%, var(--muted)) 50%, var(--muted) 70%);
+  background-size: 200% 100%;
+  animation: kob-shimmer 1.4s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .an-charts-fallback { animation: none; }
+}

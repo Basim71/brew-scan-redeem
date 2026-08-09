@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 import { useI18n } from "@/lib/i18n";
 
-import { ChartsSection } from "./ChartsSection";
+/** Recharts is heavy (~440 kB) — load it only when the analytics charts render. */
+const ChartsSection = lazy(() => import("./ChartsSection").then((m) => ({ default: m.ChartsSection })));
 import { DataTables, buildTables } from "./DataTables";
 import { DateRangeFilter } from "./DateRangeFilter";
 import { FiltersBar } from "./FiltersBar";
@@ -151,6 +152,7 @@ export function AnalyticsShell() {
 
       <FiltersBar data={raw} filters={filters} isAr={isAr} onChange={setFilters} />
 
+      <Suspense fallback={<div className="an-charts-fallback" aria-busy="true" aria-live="polite" />}>
       <ChartsSection
         isAr={isAr}
         money={money}
@@ -160,6 +162,7 @@ export function AnalyticsShell() {
         drinks={drinkPopularity(data, isAr)}
         branches={branchComparison(data, isAr)}
       />
+      </Suspense>
 
       <InsightsCard insights={insights} isAr={isAr} />
 
