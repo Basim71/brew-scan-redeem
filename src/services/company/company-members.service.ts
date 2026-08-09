@@ -98,3 +98,30 @@ export async function setMemberBranch(
     .eq("organization_id", organizationId);
   if (error) throw error;
 }
+/** Update editable employee profile fields on the membership record. */
+export async function updateMemberDetails(
+  organizationId: string,
+  memberId: string,
+  patch: {
+    job_title?: string | null;
+    phone?: string | null;
+    permissions?: Record<string, boolean>;
+    branch_id?: string | null;
+  },
+): Promise<void> {
+  const { error } = await (supabase as any)
+    .from("organization_members")
+    .update({ ...patch, updated_at: new Date().toISOString() })
+    .eq("id", memberId)
+    .eq("organization_id", organizationId);
+  if (error) throw error;
+}
+
+/** Also update the shared profile record (name shown across the app). */
+export async function updateMemberProfileName(userId: string, fullName: string): Promise<void> {
+  const { error } = await (supabase as any)
+    .from("profiles")
+    .update({ full_name: fullName })
+    .eq("id", userId);
+  if (error) throw error;
+}
