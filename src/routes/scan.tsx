@@ -914,10 +914,19 @@ function ScanPage() {
             to="/"
             className="flex items-center gap-2 text-cream-dim transition hover:text-caramel-bright"
           >
-            <Coffee className="h-5 w-5" />
+            {branding?.logo_url ? (
+              <img
+                src={branding.logo_url}
+                alt={brandName}
+                className="h-9 w-9 rounded-xl object-cover shadow-sm"
+                loading="lazy"
+              />
+            ) : (
+              <Coffee className="h-5 w-5" />
+            )}
 
             <span className="font-display text-xl font-bold tracking-wider gold-text">
-              KOB
+              {brandName}
             </span>
           </Link>
 
