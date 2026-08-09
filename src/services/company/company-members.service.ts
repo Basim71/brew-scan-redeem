@@ -8,6 +8,11 @@ export type CompanyMemberRow = {
   role: CompanyMemberRole;
   status: string;
   branch_id: string | null;
+  job_title: string | null;
+  phone: string | null;
+  permissions: Record<string, boolean>;
+  last_login_at: string | null;
+  invited_at: string | null;
   created_at: string;
   updated_at: string;
   profile: { full_name: string | null; email: string | null } | null;
@@ -15,7 +20,7 @@ export type CompanyMemberRow = {
 };
 
 const SELECT = `
-  id,user_id,role,status,branch_id,created_at,updated_at,
+  id,user_id,role,status,branch_id,job_title,phone,permissions,last_login_at,invited_at,created_at,updated_at,
   profile:profiles(full_name,email),
   branch:branches(id,name_ar,name_en)
 `;
