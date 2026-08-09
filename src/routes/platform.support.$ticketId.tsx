@@ -6,6 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { PlatformGate } from "@/features/platform/PlatformGate";
 import { ROLE_MATRIX } from "@/features/platform/access";
 import { TicketConversation } from "@/features/support/TicketConversation";
+import { SessionPanel } from "@/features/support/SessionPanel";
+import { AgentAssistPanel } from "@/features/support/AgentAssistPanel";
 import { claimTicket, getTicket, setTicketStatus, updateTicket } from "@/features/support/api";
 import {
   categoryLabels,
@@ -126,6 +128,8 @@ function PlatformTicketDetail() {
 
         {error && <div className="sc-error">{error}</div>}
 
+        <SessionPanel ticketId={ticket.id} organizationId={ticket.organizationId} side="agent" />
+
         <div className="sc-detail-grid">
           <TicketConversation ticketId={ticket.id} side="agent" />
 
@@ -175,6 +179,8 @@ function PlatformTicketDetail() {
                 </div>
               ))}
             </section>
+
+            <AgentAssistPanel ticketId={ticket.id} />
 
             <section className="sc-card">
               <h3>سياق الشركة</h3>

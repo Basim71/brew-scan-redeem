@@ -4,6 +4,7 @@ import { ArrowRight, MonitorPlay, Star } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { TicketConversation } from "@/features/support/TicketConversation";
+import { SessionPanel } from "@/features/support/SessionPanel";
 import { getRating, getTicket, setTicketStatus, submitRating, updateTicket } from "@/features/support/api";
 import {
   categoryLabels,
@@ -120,6 +121,8 @@ function CompanyTicketDetail() {
       </header>
 
       {error && <div className="sc-error">{error}</div>}
+
+      <SessionPanel ticketId={ticket.id} organizationId={ticket.organizationId} side="company" />
 
       <div className="sc-detail-grid">
         <TicketConversation ticketId={ticket.id} side="company" />
