@@ -1,0 +1,2 @@
+ALTER TABLE public.ticket_sessions DROP CONSTRAINT IF EXISTS ticket_sessions_mode_check;
+ALTER TABLE public.ticket_sessions ADD CONSTRAINT ticket_sessions_mode_check CHECK (mode = ANY (ARRAY['view'::text, 'assist'::text, 'control'::text]));
