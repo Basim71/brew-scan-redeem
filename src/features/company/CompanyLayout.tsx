@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   BarChart3,
   Layers3,
@@ -13,6 +13,7 @@ import { AppWorkspace } from "@/layouts/AppWorkspace";
 import type { FloatingIslandItem, FloatingIslandLink } from "@/layouts/FloatingIsland";
 import { useI18n } from "@/lib/i18n";
 import { useOrganization } from "@/providers/OrganizationProvider";
+import { getOrganizationProfile } from "@/services/company/company-settings.service";
 import { canAccessCompanyRoute, type CompanyRoute } from "./access";
 
 type Props = {
@@ -49,8 +50,28 @@ const ACCOUNT: Array<{
 
 export function CompanyLayout({ title, subtitle, onSignOut, children }: Props) {
   const { lang } = useI18n();
-  const { role } = useOrganization();
+  const { role, organization } = useOrganization();
   const isAr = lang === "ar";
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const orgId = organization?.id;
+    if (!orgId) {
+      setLogoUrl(null);
+      return;
+    }
+    void getOrganizationProfile(orgId)
+      .then((profile) => {
+        if (!cancelled) setLogoUrl(profile?.logo_url ?? null);
+      })
+      .catch(() => {
+        if (!cancelled) setLogoUrl(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [organization?.id]);
 
   const items = useMemo<FloatingIslandItem[]>(
     () =>
@@ -81,6 +102,7 @@ export function CompanyLayout({ title, subtitle, onSignOut, children }: Props) {
       title={title}
       subtitle={subtitle}
       homeTo="/admin"
+      logoUrl={logoUrl}
       items={items}
       accountLinks={accountLinks}
       onSignOut={onSignOut}
