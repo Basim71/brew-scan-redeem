@@ -45,7 +45,25 @@ export async function updateBranch(id: string, input: Partial<BranchInput>): Pro
   if (error) throw error;
 }
 
-export async function deleteBranch(id: string): Promise<void> {
-  const { error } = await supabase.from("branches").delete().eq("id", id);
-  if (error) throw error;
+export class BranchHasHistoryError extends Error {
+  subscriptions: number;
+  orders: number;
+  constructor(subscriptions: number, orders: number) {
+    super("branch_has_history");
+    this.name = "BranchHasHistoryError";
+    this.subscriptions = subscriptions;
+    this.orders = orders;
+  }
+}
+
+export async function deleteBranch(id: string, force = false): Promise<void> {
+  const { error } = await supabase.rpc("delete_branch_safe" as any, {
+    _branch_id: id,
+    _force: force,
+  } as any);
+  if (error) {
+    const match = /branch_has_history:(\d+):(\d+)/.exec(error.message ?? "");
+    if (match) throw new BranchHasHistoryError(Number(match[1]), Number(match[2]));
+    throw error;
+  }
 }
