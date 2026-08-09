@@ -1,8 +1,35 @@
+/**
+ * KOB Global Design System — the single entry point for shared UI.
+ * Before building any new UI, import from here. If a primitive is missing,
+ * add it in this folder instead of styling one page ad-hoc.
+ */
 export { Button, IconButton } from "./Button";
 export type { ButtonProps, ButtonVariant, ButtonSize, IconButtonProps } from "./Button";
 export { Card, CardHeader, CardBody, CardFooter } from "./Card";
+export { Badge, CountBadge, StatusDot } from "./Badge";
+export type { BadgeTone } from "./Badge";
 export { Field, Input, Textarea, Select } from "./Field";
+export {
+  SearchInput,
+  PasswordInput,
+  PhoneInput,
+  NumberInput,
+  DateInput,
+  DateRangeInput,
+  MultiSelect,
+  FileUpload,
+  OtpInput,
+} from "./Inputs";
+export { Checkbox, Radio, RadioGroup, Toggle } from "./Controls";
 export { Modal, ConfirmDialog } from "./Modal";
+export {
+  FormDialog,
+  InformationDialog,
+  WarningDialog,
+  DangerDialog,
+  FullScreenDialog,
+  SideDrawer,
+} from "./Dialogs";
 export {
   Skeleton,
   SkeletonText,
@@ -12,11 +39,23 @@ export {
   Spinner,
   LoadingBlock,
 } from "./Skeleton";
-export { EmptyState, ErrorState } from "./States";
+export { EmptyState, ErrorState, LoadingState, RetryState, NoResultsState } from "./States";
 export { Tabs } from "./Tabs";
 export type { TabItem } from "./Tabs";
 export { DataTable } from "./DataTable";
 export type { Column } from "./DataTable";
+export { Pagination } from "./Pagination";
+export { Dropdown, DropdownItem, Tooltip } from "./Menu";
+export {
+  PageContainer,
+  Section,
+  SectionHeader,
+  SectionFooter,
+  StatCard,
+  StatGrid,
+  InfoCard,
+  WarningCard,
+} from "./Layout";
 export { kobToast } from "./toast";
 export { StatusBadge } from "@/components/common/StatusBadge";
 export type { StatusTone } from "@/components/common/StatusBadge";

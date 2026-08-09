@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Inbox, RefreshCw, TriangleAlert } from "lucide-react";
+import { Inbox, RefreshCw, SearchX, TriangleAlert } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
 import { Button } from "./Button";
@@ -49,5 +49,65 @@ export function ErrorState({
         </Button>
       ) : null}
     </div>
+  );
+}
+
+/** Standard loading block for any async region. */
+export function LoadingState({ label, rows = 3 }: { label?: string; rows?: number }) {
+  const { t } = useI18n();
+  return (
+    <div className="kob-loading-state" role="status" aria-live="polite">
+      <span className="kob-loading-spinner" aria-hidden />
+      <p>{label ?? t("common.loading")}</p>
+      <div className="kob-loading-lines" aria-hidden>
+        {Array.from({ length: rows }).map((_, i) => (
+          <span key={i} className="kob-skeleton" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Failed load with a single retry affordance. */
+export function RetryState({
+  title,
+  description,
+  onRetry,
+  retryLabel,
+}: {
+  title?: string;
+  description?: string;
+  onRetry: () => void;
+  retryLabel?: string;
+}) {
+  const { t } = useI18n();
+  return (
+    <ErrorState
+      title={title ?? t("states.retryTitle")}
+      description={description ?? t("states.retryDescription")}
+      retryLabel={retryLabel ?? t("common.actions.retry")}
+      onRetry={onRetry}
+    />
+  );
+}
+
+/** Filters/search returned nothing — distinct from "nothing exists yet". */
+export function NoResultsState({
+  title,
+  description,
+  action,
+}: {
+  title?: string;
+  description?: string;
+  action?: ReactNode;
+}) {
+  const { t } = useI18n();
+  return (
+    <EmptyState
+      icon={<SearchX size={26} />}
+      title={title ?? t("states.noResultsTitle")}
+      description={description ?? t("states.noResultsDescription")}
+      action={action}
+    />
   );
 }
