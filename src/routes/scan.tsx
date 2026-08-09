@@ -173,6 +173,53 @@ function ScanPage() {
   const [orderStatus, setOrderStatus] =
     useState<OrderStatus>("pending");
 
+  const [branding, setBranding] =
+    useState<{
+      name_ar: string | null;
+      name_en: string | null;
+      logo_url: string | null;
+    } | null>(null);
+
+  useEffect(() => {
+    const branchId = branch?.id;
+    if (!branchId) {
+      setBranding(null);
+      return;
+    }
+    let cancelled = false;
+    void supabase
+      .rpc("scan_branding" as never, {
+        _branch_id: branchId,
+      } as never)
+      .then(({ data }) => {
+        if (cancelled) return;
+        const row = data as
+          | {
+              organization_name_ar?: string | null;
+              organization_name_en?: string | null;
+              logo_url?: string | null;
+            }
+          | null;
+        setBranding(
+          row
+            ? {
+                name_ar: row.organization_name_ar ?? null,
+                name_en: row.organization_name_en ?? null,
+                logo_url: row.logo_url ?? null,
+              }
+            : null,
+        );
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [branch?.id]);
+
+  const brandName =
+    (lang === "ar"
+      ? branding?.name_ar || branding?.name_en
+      : branding?.name_en || branding?.name_ar) || "KOB";
+
   const branchLabel = useMemo(() => {
     if (!branch) {
       return "";
@@ -867,10 +914,19 @@ function ScanPage() {
             to="/"
             className="flex items-center gap-2 text-cream-dim transition hover:text-caramel-bright"
           >
-            <Coffee className="h-5 w-5" />
+            {branding?.logo_url ? (
+              <img
+                src={branding.logo_url}
+                alt={brandName}
+                className="h-9 w-9 rounded-xl object-cover shadow-sm"
+                loading="lazy"
+              />
+            ) : (
+              <Coffee className="h-5 w-5" />
+            )}
 
             <span className="font-display text-xl font-bold tracking-wider gold-text">
-              KOB
+              {brandName}
             </span>
           </Link>
 
