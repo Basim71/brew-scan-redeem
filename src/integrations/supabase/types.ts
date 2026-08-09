@@ -2916,6 +2916,16 @@ export type Database = {
           organization_status: string
         }[]
       }
+      get_my_platform_profile: {
+        Args: never
+        Returns: {
+          email: string
+          full_name: string
+          platform_member_id: string
+          platform_role: Database["public"]["Enums"]["platform_role"]
+          user_status: string
+        }[]
+      }
       has_organization_role: {
         Args: { requested_organization_id: string; requested_roles: string[] }
         Returns: boolean
