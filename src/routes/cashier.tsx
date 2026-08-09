@@ -64,7 +64,11 @@ function CashierLayout() {
   return (
     <RoleGate allow="cashier">
       <AppWorkspace
-        title={organization?.nameAr || organization?.nameEn || "KOB"}
+        title={
+          (lang === "ar"
+            ? organization?.nameAr || organization?.nameEn
+            : organization?.nameEn || organization?.nameAr) || "KOB"
+        }
         subtitle={branchName || (lang === "ar" ? "الكاشير" : "Cashier")}
         homeTo="/cashier"
         items={items}
