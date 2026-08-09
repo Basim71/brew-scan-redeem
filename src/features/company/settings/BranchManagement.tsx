@@ -1,6 +1,20 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, MapPin, Plus, QrCode, Search, Trash2 } from "lucide-react";
+import { QRCodeCanvas } from "qrcode.react";
+import {
+  Building2,
+  Clock,
+  Copy,
+  Loader2,
+  MapPin,
+  Plus,
+  QrCode,
+  Search,
+  Store,
+  Trash2,
+  Users,
+  X,
+} from "lucide-react";
 
 import {
   createBranch,
@@ -9,6 +23,7 @@ import {
   updateBranch,
   type BranchRow,
 } from "@/services/company/branches.service";
+import { listCompanyMembers } from "@/services/company/company-members.service";
 import { Card, Row, Segmented, Toggle } from "./parts";
 import { LogoUploader } from "./LogoUploader";
 import { TextInput, translateError } from "./inputs";
@@ -29,16 +44,51 @@ function qrUrl(token: string) {
   return `${base}/scan?b=${token}`;
 }
 
-function qrImage(token: string) {
-  return `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrUrl(token))}`;
-}
 
-export function BranchManagementSection({ settings, isAr, canEdit, commit }: SectionProps) {
+type BranchDraft = {
+  name_ar: string;
+  name_en: string;
+  branch_code: string;
+  phone: string;
+  address: string;
+  maps_url: string;
+  opening_time: string;
+  closing_time: string;
+  working_days: string[];
+};
+
+const emptyBranchDraft = (): BranchDraft => ({
+  name_ar: "",
+  name_en: "",
+  branch_code: "",
+  phone: "",
+  address: "",
+  maps_url: "",
+  opening_time: "07:00",
+  closing_time: "23:00",
+  working_days: DAYS.map(([key]) => key),
+});
+
+export function BranchManagementSection({ settings, organizationId, isAr, canEdit, commit }: SectionProps) {
   const d = canEdit ? undefined : true;
   const queryClient = useQueryClient();
   const branches = useQuery({ queryKey: ["company-branches"], queryFn: () => listBranches() });
+  const members = useQuery({
+    queryKey: ["company-members", organizationId],
+    queryFn: () => listCompanyMembers(organizationId),
+  });
+  const staffPerBranch = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const member of members.data ?? []) {
+      if (!member.branch_id) continue;
+      map.set(member.branch_id, (map.get(member.branch_id) ?? 0) + 1);
+    }
+    return map;
+  }, [members.data]);
   const [search, setSearch] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
+  const [draft, setDraft] = useState<BranchDraft | null>(null);
+  const [draftError, setDraftError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -63,25 +113,68 @@ export function BranchManagementSection({ settings, isAr, canEdit, commit }: Sec
     }
   };
 
-  const addBranch = () =>
-    run(() =>
-      createBranch({
-        name_ar: isAr ? "فرع جديد" : "فرع جديد",
-        name_en: "New branch",
-        address_ar: null,
-        address_en: null,
-        phone: null,
-        maps_url: null,
-        logo_url: null,
-        opening_time: "07:00",
-        closing_time: "23:00",
-        working_days: DAYS.map(([key]) => key),
-        is_active: true,
-      } as any),
-    );
+  const submitDraft = async () => {
+    if (!draft) return;
+    setDraftError(null);
+    if (draft.name_ar.trim().length < 2 || draft.name_en.trim().length < 2)
+      return setDraftError(isAr ? "الاسم بالعربية والإنجليزية مطلوب" : "Arabic and English names are required");
+    if (draft.phone.trim() && !/^(05\d{8}|\+9665\d{8})$/.test(draft.phone.trim()))
+      return setDraftError(isAr ? "رقم جوال غير صحيح" : "Invalid phone number");
+    if (draft.maps_url.trim() && !/^https?:\/\//.test(draft.maps_url.trim()))
+      return setDraftError(isAr ? "رابط خريطة غير صحيح" : "Invalid map link");
+    const code = draft.branch_code.trim().toUpperCase();
+    if (code && (branches.data ?? []).some((b) => (b.branch_code ?? "").toUpperCase() === code))
+      return setDraftError(isAr ? "رمز الفرع مستخدم بالفعل" : "Branch code already in use");
+
+    try {
+      await run(() =>
+        createBranch({
+          name_ar: draft.name_ar.trim(),
+          name_en: draft.name_en.trim(),
+          branch_code: code || null,
+          address_ar: draft.address.trim() || null,
+          address_en: draft.address.trim() || null,
+          phone: draft.phone.trim() || null,
+          maps_url: draft.maps_url.trim() || null,
+          logo_url: null,
+          opening_time: draft.opening_time,
+          closing_time: draft.closing_time,
+          working_days: draft.working_days,
+          is_active: true,
+        } as any),
+      );
+      setDraft(null);
+    } catch (err: any) {
+      setDraftError(translateError(err?.message, isAr));
+    }
+  };
+
+  const all = branches.data ?? [];
+  const stats = [
+    { icon: Store, label: isAr ? "إجمالي الفروع" : "Total branches", value: all.length },
+    { icon: Building2, label: isAr ? "فروع نشطة" : "Active", value: all.filter((b) => b.is_active).length },
+    { icon: Users, label: isAr ? "موظفون مرتبطون بفروع" : "Branch-assigned staff", value: staffPerBranch.size ? Array.from(staffPerBranch.values()).reduce((a, b) => a + b, 0) : 0 },
+    {
+      icon: Clock,
+      label: isAr ? "أطول ساعات عمل" : "Longest hours",
+      value: all.length
+        ? `${all[0]!.opening_time?.slice(0, 5)}–${all[0]!.closing_time?.slice(0, 5)}`
+        : "—",
+    },
+  ];
 
   return (
     <div className="cs-stack">
+      <div className="cs-stat-grid">
+        {stats.map((stat) => (
+          <article key={stat.label} className="cs-stat">
+            <stat.icon className="h-4 w-4" />
+            <b>{stat.value}</b>
+            <span>{stat.label}</span>
+          </article>
+        ))}
+      </div>
+
       <Card title={isAr ? "إعدادات الفروع" : "Branch defaults"}>
         <Row label={isAr ? "الفرع الافتراضي" : "Default branch"}>
           <select
@@ -120,8 +213,16 @@ export function BranchManagementSection({ settings, isAr, canEdit, commit }: Sec
         }
         aside={
           canEdit ? (
-            <button type="button" className="cs-btn" disabled={busy} onClick={addBranch}>
-              <Plus className="h-3.5 w-3.5" />
+            <button
+              type="button"
+              className="cs-primary-btn"
+              disabled={busy}
+              onClick={() => {
+                setDraftError(null);
+                setDraft(emptyBranchDraft());
+              }}
+            >
+              <Plus className="h-4 w-4" />
               {isAr ? "فرع جديد" : "New branch"}
             </button>
           ) : null
@@ -150,6 +251,7 @@ export function BranchManagementSection({ settings, isAr, canEdit, commit }: Sec
               <BranchCard
                 key={branch.id}
                 branch={branch}
+                staffCount={staffPerBranch.get(branch.id) ?? 0}
                 isAr={isAr}
                 disabled={d}
                 open={openId === branch.id}
@@ -161,12 +263,101 @@ export function BranchManagementSection({ settings, isAr, canEdit, commit }: Sec
           </div>
         )}
       </Card>
+
+      {draft ? (
+        <div className="cs-modal-backdrop" role="dialog" aria-modal="true">
+          <div className="cs-modal">
+            <header>
+              <h3>{isAr ? "إنشاء فرع" : "Create branch"}</h3>
+              <button type="button" className="cs-icon-btn" onClick={() => setDraft(null)} aria-label="close">
+                <X className="h-4 w-4" />
+              </button>
+            </header>
+            <div className="cs-modal-body">
+              <label className="cs-field">
+                <span>{isAr ? "الاسم بالعربية" : "Name (Arabic)"}</span>
+                <input className="cs-input" value={draft.name_ar} onChange={(e) => setDraft({ ...draft, name_ar: e.target.value })} />
+              </label>
+              <label className="cs-field">
+                <span>{isAr ? "الاسم بالإنجليزية" : "Name (English)"}</span>
+                <input className="cs-input" value={draft.name_en} onChange={(e) => setDraft({ ...draft, name_en: e.target.value })} />
+              </label>
+              <label className="cs-field">
+                <span>{isAr ? "رمز الفرع" : "Branch code"}</span>
+                <input
+                  className="cs-input"
+                  placeholder={isAr ? "يُولَّد تلقائيًا" : "Generated automatically"}
+                  value={draft.branch_code}
+                  onChange={(e) => setDraft({ ...draft, branch_code: e.target.value })}
+                />
+              </label>
+              <label className="cs-field">
+                <span>{isAr ? "رقم التواصل" : "Phone"}</span>
+                <input className="cs-input" placeholder="05XXXXXXXX" value={draft.phone} onChange={(e) => setDraft({ ...draft, phone: e.target.value })} />
+              </label>
+              <label className="cs-field cs-field-wide">
+                <span>{isAr ? "العنوان" : "Address"}</span>
+                <input className="cs-input" value={draft.address} onChange={(e) => setDraft({ ...draft, address: e.target.value })} />
+              </label>
+              <label className="cs-field cs-field-wide">
+                <span>{isAr ? "رابط الخريطة" : "Google Maps link"}</span>
+                <input className="cs-input" placeholder="https://maps.google.com/…" value={draft.maps_url} onChange={(e) => setDraft({ ...draft, maps_url: e.target.value })} />
+              </label>
+              <label className="cs-field">
+                <span>{isAr ? "وقت الافتتاح" : "Opening time"}</span>
+                <input className="cs-input" type="time" value={draft.opening_time} onChange={(e) => setDraft({ ...draft, opening_time: e.target.value })} />
+              </label>
+              <label className="cs-field">
+                <span>{isAr ? "وقت الإغلاق" : "Closing time"}</span>
+                <input className="cs-input" type="time" value={draft.closing_time} onChange={(e) => setDraft({ ...draft, closing_time: e.target.value })} />
+              </label>
+              <div className="cs-field cs-field-wide">
+                <span>{isAr ? "أيام العمل" : "Working days"}</span>
+                <div className="cs-chips">
+                  {DAYS.map(([key, ar, en]) => {
+                    const on = draft.working_days.includes(key);
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        className="cs-chip"
+                        data-on={on ? "true" : "false"}
+                        onClick={() =>
+                          setDraft({
+                            ...draft,
+                            working_days: on
+                              ? draft.working_days.filter((day) => day !== key)
+                              : [...draft.working_days, key],
+                          })
+                        }
+                      >
+                        {isAr ? ar : en}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              {draftError ? <div className="cs-error-panel cs-field-wide">{draftError}</div> : null}
+            </div>
+            <footer>
+              <button type="button" className="cs-ghost-btn" onClick={() => setDraft(null)}>
+                {isAr ? "إلغاء" : "Cancel"}
+              </button>
+              <button type="button" className="cs-primary-btn" disabled={busy} onClick={submitDraft}>
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                {isAr ? "إنشاء" : "Create"}
+              </button>
+            </footer>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
 
 function BranchCard({
   branch,
+  staffCount,
   isAr,
   disabled,
   open,
@@ -175,6 +366,7 @@ function BranchCard({
   onDelete,
 }: {
   branch: BranchRow;
+  staffCount: number;
   isAr: boolean;
   disabled?: boolean;
   open: boolean;
@@ -183,7 +375,29 @@ function BranchCard({
   onDelete: () => void;
 }) {
   const [confirming, setConfirming] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const qrWrap = useRef<HTMLDivElement>(null);
   const days = branch.working_days ?? [];
+  const link = qrUrl(branch.qr_token);
+
+  const downloadQr = () => {
+    const canvas = qrWrap.current?.querySelector("canvas");
+    if (!canvas) return;
+    const anchor = document.createElement("a");
+    anchor.href = canvas.toDataURL("image/png");
+    anchor.download = `kob-branch-${branch.branch_code ?? branch.id.slice(0, 8)}.png`;
+    anchor.click();
+  };
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      /* clipboard unavailable */
+    }
+  };
 
   return (
     <article className="cs-branch" data-open={open ? "true" : "false"}>
@@ -197,6 +411,10 @@ function BranchCard({
             </small>
           </span>
         </button>
+        <span className="cs-branch-staff">
+          <Users className="h-3.5 w-3.5" />
+          {staffCount}
+        </span>
         <span className="cs-branch-state" data-on={branch.is_active ? "true" : "false"}>
           {branch.is_active ? (isAr ? "نشط" : "Active") : isAr ? "موقوف" : "Inactive"}
         </span>
@@ -316,13 +534,19 @@ function BranchCard({
 
           <aside className="cs-branch-side">
             <div className="cs-qr">
-              <img src={qrImage(branch.qr_token)} alt={isAr ? "رمز الفرع" : "Branch QR"} />
-              <code>{qrUrl(branch.qr_token)}</code>
+              <div ref={qrWrap} className="cs-qr-canvas">
+                <QRCodeCanvas value={link} size={176} level="M" includeMargin bgColor="#ffffff" fgColor="#2B1A12" />
+              </div>
+              <code>{link}</code>
               <div className="cs-qr-actions">
-                <a className="cs-ghost-btn" href={qrImage(branch.qr_token)} target="_blank" rel="noreferrer">
+                <button type="button" className="cs-ghost-btn" onClick={downloadQr}>
                   <QrCode className="h-3.5 w-3.5" />
                   {isAr ? "تحميل" : "Download"}
-                </a>
+                </button>
+                <button type="button" className="cs-ghost-btn" onClick={copyLink}>
+                  <Copy className="h-3.5 w-3.5" />
+                  {copied ? (isAr ? "تم النسخ" : "Copied") : isAr ? "نسخ الرابط" : "Copy link"}
+                </button>
                 {branch.maps_url ? (
                   <a className="cs-ghost-btn" href={branch.maps_url} target="_blank" rel="noreferrer">
                     <MapPin className="h-3.5 w-3.5" />
