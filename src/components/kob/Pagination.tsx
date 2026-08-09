@@ -15,7 +15,7 @@ export function Pagination({
   onPageChange: (next: number) => void;
   total?: number;
 }) {
-  const { t, dir, formatNumber } = useI18n();
+  const { t, dir, fmtNum } = useI18n();
   if (pageCount <= 1) return null;
   const Prev = dir === "rtl" ? ChevronRight : ChevronLeft;
   const Next = dir === "rtl" ? ChevronLeft : ChevronRight;
@@ -31,8 +31,8 @@ export function Pagination({
         {t("common.previous")}
       </Button>
       <span className="kob-pagination-status" aria-live="polite">
-        {formatNumber(page)} / {formatNumber(pageCount)}
-        {typeof total === "number" ? <small>{formatNumber(total)}</small> : null}
+        {fmtNum(page)} / {fmtNum(pageCount)}
+        {typeof total === "number" ? <small>{fmtNum(total)}</small> : null}
       </span>
       <Button
         size="sm"
