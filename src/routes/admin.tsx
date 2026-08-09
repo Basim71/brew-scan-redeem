@@ -32,7 +32,11 @@ function AdminLayout() {
   return (
     <RoleGate allow="admin">
       <CompanyLayout
-        title={organization?.nameAr || organization?.nameEn || "KOB"}
+        title={
+          (isRTL
+            ? organization?.nameAr || organization?.nameEn
+            : organization?.nameEn || organization?.nameAr) || "KOB"
+        }
         subtitle={isRTL ? "بوابة الشركة" : "Company Portal"}
         onSignOut={handleSignOut}
       >
