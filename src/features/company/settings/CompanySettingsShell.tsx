@@ -9,6 +9,7 @@ import {
   Globe2,
   Loader2,
   Plug,
+  Search as SearchIcon,
   Settings2,
   ShieldCheck,
   ShoppingBag,
@@ -62,20 +63,131 @@ const SECTIONS: Array<{
   key: SectionKey;
   ar: string;
   en: string;
+  descAr: string;
+  descEn: string;
+  group: GroupKey;
   icon: any;
   roles: OrganizationRole[];
 }> = [
-  { key: "general", ar: "عام", en: "General", icon: Settings2, roles: ["owner", "admin", "manager"] },
-  { key: "business", ar: "الأعمال", en: "Business", icon: WalletCards, roles: ["owner", "admin"] },
-  { key: "membership", ar: "العضوية", en: "Membership", icon: CreditCard, roles: ["owner", "admin"] },
-  { key: "ordering", ar: "الطلبات", en: "Ordering", icon: ShoppingBag, roles: ["owner", "admin", "manager"] },
-  { key: "experience", ar: "تجربة العميل", en: "Customer Experience", icon: Sparkles, roles: ["owner", "admin", "manager"] },
-  { key: "notifications", ar: "التنبيهات", en: "Notifications", icon: Bell, roles: ["owner", "admin"] },
-  { key: "security", ar: "الأمان", en: "Security", icon: ShieldCheck, roles: ["owner", "admin"] },
-  { key: "employees", ar: "الموظفون", en: "Employees", icon: UserCog, roles: ["owner", "admin"] },
-  { key: "branches", ar: "الفروع", en: "Branches", icon: Building2, roles: ["owner", "admin"] },
-  { key: "integrations", ar: "التكاملات", en: "Integrations", icon: Plug, roles: ["owner", "admin"] },
-  { key: "audit", ar: "سجل التغييرات", en: "Audit Log", icon: ClipboardList, roles: ["owner", "admin"] },
+  {
+    key: "general",
+    ar: "عام",
+    en: "General",
+    descAr: "هوية الشركة وبيانات التواصل واللغة والمنطقة الزمنية.",
+    descEn: "Company identity, contact details, language and timezone.",
+    group: "company",
+    icon: Settings2,
+    roles: ["owner", "admin", "manager"],
+  },
+  {
+    key: "business",
+    ar: "الأعمال",
+    en: "Business",
+    descAr: "قنوات البيع ووسائل الدفع والضريبة والفواتير وساعات العمل.",
+    descEn: "Sales channels, payments, tax, invoicing and business hours.",
+    group: "company",
+    icon: WalletCards,
+    roles: ["owner", "admin"],
+  },
+  {
+    key: "membership",
+    ar: "العضوية",
+    en: "Membership",
+    descAr: "قواعد الاشتراكات والتفعيل والتجديد والتذكيرات.",
+    descEn: "Subscription rules, activation, renewals and reminders.",
+    group: "operations",
+    icon: CreditCard,
+    roles: ["owner", "admin"],
+  },
+  {
+    key: "ordering",
+    ar: "الطلبات",
+    en: "Ordering",
+    descAr: "مسار الطلب ومدة التحضير وسلوك الطابور وأرقام الطلبات.",
+    descEn: "Order workflow, prep time, queue behaviour and numbering.",
+    group: "operations",
+    icon: ShoppingBag,
+    roles: ["owner", "admin", "manager"],
+  },
+  {
+    key: "experience",
+    ar: "تجربة العميل",
+    en: "Customer Experience",
+    descAr: "معاينة مباشرة لرحلة العميل على الجوال وتحرير كل شاشة.",
+    descEn: "Live mobile preview of the customer journey with inline editing.",
+    group: "operations",
+    icon: Sparkles,
+    roles: ["owner", "admin", "manager"],
+  },
+  {
+    key: "notifications",
+    ar: "مركز التنبيهات",
+    en: "Notification Center",
+    descAr: "البريد والرسائل والإشعارات وواتساب والأحداث والقوالب.",
+    descEn: "Email, SMS, push, WhatsApp, system events and templates.",
+    group: "operations",
+    icon: Bell,
+    roles: ["owner", "admin"],
+  },
+  {
+    key: "security",
+    ar: "مركز الأمان",
+    en: "Security Center",
+    descAr: "الجلسات والأجهزة والتحقق بخطوتين وسياسات كلمات المرور وقيود الدخول.",
+    descEn: "Sessions, devices, MFA, password policies and access restrictions.",
+    group: "governance",
+    icon: ShieldCheck,
+    roles: ["owner", "admin"],
+  },
+  {
+    key: "employees",
+    ar: "الموظفون",
+    en: "Employees",
+    descAr: "إضافة وتعديل الموظفين والأدوار والصلاحيات والفروع والنشاط.",
+    descEn: "Add and edit employees, roles, permissions, branches and activity.",
+    group: "people",
+    icon: UserCog,
+    roles: ["owner", "admin"],
+  },
+  {
+    key: "branches",
+    ar: "الفروع",
+    en: "Branches",
+    descAr: "إنشاء الفروع ورموز QR وساعات العمل والعناوين.",
+    descEn: "Create branches, QR codes, business hours and addresses.",
+    group: "people",
+    icon: Building2,
+    roles: ["owner", "admin"],
+  },
+  {
+    key: "integrations",
+    ar: "مركز التكاملات",
+    en: "Integration Hub",
+    descAr: "بوابات الدفع وأنظمة نقاط البيع ومزودو الرسائل والفاتورة الإلكترونية.",
+    descEn: "Payment gateways, POS systems, messaging providers and e-invoicing.",
+    group: "governance",
+    icon: Plug,
+    roles: ["owner", "admin"],
+  },
+  {
+    key: "audit",
+    ar: "مركز النشاط",
+    en: "Activity Center",
+    descAr: "بحث وتصفية وتسلسل زمني لكل تغيير وتصدير السجل.",
+    descEn: "Search, filter and export a full timeline of every change.",
+    group: "governance",
+    icon: ClipboardList,
+    roles: ["owner", "admin"],
+  },
+];
+
+type GroupKey = "company" | "operations" | "people" | "governance";
+
+const GROUPS: Array<{ key: GroupKey; ar: string; en: string }> = [
+  { key: "company", ar: "الشركة", en: "Company" },
+  { key: "operations", ar: "التشغيل", en: "Operations" },
+  { key: "people", ar: "الفريق والفروع", en: "People & Branches" },
+  { key: "governance", ar: "الحماية والتكاملات", en: "Governance" },
 ];
 
 const PAYMENT_METHODS: Array<{ value: PaymentMethod; ar: string; en: string }> = [
@@ -100,6 +212,17 @@ export function CompanySettingsShell() {
   const canEdit = role === "owner" || role === "admin";
   const visible = useMemo(() => SECTIONS.filter((s) => (role ? s.roles.includes(role) : false)), [role]);
   const [section, setSection] = useState<SectionKey>("general");
+  const [navQuery, setNavQuery] = useState("");
+
+  const navItems = useMemo(() => {
+    const term = navQuery.trim().toLowerCase();
+    if (!term) return visible;
+    return visible.filter((item) =>
+      [item.ar, item.en, item.descAr, item.descEn].some((value) => value.toLowerCase().includes(term)),
+    );
+  }, [navQuery, visible]);
+
+  const activeSection = useMemo(() => SECTIONS.find((item) => item.key === section) ?? null, [section]);
 
   useEffect(() => {
     if (visible.length && !visible.some((s) => s.key === section)) setSection(visible[0]!.key);
@@ -175,7 +298,7 @@ export function CompanySettingsShell() {
       <header className="cs-header">
         <div>
           <span className="cs-eyebrow">{isAr ? "لوحة الشركة" : "Company"}</span>
-          <h1>{isAr ? "إعدادات الشركة" : "Company Settings"}</h1>
+          <h1>{isAr ? "مركز إدارة الشركة" : "Company Administration"}</h1>
           <p>
             {isAr
               ? "مصدر واحد لكل إعدادات الشركة — كل تغيير يُحفظ فورًا ويُطبَّق على النظام بالكامل."
@@ -195,20 +318,51 @@ export function CompanySettingsShell() {
 
       <div className="cs-layout">
         <nav className="cs-nav" aria-label={isAr ? "أقسام الإعدادات" : "Settings sections"}>
-          {visible.map((s) => (
-            <button
-              key={s.key}
-              type="button"
-              data-active={s.key === section ? "true" : "false"}
-              onClick={() => setSection(s.key)}
-            >
-              <s.icon className="h-4 w-4" />
-              <span>{isAr ? s.ar : s.en}</span>
-            </button>
-          ))}
+          <label className="cs-nav-search">
+            <SearchIcon className="h-3.5 w-3.5" />
+            <input
+              value={navQuery}
+              placeholder={isAr ? "ابحث في الإعدادات" : "Search settings"}
+              onChange={(event) => setNavQuery(event.target.value)}
+            />
+          </label>
+          {GROUPS.map((group) => {
+            const items = navItems.filter((item) => item.group === group.key);
+            if (!items.length) return null;
+            return (
+              <div key={group.key} className="cs-nav-group">
+                <span className="cs-nav-group-title">{isAr ? group.ar : group.en}</span>
+                {items.map((s) => (
+                  <button
+                    key={s.key}
+                    type="button"
+                    data-active={s.key === section ? "true" : "false"}
+                    onClick={() => setSection(s.key)}
+                  >
+                    <s.icon className="h-4 w-4" />
+                    <span>{isAr ? s.ar : s.en}</span>
+                  </button>
+                ))}
+              </div>
+            );
+          })}
+          {navItems.length === 0 ? (
+            <p className="cs-nav-empty">{isAr ? "لا نتائج مطابقة." : "No matching sections."}</p>
+          ) : null}
         </nav>
 
         <div className="cs-content">
+          {activeSection ? (
+            <div className="cs-module-hero">
+              <span className="cs-module-icon">
+                <activeSection.icon className="h-5 w-5" />
+              </span>
+              <div>
+                <h2>{isAr ? activeSection.ar : activeSection.en}</h2>
+                <p>{isAr ? activeSection.descAr : activeSection.descEn}</p>
+              </div>
+            </div>
+          ) : null}
           {isLoading ? (
             <div className="cs-loading">
               <Loader2 className="h-5 w-5 animate-spin" />
