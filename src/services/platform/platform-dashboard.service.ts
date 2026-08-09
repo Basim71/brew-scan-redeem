@@ -39,7 +39,7 @@ export async function fetchPlatformMetrics(): Promise<{ metrics: PlatformMetrics
       s.from("organizations").select("id", { count: "exact", head: true }).eq("organization_type", "company").eq("status", "active"),
       s.from("organizations").select("id", { count: "exact", head: true }).eq("organization_type", "company").neq("status", "active"),
       s.from("organizations").select("id", { count: "exact", head: true }).eq("organization_type", "company").gte("created_at", startOfMonth.toISOString()),
-      s.from("customer_success_cases").select("id", { count: "exact", head: true }).not("status", "in", "(closed,cancelled,resolved)"),
+      s.from("tickets").select("id", { count: "exact", head: true }).not("status", "in", "(closed,cancelled,resolved)"),
       s.from("support_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
       s.from("support_sessions").select("id", { count: "exact", head: true }).eq("status", "active"),
       s.from("support_requests").select("id", { count: "exact", head: true }).eq("type", "training").gte("scheduled_at", now),

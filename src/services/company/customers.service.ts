@@ -1,1 +1,0 @@
-export * from "@/features/company/customers/service";
