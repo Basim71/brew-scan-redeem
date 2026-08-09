@@ -825,12 +825,77 @@ export type Database = {
           },
         ]
       }
+      organization_activity_log: {
+        Row: {
+          action: string
+          actor_label: string | null
+          actor_user_id: string | null
+          category: string
+          created_at: string
+          entity_id: string | null
+          entity_label: string | null
+          entity_type: string | null
+          id: string
+          ip_address: string | null
+          metadata: Json
+          organization_id: string
+          severity: string
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_label?: string | null
+          actor_user_id?: string | null
+          category?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_label?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json
+          organization_id: string
+          severity?: string
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_label?: string | null
+          actor_user_id?: string | null
+          category?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_label?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json
+          organization_id?: string
+          severity?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_activity_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           branch_id: string | null
           created_at: string
           id: string
+          invited_at: string
+          invited_by: string | null
+          job_title: string | null
+          last_login_at: string | null
           organization_id: string
+          permissions: Json
+          phone: string | null
           role: string
           status: string
           updated_at: string
@@ -840,7 +905,13 @@ export type Database = {
           branch_id?: string | null
           created_at?: string
           id?: string
+          invited_at?: string
+          invited_by?: string | null
+          job_title?: string | null
+          last_login_at?: string | null
           organization_id: string
+          permissions?: Json
+          phone?: string | null
           role: string
           status?: string
           updated_at?: string
@@ -850,7 +921,13 @@ export type Database = {
           branch_id?: string | null
           created_at?: string
           id?: string
+          invited_at?: string
+          invited_by?: string | null
+          job_title?: string | null
+          last_login_at?: string | null
           organization_id?: string
+          permissions?: Json
+          phone?: string | null
           role?: string
           status?: string
           updated_at?: string
@@ -2920,7 +2997,12 @@ export type Database = {
         }
         Returns: string
       }
+      shares_organization_with: {
+        Args: { target_user: string }
+        Returns: boolean
+      }
       support_agent_level: { Args: never; Returns: string }
+      touch_member_login: { Args: never; Returns: undefined }
       verify_organization_login: {
         Args: { requested_organization_id: string }
         Returns: {
