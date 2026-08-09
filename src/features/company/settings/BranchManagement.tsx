@@ -21,6 +21,7 @@ import {
   deleteBranch,
   listBranches,
   updateBranch,
+  BranchHasHistoryError,
   type BranchRow,
 } from "@/services/company/branches.service";
 import { listCompanyMembers } from "@/services/company/company-members.service";
@@ -91,6 +92,9 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
   const [draftError, setDraftError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [forceDelete, setForceDelete] = useState<
+    { branch: BranchRow; subscriptions: number; orders: number } | null
+  >(null);
 
   const rows = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -108,6 +112,24 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
       await queryClient.invalidateQueries({ queryKey: ["company-branches"] });
     } catch (err: any) {
       setError(translateError(err?.message, isAr));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const removeBranch = async (branch: BranchRow, force = false) => {
+    setBusy(true);
+    setError(null);
+    try {
+      await deleteBranch(branch.id, force);
+      setForceDelete(null);
+      await queryClient.invalidateQueries({ queryKey: ["company-branches"] });
+    } catch (err: any) {
+      if (err instanceof BranchHasHistoryError) {
+        setForceDelete({ branch, subscriptions: err.subscriptions, orders: err.orders });
+      } else {
+        setError(translateError(err?.message, isAr));
+      }
     } finally {
       setBusy(false);
     }
@@ -257,7 +279,7 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
                 open={openId === branch.id}
                 onToggle={() => setOpenId(openId === branch.id ? null : branch.id)}
                 onPatch={(patch) => run(() => updateBranch(branch.id, patch as any))}
-                onDelete={() => run(() => deleteBranch(branch.id))}
+                onDelete={() => void removeBranch(branch)}
               />
             ))}
           </div>
