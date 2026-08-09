@@ -373,6 +373,52 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
           </div>
         </div>
       ) : null}
+
+      {forceDelete ? (
+        <div className="cs-modal-backdrop" role="dialog" aria-modal="true">
+          <div className="cs-modal">
+            <header>
+              <h3>{isAr ? "حذف الفرع مع سجلاته" : "Delete branch with its records"}</h3>
+              <button type="button" className="cs-icon-btn" onClick={() => setForceDelete(null)} aria-label="close">
+                <X className="h-4 w-4" />
+              </button>
+            </header>
+            <div className="cs-modal-body">
+              <p className="cs-field-wide">
+                {isAr
+                  ? `الفرع "${forceDelete.branch.name_ar}" مرتبط بـ ${forceDelete.subscriptions} اشتراك و ${forceDelete.orders} طلب. الحذف سيؤدي إلى إزالة هذه السجلات نهائيًا. يمكنك بدلًا من ذلك إيقاف الفرع للحفاظ على البيانات.`
+                  : `Branch "${forceDelete.branch.name_en}" has ${forceDelete.subscriptions} subscriptions and ${forceDelete.orders} orders. Deleting it removes those records permanently. You can deactivate the branch instead to keep the data.`}
+              </p>
+            </div>
+            <footer>
+              <button type="button" className="cs-ghost-btn" onClick={() => setForceDelete(null)}>
+                {isAr ? "إلغاء" : "Cancel"}
+              </button>
+              <button
+                type="button"
+                className="cs-ghost-btn"
+                disabled={busy}
+                onClick={() => {
+                  const target = forceDelete.branch;
+                  setForceDelete(null);
+                  void run(() => updateBranch(target.id, { is_active: false }));
+                }}
+              >
+                {isAr ? "إيقاف الفرع" : "Deactivate branch"}
+              </button>
+              <button
+                type="button"
+                className="cs-primary-btn"
+                disabled={busy}
+                onClick={() => void removeBranch(forceDelete.branch, true)}
+              >
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                {isAr ? "حذف نهائي" : "Delete permanently"}
+              </button>
+            </footer>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
