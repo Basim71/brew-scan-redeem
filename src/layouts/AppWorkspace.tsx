@@ -8,13 +8,23 @@ type AppWorkspaceProps = {
   title: string;
   subtitle?: string;
   homeTo: string;
+  logoUrl?: string | null;
   items: FloatingIslandItem[];
   accountLinks?: FloatingIslandLink[];
   onSignOut: () => void | Promise<void>;
   children: ReactNode;
 };
 
-export function AppWorkspace({ title, subtitle, homeTo, items, accountLinks, onSignOut, children }: AppWorkspaceProps) {
+export function AppWorkspace({
+  title,
+  subtitle,
+  homeTo,
+  logoUrl,
+  items,
+  accountLinks,
+  onSignOut,
+  children,
+}: AppWorkspaceProps) {
   return (
     <LiveStatusProvider>
       <main className="app-workspace">
@@ -22,6 +32,7 @@ export function AppWorkspace({ title, subtitle, homeTo, items, accountLinks, onS
           title={title}
           subtitle={subtitle}
           homeTo={homeTo}
+          logoUrl={logoUrl}
           items={items}
           accountLinks={accountLinks}
           onSignOut={onSignOut}
