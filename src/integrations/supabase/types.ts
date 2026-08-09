@@ -2903,6 +2903,10 @@ export type Database = {
       current_user_branch: { Args: never; Returns: string }
       current_user_organization_ids: { Args: never; Returns: string[] }
       default_organization_id: { Args: never; Returns: string }
+      delete_branch_safe: {
+        Args: { _branch_id: string; _force?: boolean }
+        Returns: Json
+      }
       get_my_organizations: {
         Args: never
         Returns: {

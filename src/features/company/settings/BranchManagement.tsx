@@ -21,6 +21,7 @@ import {
   deleteBranch,
   listBranches,
   updateBranch,
+  BranchHasHistoryError,
   type BranchRow,
 } from "@/services/company/branches.service";
 import { listCompanyMembers } from "@/services/company/company-members.service";
@@ -91,6 +92,9 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
   const [draftError, setDraftError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [forceDelete, setForceDelete] = useState<
+    { branch: BranchRow; subscriptions: number; orders: number } | null
+  >(null);
 
   const rows = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -108,6 +112,24 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
       await queryClient.invalidateQueries({ queryKey: ["company-branches"] });
     } catch (err: any) {
       setError(translateError(err?.message, isAr));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const removeBranch = async (branch: BranchRow, force = false) => {
+    setBusy(true);
+    setError(null);
+    try {
+      await deleteBranch(branch.id, force);
+      setForceDelete(null);
+      await queryClient.invalidateQueries({ queryKey: ["company-branches"] });
+    } catch (err: any) {
+      if (err instanceof BranchHasHistoryError) {
+        setForceDelete({ branch, subscriptions: err.subscriptions, orders: err.orders });
+      } else {
+        setError(translateError(err?.message, isAr));
+      }
     } finally {
       setBusy(false);
     }
@@ -257,7 +279,7 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
                 open={openId === branch.id}
                 onToggle={() => setOpenId(openId === branch.id ? null : branch.id)}
                 onPatch={(patch) => run(() => updateBranch(branch.id, patch as any))}
-                onDelete={() => run(() => deleteBranch(branch.id))}
+                onDelete={() => void removeBranch(branch)}
               />
             ))}
           </div>
@@ -346,6 +368,52 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
               <button type="button" className="cs-primary-btn" disabled={busy} onClick={submitDraft}>
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
                 {isAr ? "إنشاء" : "Create"}
+              </button>
+            </footer>
+          </div>
+        </div>
+      ) : null}
+
+      {forceDelete ? (
+        <div className="cs-modal-backdrop" role="dialog" aria-modal="true">
+          <div className="cs-modal">
+            <header>
+              <h3>{isAr ? "حذف الفرع مع سجلاته" : "Delete branch with its records"}</h3>
+              <button type="button" className="cs-icon-btn" onClick={() => setForceDelete(null)} aria-label="close">
+                <X className="h-4 w-4" />
+              </button>
+            </header>
+            <div className="cs-modal-body">
+              <p className="cs-field-wide">
+                {isAr
+                  ? `الفرع "${forceDelete.branch.name_ar}" مرتبط بـ ${forceDelete.subscriptions} اشتراك و ${forceDelete.orders} طلب. الحذف سيؤدي إلى إزالة هذه السجلات نهائيًا. يمكنك بدلًا من ذلك إيقاف الفرع للحفاظ على البيانات.`
+                  : `Branch "${forceDelete.branch.name_en}" has ${forceDelete.subscriptions} subscriptions and ${forceDelete.orders} orders. Deleting it removes those records permanently. You can deactivate the branch instead to keep the data.`}
+              </p>
+            </div>
+            <footer>
+              <button type="button" className="cs-ghost-btn" onClick={() => setForceDelete(null)}>
+                {isAr ? "إلغاء" : "Cancel"}
+              </button>
+              <button
+                type="button"
+                className="cs-ghost-btn"
+                disabled={busy}
+                onClick={() => {
+                  const target = forceDelete.branch;
+                  setForceDelete(null);
+                  void run(() => updateBranch(target.id, { is_active: false }));
+                }}
+              >
+                {isAr ? "إيقاف الفرع" : "Deactivate branch"}
+              </button>
+              <button
+                type="button"
+                className="cs-primary-btn"
+                disabled={busy}
+                onClick={() => void removeBranch(forceDelete.branch, true)}
+              >
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                {isAr ? "حذف نهائي" : "Delete permanently"}
               </button>
             </footer>
           </div>
