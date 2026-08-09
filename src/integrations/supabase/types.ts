@@ -2976,6 +2976,7 @@ export type Database = {
           organization_status: string
         }[]
       }
+      scan_branding: { Args: { _branch_id: string }; Returns: Json }
       scan_device_state: {
         Args: { _branch_id: string; _device_token: string }
         Returns: Json
