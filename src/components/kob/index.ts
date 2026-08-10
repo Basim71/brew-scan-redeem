@@ -20,8 +20,29 @@ export {
   FileUpload,
   OtpInput,
 } from "./Inputs";
+/** Canonical aliases — Date/DateRange pickers and the Switch control. */
+export { DateInput as DatePicker, DateRangeInput as DateRangePicker } from "./Inputs";
 export { Checkbox, Radio, RadioGroup, Toggle } from "./Controls";
+export { Toggle as Switch } from "./Controls";
+export { Alert } from "./Alert";
+export type { AlertTone } from "./Alert";
+export { Icon, ICON_SIZES } from "./Icon";
+export type { IconSize } from "./Icon";
+export {
+  Text,
+  Display,
+  Heading1,
+  Heading2,
+  Heading3,
+  Heading4,
+  Body,
+  BodySmall,
+  Caption,
+  Label as TextLabel,
+} from "./Typography";
+export type { TextProps, TypeVariant, TypeTone } from "./Typography";
 export { Modal, ConfirmDialog } from "./Modal";
+export { Modal as Dialog } from "./Modal";
 export {
   FormDialog,
   InformationDialog,
@@ -30,6 +51,7 @@ export {
   FullScreenDialog,
   SideDrawer,
 } from "./Dialogs";
+export { InformationDialog as InfoDialog, SideDrawer as Drawer } from "./Dialogs";
 export {
   Skeleton,
   SkeletonText,
