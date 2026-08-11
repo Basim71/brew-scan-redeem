@@ -1,5 +1,6 @@
 import { CalendarRange } from "lucide-react";
 
+import { Button, Card, CardBody, CardHeader, DateRangeInput } from "@/components/kob";
 import type { DateRange, PresetKey } from "./types";
 
 const PRESETS: Array<{ key: PresetKey; ar: string; en: string }> = [
@@ -26,51 +27,38 @@ export function DateRangeFilter({
   onRange: (range: DateRange) => void;
 }) {
   return (
-    <section className="an-card an-range">
-      <div className="an-range-head">
-        <CalendarRange className="h-4 w-4" />
-        <span>{isAr ? "الفترة الزمنية" : "Date range"}</span>
-      </div>
-      <div className="an-presets" role="group">
-        {PRESETS.map((item) => (
-          <button
-            key={item.key}
-            type="button"
-            data-active={preset === item.key ? "true" : "false"}
-            onClick={() => onPreset(item.key)}
-          >
-            {isAr ? item.ar : item.en}
-          </button>
-        ))}
-      </div>
-      {preset === "custom" ? (
-        <div className="an-range-inputs">
-          <label>
-            <span>{isAr ? "من" : "From"}</span>
-            <input
-              className="cs-input"
-              type="date"
-              value={range.from}
-              max={range.to}
-              onChange={(event) => onRange({ ...range, from: event.target.value })}
-            />
-          </label>
-          <label>
-            <span>{isAr ? "إلى" : "To"}</span>
-            <input
-              className="cs-input"
-              type="date"
-              value={range.to}
-              min={range.from}
-              onChange={(event) => onRange({ ...range, to: event.target.value })}
-            />
-          </label>
+    <Card>
+      <CardHeader title={isAr ? "الفترة الزمنية" : "Date range"} icon={<CalendarRange className="h-4 w-4" />} />
+      <CardBody>
+        <div className="flex flex-wrap gap-2" role="group">
+          {PRESETS.map((item) => (
+            <Button
+              key={item.key}
+              variant={preset === item.key ? "primary" : "secondary"}
+              size="sm"
+              onClick={() => onPreset(item.key)}
+            >
+              {isAr ? item.ar : item.en}
+            </Button>
+          ))}
         </div>
-      ) : (
-        <p className="an-range-hint">
-          {range.from} — {range.to}
-        </p>
-      )}
-    </section>
+        {preset === "custom" ? (
+          <div className="mt-3">
+            <DateRangeInput
+              fromLabel={isAr ? "من" : "From"}
+              toLabel={isAr ? "إلى" : "To"}
+              from={range.from}
+              to={range.to}
+              onFromChange={(from) => onRange({ ...range, from })}
+              onToChange={(to) => onRange({ ...range, to })}
+            />
+          </div>
+        ) : (
+          <p className="an-range-hint mt-3 text-sm opacity-70">
+            {range.from} — {range.to}
+          </p>
+        )}
+      </CardBody>
+    </Card>
   );
 }

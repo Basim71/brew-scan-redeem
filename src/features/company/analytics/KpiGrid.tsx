@@ -12,6 +12,7 @@ import {
   Users,
 } from "lucide-react";
 
+import { StatCard, StatGrid } from "@/components/kob";
 import type { Kpis } from "./types";
 
 export function KpiGrid({
@@ -59,18 +60,10 @@ export function KpiGrid({
   ];
 
   return (
-    <div className="an-kpi-grid">
+    <StatGrid>
       {items.map((item) => (
-        <article key={item.key} className="an-kpi">
-          <span className="an-kpi-icon" aria-hidden="true">
-            <item.icon className="h-4 w-4" />
-          </span>
-          <div>
-            <small>{item.label}</small>
-            <strong>{item.value}</strong>
-          </div>
-        </article>
+        <StatCard key={item.key} label={item.label} value={item.value} icon={<item.icon className="h-4 w-4" />} />
       ))}
-    </div>
+    </StatGrid>
   );
 }

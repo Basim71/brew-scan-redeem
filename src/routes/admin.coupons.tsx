@@ -1,10 +1,22 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Plus, Loader2, X, Ticket, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Ticket } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { StatusPill } from "@/lib/ui";
 import { useI18n } from "@/lib/i18n";
+import {
+  Button,
+  StatusBadge,
+  type StatusTone,
+  SearchInput,
+  Select,
+  Input,
+  FormDialog,
+  LoadingState,
+  EmptyState,
+  NoResultsState,
+  Pagination,
+} from "@/components/kob";
 
 export const Route = createFileRoute("/admin/coupons")({
   component: CouponsPage,
@@ -25,6 +37,11 @@ type Coupon = {
 
 const PAGE_SIZE = 20;
 const FILTERS: (CouponStatus | "all")[] = ["all", "available", "sold", "expired"];
+const STATUS_TONE: Record<string, StatusTone> = {
+  available: "success",
+  sold: "neutral",
+  expired: "error",
+};
 
 /** Coupon code format: PS-AB12C-DE34 (prefix from plan + 2 random alnum segments) */
 function makeCode(planName: string): string {
@@ -88,8 +105,8 @@ function CouponsPage() {
     setBatchOpen(true);
   }
 
-  async function generate(e: React.FormEvent) {
-    e.preventDefault();
+  async function generate(e?: React.FormEvent) {
+    e?.preventDefault();
     const plan = planMap.get(form.plan_id);
     if (!plan) return toast.error(t("coupons_err_plan"));
     const qty = Number(form.quantity);
@@ -129,9 +146,9 @@ function CouponsPage() {
             <div className="text-[10px] uppercase tracking-widest text-cream-dim">{t("coupons_subtitle")}</div>
           </div>
         </div>
-        <button onClick={openBatch} className="btn-brass px-5 py-2.5 flex items-center gap-2">
-          <Plus className="w-4 h-4" />{t("coupons_new_batch")}
-        </button>
+        <Button onClick={openBatch} leadingIcon={<Plus className="w-4 h-4" />}>
+          {t("coupons_new_batch")}
+        </Button>
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
@@ -149,30 +166,30 @@ function CouponsPage() {
             </button>
           ))}
         </div>
-        <div className="inset-well flex items-center gap-2 px-3 py-2 flex-1 min-w-[220px]">
-          <Search className="w-4 h-4 text-cream-dim" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t("coupons_search")}
-            className="bg-transparent outline-none flex-1 text-sm text-cream placeholder:text-cream-dim"
-          />
+        <div className="flex-1 min-w-[220px]">
+          <SearchInput value={search} onValueChange={setSearch} placeholder={t("coupons_search")} />
         </div>
       </div>
 
       {loading ? (
-        <div className="panel-warm p-12 flex items-center justify-center text-cream-dim">
-          <Loader2 className="w-5 h-5 animate-spin" />
+        <div className="panel-warm p-12">
+          <LoadingState />
         </div>
       ) : rows.length === 0 ? (
-        <div className="panel-warm p-12 text-center">
-          <div className="text-cream-dim text-sm mb-4">{t("coupons_empty")}</div>
-          <button onClick={openBatch} className="btn-brass px-5 py-2.5 inline-flex items-center gap-2">
-            <Plus className="w-4 h-4" />{t("coupons_new_batch")}
-          </button>
+        <div className="panel-warm p-12">
+          <EmptyState
+            description={t("coupons_empty")}
+            action={
+              <Button onClick={openBatch} leadingIcon={<Plus className="w-4 h-4" />}>
+                {t("coupons_new_batch")}
+              </Button>
+            }
+          />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="panel-warm p-12 text-center text-cream-dim text-sm">{t("coupons_empty_filtered")}</div>
+        <div className="panel-warm p-12">
+          <NoResultsState description={t("coupons_empty_filtered")} />
+        </div>
       ) : (
         <>
           <div className="engraved overflow-x-auto">
@@ -196,7 +213,7 @@ function CouponsPage() {
                     <Td>{planMap.get(c.plan_id)?.name ?? "—"}</Td>
                     <Td className="gold-text font-semibold">{fmtNum(Number(c.price))}</Td>
                     <Td>{branchName(c.branch_id)}</Td>
-                    <Td><StatusPill s={c.status} /></Td>
+                    <Td><StatusBadge tone={STATUS_TONE[c.status] ?? "neutral"}>{t(`st_${c.status}` as any)}</StatusBadge></Td>
                     <Td className="text-cream-dim">{fmtDate(c.created_at)}</Td>
                   </tr>
                 ))}
@@ -204,91 +221,54 @@ function CouponsPage() {
             </table>
           </div>
 
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div className="text-xs text-cream-dim">
-                {t("coupons_page_of", { page: fmtNum(page), total: fmtNum(totalPages) })}
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="btn-ghost-brass px-3 py-2 text-sm flex items-center gap-1.5 disabled:opacity-40"
-                >
-                  <ChevronLeft className="w-4 h-4" />{t("coupons_prev")}
-                </button>
-                <button
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  className="btn-ghost-brass px-3 py-2 text-sm flex items-center gap-1.5 disabled:opacity-40"
-                >
-                  {t("coupons_next")}<ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          )}
+          <Pagination page={page} pageCount={totalPages} onPageChange={setPage} total={filtered.length} />
         </>
       )}
 
-      {batchOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
-          onClick={() => !busy && setBatchOpen(false)}
+      <FormDialog
+        open={batchOpen}
+        onClose={() => !busy && setBatchOpen(false)}
+        title={t("coupons_batch_title")}
+        description={t("coupons_batch_hint")}
+        onSubmit={generate}
+        busy={busy}
+        submitLabel={t("coupons_generate")}
+        cancelLabel={t("btn_cancel")}
+      >
+        <Select
+          required
+          label={t("coupons_field_plan")}
+          value={form.plan_id}
+          onChange={(e) => setForm({ ...form, plan_id: e.target.value })}
         >
-          <div className="panel-warm p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            <form onSubmit={generate} className="space-y-4">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="font-display text-2xl font-bold text-cream">{t("coupons_batch_title")}</h2>
-                <button type="button" onClick={() => setBatchOpen(false)}
-                  className="btn-ghost-brass w-9 h-9 flex items-center justify-center">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <p className="text-xs text-cream-dim">{t("coupons_batch_hint")}</p>
+          <option value="">—</option>
+          {plans.map((p) => (
+            <option key={p.id} value={p.id}>{p.name}</option>
+          ))}
+        </Select>
 
-              <label className="block">
-                <div className="text-[10px] uppercase tracking-[0.2em] text-cream-dim mb-1.5">{t("coupons_field_plan")}</div>
-                <select required value={form.plan_id}
-                  onChange={(e) => setForm({ ...form, plan_id: e.target.value })}
-                  className="inset-well w-full px-3 py-2.5 outline-none focus:ring-2 focus:ring-caramel/60">
-                  <option value="">—</option>
-                  {plans.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
-              </label>
+        <Select
+          label={t("coupons_field_branch")}
+          value={form.branch_id}
+          onChange={(e) => setForm({ ...form, branch_id: e.target.value })}
+        >
+          <option value="">{t("coupons_all_branches")}</option>
+          {branches.map((b) => (
+            <option key={b.id} value={b.id}>{lang === "ar" ? b.name_ar : b.name_en}</option>
+          ))}
+        </Select>
 
-              <label className="block">
-                <div className="text-[10px] uppercase tracking-[0.2em] text-cream-dim mb-1.5">{t("coupons_field_branch")}</div>
-                <select value={form.branch_id}
-                  onChange={(e) => setForm({ ...form, branch_id: e.target.value })}
-                  className="inset-well w-full px-3 py-2.5 outline-none focus:ring-2 focus:ring-caramel/60">
-                  <option value="">{t("coupons_all_branches")}</option>
-                  {branches.map((b) => (
-                    <option key={b.id} value={b.id}>{lang === "ar" ? b.name_ar : b.name_en}</option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="block">
-                <div className="text-[10px] uppercase tracking-[0.2em] text-cream-dim mb-1.5">{t("coupons_field_quantity")}</div>
-                <input required type="number" min={1} max={500} step={1} value={form.quantity}
-                  onChange={(e) => setForm({ ...form, quantity: e.target.value })}
-                  className="inset-well w-full px-3 py-2.5 outline-none focus:ring-2 focus:ring-caramel/60" />
-              </label>
-
-              <div className="flex gap-2 pt-2">
-                <button type="button" onClick={() => setBatchOpen(false)} disabled={busy}
-                  className="btn-ghost-brass flex-1 py-3">{t("btn_cancel")}</button>
-                <button disabled={busy} className="btn-brass flex-1 py-3 flex items-center justify-center gap-2">
-                  {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                  {t("coupons_generate")}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+        <Input
+          required
+          type="number"
+          min={1}
+          max={500}
+          step={1}
+          label={t("coupons_field_quantity")}
+          value={form.quantity}
+          onChange={(e) => setForm({ ...form, quantity: e.target.value })}
+        />
+      </FormDialog>
     </div>
   );
 }

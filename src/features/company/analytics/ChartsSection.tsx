@@ -14,6 +14,7 @@ import {
   YAxis,
 } from "recharts";
 
+import { Card, CardHeader, CardBody } from "@/components/kob";
 import type { SeriesPoint } from "./derive";
 
 const PIE_COLORS = ["#c98745", "#8a5a24", "#d9ab6a", "#6f4e39", "#e0c48f", "#a97142"];
@@ -28,16 +29,14 @@ const TOOLTIP = {
 
 function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="an-card an-chart-card">
-      <header className="an-chart-head">
-        <h3>{title}</h3>
-      </header>
-      <div className="an-chart-body">
+    <Card className="an-chart-card">
+      <CardHeader title={title} />
+      <CardBody className="an-chart-body">
         <ResponsiveContainer width="100%" height="100%">
           {children as any}
         </ResponsiveContainer>
-      </div>
-    </section>
+      </CardBody>
+    </Card>
   );
 }
 

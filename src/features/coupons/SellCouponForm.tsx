@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Loader2, Ticket, ShoppingCart } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
+import { Button, Select, Input, DateInput, LoadingState, ConfirmDialog } from "@/components/kob";
 
 type Coupon = {
   id: string; code: string; plan_id: string; branch_id: string | null; price: number;
@@ -168,65 +169,69 @@ export function SellCouponForm({ cashierBranchId }: { cashierBranchId?: string |
 
       <form onSubmit={submit} className="panel-warm p-6 space-y-4 max-w-xl">
         {loading ? (
-          <div className="flex items-center justify-center py-12 text-cream-dim">
-            <Loader2 className="w-5 h-5 animate-spin" />
-          </div>
+          <LoadingState />
         ) : (
           <>
-            <Field label={t("sell_field_coupon")}>
-              <div className="inset-well flex items-center gap-2 px-3">
-                <Ticket className="w-4 h-4 text-cream-dim shrink-0" />
-                <select required value={form.coupon_id}
-                  onChange={(e) => setForm({ ...form, coupon_id: e.target.value, branch_id: "" })}
-                  className="w-full bg-transparent py-2.5 outline-none text-cream">
-                  <option value="">{coupons.length === 0 ? t("sell_no_available") : t("sell_pick_coupon")}</option>
-                  {coupons.map((c) => {
-                    const plan = planMap.get(c.plan_id);
-                    const branch = c.branch_id ? branchMap.get(c.branch_id) : null;
-                    const branchLabel = branch ? (lang === "ar" ? branch.name_ar : branch.name_en) : t("coupons_any_branch");
-                    return (
-                      <option key={c.id} value={c.id}>
-                        {c.code} · {plan?.name ?? "—"} · {branchLabel}
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
-            </Field>
+            <Select
+              required
+              label={t("sell_field_coupon")}
+              value={form.coupon_id}
+              onChange={(e) => setForm({ ...form, coupon_id: e.target.value, branch_id: "" })}
+            >
+              <option value="">{coupons.length === 0 ? t("sell_no_available") : t("sell_pick_coupon")}</option>
+              {coupons.map((c) => {
+                const plan = planMap.get(c.plan_id);
+                const branch = c.branch_id ? branchMap.get(c.branch_id) : null;
+                const branchLabel = branch ? (lang === "ar" ? branch.name_ar : branch.name_en) : t("coupons_any_branch");
+                return (
+                  <option key={c.id} value={c.id}>
+                    {c.code} · {plan?.name ?? "—"} · {branchLabel}
+                  </option>
+                );
+              })}
+            </Select>
 
             {needsBranchPick && (
-              <Field label={t("sell_field_branch")}>
-                <select required value={form.branch_id}
-                  onChange={(e) => setForm({ ...form, branch_id: e.target.value })}
-                  className="inset-well w-full px-3 py-2.5 outline-none">
-                  <option value="">{t("sell_pick_branch")}</option>
-                  {branches.map((b) => (
-                    <option key={b.id} value={b.id}>{lang === "ar" ? b.name_ar : b.name_en}</option>
-                  ))}
-                </select>
-              </Field>
+              <Select
+                required
+                label={t("sell_field_branch")}
+                value={form.branch_id}
+                onChange={(e) => setForm({ ...form, branch_id: e.target.value })}
+              >
+                <option value="">{t("sell_pick_branch")}</option>
+                {branches.map((b) => (
+                  <option key={b.id} value={b.id}>{lang === "ar" ? b.name_ar : b.name_en}</option>
+                ))}
+              </Select>
             )}
 
-            <Field label={t("sell_field_customer")}>
-              <input required maxLength={100} value={form.customer_name}
-                onChange={(e) => setForm({ ...form, customer_name: e.target.value })}
-                className="inset-well w-full px-3 py-2.5 outline-none focus:ring-2 focus:ring-caramel/60" />
-            </Field>
+            <Input
+              required
+              maxLength={100}
+              label={t("sell_field_customer")}
+              value={form.customer_name}
+              onChange={(e) => setForm({ ...form, customer_name: e.target.value })}
+            />
 
-            <Field label={t("sell_field_phone")}>
-              <input required inputMode="numeric" pattern="05\d{8}" maxLength={10}
-                placeholder="05XXXXXXXX"
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, "").slice(0, 10) })}
-                className="inset-well w-full px-3 py-2.5 outline-none font-mono focus:ring-2 focus:ring-caramel/60" />
-              <div className="text-[10px] text-cream-dim mt-1">{t("sell_phone_hint")}</div>
-            </Field>
+            <Input
+              required
+              inputMode="numeric"
+              pattern="05\d{8}"
+              maxLength={10}
+              placeholder="05XXXXXXXX"
+              label={t("sell_field_phone")}
+              hint={t("sell_phone_hint")}
+              className="font-mono"
+              value={form.phone}
+              onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, "").slice(0, 10) })}
+            />
 
-            <Field label={t("sell_field_start")}>
-              <input required type="date" value={form.start_date}
-                onChange={(e) => setForm({ ...form, start_date: e.target.value })}
-                className="inset-well w-full px-3 py-2.5 outline-none focus:ring-2 focus:ring-caramel/60" />
-            </Field>
+            <DateInput
+              required
+              label={t("sell_field_start")}
+              value={form.start_date}
+              onChange={(e) => setForm({ ...form, start_date: e.target.value })}
+            />
 
             {selectedPlan && endDate && (
               <div className="engraved p-3 flex items-center justify-between text-xs">
@@ -235,42 +240,29 @@ export function SellCouponForm({ cashierBranchId }: { cashierBranchId?: string |
               </div>
             )}
 
-            <button disabled={busy || coupons.length === 0}
-              className="btn-brass w-full py-3 flex items-center justify-center gap-2 disabled:opacity-50">
-              {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShoppingCart className="w-4 h-4" />}
+            <Button
+              type="submit"
+              block
+              disabled={coupons.length === 0}
+              loading={busy}
+              leadingIcon={<ShoppingCart className="w-4 h-4" />}
+            >
               {t("sell_btn")}
-            </button>
+            </Button>
           </>
         )}
       </form>
 
-      {confirmAdd && (
-        <div className="kob-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4"
-          onClick={() => !busy && setConfirmAdd(false)}>
-          <div className="panel-warm p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            <h2 className="font-display text-xl font-bold text-cream mb-2">{t("sell_active_title")}</h2>
-            <p className="text-cream-dim text-sm mb-5">{t("sell_active_body")}</p>
-            <div className="flex gap-2">
-              <button onClick={() => setConfirmAdd(false)} disabled={busy}
-                className="btn-ghost-brass flex-1 py-3">{t("btn_cancel")}</button>
-              <button onClick={doSell} disabled={busy}
-                className="btn-brass flex-1 py-3 flex items-center justify-center gap-2">
-                {busy && <Loader2 className="w-4 h-4 animate-spin" />}
-                {t("sell_add_another")}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        open={confirmAdd}
+        title={t("sell_active_title")}
+        description={t("sell_active_body")}
+        cancelLabel={t("btn_cancel")}
+        confirmLabel={t("sell_add_another")}
+        busy={busy}
+        onCancel={() => setConfirmAdd(false)}
+        onConfirm={doSell}
+      />
     </div>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <div className="text-[10px] uppercase tracking-[0.2em] text-cream-dim mb-1.5">{label}</div>
-      {children}
-    </label>
   );
 }

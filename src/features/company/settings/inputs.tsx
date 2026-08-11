@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
+import { Input, Textarea } from "@/components/kob";
+
 export function translateError(code: string | undefined, isAr: boolean): string {
   const map: Record<string, [string, string]> = {
     settings_invalid_currency: ["العملة غير صحيحة", "Invalid currency code"],
@@ -51,11 +53,14 @@ export function TextInput({
     onCommit(next);
   };
 
+  const hint = !error && local !== value ? (isAr ? "سيتم الحفظ تلقائيًا…" : "Saves automatically…") : undefined;
+
   const shared = {
-    className: "cs-input",
     value: local,
     disabled,
     placeholder,
+    error,
+    hint,
     onChange: (e: any) => {
       const next = e.target.value as string;
       setLocal(next);
@@ -68,15 +73,7 @@ export function TextInput({
     },
   };
 
-  return (
-    <>
-      {multiline ? <textarea rows={2} {...shared} /> : <input type={type} {...shared} />}
-      {error ? <span className="cs-error">{error}</span> : null}
-      {!error && local !== value ? (
-        <span className="cs-hint">{isAr ? "سيتم الحفظ تلقائيًا…" : "Saves automatically…"}</span>
-      ) : null}
-    </>
-  );
+  return multiline ? <Textarea rows={2} {...shared} /> : <Input type={type} {...shared} />;
 }
 
 export function NumberInput({

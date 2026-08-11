@@ -7,14 +7,12 @@ import {
   useMemo,
   useState,
   type FormEvent,
-  type ReactNode,
 } from "react";
 import {
   ArrowLeft,
   Check,
   Clock,
   Coffee,
-  Loader2,
   UserPlus,
   XCircle,
 } from "lucide-react";
@@ -1176,19 +1174,19 @@ function ScanPage() {
                 : "Your details were sent to the cashier. Once your subscription is activated, scan the QR code again and enter your phone number."}
             </p>
 
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              className="mt-6"
               onClick={() => {
                 setError(null);
                 setInfo(null);
                 setStep("phone");
               }}
-              className="btn-ghost-brass mt-6 px-5 py-3"
             >
               {lang === "ar"
                 ? "فحص حالة الاشتراك"
                 : "Check Subscription Status"}
-            </button>
+            </Button>
           </section>
         )}
 
@@ -1232,38 +1230,15 @@ function ScanPage() {
               }}
               className="space-y-4"
             >
-              <PhoneField
-                value={phone}
-                language={lang}
-                onChange={setPhone}
-                large
-              />
+              <KobPhoneInput value={phone} onValueChange={setPhone} />
 
-              {error && (
-                <ErrorBox
-                  message={error}
-                />
-              )}
+              {error && <Alert tone="danger">{error}</Alert>}
 
-              {info && (
-                <InfoBox
-                  message={info}
-                />
-              )}
+              {info && <Alert tone="info">{info}</Alert>}
 
-              <button
-                type="submit"
-                disabled={busy}
-                className="btn-brass flex w-full items-center justify-center gap-2 py-4"
-              >
-                {busy && (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                )}
-
-                <span>
-                  {t("lookup")}
-                </span>
-              </button>
+              <Button type="submit" block size="lg" loading={busy}>
+                {t("lookup")}
+              </Button>
             </form>
           </section>
         )}
@@ -1368,9 +1343,7 @@ function ScanPage() {
 
               {error && (
                 <div className="mx-auto mt-4 max-w-sm">
-                  <ErrorBox
-                    message={error}
-                  />
+                  <Alert tone="danger">{error}</Alert>
                 </div>
               )}
             </section>
@@ -1434,22 +1407,14 @@ function ScanPage() {
               </>
             )}
 
-            {orderStatus !==
-              "pending" && (
-              <button
-                type="button"
-                onClick={
-                  resetOrderScreen
-                }
-                className="btn-ghost-brass mt-6 px-5 py-2.5 text-sm"
-              >
-                {orderStatus ===
-                "approved"
+            {orderStatus !== "pending" && (
+              <Button variant="ghost" size="sm" className="mt-6" onClick={resetOrderScreen}>
+                {orderStatus === "approved"
                   ? lang === "ar"
                     ? "العودة للاشتراك"
                     : "Back to Subscription"
                   : t("newOrder")}
-              </button>
+              </Button>
             )}
           </section>
         )}
@@ -1478,117 +1443,15 @@ function BackButton({
   label: string;
 }) {
   return (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
+      size="sm"
+      className="mb-4 -ms-2"
+      leadingIcon={<ArrowLeft className="h-3.5 w-3.5" />}
       onClick={onClick}
-      className="mb-4 flex items-center gap-1 text-xs text-cream-dim transition hover:text-caramel-bright"
     >
-      <ArrowLeft className="h-3.5 w-3.5" />
-
-      <span>
-        {label}
-      </span>
-    </button>
-  );
-}
-
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-1.5 block text-[10px] uppercase tracking-[0.2em] text-cream-dim">
-        {label}
-      </span>
-
-      {children}
-    </label>
-  );
-}
-
-type PhoneFieldProps = {
-  value: string;
-  language:
-    | "ar"
-    | "en";
-  onChange: (
-    value: string,
-  ) => void;
-  large?: boolean;
-};
-
-function PhoneField({
-  value,
-  language,
-  onChange,
-  large = false,
-}: PhoneFieldProps) {
-  const input = (
-    <input
-      type="tel"
-      value={value}
-      required
-      inputMode="numeric"
-      autoComplete="tel"
-      maxLength={10}
-      placeholder="05XXXXXXXX"
-      onChange={(event) => {
-        onChange(
-          normalizePhone(
-            event.target.value,
-          ),
-        );
-      }}
-      className={
-        large
-          ? "inset-well w-full px-4 py-4 text-center font-mono text-lg tracking-widest outline-none focus:ring-2 focus:ring-caramel/60"
-          : "inset-well w-full px-4 py-3 text-center font-mono tracking-widest outline-none focus:ring-2 focus:ring-caramel/60"
-      }
-    />
-  );
-
-  if (large) {
-    return input;
-  }
-
-  return (
-    <Field
-      label={
-        language === "ar"
-          ? "رقم الجوال"
-          : "Phone number"
-      }
-    >
-      {input}
-    </Field>
-  );
-}
-
-function ErrorBox({
-  message,
-}: {
-  message: string;
-}) {
-  return (
-    <div className="engraved p-3 text-center text-sm text-[oklch(0.78_0.16_32)]">
-      {message}
-    </div>
-  );
-}
-
-function InfoBox({
-  message,
-}: {
-  message: string;
-}) {
-  return (
-    <div className="rounded-xl border border-caramel/25 bg-caramel/10 p-3 text-center text-sm text-cream">
-      {message}
-    </div>
+      {label}
+    </Button>
   );
 }
 
