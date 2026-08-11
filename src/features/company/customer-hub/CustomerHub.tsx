@@ -298,17 +298,12 @@ export function CustomerHub() {
             description={isAr ? "لا توجد نتائج تطابق عوامل التصفية." : "No customers match your filters."}
           />
         ) : view === "table" ? (
-          <div onClick={(e) => {
-            const tr = (e.target as HTMLElement).closest("tr[data-row-id]");
-            if (tr) setSelectedId(tr.getAttribute("data-row-id"));
-          }}>
-            <DataTable
-              columns={columns}
-              rows={filteredSorted}
-              rowKey={(a) => a.customer.id}
-              caption={isAr ? "العملاء" : "Customers"}
-            />
-          </div>
+          <DataTable
+            columns={columns}
+            rows={filteredSorted}
+            rowKey={(a) => a.customer.id}
+            caption={isAr ? "العملاء" : "Customers"}
+          />
         ) : (
           <div className="hub-grid-view">
             {filteredSorted.map((a) => (
