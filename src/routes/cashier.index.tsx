@@ -1210,39 +1210,23 @@ function CoffeeOrderCard({
       )}
 
       <div className="cashier-card-actions">
-        <button
-          type="button"
+        <Button
+          variant="danger"
           disabled={busy}
           onClick={onReject}
-          className="cashier-reject-button"
+          leadingIcon={<X className="h-4 w-4" />}
         >
-          <X className="h-4 w-4" />
+          {language === "ar" ? "رفض" : "Reject"}
+        </Button>
 
-          <span>
-            {language === "ar"
-              ? "رفض"
-              : "Reject"}
-          </span>
-        </button>
-
-        <button
-          type="button"
+        <Button
+          loading={busy}
           disabled={busy}
           onClick={onApprove}
-          className="btn-brass cashier-approve-button"
+          leadingIcon={!busy ? <Check className="h-4 w-4" /> : undefined}
         >
-          {busy ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Check className="h-4 w-4" />
-          )}
-
-          <span>
-            {language === "ar"
-              ? "قبول الطلب"
-              : "Approve Order"}
-          </span>
-        </button>
+          {language === "ar" ? "قبول الطلب" : "Approve Order"}
+        </Button>
       </div>
     </article>
   );
@@ -1365,7 +1349,7 @@ function RegistrationCard({
               : "Coupon and Plan"}
           </span>
 
-          <select
+          <Select
             value={
               selectedCoupon
             }
@@ -1376,7 +1360,6 @@ function RegistrationCard({
                   .value,
               );
             }}
-            className="inset-well cashier-control"
           >
             <option value="">
               {language === "ar"
@@ -1415,7 +1398,7 @@ function RegistrationCard({
                 );
               },
             )}
-          </select>
+          </Select>
         </label>
 
         <label className="cashier-form-field">
@@ -1425,8 +1408,7 @@ function RegistrationCard({
               : "Start Date"}
           </span>
 
-          <input
-            type="date"
+          <DateInput
             value={
               selectedStartDate
             }
@@ -1437,7 +1419,6 @@ function RegistrationCard({
                   .value,
               );
             }}
-            className="inset-well cashier-control"
           />
         </label>
       </div>
@@ -1452,42 +1433,26 @@ function RegistrationCard({
       )}
 
       <div className="cashier-card-actions">
-        <button
-          type="button"
+        <Button
+          variant="danger"
           disabled={busy}
           onClick={onReject}
-          className="cashier-reject-button"
+          leadingIcon={<X className="h-4 w-4" />}
         >
-          <X className="h-4 w-4" />
+          {language === "ar" ? "رفض" : "Reject"}
+        </Button>
 
-          <span>
-            {language === "ar"
-              ? "رفض"
-              : "Reject"}
-          </span>
-        </button>
-
-        <button
-          type="button"
+        <Button
+          loading={busy}
           disabled={
             busy ||
             !selectedCoupon
           }
           onClick={onActivate}
-          className="btn-brass cashier-approve-button"
+          leadingIcon={!busy ? <Check className="h-4 w-4" /> : undefined}
         >
-          {busy ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Check className="h-4 w-4" />
-          )}
-
-          <span>
-            {language === "ar"
-              ? "تفعيل الاشتراك"
-              : "Activate Subscription"}
-          </span>
-        </button>
+          {language === "ar" ? "تفعيل الاشتراك" : "Activate Subscription"}
+        </Button>
       </div>
     </article>
   );
@@ -1576,19 +1541,11 @@ function EmptyQueue({
   }
 
   return (
-    <div className="cashier-empty-state">
-      <div className="cashier-empty-icon">
-        <Inbox className="h-8 w-8" />
-      </div>
-
-      <h3>
-        {title}
-      </h3>
-
-      <p>
-        {description}
-      </p>
-    </div>
+    <EmptyState
+      icon={<Inbox className="h-8 w-8" />}
+      title={title}
+      description={description}
+    />
   );
 }
 

@@ -7,9 +7,7 @@ import {
   ClipboardList,
   CreditCard,
   Globe2,
-  Loader2,
   Plug,
-  Search as SearchIcon,
   Settings2,
   ShieldCheck,
   ShoppingBag,
@@ -18,7 +16,7 @@ import {
   WalletCards,
 } from "lucide-react";
 
-import { PageHeader, Select, SearchInput, WarningCard } from "@/components/kob";
+import { ErrorState, Input, LoadingState, PageHeader, Select, SearchInput, WarningCard } from "@/components/kob";
 import { useI18n } from "@/lib/i18n";
 import { useOrganization, type OrganizationRole } from "@/providers/OrganizationProvider";
 import {
