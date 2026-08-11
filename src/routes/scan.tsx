@@ -1110,89 +1110,49 @@ function ScanPage() {
               }
               className="space-y-4"
             >
-              <Field
-                label={
-                  lang === "ar"
-                    ? "الاسم الأول"
-                    : "First name"
-                }
-              >
-                <input
-                  type="text"
-                  value={
-                    firstName
-                  }
-                  required
-                  maxLength={50}
-                  autoComplete="given-name"
-                  onChange={(
-                    event,
-                  ) => {
-                    setFirstName(
-                      event.target
-                        .value,
-                    );
-                  }}
-                  className="inset-well w-full px-4 py-3 outline-none focus:ring-2 focus:ring-caramel/60"
-                />
-              </Field>
-
-              <Field
-                label={
-                  lang === "ar"
-                    ? "الاسم الأخير"
-                    : "Last name"
-                }
-              >
-                <input
-                  type="text"
-                  value={
-                    lastName
-                  }
-                  required
-                  maxLength={50}
-                  autoComplete="family-name"
-                  onChange={(
-                    event,
-                  ) => {
-                    setLastName(
-                      event.target
-                        .value,
-                    );
-                  }}
-                  className="inset-well w-full px-4 py-3 outline-none focus:ring-2 focus:ring-caramel/60"
-                />
-              </Field>
-
-              <PhoneField
-                value={phone}
-                language={lang}
-                onChange={setPhone}
+              <KobInput
+                label={lang === "ar" ? "الاسم الأول" : "First name"}
+                type="text"
+                value={firstName}
+                required
+                maxLength={50}
+                autoComplete="given-name"
+                onChange={(event) => {
+                  setFirstName(event.target.value);
+                }}
               />
 
-              {error && (
-                <ErrorBox
-                  message={error}
-                />
-              )}
+              <KobInput
+                label={lang === "ar" ? "الاسم الأخير" : "Last name"}
+                type="text"
+                value={lastName}
+                required
+                maxLength={50}
+                autoComplete="family-name"
+                onChange={(event) => {
+                  setLastName(event.target.value);
+                }}
+              />
 
-              <button
+              <KobPhoneInput
+                label={lang === "ar" ? "رقم الجوال" : "Phone number"}
+                value={phone}
+                onValueChange={setPhone}
+              />
+
+              {error && <Alert tone="danger">{error}</Alert>}
+
+              <Button
                 type="submit"
-                disabled={busy}
-                className="btn-brass flex w-full items-center justify-center gap-2 py-4"
+                block
+                size="lg"
+                loading={busy}
+                leadingIcon={<UserPlus className="h-4 w-4" />}
               >
-                {busy ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <UserPlus className="h-4 w-4" />
-                )}
-
-                <span>
-                  {lang === "ar"
-                    ? "إرسال طلب التسجيل"
-                    : "Send Registration Request"}
-                </span>
-              </button>
+                {lang === "ar"
+                  ? "إرسال طلب التسجيل"
+                  : "Send Registration Request"}
+              </Button>
             </form>
           </section>
         )}

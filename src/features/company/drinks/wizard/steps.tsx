@@ -1,6 +1,7 @@
 import { useRef, useState, type DragEvent } from "react";
 import { Check, Copy, GripVertical, ImagePlus, Plus, Trash2, X } from "lucide-react";
 
+import { Button, FileUpload, Input } from "@/components/kob";
 import { ALLERGEN_CARDS, DRINK_CATEGORIES, GROUP_TEMPLATES, newKey } from "../constants";
 import type { DrinkDraft, GroupDraft, IntensityLevel, TemperatureMode } from "../types";
 import { LivePreview } from "./LivePreview";

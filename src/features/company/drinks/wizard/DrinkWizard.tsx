@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, Check, Loader2, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 
+import { Button, IconButton, Modal } from "@/components/kob";
 import { emptyDraft } from "../constants";
 import { saveDrinkDraft, uploadDrinkImage } from "../service";
 import type { DrinkDraft } from "../types";
@@ -106,91 +107,70 @@ export function DrinkWizard({ initialDraft, lastUpdated, onClose, onSaved }: Pro
   const updatedLabel = relativeTime(lastUpdated);
 
   return (
-    <div className="ds-modal-overlay" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <section className="ds-modal" role="dialog" aria-modal="true" aria-label={editingLabel}>
-        <header className="ds-modal-header">
-          <div>
-            <h2>{editingLabel}</h2>
-            <p>{updatedLabel ? `Last updated ${updatedLabel}` : "Build the drink customers will see."}</p>
-          </div>
-          <div className="ds-modal-header-side">
-            <button type="button" className="ds-icon-button" onClick={onClose} aria-label="Close">
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        </header>
-
-        <ol className="ds-progress">
-          {STEPS.map((label, index) => (
-            <li key={label} data-state={index === step ? "current" : index < step ? "done" : "todo"}>
-              <button type="button" onClick={() => goTo(index)} aria-current={index === step ? "step" : undefined}>
-                <span>{index < step ? <Check className="h-3 w-3" /> : index + 1}</span>
-                {label}
-              </button>
-            </li>
-          ))}
-        </ol>
-
-        <div className="ds-modal-body">
-          <div className="ds-modal-main" data-step={step}>
-            <div className="ds-step-shell">
-              <div className="ds-step-heading">
-                <h3>{STEP_META[step].title}</h3>
-                <p>{STEP_META[step].description}</p>
-              </div>
-              {error && <div className="ds-error">{error}</div>}
-              {step === 0 && <IdentityStep draft={draft} patch={patch} />}
-              {step === 1 && <VisualStep draft={draft} patch={patch} onPickFile={pickFile} uploading={uploading} />}
-              {step === 2 && <NutritionStep draft={draft} patch={patch} />}
-              {step === 3 && <AllergensStep draft={draft} patch={patch} />}
-              {step === 4 && <OptionsStep draft={draft} patch={patch} />}
-            </div>
-          </div>
-          <aside className="ds-modal-side">
-            <span className="ds-side-title">Live preview</span>
-            <LivePreview draft={draft} />
-          </aside>
-        </div>
-
-        <footer className="ds-modal-footer">
-          <button
-            type="button"
-            className="ds-nav-button ds-nav-button--back"
+    <Modal
+      open
+      onClose={onClose}
+      title={editingLabel}
+      description={updatedLabel ? `Last updated ${updatedLabel}` : "Build the drink customers will see."}
+      size="lg"
+      footer={
+        <>
+          <IconButton
+            label="Previous step"
+            variant="ghost"
             disabled={step === 0}
             onClick={() => goTo(step - 1)}
-            aria-label="Previous step"
-            title="Previous step"
           >
             <ArrowLeft className="h-5 w-5" />
-          </button>
+          </IconButton>
           <div className="ds-footer-actions">
-            <button
-              type="button"
-              className="btn-ghost-brass px-5 py-2.5"
-              disabled={busy}
-              onClick={() => void save(false)}
-            >
+            <Button variant="ghost" disabled={busy} onClick={() => void save(false)}>
               Save Draft
-            </button>
+            </Button>
             {step < STEPS.length - 1 ? (
-              <button
-                type="button"
-                className="ds-nav-button ds-nav-button--next"
-                onClick={() => goTo(step + 1)}
-                aria-label="Next step"
-                title="Next step"
-              >
+              <IconButton label="Next step" variant="secondary" onClick={() => goTo(step + 1)}>
                 <ArrowRight className="h-5 w-5" />
-              </button>
+              </IconButton>
             ) : (
-              <button type="button" className="btn-brass px-6 py-2.5" disabled={busy} onClick={() => void save(true)}>
-                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+              <Button variant="gold" loading={busy} leadingIcon={<Check className="h-4 w-4" />} onClick={() => void save(true)}>
                 Publish Drink
-              </button>
+              </Button>
             )}
           </div>
-        </footer>
-      </section>
-    </div>
+        </>
+      }
+    >
+      <ol className="ds-progress">
+        {STEPS.map((label, index) => (
+          <li key={label} data-state={index === step ? "current" : index < step ? "done" : "todo"}>
+            <button type="button" onClick={() => goTo(index)} aria-current={index === step ? "step" : undefined}>
+              <span>{index < step ? <Check className="h-3 w-3" /> : index + 1}</span>
+              {label}
+            </button>
+          </li>
+        ))}
+      </ol>
+
+      <div className="ds-modal-body">
+        <div className="ds-modal-main" data-step={step}>
+          <div className="ds-step-shell">
+            <div className="ds-step-heading">
+              <h3>{STEP_META[step].title}</h3>
+              <p>{STEP_META[step].description}</p>
+            </div>
+            {error && <div className="ds-error">{error}</div>}
+            {step === 0 && <IdentityStep draft={draft} patch={patch} />}
+            {step === 1 && <VisualStep draft={draft} patch={patch} onPickFile={pickFile} uploading={uploading} />}
+            {step === 2 && <NutritionStep draft={draft} patch={patch} />}
+            {step === 3 && <AllergensStep draft={draft} patch={patch} />}
+            {step === 4 && <OptionsStep draft={draft} patch={patch} />}
+          </div>
+        </div>
+        <aside className="ds-modal-side">
+          <span className="ds-side-title">Live preview</span>
+          <LivePreview draft={draft} />
+        </aside>
+      </div>
+    </Modal>
   );
 }
