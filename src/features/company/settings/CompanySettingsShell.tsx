@@ -7,9 +7,7 @@ import {
   ClipboardList,
   CreditCard,
   Globe2,
-  Loader2,
   Plug,
-  Search as SearchIcon,
   Settings2,
   ShieldCheck,
   ShoppingBag,
@@ -18,6 +16,7 @@ import {
   WalletCards,
 } from "lucide-react";
 
+import { ErrorState, Input, LoadingState, PageHeader, Select, SearchInput, WarningCard } from "@/components/kob";
 import { useI18n } from "@/lib/i18n";
 import { useOrganization, type OrganizationRole } from "@/providers/OrganizationProvider";
 import {
@@ -39,6 +38,7 @@ import { listBranches } from "@/services/company/branches.service";
 import { useCompanySettings } from "./useCompanySettings";
 import { LogoUploader } from "./LogoUploader";
 import { Card, CheckChip, Row, SaveIndicator, Segmented, Toggle, type SaveState } from "./parts";
+import { NumberInput, TextInput, translateError } from "./inputs";
 import { CustomerExperienceSection } from "./CustomerExperience";
 import { NotificationsSection } from "./NotificationsSection";
 import { EmployeeManagementSection } from "./EmployeeManagement";
@@ -295,37 +295,32 @@ export function CompanySettingsShell() {
 
   return (
     <div className="cs-shell" dir={isAr ? "rtl" : "ltr"}>
-      <header className="cs-header">
-        <div>
-          <span className="cs-eyebrow">{isAr ? "لوحة الشركة" : "Company"}</span>
-          <h1>{isAr ? "مركز إدارة الشركة" : "Company Administration"}</h1>
-          <p>
-            {isAr
-              ? "مصدر واحد لكل إعدادات الشركة — كل تغيير يُحفظ فورًا ويُطبَّق على النظام بالكامل."
-              : "One source of truth for company configuration — every change saves instantly and applies everywhere."}
-          </p>
-        </div>
-        <SaveIndicator state={saveState} lang={isAr ? "ar" : "en"} message={saveMessage} />
-      </header>
+      <PageHeader
+        eyebrow={isAr ? "لوحة الشركة" : "Company"}
+        title={isAr ? "مركز إدارة الشركة" : "Company Administration"}
+        description={
+          isAr
+            ? "مصدر واحد لكل إعدادات الشركة — كل تغيير يُحفظ فورًا ويُطبَّق على النظام بالكامل."
+            : "One source of truth for company configuration — every change saves instantly and applies everywhere."
+        }
+        action={<SaveIndicator state={saveState} lang={isAr ? "ar" : "en"} message={saveMessage} />}
+      />
 
       {!canEdit ? (
-        <div className="cs-readonly">
+        <WarningCard>
           {isAr
             ? "لديك صلاحية عرض فقط. تعديل إعدادات الشركة متاح لمالك الشركة والمشرفين."
             : "You have read-only access. Only company owners and admins can edit settings."}
-        </div>
+        </WarningCard>
       ) : null}
 
       <div className="cs-layout">
         <nav className="cs-nav" aria-label={isAr ? "أقسام الإعدادات" : "Settings sections"}>
-          <label className="cs-nav-search">
-            <SearchIcon className="h-3.5 w-3.5" />
-            <input
-              value={navQuery}
-              placeholder={isAr ? "ابحث في الإعدادات" : "Search settings"}
-              onChange={(event) => setNavQuery(event.target.value)}
-            />
-          </label>
+          <SearchInput
+            value={navQuery}
+            onValueChange={setNavQuery}
+            placeholder={isAr ? "ابحث في الإعدادات" : "Search settings"}
+          />
           {GROUPS.map((group) => {
             const items = navItems.filter((item) => item.group === group.key);
             if (!items.length) return null;
@@ -364,11 +359,9 @@ export function CompanySettingsShell() {
             </div>
           ) : null}
           {isLoading ? (
-            <div className="cs-loading">
-              <Loader2 className="h-5 w-5 animate-spin" />
-            </div>
+            <LoadingState />
           ) : error ? (
-            <div className="cs-error-panel">{error.message}</div>
+            <ErrorState description={error.message} />
           ) : settings ? (
             <SectionBody
               section={section}
@@ -385,116 +378,6 @@ export function CompanySettingsShell() {
         </div>
       </div>
     </div>
-  );
-}
-
-function translateError(code: string | undefined, isAr: boolean): string {
-  const map: Record<string, [string, string]> = {
-    settings_invalid_currency: ["العملة غير صحيحة", "Invalid currency code"],
-    settings_invalid_tax: ["نسبة الضريبة غير صحيحة", "Tax percentage must be 0–100"],
-    settings_no_payment_method: ["يجب تفعيل وسيلة دفع واحدة على الأقل", "At least one payment method is required"],
-    settings_default_payment_not_enabled: [
-      "وسيلة الدفع الافتراضية غير مفعّلة",
-      "Default payment method must be enabled",
-    ],
-    settings_invalid_bonus_days: ["أيام المكافأة غير صحيحة", "Bonus days must be 0–365"],
-    settings_invalid_prep_time: ["مدة التحضير غير صحيحة", "Preparation time must be 0–240 minutes"],
-    settings_invalid_session_timeout: ["مدة الجلسة غير صحيحة", "Session timeout must be 15–10080 minutes"],
-    cannot_demote_last_owner: ["لا يمكن تنزيل آخر مالك", "Cannot demote the last owner"],
-  };
-  if (code && map[code]) return isAr ? map[code]![0] : map[code]![1];
-  return code || (isAr ? "تعذر الحفظ" : "Could not save");
-}
-
-/* ------------------------------------------------------------------ inputs */
-
-function TextInput({
-  value,
-  onCommit,
-  validate,
-  disabled,
-  type = "text",
-  placeholder,
-  isAr,
-}: {
-  value: string;
-  onCommit: (value: string) => void;
-  validate?: (value: string) => string | null;
-  disabled?: boolean;
-  type?: string;
-  placeholder?: string;
-  isAr: boolean;
-}) {
-  const [local, setLocal] = useState(value);
-  const [error, setError] = useState<string | null>(null);
-  const timer = useRef<number | null>(null);
-
-  useEffect(() => setLocal(value), [value]);
-
-  const push = (next: string) => {
-    const message = validate ? validate(next) : null;
-    setError(message);
-    if (message) return;
-    if (next === value) return;
-    onCommit(next);
-  };
-
-  return (
-    <>
-      <input
-        className="cs-input"
-        type={type}
-        value={local}
-        disabled={disabled}
-        placeholder={placeholder}
-        onChange={(e) => {
-          const next = e.target.value;
-          setLocal(next);
-          if (timer.current) window.clearTimeout(timer.current);
-          timer.current = window.setTimeout(() => push(next), 800);
-        }}
-        onBlur={() => {
-          if (timer.current) window.clearTimeout(timer.current);
-          push(local);
-        }}
-      />
-      {error ? <span className="cs-error">{error}</span> : null}
-      {!error && local !== value ? (
-        <span className="cs-hint">{isAr ? "سيتم الحفظ تلقائيًا…" : "Saves automatically…"}</span>
-      ) : null}
-    </>
-  );
-}
-
-function NumberInput({
-  value,
-  onCommit,
-  min,
-  max,
-  disabled,
-  isAr,
-}: {
-  value: number;
-  onCommit: (value: number) => void;
-  min: number;
-  max: number;
-  disabled?: boolean;
-  isAr: boolean;
-}) {
-  return (
-    <TextInput
-      isAr={isAr}
-      type="number"
-      disabled={disabled}
-      value={String(value)}
-      validate={(raw) => {
-        const n = Number(raw);
-        if (raw.trim() === "" || Number.isNaN(n)) return isAr ? "قيمة غير صحيحة" : "Invalid number";
-        if (n < min || n > max) return isAr ? `القيمة بين ${min} و ${max}` : `Value must be ${min}–${max}`;
-        return null;
-      }}
-      onCommit={(raw) => onCommit(Number(raw))}
-    />
   );
 }
 
@@ -571,7 +454,7 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
           <TextInput isAr={isAr} disabled={d} value={profile?.name_en ?? ""} onCommit={(v) => commitProfile({ name_en: v.trim() || null })} />
         </Row>
         <Row label={isAr ? "رمز الشركة" : "Company code"} hint={isAr ? "للقراءة فقط" : "Read only"}>
-          <input className="cs-input" value={profile?.organization_code ?? ""} readOnly disabled />
+          <Input value={profile?.organization_code ?? ""} readOnly disabled />
         </Row>
         <Row label={isAr ? "البريد الإلكتروني" : "Email"}>
           <TextInput
@@ -624,18 +507,13 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
 
       <Card title={isAr ? "المنطقة واللغة" : "Locale"} description={isAr ? "تتحكم في التواريخ والعملة والواجهات." : "Controls dates, currency and default UI language."}>
         <Row label={isAr ? "المنطقة الزمنية" : "Time zone"}>
-          <select
-            className="cs-input"
-            disabled={d}
-            value={settings.timezone}
-            onChange={(e) => commit({ timezone: e.target.value }, "general")}
-          >
+          <Select disabled={d} value={settings.timezone} onChange={(e) => commit({ timezone: e.target.value }, "general")}>
             {["Asia/Riyadh", "Asia/Dubai", "Asia/Kuwait", "Asia/Qatar", "Africa/Cairo", "UTC"].map((tz) => (
               <option key={tz} value={tz}>
                 {tz}
               </option>
             ))}
-          </select>
+          </Select>
         </Row>
         <Row label={isAr ? "اللغة الافتراضية" : "Language"}>
           <Segmented
@@ -738,8 +616,7 @@ function BusinessSection({ settings, isAr, canEdit, commit }: BodyProps) {
           ))}
         </div>
         <Row label={isAr ? "وسيلة الدفع الافتراضية" : "Default payment method"}>
-          <select
-            className="cs-input"
+          <Select
             disabled={d}
             value={settings.default_payment_method}
             onChange={(e) => commit({ default_payment_method: e.target.value as PaymentMethod }, "business")}
@@ -749,7 +626,7 @@ function BusinessSection({ settings, isAr, canEdit, commit }: BodyProps) {
                 {isAr ? m.ar : m.en}
               </option>
             ))}
-          </select>
+          </Select>
         </Row>
       </Card>
 

@@ -1,6 +1,7 @@
-import { useRef, useState, type DragEvent } from "react";
-import { Check, Copy, GripVertical, ImagePlus, Plus, Trash2, X } from "lucide-react";
+import { useState } from "react";
+import { Check, Copy, GripVertical, Plus, Trash2, X } from "lucide-react";
 
+import { Button, FileUpload, Input } from "@/components/kob";
 import { ALLERGEN_CARDS, DRINK_CATEGORIES, GROUP_TEMPLATES, newKey } from "../constants";
 import type { DrinkDraft, GroupDraft, IntensityLevel, TemperatureMode } from "../types";
 import { LivePreview } from "./LivePreview";
@@ -47,23 +48,19 @@ export function IdentityStep({ draft, patch }: StepProps) {
   return (
     <div className="ds-step">
       <div className="ds-grid-2">
-        <label className="ds-field">
-          <span>English name</span>
-          <input
-            value={draft.name_en}
-            onChange={(e) => patch({ name_en: e.target.value })}
-            placeholder="Enter English name"
-          />
-        </label>
-        <label className="ds-field ds-field-rtl" dir="rtl">
-          <span>الاسم بالعربية</span>
-          <input
-            dir="rtl"
-            value={draft.name_ar}
-            onChange={(e) => patch({ name_ar: e.target.value })}
-            placeholder="أدخل الاسم بالعربية"
-          />
-        </label>
+        <Input
+          label="English name"
+          value={draft.name_en}
+          onChange={(e) => patch({ name_en: e.target.value })}
+          placeholder="Enter English name"
+        />
+        <Input
+          label="الاسم بالعربية"
+          dir="rtl"
+          value={draft.name_ar}
+          onChange={(e) => patch({ name_ar: e.target.value })}
+          placeholder="أدخل الاسم بالعربية"
+        />
       </div>
       <div className="ds-field">
         <span>Category</span>
@@ -94,46 +91,11 @@ export function VisualStep({
   onPickFile,
   uploading,
 }: StepProps & { onPickFile: (file: File) => void; uploading: boolean }) {
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const [dragging, setDragging] = useState(false);
-
-  function handleDrop(event: DragEvent<HTMLDivElement>) {
-    event.preventDefault();
-    setDragging(false);
-    const file = event.dataTransfer.files?.[0];
-    if (file) onPickFile(file);
-  }
-
   return (
     <div className="ds-step">
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        hidden
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) onPickFile(file);
-          e.target.value = "";
-        }}
-      />
-      <div
-        className="ds-dropzone"
-        data-dragging={dragging ? "true" : "false"}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragging(true);
-        }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={handleDrop}
-      >
-        <ImagePlus className="h-8 w-8" />
-        <strong>{uploading ? "Uploading image…" : "Drag & drop an image"}</strong>
-        <p>PNG, JPG or WEBP up to 5 MB</p>
-        <button type="button" className="btn-ghost-brass px-4 py-2" onClick={() => inputRef.current?.click()}>
-          Choose image
-        </button>
-      </div>
+      <FileUpload accept="image/*" busy={uploading} onFiles={(files) => files[0] && onPickFile(files[0])}>
+        {uploading ? "Uploading image…" : "Drag & drop or choose an image (PNG, JPG or WEBP up to 5 MB)"}
+      </FileUpload>
 
       {draft.image_url && (
         <div className="ds-image-tools">
@@ -169,16 +131,12 @@ export function VisualStep({
             />
           </label>
           <div className="ds-inline-actions">
-            <button type="button" className="btn-ghost-brass px-4 py-2" onClick={() => inputRef.current?.click()}>
+            <FileUpload accept="image/*" onFiles={(files) => files[0] && onPickFile(files[0])}>
               Replace image
-            </button>
-            <button
-              type="button"
-              className="ds-text-danger"
-              onClick={() => patch({ image_url: null, image_path: null })}
-            >
+            </FileUpload>
+            <Button variant="danger" onClick={() => patch({ image_url: null, image_path: null })}>
               Remove image
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -194,15 +152,13 @@ export function NutritionStep({ draft, patch }: StepProps) {
   return (
     <div className="ds-step">
       <div className="ds-grid-2">
-        <label className="ds-field">
-          <span>Calories (kcal)</span>
-          <input
-            inputMode="numeric"
-            value={draft.calories}
-            onChange={(e) => patch({ calories: e.target.value.replace(/\D/g, "").slice(0, 4) })}
-            placeholder="120"
-          />
-        </label>
+        <Input
+          label="Calories (kcal)"
+          inputMode="numeric"
+          value={draft.calories}
+          onChange={(e) => patch({ calories: e.target.value.replace(/\D/g, "").slice(0, 4) })}
+          placeholder="120"
+        />
         <div className="ds-field">
           <span>Serving size</span>
           <Pills

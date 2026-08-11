@@ -1,5 +1,6 @@
 import { Filter, X } from "lucide-react";
 
+import { Badge, Button, Card, CardBody, CardHeader, Select as KobSelect, Input } from "@/components/kob";
 import { EMPTY_FILTERS, type AnalyticsDataset, type AnalyticsFilters } from "./types";
 
 const PAYMENT_LABELS: Record<string, [string, string]> = {
@@ -17,7 +18,7 @@ const STATUS_LABELS: Record<string, [string, string]> = {
   rejected: ["مرفوض", "Rejected"],
 };
 
-function Select({
+function FilterSelect({
   label,
   value,
   options,
@@ -31,17 +32,14 @@ function Select({
   placeholder: string;
 }) {
   return (
-    <label className="an-filter">
-      <span>{label}</span>
-      <select className="cs-input" value={value} onChange={(event) => onChange(event.target.value)}>
-        <option value="">{placeholder}</option>
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </label>
+    <KobSelect label={label} value={value} onChange={(event) => onChange(event.target.value)}>
+      <option value="">{placeholder}</option>
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </KobSelect>
   );
 }
 
@@ -62,88 +60,89 @@ export function FiltersBar({
   const active = Object.values(filters).filter(Boolean).length;
 
   return (
-    <section className="an-card an-filters">
-      <header className="an-filters-head">
-        <div>
-          <Filter className="h-4 w-4" />
-          <span>{isAr ? "الفلاتر" : "Filters"}</span>
-          {active > 0 ? <em>{active}</em> : null}
-        </div>
-        {active > 0 ? (
-          <button type="button" className="an-clear" onClick={() => onChange(EMPTY_FILTERS)}>
-            <X className="h-3.5 w-3.5" />
-            {isAr ? "مسح" : "Clear"}
-          </button>
-        ) : null}
-      </header>
-
-      <div className="an-filters-grid">
-        <Select
-          label={isAr ? "الفرع" : "Branch"}
-          value={filters.branchId}
-          onChange={(branchId) => set({ branchId })}
-          placeholder={isAr ? "كل الفروع" : "All branches"}
-          options={data.branches.map((row) => ({ value: row.id, label: name(row) }))}
-        />
-        <Select
-          label={isAr ? "المشروب" : "Drink"}
-          value={filters.drinkId}
-          onChange={(drinkId) => set({ drinkId })}
-          placeholder={isAr ? "كل المشروبات" : "All drinks"}
-          options={data.drinks.map((row) => ({ value: row.id, label: name(row) }))}
-        />
-        <Select
-          label={isAr ? "الباقة" : "Subscription Plan"}
-          value={filters.planId}
-          onChange={(planId) => set({ planId })}
-          placeholder={isAr ? "كل الباقات" : "All plans"}
-          options={data.plans.map((row) => ({ value: row.id, label: name(row) }))}
-        />
-        <Select
-          label={isAr ? "الكاشير" : "Cashier"}
-          value={filters.cashierId}
-          onChange={(cashierId) => set({ cashierId })}
-          placeholder={isAr ? "كل الموظفين" : "All cashiers"}
-          options={data.cashiers.map((row) => ({ value: row.id, label: row.name }))}
-        />
-        <Select
-          label={isAr ? "العميل" : "Customer"}
-          value={filters.customerId}
-          onChange={(customerId) => set({ customerId })}
-          placeholder={isAr ? "كل العملاء" : "All customers"}
-          options={data.customerOptions.map((row) => ({ value: row.id, label: row.name }))}
-        />
-        <label className="an-filter">
-          <span>{isAr ? "الكوبون" : "Coupon"}</span>
-          <input
-            className="cs-input"
+    <Card>
+      <CardHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Filter className="h-4 w-4 shrink-0" />
+            {isAr ? "الفلاتر" : "Filters"}
+            {active > 0 ? <Badge tone="gold">{active}</Badge> : null}
+          </span>
+        }
+        action={
+          active > 0 ? (
+            <Button variant="ghost" size="sm" leadingIcon={<X className="h-3.5 w-3.5" />} onClick={() => onChange(EMPTY_FILTERS)}>
+              {isAr ? "مسح" : "Clear"}
+            </Button>
+          ) : null
+        }
+      />
+      <CardBody>
+        <div className="an-filters-grid grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <FilterSelect
+            label={isAr ? "الفرع" : "Branch"}
+            value={filters.branchId}
+            onChange={(branchId) => set({ branchId })}
+            placeholder={isAr ? "كل الفروع" : "All branches"}
+            options={data.branches.map((row) => ({ value: row.id, label: name(row) }))}
+          />
+          <FilterSelect
+            label={isAr ? "المشروب" : "Drink"}
+            value={filters.drinkId}
+            onChange={(drinkId) => set({ drinkId })}
+            placeholder={isAr ? "كل المشروبات" : "All drinks"}
+            options={data.drinks.map((row) => ({ value: row.id, label: name(row) }))}
+          />
+          <FilterSelect
+            label={isAr ? "الباقة" : "Subscription Plan"}
+            value={filters.planId}
+            onChange={(planId) => set({ planId })}
+            placeholder={isAr ? "كل الباقات" : "All plans"}
+            options={data.plans.map((row) => ({ value: row.id, label: name(row) }))}
+          />
+          <FilterSelect
+            label={isAr ? "الكاشير" : "Cashier"}
+            value={filters.cashierId}
+            onChange={(cashierId) => set({ cashierId })}
+            placeholder={isAr ? "كل الموظفين" : "All cashiers"}
+            options={data.cashiers.map((row) => ({ value: row.id, label: row.name }))}
+          />
+          <FilterSelect
+            label={isAr ? "العميل" : "Customer"}
+            value={filters.customerId}
+            onChange={(customerId) => set({ customerId })}
+            placeholder={isAr ? "كل العملاء" : "All customers"}
+            options={data.customerOptions.map((row) => ({ value: row.id, label: row.name }))}
+          />
+          <Input
+            label={isAr ? "الكوبون" : "Coupon"}
             value={filters.couponCode}
             placeholder={isAr ? "ابحث بالكود" : "Search code"}
             onChange={(event) => set({ couponCode: event.target.value })}
           />
-        </label>
-        <Select
-          label={isAr ? "طريقة الدفع" : "Payment Method"}
-          value={filters.paymentMethod}
-          onChange={(paymentMethod) => set({ paymentMethod })}
-          placeholder={isAr ? "كل الطرق" : "All methods"}
-          options={data.paymentMethods.map((value) => ({
-            value,
-            label: (isAr ? PAYMENT_LABELS[value]?.[0] : PAYMENT_LABELS[value]?.[1]) ?? value,
-          }))}
-        />
-        <Select
-          label={isAr ? "الحالة" : "Status"}
-          value={filters.status}
-          onChange={(status) => set({ status })}
-          placeholder={isAr ? "كل الحالات" : "All statuses"}
-          options={Object.keys(STATUS_LABELS).map((value) => ({
-            value,
-            label: (isAr ? STATUS_LABELS[value]?.[0] : STATUS_LABELS[value]?.[1]) ?? value,
-          }))}
-        />
-      </div>
-    </section>
+          <FilterSelect
+            label={isAr ? "طريقة الدفع" : "Payment Method"}
+            value={filters.paymentMethod}
+            onChange={(paymentMethod) => set({ paymentMethod })}
+            placeholder={isAr ? "كل الطرق" : "All methods"}
+            options={data.paymentMethods.map((value) => ({
+              value,
+              label: (isAr ? PAYMENT_LABELS[value]?.[0] : PAYMENT_LABELS[value]?.[1]) ?? value,
+            }))}
+          />
+          <FilterSelect
+            label={isAr ? "الحالة" : "Status"}
+            value={filters.status}
+            onChange={(status) => set({ status })}
+            placeholder={isAr ? "كل الحالات" : "All statuses"}
+            options={Object.keys(STATUS_LABELS).map((value) => ({
+              value,
+              label: (isAr ? STATUS_LABELS[value]?.[0] : STATUS_LABELS[value]?.[1]) ?? value,
+            }))}
+          />
+        </div>
+      </CardBody>
+    </Card>
   );
 }
 

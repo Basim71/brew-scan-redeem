@@ -9,6 +9,7 @@ import { listBranches, type BranchRow } from "@/services/company/branches.servic
 import { PlanBuilder } from "@/features/company/plans/PlanBuilder";
 import { PlanCard } from "@/features/company/plans/PlanCard";
 import { S } from "@/features/company/plans/strings";
+import { Button, SkeletonCard, EmptyState } from "@/components/kob";
 
 export const Route = createFileRoute("/admin/plans")({
   component: PlansPage,
@@ -62,24 +63,20 @@ function PlansPage() {
           <h1>{S.title[lang]}</h1>
           <p>{S.subtitle[lang]}</p>
         </div>
-        <button className="pb-btn-primary" onClick={openNew}>
-          {S.new_plan[lang]}
-        </button>
+        <Button onClick={openNew}>{S.new_plan[lang]}</Button>
       </header>
 
       {loading ? (
-        <div className="pb-skeleton-grid">
+        <div className="pb-card-grid">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="pb-skeleton-card" />
+            <SkeletonCard key={i} />
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <div className="pb-empty">
-          <p>{S.empty[lang]}</p>
-          <button className="pb-btn-primary" onClick={openNew}>
-            {S.new_plan[lang]}
-          </button>
-        </div>
+        <EmptyState
+          description={S.empty[lang]}
+          action={<Button onClick={openNew}>{S.new_plan[lang]}</Button>}
+        />
       ) : (
         <>
           <div className="pb-card-grid">

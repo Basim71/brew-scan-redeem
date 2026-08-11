@@ -1,8 +1,9 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { Loader2, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 import { useI18n } from "@/lib/i18n";
+import { Alert, Button, PageContainer, PageHeader } from "@/components/kob";
 
 /** Recharts is heavy (~440 kB) — load it only when the analytics charts render. */
 const ChartsSection = lazy(() => import("./ChartsSection").then((m) => ({ default: m.ChartsSection })));
@@ -127,26 +128,30 @@ export function AnalyticsShell() {
   };
 
   return (
-    <div className="an-page">
-      <header className="an-header">
-        <div className="min-w-0">
-          <span className="an-kicker">KOB Intelligence</span>
-          <h1 className="an-title">{isAr ? "تحليلات الأعمال" : "Business Analytics"}</h1>
-          <p className="an-subtitle">
-            {isAr
-              ? "تحليلات شاملة للاشتراكات والمشروبات والإيرادات والعملاء."
-              : "Complete analytics across subscriptions, drinks, revenue and customers."}
-          </p>
-        </div>
-        <button type="button" className="cs-btn" onClick={() => void load()} disabled={loading}>
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-          {isAr ? "تحديث" : "Refresh"}
-        </button>
-      </header>
+    <PageContainer className="an-page">
+      <PageHeader
+        eyebrow="KOB Intelligence"
+        title={isAr ? "تحليلات الأعمال" : "Business Analytics"}
+        description={
+          isAr
+            ? "تحليلات شاملة للاشتراكات والمشروبات والإيرادات والعملاء."
+            : "Complete analytics across subscriptions, drinks, revenue and customers."
+        }
+        action={
+          <Button
+            variant="secondary"
+            loading={loading}
+            leadingIcon={<RefreshCw className="h-4 w-4" />}
+            onClick={() => void load()}
+          >
+            {isAr ? "تحديث" : "Refresh"}
+          </Button>
+        }
+      />
 
       <DateRangeFilter preset={preset} range={range} isAr={isAr} onPreset={handlePreset} onRange={setRange} />
 
-      {error ? <div className="an-error">{error}</div> : null}
+      {error ? <Alert tone="danger">{error}</Alert> : null}
 
       <KpiGrid kpis={kpis} isAr={isAr} money={money} num={num} />
 
@@ -167,6 +172,6 @@ export function AnalyticsShell() {
       <InsightsCard insights={insights} isAr={isAr} />
 
       <DataTables data={data} isAr={isAr} localize={localize} money={money} tables={tables} onExport={handleExport} />
-    </div>
+    </PageContainer>
   );
 }

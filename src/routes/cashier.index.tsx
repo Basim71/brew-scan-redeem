@@ -25,6 +25,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { useRole } from "@/lib/use-auth";
+import { Button, Alert, Select, DateInput, LoadingState, EmptyState } from "@/components/kob";
 
 export const Route = createFileRoute("/cashier/")({
   component: CashierQueuePage,
@@ -682,8 +683,8 @@ function CashierQueuePage() {
           {t("no_branch_b")}
         </p>
 
-        <button
-          type="button"
+        <Button
+          variant="ghost"
           onClick={() => {
             void supabase.auth
               .signOut()
@@ -693,10 +694,9 @@ function CashierQueuePage() {
                 });
               });
           }}
-          className="btn-ghost-brass px-5 py-2.5"
         >
           {t("signOut")}
-        </button>
+        </Button>
       </div>
     );
   }
@@ -724,33 +724,18 @@ function CashierQueuePage() {
           </p>
         </div>
 
-        <button
-          type="button"
+        <Button
+          variant="ghost"
           onClick={() => {
             void loadQueue();
           }}
-          disabled={loading}
-          className="btn-ghost-brass cashier-refresh-button"
-          title={
-            lang === "ar"
-              ? "تحديث"
-              : "Refresh"
-          }
+          loading={loading}
+          leadingIcon={<RefreshCw className="h-4 w-4" />}
         >
-          <RefreshCw
-            className={
-              loading
-                ? "h-4 w-4 animate-spin"
-                : "h-4 w-4"
-            }
-          />
-
-          <span>
-            {lang === "ar"
-              ? "تحديث"
-              : "Refresh"}
-          </span>
-        </button>
+          {lang === "ar"
+            ? "تحديث"
+            : "Refresh"}
+        </Button>
       </header>
 
       <section className="cashier-summary-grid">
@@ -786,15 +771,11 @@ function CashierQueuePage() {
       </section>
 
       {error && (
-        <div className="cashier-alert cashier-alert-error">
-          {error}
-        </div>
+        <Alert tone="danger">{error}</Alert>
       )}
 
       {success && (
-        <div className="cashier-alert cashier-alert-success">
-          {success}
-        </div>
+        <Alert tone="success">{success}</Alert>
       )}
 
       <section className="cashier-queue-panel panel">
@@ -834,15 +815,13 @@ function CashierQueuePage() {
 
         {loading &&
         queueItems.length === 0 ? (
-          <div className="cashier-empty-state">
-            <Loader2 className="h-8 w-8 animate-spin text-caramel" />
-
-            <p>
-              {lang === "ar"
+          <LoadingState
+            label={
+              lang === "ar"
                 ? "جاري تحميل الطلبات..."
-                : "Loading requests..."}
-            </p>
-          </div>
+                : "Loading requests..."
+            }
+          />
         ) : queueItems.length ===
           0 ? (
           <EmptyQueue
@@ -1231,39 +1210,23 @@ function CoffeeOrderCard({
       )}
 
       <div className="cashier-card-actions">
-        <button
-          type="button"
+        <Button
+          variant="danger"
           disabled={busy}
           onClick={onReject}
-          className="cashier-reject-button"
+          leadingIcon={<X className="h-4 w-4" />}
         >
-          <X className="h-4 w-4" />
+          {language === "ar" ? "رفض" : "Reject"}
+        </Button>
 
-          <span>
-            {language === "ar"
-              ? "رفض"
-              : "Reject"}
-          </span>
-        </button>
-
-        <button
-          type="button"
+        <Button
+          loading={busy}
           disabled={busy}
           onClick={onApprove}
-          className="btn-brass cashier-approve-button"
+          leadingIcon={!busy ? <Check className="h-4 w-4" /> : undefined}
         >
-          {busy ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Check className="h-4 w-4" />
-          )}
-
-          <span>
-            {language === "ar"
-              ? "قبول الطلب"
-              : "Approve Order"}
-          </span>
-        </button>
+          {language === "ar" ? "قبول الطلب" : "Approve Order"}
+        </Button>
       </div>
     </article>
   );
@@ -1386,7 +1349,7 @@ function RegistrationCard({
               : "Coupon and Plan"}
           </span>
 
-          <select
+          <Select
             value={
               selectedCoupon
             }
@@ -1397,7 +1360,6 @@ function RegistrationCard({
                   .value,
               );
             }}
-            className="inset-well cashier-control"
           >
             <option value="">
               {language === "ar"
@@ -1436,7 +1398,7 @@ function RegistrationCard({
                 );
               },
             )}
-          </select>
+          </Select>
         </label>
 
         <label className="cashier-form-field">
@@ -1446,8 +1408,7 @@ function RegistrationCard({
               : "Start Date"}
           </span>
 
-          <input
-            type="date"
+          <DateInput
             value={
               selectedStartDate
             }
@@ -1458,7 +1419,6 @@ function RegistrationCard({
                   .value,
               );
             }}
-            className="inset-well cashier-control"
           />
         </label>
       </div>
@@ -1473,42 +1433,26 @@ function RegistrationCard({
       )}
 
       <div className="cashier-card-actions">
-        <button
-          type="button"
+        <Button
+          variant="danger"
           disabled={busy}
           onClick={onReject}
-          className="cashier-reject-button"
+          leadingIcon={<X className="h-4 w-4" />}
         >
-          <X className="h-4 w-4" />
+          {language === "ar" ? "رفض" : "Reject"}
+        </Button>
 
-          <span>
-            {language === "ar"
-              ? "رفض"
-              : "Reject"}
-          </span>
-        </button>
-
-        <button
-          type="button"
+        <Button
+          loading={busy}
           disabled={
             busy ||
             !selectedCoupon
           }
           onClick={onActivate}
-          className="btn-brass cashier-approve-button"
+          leadingIcon={!busy ? <Check className="h-4 w-4" /> : undefined}
         >
-          {busy ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Check className="h-4 w-4" />
-          )}
-
-          <span>
-            {language === "ar"
-              ? "تفعيل الاشتراك"
-              : "Activate Subscription"}
-          </span>
-        </button>
+          {language === "ar" ? "تفعيل الاشتراك" : "Activate Subscription"}
+        </Button>
       </div>
     </article>
   );
@@ -1597,19 +1541,11 @@ function EmptyQueue({
   }
 
   return (
-    <div className="cashier-empty-state">
-      <div className="cashier-empty-icon">
-        <Inbox className="h-8 w-8" />
-      </div>
-
-      <h3>
-        {title}
-      </h3>
-
-      <p>
-        {description}
-      </p>
-    </div>
+    <EmptyState
+      icon={<Inbox className="h-8 w-8" />}
+      title={title}
+      description={description}
+    />
   );
 }
 

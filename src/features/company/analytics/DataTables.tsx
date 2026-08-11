@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Eye, FileDown, FileSpreadsheet, FileText, Printer } from "lucide-react";
 
+import { Button, Card, CardBody, DataTable, Modal, StatusBadge, Tabs, type Column, type StatusTone } from "@/components/kob";
 import { paymentLabel, statusLabel } from "./FiltersBar";
 import type { ExportTable } from "./exporters";
 import type { AnalyticsDataset, SaleRecord } from "./types";
@@ -14,6 +15,12 @@ const TABS: Array<{ key: TabKey; ar: string; en: string }> = [
   { key: "coupons", ar: "الكوبونات", en: "Coupons" },
   { key: "exports", ar: "التصدير", en: "Exports" },
 ];
+
+const STATUS_TONE: Record<string, StatusTone> = {
+  approved: "success",
+  pending: "warning",
+  rejected: "error",
+};
 
 type Localize = (value: { ar: string | null; en: string | null }) => string;
 
@@ -112,164 +119,137 @@ export function DataTables({
   const fmtDate = (value: string | null) => (value ? dateFmt.format(new Date(value)) : "—");
 
   const active = tab === "exports" ? null : tables[tab];
+  const noDataLabel = isAr ? "لا توجد بيانات لهذه الفترة." : "No data for this period.";
+
+  const salesColumns: Column<SaleRecord>[] = [
+    { key: "receipt", header: isAr ? "رقم الفاتورة" : "Receipt #", render: (row) => <span className="font-mono">{row.receipt}</span> },
+    { key: "customer", header: isAr ? "العميل" : "Customer", render: (row) => row.customerName ?? "—" },
+    { key: "cashier", header: isAr ? "الكاشير" : "Cashier", render: (row) => row.cashierName ?? "—" },
+    { key: "branch", header: isAr ? "الفرع" : "Branch", render: (row) => localize(row.branchName) },
+    { key: "drink", header: isAr ? "المشروب" : "Drink", render: (row) => localize(row.drinkName) },
+    { key: "plan", header: isAr ? "الباقة" : "Subscription", render: (row) => localize(row.planName) },
+    { key: "coupon", header: isAr ? "الكوبون" : "Coupon", render: (row) => <span className="font-mono">{row.couponCode ?? "—"}</span> },
+    { key: "payment", header: isAr ? "الدفع" : "Payment", render: (row) => paymentLabel(row.paymentMethod, isAr) },
+    { key: "amount", header: isAr ? "القيمة" : "Amount", numeric: true, align: "end", render: (row) => money(row.amount) },
+    {
+      key: "status",
+      header: isAr ? "الحالة" : "Status",
+      render: (row) => <StatusBadge tone={STATUS_TONE[row.status] ?? "neutral"}>{statusLabel(row.status, isAr)}</StatusBadge>,
+    },
+    { key: "createdAt", header: isAr ? "التاريخ" : "Created At", render: (row) => fmtDate(row.createdAt) },
+    {
+      key: "actions",
+      header: isAr ? "إجراءات" : "Actions",
+      render: (row) => (
+        <Button variant="ghost" size="sm" leadingIcon={<Eye className="h-3.5 w-3.5" />} onClick={() => setReceipt(row)}>
+          {isAr ? "عرض" : "View"}
+        </Button>
+      ),
+    },
+  ];
+
+  const genericColumns: Column<(string | number)[]>[] =
+    active?.columns.map((column, columnIndex) => ({
+      key: `${column}-${columnIndex}`,
+      header: column,
+      render: (row) => String(row[columnIndex]),
+    })) ?? [];
 
   return (
-    <section className="an-card an-tables">
-      <div className="an-tabs" role="tablist">
-        {TABS.map((item) => (
-          <button
-            key={item.key}
-            type="button"
-            role="tab"
-            aria-selected={tab === item.key}
-            data-active={tab === item.key ? "true" : "false"}
-            onClick={() => setTab(item.key)}
-          >
-            {isAr ? item.ar : item.en}
-          </button>
-        ))}
-      </div>
+    <Card>
+      <CardBody className="an-tables">
+        <Tabs
+          ariaLabel={isAr ? "جداول التحليلات" : "Analytics tables"}
+          items={TABS.map((item) => ({ id: item.key, label: isAr ? item.ar : item.en }))}
+          value={tab}
+          onChange={(id) => setTab(id as TabKey)}
+        />
 
-      {tab === "exports" ? (
-        <div className="an-export-grid">
-          <ExportTile
-            icon={<FileDown className="h-5 w-5" />}
-            title={isAr ? "تصدير CSV" : "Export CSV"}
-            hint={isAr ? "ملف نصي مناسب لأي نظام" : "Universal spreadsheet file"}
-            onClick={() => onExport("csv")}
-          />
-          <ExportTile
-            icon={<FileSpreadsheet className="h-5 w-5" />}
-            title={isAr ? "تصدير Excel" : "Export Excel"}
-            hint={isAr ? "يفتح مباشرة في Excel" : "Opens natively in Excel"}
-            onClick={() => onExport("excel")}
-          />
-          <ExportTile
-            icon={<FileText className="h-5 w-5" />}
-            title={isAr ? "تصدير PDF" : "Export PDF"}
-            hint={isAr ? "حفظ التقرير كملف PDF" : "Save the report as PDF"}
-            onClick={() => onExport("pdf")}
-          />
-          <ExportTile
-            icon={<Printer className="h-5 w-5" />}
-            title={isAr ? "طباعة التقرير" : "Print Report"}
-            hint={isAr ? "طباعة ملخص الفترة" : "Print the period summary"}
-            onClick={() => onExport("print")}
-          />
+        <div className="mt-4">
+          {tab === "exports" ? (
+            <div className="an-export-grid grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <ExportTile
+                icon={<FileDown className="h-5 w-5" />}
+                title={isAr ? "تصدير CSV" : "Export CSV"}
+                hint={isAr ? "ملف نصي مناسب لأي نظام" : "Universal spreadsheet file"}
+                onClick={() => onExport("csv")}
+              />
+              <ExportTile
+                icon={<FileSpreadsheet className="h-5 w-5" />}
+                title={isAr ? "تصدير Excel" : "Export Excel"}
+                hint={isAr ? "يفتح مباشرة في Excel" : "Opens natively in Excel"}
+                onClick={() => onExport("excel")}
+              />
+              <ExportTile
+                icon={<FileText className="h-5 w-5" />}
+                title={isAr ? "تصدير PDF" : "Export PDF"}
+                hint={isAr ? "حفظ التقرير كملف PDF" : "Save the report as PDF"}
+                onClick={() => onExport("pdf")}
+              />
+              <ExportTile
+                icon={<Printer className="h-5 w-5" />}
+                title={isAr ? "طباعة التقرير" : "Print Report"}
+                hint={isAr ? "طباعة ملخص الفترة" : "Print the period summary"}
+                onClick={() => onExport("print")}
+              />
+            </div>
+          ) : tab === "sales" ? (
+            <DataTable
+              columns={salesColumns}
+              rows={data.sales}
+              rowKey={(row) => row.id}
+              caption={isAr ? "جدول المبيعات" : "Sales table"}
+              emptyDescription={noDataLabel}
+            />
+          ) : (
+            <DataTable
+              columns={genericColumns}
+              rows={active!.rows}
+              rowKey={(_row, index) => String(index)}
+              caption={isAr ? (TABS.find((t) => t.key === tab)?.ar ?? "") : (TABS.find((t) => t.key === tab)?.en ?? "")}
+              emptyDescription={noDataLabel}
+            />
+          )}
         </div>
-      ) : tab === "sales" ? (
-        <div className="an-table-wrap">
-          <table className="an-table">
-            <thead>
-              <tr>
-                {active!.columns.map((column) => (
-                  <th key={column}>{column}</th>
-                ))}
-                <th>{isAr ? "إجراءات" : "Actions"}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.sales.map((row) => (
-                <tr key={row.id}>
-                  <td className="font-mono">{row.receipt}</td>
-                  <td>{row.customerName ?? "—"}</td>
-                  <td>{row.cashierName ?? "—"}</td>
-                  <td>{localize(row.branchName)}</td>
-                  <td>{localize(row.drinkName)}</td>
-                  <td>{localize(row.planName)}</td>
-                  <td className="font-mono">{row.couponCode ?? "—"}</td>
-                  <td>{paymentLabel(row.paymentMethod, isAr)}</td>
-                  <td className="an-amount">{money(row.amount)}</td>
-                  <td>
-                    <span className={`an-status an-status-${row.status}`}>{statusLabel(row.status, isAr)}</span>
-                  </td>
-                  <td>{fmtDate(row.createdAt)}</td>
-                  <td>
-                    <button type="button" className="an-view" onClick={() => setReceipt(row)}>
-                      <Eye className="h-3.5 w-3.5" />
-                      {isAr ? "عرض" : "View"}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {data.sales.length === 0 ? (
-                <tr>
-                  <td colSpan={active!.columns.length + 1} className="an-empty">
-                    {isAr ? "لا توجد بيانات لهذه الفترة." : "No data for this period."}
-                  </td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <div className="an-table-wrap">
-          <table className="an-table">
-            <thead>
-              <tr>
-                {active!.columns.map((column) => (
-                  <th key={column}>{column}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {active!.rows.map((row, index) => (
-                <tr key={index}>
-                  {row.map((cell, cellIndex) => (
-                    <td key={cellIndex}>{String(cell)}</td>
-                  ))}
-                </tr>
-              ))}
-              {active!.rows.length === 0 ? (
-                <tr>
-                  <td colSpan={active!.columns.length} className="an-empty">
-                    {isAr ? "لا توجد بيانات لهذه الفترة." : "No data for this period."}
-                  </td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
-        </div>
-      )}
+      </CardBody>
 
-      {receipt ? (
-        <div className="an-modal-backdrop" role="dialog" aria-modal="true" onClick={() => setReceipt(null)}>
-          <div className="an-modal" onClick={(event) => event.stopPropagation()}>
-            <header>
-              <h3>{isAr ? "تفاصيل الفاتورة" : "Receipt details"}</h3>
-              <span className="font-mono">{receipt.receipt}</span>
-            </header>
-            <dl className="an-receipt">
-              <ReceiptRow label={isAr ? "العميل" : "Customer"} value={receipt.customerName ?? "—"} />
-              <ReceiptRow label={isAr ? "الجوال" : "Phone"} value={receipt.customerPhone ?? "—"} />
-              <ReceiptRow label={isAr ? "الكاشير" : "Cashier"} value={receipt.cashierName ?? "—"} />
-              <ReceiptRow label={isAr ? "الفرع" : "Branch"} value={localize(receipt.branchName)} />
-              <ReceiptRow label={isAr ? "المشروب" : "Drink"} value={localize(receipt.drinkName)} />
-              <ReceiptRow label={isAr ? "الباقة" : "Subscription"} value={localize(receipt.planName)} />
-              <ReceiptRow label={isAr ? "الكوبون" : "Coupon"} value={receipt.couponCode ?? "—"} />
-              <ReceiptRow label={isAr ? "طريقة الدفع" : "Payment"} value={paymentLabel(receipt.paymentMethod, isAr)} />
-              <ReceiptRow label={isAr ? "القيمة" : "Amount"} value={money(receipt.amount)} />
-              <ReceiptRow label={isAr ? "الحالة" : "Status"} value={statusLabel(receipt.status, isAr)} />
-              <ReceiptRow label={isAr ? "التاريخ" : "Created At"} value={fmtDate(receipt.createdAt)} />
-              {receipt.note ? <ReceiptRow label={isAr ? "ملاحظة" : "Note"} value={receipt.note} /> : null}
-            </dl>
-            <footer>
-              <button type="button" className="cs-btn" onClick={() => setReceipt(null)}>
-                {isAr ? "إغلاق" : "Close"}
-              </button>
-            </footer>
-          </div>
-        </div>
-      ) : null}
-    </section>
+      <Modal
+        open={Boolean(receipt)}
+        onClose={() => setReceipt(null)}
+        title={isAr ? "تفاصيل الفاتورة" : "Receipt details"}
+        description={receipt ? <span className="font-mono">{receipt.receipt}</span> : undefined}
+        footer={
+          <Button variant="secondary" onClick={() => setReceipt(null)}>
+            {isAr ? "إغلاق" : "Close"}
+          </Button>
+        }
+      >
+        {receipt ? (
+          <dl className="an-receipt grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <ReceiptRow label={isAr ? "العميل" : "Customer"} value={receipt.customerName ?? "—"} />
+            <ReceiptRow label={isAr ? "الجوال" : "Phone"} value={receipt.customerPhone ?? "—"} />
+            <ReceiptRow label={isAr ? "الكاشير" : "Cashier"} value={receipt.cashierName ?? "—"} />
+            <ReceiptRow label={isAr ? "الفرع" : "Branch"} value={localize(receipt.branchName)} />
+            <ReceiptRow label={isAr ? "المشروب" : "Drink"} value={localize(receipt.drinkName)} />
+            <ReceiptRow label={isAr ? "الباقة" : "Subscription"} value={localize(receipt.planName)} />
+            <ReceiptRow label={isAr ? "الكوبون" : "Coupon"} value={receipt.couponCode ?? "—"} />
+            <ReceiptRow label={isAr ? "طريقة الدفع" : "Payment"} value={paymentLabel(receipt.paymentMethod, isAr)} />
+            <ReceiptRow label={isAr ? "القيمة" : "Amount"} value={money(receipt.amount)} />
+            <ReceiptRow label={isAr ? "الحالة" : "Status"} value={statusLabel(receipt.status, isAr)} />
+            <ReceiptRow label={isAr ? "التاريخ" : "Created At"} value={fmtDate(receipt.createdAt)} />
+            {receipt.note ? <ReceiptRow label={isAr ? "ملاحظة" : "Note"} value={receipt.note} /> : null}
+          </dl>
+        ) : null}
+      </Modal>
+    </Card>
   );
 }
 
 function ReceiptRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt>{label}</dt>
-      <dd>{value}</dd>
+      <dt className="text-xs opacity-60">{label}</dt>
+      <dd className="text-sm font-medium">{value}</dd>
     </div>
   );
 }
