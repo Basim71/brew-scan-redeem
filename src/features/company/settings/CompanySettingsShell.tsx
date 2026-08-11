@@ -361,11 +361,9 @@ export function CompanySettingsShell() {
             </div>
           ) : null}
           {isLoading ? (
-            <div className="cs-loading">
-              <Loader2 className="h-5 w-5 animate-spin" />
-            </div>
+            <LoadingState />
           ) : error ? (
-            <div className="cs-error-panel">{error.message}</div>
+            <ErrorState description={error.message} />
           ) : settings ? (
             <SectionBody
               section={section}
@@ -458,7 +456,7 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
           <TextInput isAr={isAr} disabled={d} value={profile?.name_en ?? ""} onCommit={(v) => commitProfile({ name_en: v.trim() || null })} />
         </Row>
         <Row label={isAr ? "رمز الشركة" : "Company code"} hint={isAr ? "للقراءة فقط" : "Read only"}>
-          <input className="cs-input" value={profile?.organization_code ?? ""} readOnly disabled />
+          <Input value={profile?.organization_code ?? ""} readOnly disabled />
         </Row>
         <Row label={isAr ? "البريد الإلكتروني" : "Email"}>
           <TextInput
@@ -511,18 +509,13 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
 
       <Card title={isAr ? "المنطقة واللغة" : "Locale"} description={isAr ? "تتحكم في التواريخ والعملة والواجهات." : "Controls dates, currency and default UI language."}>
         <Row label={isAr ? "المنطقة الزمنية" : "Time zone"}>
-          <select
-            className="cs-input"
-            disabled={d}
-            value={settings.timezone}
-            onChange={(e) => commit({ timezone: e.target.value }, "general")}
-          >
+          <Select disabled={d} value={settings.timezone} onChange={(e) => commit({ timezone: e.target.value }, "general")}>
             {["Asia/Riyadh", "Asia/Dubai", "Asia/Kuwait", "Asia/Qatar", "Africa/Cairo", "UTC"].map((tz) => (
               <option key={tz} value={tz}>
                 {tz}
               </option>
             ))}
-          </select>
+          </Select>
         </Row>
         <Row label={isAr ? "اللغة الافتراضية" : "Language"}>
           <Segmented
@@ -625,8 +618,7 @@ function BusinessSection({ settings, isAr, canEdit, commit }: BodyProps) {
           ))}
         </div>
         <Row label={isAr ? "وسيلة الدفع الافتراضية" : "Default payment method"}>
-          <select
-            className="cs-input"
+          <Select
             disabled={d}
             value={settings.default_payment_method}
             onChange={(e) => commit({ default_payment_method: e.target.value as PaymentMethod }, "business")}
@@ -636,7 +628,7 @@ function BusinessSection({ settings, isAr, canEdit, commit }: BodyProps) {
                 {isAr ? m.ar : m.en}
               </option>
             ))}
-          </select>
+          </Select>
         </Row>
       </Card>
 

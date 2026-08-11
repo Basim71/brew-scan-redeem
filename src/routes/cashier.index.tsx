@@ -25,6 +25,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { useRole } from "@/lib/use-auth";
+import { Button, Alert, Select, DateInput, LoadingState, EmptyState } from "@/components/kob";
 
 export const Route = createFileRoute("/cashier/")({
   component: CashierQueuePage,
@@ -682,8 +683,8 @@ function CashierQueuePage() {
           {t("no_branch_b")}
         </p>
 
-        <button
-          type="button"
+        <Button
+          variant="ghost"
           onClick={() => {
             void supabase.auth
               .signOut()
@@ -693,10 +694,9 @@ function CashierQueuePage() {
                 });
               });
           }}
-          className="btn-ghost-brass px-5 py-2.5"
         >
           {t("signOut")}
-        </button>
+        </Button>
       </div>
     );
   }
@@ -724,33 +724,18 @@ function CashierQueuePage() {
           </p>
         </div>
 
-        <button
-          type="button"
+        <Button
+          variant="ghost"
           onClick={() => {
             void loadQueue();
           }}
-          disabled={loading}
-          className="btn-ghost-brass cashier-refresh-button"
-          title={
-            lang === "ar"
-              ? "تحديث"
-              : "Refresh"
-          }
+          loading={loading}
+          leadingIcon={<RefreshCw className="h-4 w-4" />}
         >
-          <RefreshCw
-            className={
-              loading
-                ? "h-4 w-4 animate-spin"
-                : "h-4 w-4"
-            }
-          />
-
-          <span>
-            {lang === "ar"
-              ? "تحديث"
-              : "Refresh"}
-          </span>
-        </button>
+          {lang === "ar"
+            ? "تحديث"
+            : "Refresh"}
+        </Button>
       </header>
 
       <section className="cashier-summary-grid">
@@ -786,15 +771,11 @@ function CashierQueuePage() {
       </section>
 
       {error && (
-        <div className="cashier-alert cashier-alert-error">
-          {error}
-        </div>
+        <Alert tone="danger">{error}</Alert>
       )}
 
       {success && (
-        <div className="cashier-alert cashier-alert-success">
-          {success}
-        </div>
+        <Alert tone="success">{success}</Alert>
       )}
 
       <section className="cashier-queue-panel panel">
@@ -834,15 +815,13 @@ function CashierQueuePage() {
 
         {loading &&
         queueItems.length === 0 ? (
-          <div className="cashier-empty-state">
-            <Loader2 className="h-8 w-8 animate-spin text-caramel" />
-
-            <p>
-              {lang === "ar"
+          <LoadingState
+            label={
+              lang === "ar"
                 ? "جاري تحميل الطلبات..."
-                : "Loading requests..."}
-            </p>
-          </div>
+                : "Loading requests..."
+            }
+          />
         ) : queueItems.length ===
           0 ? (
           <EmptyQueue
