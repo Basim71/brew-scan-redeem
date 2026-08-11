@@ -31,6 +31,19 @@ import {
   type DashboardPayload,
   type DrinkPopularity,
 } from "@/features/company/dashboard/service";
+import {
+  Alert,
+  Badge,
+  Card,
+  CardBody,
+  CardHeader,
+  EmptyState,
+  PageContainer,
+  Section,
+  SkeletonMetrics,
+  StatCard,
+  StatGrid,
+} from "@/components/kob";
 
 const POLL_MS = 15_000;
 
@@ -510,175 +523,168 @@ export default function CommandCenter() {
     : [];
 
   return (
-    <div className="cmd-page cmd-page-full" dir={isRTL ? "rtl" : "ltr"}>
-      <header className="cmd-plain-header">
-        <div>
-          <h1>
-            {greeting(now.getHours(), isRTL)}, <span>{userName}</span>
+    <PageContainer size="xl" className="kob-flex-col kob-gap-6" dir={isRTL ? "rtl" : "ltr"}>
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="kob-h1">
+            {greeting(now.getHours(), isRTL)}, <span className="text-[color:var(--kob-gold,inherit)]">{userName}</span>
           </h1>
-          <p>
+          <p className="kob-body text-muted">
             {dateLabel} · {timeLabel}
           </p>
         </div>
-        <span className="cmd-header-message">
+        <Badge tone="info">
           {isRTL ? "هذه نظرة شاملة على أداء شركتك اليوم." : "Here is the complete view of your company today."}
-        </span>
+        </Badge>
       </header>
 
-      {error ? <div className="company-alert error">{error}</div> : null}
+      {error ? <Alert tone="danger">{error}</Alert> : null}
 
-      <div className="cmd-metric-groups">
+      <div className="flex flex-col gap-6">
         {(showSkeleton ? Array.from({ length: 4 }) : groups).map((group: any, index) =>
           !group ? (
-            <section className="cmd-metric-group" key={index}>
-              <div className="cmd-group-heading skeleton-line" />
-              <div className="cmd-group-grid">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div className="cmd-metric-card skeleton" key={i} />
-                ))}
-              </div>
-            </section>
+            <Section key={index}>
+              <SkeletonMetrics count={4} />
+            </Section>
           ) : (
-            <section className="cmd-metric-group" key={group.key}>
-              <div className="cmd-group-heading">
-                <div>
-                  <h2>{group.title}</h2>
-                  <p>{group.subtitle}</p>
-                </div>
-              </div>
-              <div className="cmd-group-grid">
+            <Section key={group.key} title={group.title} description={group.subtitle}>
+              <StatGrid>
                 {group.metrics.map((metric: Metric) => {
                   const Icon = metric.icon;
                   const positive = typeof metric.trend === "number" && metric.trend >= 0;
                   return (
-                    <Link to={metric.to} key={metric.key} className="cmd-metric-card">
-                      <div className="cmd-metric-top">
-                        <span className="cmd-metric-icon">
-                          <Icon className="h-4 w-4" />
-                        </span>
-                        {typeof metric.trend === "number" ? (
-                          <span className={`cmd-trend ${positive ? "positive" : "negative"}`}>
-                            {positive ? (
-                              <TrendingUp className="h-3.5 w-3.5" />
-                            ) : (
-                              <TrendingDown className="h-3.5 w-3.5" />
-                            )}
-                            {Math.abs(metric.trend)}%
-                          </span>
-                        ) : null}
-                      </div>
-                      <span className="cmd-metric-label">{metric.label}</span>
-                      <strong className="cmd-metric-value">
-                        <AnimatedNumber value={metric.value} fmt={metric.format} />
-                      </strong>
-                      {metric.note ? <small>{metric.note}</small> : null}
+                    <Link to={metric.to} key={metric.key} className="kob-min-w-0">
+                      <StatCard
+                        icon={<Icon className="h-4 w-4" />}
+                        label={metric.label}
+                        value={<AnimatedNumber value={metric.value} fmt={metric.format} />}
+                        hint={metric.note}
+                        trend={
+                          typeof metric.trend === "number" ? (
+                            <span
+                              className={`inline-flex items-center gap-1 ${positive ? "text-[color:var(--kob-success,green)]" : "text-[color:var(--kob-danger,red)]"}`}
+                            >
+                              {positive ? (
+                                <TrendingUp className="h-3.5 w-3.5" />
+                              ) : (
+                                <TrendingDown className="h-3.5 w-3.5" />
+                              )}
+                              {Math.abs(metric.trend)}%
+                            </span>
+                          ) : undefined
+                        }
+                      />
                     </Link>
                   );
                 })}
-              </div>
-            </section>
+              </StatGrid>
+            </Section>
           ),
         )}
       </div>
 
-      <section className="cmd-section">
-        <div className="cmd-section-head">
-          <span className="cmd-kicker">{isRTL ? "مركز الإجراءات" : "Action Center"}</span>
-          <h2>{isRTL ? "ما الذي يحتاج انتباهك الآن؟" : "What needs your attention now?"}</h2>
-        </div>
+      <Section
+        title={isRTL ? "ما الذي يحتاج انتباهك الآن؟" : "What needs your attention now?"}
+        description={isRTL ? "مركز الإجراءات" : "Action Center"}
+      >
         {showSkeleton ? (
-          <div className="cmd-focus-grid">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[0, 1, 2].map((item) => (
-              <div key={item} className="cmd-focus-card skeleton" />
+              <SkeletonMetrics key={item} count={1} />
             ))}
           </div>
         ) : focus.length === 0 ? (
-          <div className="cmd-focus-empty">
-            <CheckCircle2 className="h-5 w-5" />
-            {isRTL ? "لا توجد إجراءات عاجلة الآن." : "Nothing urgent right now."}
-          </div>
+          <EmptyState
+            icon={<CheckCircle2 className="h-6 w-6" />}
+            title={isRTL ? "لا توجد إجراءات عاجلة الآن." : "Nothing urgent right now."}
+          />
         ) : (
-          <div className="cmd-focus-grid">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {focus.map((item) => {
               const Icon = item.icon;
+              const tone = item.priority === "high" ? "danger" : item.priority === "medium" ? "warning" : "neutral";
               return (
-                <Link
-                  to={item.to}
-                  key={item.id}
-                  className="cmd-focus-card cmd-focus-link"
-                  data-priority={item.priority}
-                >
-                  <div className="cmd-focus-icon">
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  <div className="cmd-focus-copy">
-                    <strong>{item.title}</strong>
-                    <p>{item.desc}</p>
-                  </div>
+                <Link to={item.to} key={item.id} className="kob-min-w-0">
+                  <Card interactive className="h-full">
+                    <CardBody className="flex items-start gap-3">
+                      <span className="shrink-0">
+                        <Badge tone={tone as any} icon={<Icon className="h-4 w-4" />} />
+                      </span>
+                      <div className="min-w-0">
+                        <strong className="kob-body block truncate">{item.title}</strong>
+                        <p className="kob-body-small text-muted">{item.desc}</p>
+                      </div>
+                    </CardBody>
+                  </Card>
                 </Link>
               );
             })}
           </div>
         )}
-      </section>
+      </Section>
 
-      <section className="cmd-two cmd-two-wide">
-        <article className="cmd-panel cmd-activity-panel">
-          <header>
-            <div>
-              <span className="cmd-kicker">{isRTL ? "النشاط التشغيلي" : "Operational Feed"}</span>
-              <h3>{isRTL ? "آخر الأنشطة" : "Latest activity"}</h3>
-            </div>
-            <Activity className="h-4 w-4" />
-          </header>
-          <ol className="cmd-timeline">
+      <section className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
+        <Card>
+          <CardHeader
+            title={isRTL ? "آخر الأنشطة" : "Latest activity"}
+            description={isRTL ? "النشاط التشغيلي" : "Operational Feed"}
+            icon={<Activity className="h-4 w-4" />}
+          />
+          <CardBody>
             {activity.length === 0 && !showSkeleton ? (
-              <li className="cmd-empty">{isRTL ? "لا يوجد نشاط بعد." : "No activity yet."}</li>
-            ) : null}
-            {activity.map((item) => (
-              <li key={item.id}>
-                <span className="cmd-timeline-dot" data-kind={item.kind}>
-                  {item.kind === "customer" ? <UserPlus className="h-3.5 w-3.5" /> : <Coffee className="h-3.5 w-3.5" />}
-                </span>
-                <div>
-                  <strong>{item.title}</strong>
-                  {item.subtitle ? <small>{item.subtitle}</small> : null}
-                </div>
-                <time>{relativeTime(item.time, now, isRTL)}</time>
-              </li>
-            ))}
-          </ol>
-        </article>
+              <EmptyState title={isRTL ? "لا يوجد نشاط بعد." : "No activity yet."} />
+            ) : (
+              <ol className="flex flex-col gap-3">
+                {activity.map((item) => (
+                  <li key={item.id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3">
+                    <span className="shrink-0 mt-1">
+                      {item.kind === "customer" ? (
+                        <UserPlus className="h-3.5 w-3.5" />
+                      ) : (
+                        <Coffee className="h-3.5 w-3.5" />
+                      )}
+                    </span>
+                    <div className="min-w-0">
+                      <strong className="kob-body block truncate">{item.title}</strong>
+                      {item.subtitle ? <small className="kob-body-small text-muted block truncate">{item.subtitle}</small> : null}
+                    </div>
+                    <time className="kob-body-small text-muted shrink-0">{relativeTime(item.time, now, isRTL)}</time>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </CardBody>
+        </Card>
 
-        <article className="cmd-panel">
-          <header>
-            <div>
-              <span className="cmd-kicker">{isRTL ? "فرص الأعمال" : "Business Opportunities"}</span>
-              <h3>{isRTL ? "فرص للنمو" : "Growth opportunities"}</h3>
-            </div>
-            <Zap className="h-4 w-4" />
-          </header>
-          <ul className="cmd-opportunity-cards">
-            {opportunities.map((item) => {
-              const Icon = item.icon;
-              return (
-                <li key={item.id}>
-                  <Link to={item.to}>
-                    <span className="cmd-opp-icon">
-                      <Icon className="h-4 w-4" />
-                    </span>
-                    <span>
-                      <strong>{item.title}</strong>
-                      <small>{item.desc}</small>
-                    </span>
-                    <Sparkles className="h-4 w-4" />
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </article>
+        <Card>
+          <CardHeader
+            title={isRTL ? "فرص للنمو" : "Growth opportunities"}
+            description={isRTL ? "فرص الأعمال" : "Business Opportunities"}
+            icon={<Zap className="h-4 w-4" />}
+          />
+          <CardBody>
+            <ul className="flex flex-col gap-3">
+              {opportunities.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <li key={item.id}>
+                    <Link to={item.to} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
+                      <span className="shrink-0">
+                        <Icon className="h-4 w-4" />
+                      </span>
+                      <span className="min-w-0">
+                        <strong className="kob-body block truncate">{item.title}</strong>
+                        <small className="kob-body-small text-muted block truncate">{item.desc}</small>
+                      </span>
+                      <Sparkles className="h-4 w-4 shrink-0" />
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </CardBody>
+        </Card>
       </section>
-    </div>
+    </PageContainer>
   );
 }
