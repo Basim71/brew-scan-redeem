@@ -1,7 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Grid3x3, List, Search, Users } from "lucide-react";
+import { Grid3x3, List, Users } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
+import {
+  Button,
+  DataTable,
+  IconButton,
+  NoResultsState,
+  SearchInput,
+  Select,
+  StatusBadge,
+  type Column,
+  type StatusTone,
+} from "@/components/kob";
 import { aggregateCustomers, type CustomerAggregate } from "./aggregate";
 import { loadCustomerHub, type HubBundle } from "./service";
 import { getSavedView, saveView } from "./notes";
@@ -11,6 +22,24 @@ type FilterKey = "all" | "active" | "expiring" | "expired";
 type SortKey = "newest" | "oldest" | "spend" | "orders" | "recent";
 
 const REFRESH_MS = 5000;
+
+const STATUS_TONE: Record<CustomerAggregate["status"], StatusTone> = {
+  active: "success",
+  expiring: "warning",
+  expired: "error",
+  no_membership: "neutral",
+};
+
+function statusLabel(status: CustomerAggregate["status"], isAr: boolean) {
+  return isAr
+    ? {
+        active: "نشط",
+        expiring: "قارب على الانتهاء",
+        expired: "منتهي",
+        no_membership: "بدون عضوية",
+      }[status]
+    : { active: "Active", expiring: "Expiring", expired: "Expired", no_membership: "No Membership" }[status];
+}
 
 export function CustomerHub() {
   const { lang, fmtNum } = useI18n();
@@ -109,6 +138,68 @@ export function CustomerHub() {
     return Array.from(map.values());
   }, [aggregates, isAr]);
 
+  const filterLabels: Record<FilterKey, string> = isAr
+    ? { all: "الكل", active: "نشط", expiring: "قارب على الانتهاء", expired: "منتهي" }
+    : { all: "All", active: "Active", expiring: "Expiring in 7 Days", expired: "Expired" };
+
+  const columns: Column<CustomerAggregate>[] = [
+    {
+      key: "customer",
+      header: isAr ? "العميل" : "Customer",
+      render: (a) => (
+        <div className="flex min-w-0 items-center gap-2">
+          <div className="hub-avatar sm shrink-0">{a.customer.name.slice(0, 1)}</div>
+          <div className="min-w-0">
+            <strong className="block truncate">{a.customer.name}</strong>
+            <small dir="ltr">{a.customer.phone}</small>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "membership",
+      header: isAr ? "العضوية" : "Membership",
+      render: (a) =>
+        a.activeSubscription
+          ? isAr
+            ? a.activeSubscription.plan?.name_ar
+            : a.activeSubscription.plan?.name_en
+          : "—",
+    },
+    {
+      key: "status",
+      header: isAr ? "الحالة" : "Status",
+      render: (a) => <StatusBadge tone={STATUS_TONE[a.status]}>{statusLabel(a.status, isAr)}</StatusBadge>,
+    },
+    {
+      key: "lastVisit",
+      header: isAr ? "آخر زيارة" : "Last Visit",
+      render: (a) => (a.lastVisit ? new Date(a.lastVisit).toLocaleDateString(isAr ? "ar-SA" : "en-US") : "—"),
+    },
+    {
+      key: "favoriteDrink",
+      header: isAr ? "المشروب المفضل" : "Favorite Drink",
+      render: (a) => (a.favoriteDrink ? (isAr ? a.favoriteDrink.name_ar : a.favoriteDrink.name_en) : "—"),
+    },
+    {
+      key: "actions",
+      header: "",
+      align: "end",
+      render: (a) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedId(a.customer.id);
+          }}
+        >
+          {isAr ? "عرض" : "View"}
+        </Button>
+      ),
+    },
+  ];
+
   return (
     <div className="hub-page" dir={isAr ? "rtl" : "ltr"}>
       <header className="hub-header">
@@ -123,75 +214,71 @@ export function CustomerHub() {
         </div>
       </header>
 
-      {error && <div className="hub-alert error">{error}</div>}
+      {error && <StatusBadge tone="error">{error}</StatusBadge>}
 
       <section className="hub-toolbar">
-        <label className="hub-search">
-          <Search className="h-4 w-4" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={isAr ? "ابحث بالاسم، الهاتف أو QR…" : "Search name, phone or QR…"}
-          />
-        </label>
+        <SearchInput
+          value={search}
+          onValueChange={setSearch}
+          placeholder={isAr ? "ابحث بالاسم، الهاتف أو QR…" : "Search name, phone or QR…"}
+          label={isAr ? "بحث" : "Search"}
+        />
         <div className="hub-chips">
           {(["all", "active", "expiring", "expired"] as FilterKey[]).map((k) => (
             <button key={k} data-active={filter === k} onClick={() => setFilter(k)}>
-              {isAr
-                ? {
-                    all: "الكل",
-                    active: "نشط",
-                    expiring: "قارب على الانتهاء",
-                    expired: "منتهي",
-                  }[k]
-                : {
-                    all: "All",
-                    active: "Active",
-                    expiring: "Expiring in 7 Days",
-                    expired: "Expired",
-                  }[k]}
+              {filterLabels[k]}
             </button>
           ))}
         </div>
         <div className="hub-selects">
-          <select value={branchId} onChange={(e) => setBranchId(e.target.value)}>
+          <Select value={branchId} onChange={(e) => setBranchId(e.target.value)} aria-label={isAr ? "الفرع" : "Branch"}>
             <option value="all">{isAr ? "كل الفروع" : "All Branches"}</option>
             {(bundle?.branches ?? []).map((b) => (
               <option key={b.id} value={b.id}>
                 {isAr ? b.name_ar : b.name_en}
               </option>
             ))}
-          </select>
-          <select value={planId} onChange={(e) => setPlanId(e.target.value)}>
+          </Select>
+          <Select value={planId} onChange={(e) => setPlanId(e.target.value)} aria-label={isAr ? "الخطة" : "Plan"}>
             <option value="all">{isAr ? "كل الخطط" : "All Plans"}</option>
             {(bundle?.plans ?? []).map((p) => (
               <option key={p.id} value={p.id}>
                 {isAr ? p.name_ar : p.name_en}
               </option>
             ))}
-          </select>
-          <select value={drinkId} onChange={(e) => setDrinkId(e.target.value)}>
+          </Select>
+          <Select value={drinkId} onChange={(e) => setDrinkId(e.target.value)} aria-label={isAr ? "المشروب" : "Drink"}>
             <option value="all">{isAr ? "كل المشروبات" : "All Drinks"}</option>
             {drinkOptions.map((d) => (
               <option key={d.id} value={d.id}>
                 {d.label}
               </option>
             ))}
-          </select>
-          <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)}>
+          </Select>
+          <Select value={sort} onChange={(e) => setSort(e.target.value as SortKey)} aria-label={isAr ? "الترتيب" : "Sort"}>
             <option value="newest">{isAr ? "الأحدث" : "Newest"}</option>
             <option value="oldest">{isAr ? "الأقدم" : "Oldest"}</option>
             <option value="spend">{isAr ? "الأعلى إنفاقًا" : "Highest Spending"}</option>
             <option value="orders">{isAr ? "الأكثر طلبًا" : "Most Orders"}</option>
             <option value="recent">{isAr ? "الأكثر نشاطًا" : "Recently Active"}</option>
-          </select>
+          </Select>
           <div className="hub-view-toggle" role="tablist">
-            <button data-active={view === "table"} onClick={() => setView("table")} aria-label="Table">
+            <IconButton
+              label={isAr ? "جدول" : "Table"}
+              variant={view === "table" ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => setView("table")}
+            >
               <List className="h-4 w-4" />
-            </button>
-            <button data-active={view === "grid"} onClick={() => setView("grid")} aria-label="Grid">
+            </IconButton>
+            <IconButton
+              label={isAr ? "شبكة" : "Grid"}
+              variant={view === "grid" ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => setView("grid")}
+            >
               <Grid3x3 className="h-4 w-4" />
-            </button>
+            </IconButton>
           </div>
         </div>
       </section>
@@ -204,68 +291,23 @@ export function CustomerHub() {
         </div>
 
         {loading && !bundle ? (
-          <div className="hub-skeleton">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} />
-            ))}
-          </div>
+          <DataTable columns={columns} rows={[]} rowKey={(a) => a.customer.id} loading caption={isAr ? "العملاء" : "Customers"} />
         ) : filteredSorted.length === 0 ? (
-          <div className="hub-empty-panel">
-            <Users className="h-6 w-6" />
-            <p>{isAr ? "لا توجد نتائج" : "No customers match your filters."}</p>
-          </div>
+          <NoResultsState
+            title={isAr ? "لا توجد نتائج" : "No customers found"}
+            description={isAr ? "لا توجد نتائج تطابق عوامل التصفية." : "No customers match your filters."}
+          />
         ) : view === "table" ? (
-          <div className="hub-table-wrap">
-            <table className="hub-table">
-              <thead>
-                <tr>
-                  <th>{isAr ? "العميل" : "Customer"}</th>
-                  <th>{isAr ? "العضوية" : "Membership"}</th>
-                  <th>{isAr ? "الحالة" : "Status"}</th>
-                  <th>{isAr ? "آخر زيارة" : "Last Visit"}</th>
-                  <th>{isAr ? "المشروب المفضل" : "Favorite Drink"}</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredSorted.map((a) => (
-                  <tr key={a.customer.id} onClick={() => setSelectedId(a.customer.id)}>
-                    <td>
-                      <div className="hub-cell-customer">
-                        <div className="hub-avatar sm">{a.customer.name.slice(0, 1)}</div>
-                        <div>
-                          <strong>{a.customer.name}</strong>
-                          <small dir="ltr">{a.customer.phone}</small>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      {a.activeSubscription
-                        ? isAr
-                          ? a.activeSubscription.plan?.name_ar
-                          : a.activeSubscription.plan?.name_en
-                        : "—"}
-                    </td>
-                    <td>
-                      <span className={`hub-tag ${a.status}`}>{a.status}</span>
-                    </td>
-                    <td>{a.lastVisit ? new Date(a.lastVisit).toLocaleDateString(isAr ? "ar-SA" : "en-US") : "—"}</td>
-                    <td>{a.favoriteDrink ? (isAr ? a.favoriteDrink.name_ar : a.favoriteDrink.name_en) : "—"}</td>
-                    <td>
-                      <button
-                        className="hub-btn ghost"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedId(a.customer.id);
-                        }}
-                      >
-                        {isAr ? "عرض" : "View"}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div onClick={(e) => {
+            const tr = (e.target as HTMLElement).closest("tr[data-row-id]");
+            if (tr) setSelectedId(tr.getAttribute("data-row-id"));
+          }}>
+            <DataTable
+              columns={columns}
+              rows={filteredSorted}
+              rowKey={(a) => a.customer.id}
+              caption={isAr ? "العملاء" : "Customers"}
+            />
           </div>
         ) : (
           <div className="hub-grid-view">
@@ -273,13 +315,13 @@ export function CustomerHub() {
               <button key={a.customer.id} className="hub-card" onClick={() => setSelectedId(a.customer.id)}>
                 <div className="hub-card-top">
                   <div className="hub-avatar">{a.customer.name.slice(0, 1)}</div>
-                  <div className="hub-card-name">
-                    <strong>{a.customer.name}</strong>
+                  <div className="hub-card-name min-w-0">
+                    <strong className="block truncate">{a.customer.name}</strong>
                     <small dir="ltr">{a.customer.phone}</small>
                   </div>
                 </div>
                 <div className="hub-card-meta">
-                  <span className={`hub-tag ${a.status}`}>{a.status}</span>
+                  <StatusBadge tone={STATUS_TONE[a.status]}>{statusLabel(a.status, isAr)}</StatusBadge>
                   <small>{a.favoriteDrink ? (isAr ? a.favoriteDrink.name_ar : a.favoriteDrink.name_en) : "—"}</small>
                 </div>
               </button>

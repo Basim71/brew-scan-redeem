@@ -523,7 +523,8 @@ export default function CommandCenter() {
     : [];
 
   return (
-    <PageContainer size="xl" className="kob-flex-col kob-gap-6" dir={isRTL ? "rtl" : "ltr"}>
+    <div dir={isRTL ? "rtl" : "ltr"}>
+    <PageContainer size="xl" className="flex flex-col gap-6">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <h1 className="kob-h1">
@@ -608,7 +609,9 @@ export default function CommandCenter() {
                   <Card interactive className="h-full">
                     <CardBody className="flex items-start gap-3">
                       <span className="shrink-0">
-                        <Badge tone={tone as any} icon={<Icon className="h-4 w-4" />} />
+                        <Badge tone={tone as any} icon={<Icon className="h-4 w-4" />}>
+                          {item.priority === "high" ? (isRTL ? "عاجل" : "High") : item.priority === "medium" ? (isRTL ? "متوسط" : "Medium") : (isRTL ? "منخفض" : "Low")}
+                        </Badge>
                       </span>
                       <div className="min-w-0">
                         <strong className="kob-body block truncate">{item.title}</strong>
@@ -686,5 +689,6 @@ export default function CommandCenter() {
         </Card>
       </section>
     </PageContainer>
+    </div>
   );
 }
