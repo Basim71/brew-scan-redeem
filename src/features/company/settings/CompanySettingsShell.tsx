@@ -297,37 +297,32 @@ export function CompanySettingsShell() {
 
   return (
     <div className="cs-shell" dir={isAr ? "rtl" : "ltr"}>
-      <header className="cs-header">
-        <div>
-          <span className="cs-eyebrow">{isAr ? "لوحة الشركة" : "Company"}</span>
-          <h1>{isAr ? "مركز إدارة الشركة" : "Company Administration"}</h1>
-          <p>
-            {isAr
-              ? "مصدر واحد لكل إعدادات الشركة — كل تغيير يُحفظ فورًا ويُطبَّق على النظام بالكامل."
-              : "One source of truth for company configuration — every change saves instantly and applies everywhere."}
-          </p>
-        </div>
-        <SaveIndicator state={saveState} lang={isAr ? "ar" : "en"} message={saveMessage} />
-      </header>
+      <PageHeader
+        eyebrow={isAr ? "لوحة الشركة" : "Company"}
+        title={isAr ? "مركز إدارة الشركة" : "Company Administration"}
+        description={
+          isAr
+            ? "مصدر واحد لكل إعدادات الشركة — كل تغيير يُحفظ فورًا ويُطبَّق على النظام بالكامل."
+            : "One source of truth for company configuration — every change saves instantly and applies everywhere."
+        }
+        action={<SaveIndicator state={saveState} lang={isAr ? "ar" : "en"} message={saveMessage} />}
+      />
 
       {!canEdit ? (
-        <div className="cs-readonly">
+        <WarningCard>
           {isAr
             ? "لديك صلاحية عرض فقط. تعديل إعدادات الشركة متاح لمالك الشركة والمشرفين."
             : "You have read-only access. Only company owners and admins can edit settings."}
-        </div>
+        </WarningCard>
       ) : null}
 
       <div className="cs-layout">
         <nav className="cs-nav" aria-label={isAr ? "أقسام الإعدادات" : "Settings sections"}>
-          <label className="cs-nav-search">
-            <SearchIcon className="h-3.5 w-3.5" />
-            <input
-              value={navQuery}
-              placeholder={isAr ? "ابحث في الإعدادات" : "Search settings"}
-              onChange={(event) => setNavQuery(event.target.value)}
-            />
-          </label>
+          <SearchInput
+            value={navQuery}
+            onValueChange={setNavQuery}
+            placeholder={isAr ? "ابحث في الإعدادات" : "Search settings"}
+          />
           {GROUPS.map((group) => {
             const items = navItems.filter((item) => item.group === group.key);
             if (!items.length) return null;
