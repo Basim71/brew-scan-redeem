@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Calendar, Clock, Coffee, History, NotebookPen, Phone, QrCode, Sparkles, User, X } from "lucide-react";
+import { Calendar, Clock, Coffee, History, NotebookPen, Phone, QrCode, Sparkles, User } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { SideDrawer, StatusBadge, Textarea, type StatusTone } from "@/components/kob";
 import type { CustomerAggregate } from "./aggregate";
 import { getNote, setNote } from "./notes";
 
@@ -8,6 +9,26 @@ type Props = {
   aggregate: CustomerAggregate | null;
   onClose: () => void;
 };
+
+const STATUS_TONE: Record<CustomerAggregate["status"], StatusTone> = {
+  active: "success",
+  expiring: "warning",
+  expired: "error",
+  no_membership: "neutral",
+};
+
+const GENERIC_TONE: Record<string, StatusTone> = {
+  active: "success",
+  approved: "success",
+  pending: "warning",
+  expired: "error",
+  rejected: "error",
+  cancelled: "neutral",
+};
+
+function toneFor(status: string): StatusTone {
+  return GENERIC_TONE[status] ?? "neutral";
+}
 
 function fmtDate(iso: string | null, isRTL: boolean) {
   if (!iso) return "—";
@@ -30,22 +51,23 @@ export function CustomerDrawer({ aggregate, onClose }: Props) {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
   }, [aggregate?.customer.id]);
 
-  if (!aggregate) return null;
   const a = aggregate;
 
   return (
-    <>
-      <div className="hub-drawer-scrim" onClick={onClose} aria-hidden />
-      <aside className="hub-drawer" dir={isRTL ? "rtl" : "ltr"} role="dialog" aria-modal="true">
-        <header className="hub-drawer-head">
+    <SideDrawer
+      open={!!a}
+      onClose={onClose}
+      width="md"
+      title={
+        a ? (
           <div className="hub-drawer-identity">
             <div className="hub-avatar" aria-hidden>
               <User className="h-6 w-6" />
             </div>
-            <div className="hub-drawer-name">
+            <div className="hub-drawer-name min-w-0">
               <div className="hub-drawer-name-row">
                 <strong>{a.customer.name}</strong>
-                <span className={`hub-tag ${a.status}`}>
+                <StatusBadge tone={STATUS_TONE[a.status]}>
                   {isAr
                     ? {
                         active: "نشط",
@@ -56,17 +78,18 @@ export function CustomerDrawer({ aggregate, onClose }: Props) {
                     : { active: "Active", expiring: "Expiring", expired: "Expired", no_membership: "No Membership" }[
                         a.status
                       ]}
-                </span>
+                </StatusBadge>
               </div>
               <small dir="ltr">{a.customer.phone}</small>
             </div>
           </div>
-          <button className="hub-icon-btn" onClick={onClose} aria-label={isAr ? "إغلاق" : "Close"}>
-            <X className="h-4 w-4" />
-          </button>
-        </header>
-
-        <div className="hub-drawer-body" ref={scrollRef}>
+        ) : (
+          ""
+        )
+      }
+    >
+      {a ? (
+        <div ref={scrollRef} dir={isRTL ? "rtl" : "ltr"}>
           {/* Overview */}
           <section className="hub-section">
             <h3>
@@ -114,7 +137,7 @@ export function CustomerDrawer({ aggregate, onClose }: Props) {
                   </div>
                   <div className="hub-kv">
                     <span>{isAr ? "الحالة" : "Status"}</span>
-                    <strong className={`hub-tag ${a.activeSubscription.status}`}>{a.activeSubscription.status}</strong>
+                    <StatusBadge tone={toneFor(a.activeSubscription.status)}>{a.activeSubscription.status}</StatusBadge>
                   </div>
                   <div className="hub-kv">
                     <span>{isAr ? "تاريخ البدء" : "Start"}</span>
@@ -153,7 +176,7 @@ export function CustomerDrawer({ aggregate, onClose }: Props) {
                       <small>
                         {fmtDate(s.start_date, isRTL)} → {fmtDate(s.end_date, isRTL)}
                       </small>
-                      <em className={`hub-tag ${s.status}`}>{s.status}</em>
+                      <StatusBadge tone={toneFor(s.status)}>{s.status}</StatusBadge>
                     </li>
                   ))}
                 </ul>
@@ -212,7 +235,7 @@ export function CustomerDrawer({ aggregate, onClose }: Props) {
                     <small>
                       {fmtDate(o.order_date, isRTL)} · {isAr ? o.branch?.name_ar : o.branch?.name_en}
                     </small>
-                    <em className={`hub-tag ${o.status}`}>{o.status}</em>
+                    <StatusBadge tone={toneFor(o.status)}>{o.status}</StatusBadge>
                   </li>
                 ))}
               </ul>
@@ -258,8 +281,7 @@ export function CustomerDrawer({ aggregate, onClose }: Props) {
               <NotebookPen className="h-4 w-4" />
               {isAr ? "ملاحظات داخلية" : "Internal Notes"}
             </h3>
-            <textarea
-              className="hub-textarea"
+            <Textarea
               value={note}
               rows={4}
               placeholder={isAr ? "ملاحظات مرئية للموظفين فقط…" : "Notes visible to staff only…"}
@@ -270,7 +292,7 @@ export function CustomerDrawer({ aggregate, onClose }: Props) {
             />
           </section>
         </div>
-      </aside>
-    </>
+      ) : null}
+    </SideDrawer>
   );
 }

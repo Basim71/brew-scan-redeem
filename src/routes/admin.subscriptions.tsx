@@ -1,18 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
-import {
-  Loader2,
-  RefreshCw,
-  Users,
-} from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { RefreshCw, Users } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
-import { StatusPill } from "@/lib/ui";
+import { Button, StatusBadge, LoadingState, EmptyState, Alert, type StatusTone } from "@/components/kob";
 
 export const Route = createFileRoute(
   "/admin/subscriptions",
@@ -40,6 +32,15 @@ type SubscriptionRow = {
   branch?: {
     name_en?: string | null;
   } | null;
+};
+
+const STATUS_TONE: Record<string, StatusTone> = {
+  active: "success",
+  approved: "success",
+  pending: "warning",
+  inactive: "error",
+  rejected: "error",
+  expired: "error",
 };
 
 function AdminSubscriptionsPage() {
@@ -108,24 +109,16 @@ function AdminSubscriptionsPage() {
           </p>
         </div>
 
-        <button
-          type="button"
+        <Button
+          variant="ghost"
           onClick={() => {
             void loadSubscriptions();
           }}
-          disabled={loading}
-          className="btn-ghost-brass flex items-center gap-2 px-4 py-2.5"
+          loading={loading}
+          leadingIcon={<RefreshCw className="h-4 w-4" />}
         >
-          {loading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <RefreshCw className="h-4 w-4" />
-          )}
-
-          <span>
-            Refresh
-          </span>
-        </button>
+          Refresh
+        </Button>
       </div>
 
       <section className="panel kob-content-card">
@@ -148,8 +141,8 @@ function AdminSubscriptionsPage() {
         </div>
 
         {error && (
-          <div className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-            {error}
+          <div className="mb-4">
+            <Alert tone="danger">{error}</Alert>
           </div>
         )}
 
@@ -199,9 +192,9 @@ function AdminSubscriptionsPage() {
                   </td>
 
                   <td>
-                    <StatusPill
-                      s={row.status}
-                    />
+                    <StatusBadge tone={STATUS_TONE[row.status] ?? "neutral"}>
+                      {row.status}
+                    </StatusBadge>
                   </td>
                 </tr>
               ))}
@@ -211,9 +204,9 @@ function AdminSubscriptionsPage() {
                   <tr>
                     <td
                       colSpan={5}
-                      className="py-10 text-center text-cream-dim"
+                      className="py-10"
                     >
-                      {t("empty_subs")}
+                      <EmptyState description={t("empty_subs")} />
                     </td>
                   </tr>
                 )}
@@ -223,9 +216,9 @@ function AdminSubscriptionsPage() {
                   <tr>
                     <td
                       colSpan={5}
-                      className="py-10 text-center text-cream-dim"
+                      className="py-10"
                     >
-                      <Loader2 className="mx-auto h-5 w-5 animate-spin text-caramel" />
+                      <LoadingState />
                     </td>
                   </tr>
                 )}

@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
 import { Coffee, Copy, Eye, Flame, MoreHorizontal, Pencil, Power, Trash2 } from "lucide-react";
 
+import { Dropdown, DropdownItem, IconButton } from "@/components/kob";
 import { ALLERGEN_CARDS } from "./constants";
 import type { DrinkRecord, DrinkViewMode } from "./types";
 
@@ -23,18 +23,6 @@ function updatedLabel(iso: string | null): string {
 }
 
 export function DrinkTile({ drink, view, onPreview, onEdit, onToggle, onDuplicate, onDelete }: Props) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    function onDocClick(event: MouseEvent) {
-      if (!menuRef.current?.contains(event.target as Node)) setMenuOpen(false);
-    }
-    document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
-  }, [menuOpen]);
-
   return (
     <article className="ds-tile" data-view={view}>
       <div
@@ -65,52 +53,27 @@ export function DrinkTile({ drink, view, onPreview, onEdit, onToggle, onDuplicat
           Edit
         </span>
         <div className="ds-tile-actions" onClick={(event) => event.stopPropagation()}>
-          <button type="button" onClick={onPreview} title="Preview">
+          <IconButton label="Preview" size="sm" onClick={onPreview}>
             <Eye className="h-4 w-4" />
-          </button>
-          <div className="ds-tile-more" ref={menuRef}>
-            <button type="button" onClick={() => setMenuOpen((open) => !open)} title="More" aria-haspopup="menu">
-              <MoreHorizontal className="h-4 w-4" />
-            </button>
-            {menuOpen && (
-              <div className="ds-menu" role="menu">
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    onToggle();
-                  }}
-                >
-                  <Power className="h-4 w-4" />
-                  {drink.is_active ? "Disable" : "Enable"}
-                </button>
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    onDuplicate();
-                  }}
-                >
-                  <Copy className="h-4 w-4" />
-                  Duplicate
-                </button>
-                <button
-                  type="button"
-                  role="menuitem"
-                  className="ds-text-danger"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    onDelete();
-                  }}
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Delete
-                </button>
-              </div>
+          </IconButton>
+          <Dropdown
+            label="More actions"
+            trigger={({ toggle }) => (
+              <IconButton label="More" size="sm" aria-haspopup="menu" onClick={toggle}>
+                <MoreHorizontal className="h-4 w-4" />
+              </IconButton>
             )}
-          </div>
+          >
+            <DropdownItem icon={<Power className="h-4 w-4" />} onSelect={onToggle}>
+              {drink.is_active ? "Disable" : "Enable"}
+            </DropdownItem>
+            <DropdownItem icon={<Copy className="h-4 w-4" />} onSelect={onDuplicate}>
+              Duplicate
+            </DropdownItem>
+            <DropdownItem icon={<Trash2 className="h-4 w-4" />} tone="danger" onSelect={onDelete}>
+              Delete
+            </DropdownItem>
+          </Dropdown>
         </div>
       </div>
 

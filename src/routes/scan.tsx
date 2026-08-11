@@ -19,6 +19,7 @@ import {
   XCircle,
 } from "lucide-react";
 
+import { Alert, Button, Input as KobInput, PhoneInput as KobPhoneInput } from "@/components/kob";
 import { DrinkSlider } from "@/features/drinks/DrinkSlider";
 import type { Drink, DrinkOrderCustomization } from "@/features/drinks/types";
 import { supabase } from "@/integrations/supabase/client";
@@ -946,31 +947,19 @@ function ScanPage() {
             <div className="space-y-2">
               {branches.map(
                 (item) => (
-                  <button
+                  <Button
                     key={item.id}
-                    type="button"
+                    variant="secondary"
+                    block
+                    className="justify-start text-start font-semibold"
                     onClick={() => {
-                      setBranch(
-                        item,
-                      );
-
-                      setError(
-                        null,
-                      );
-
-                      setStep(
-                        "language",
-                      );
+                      setBranch(item);
+                      setError(null);
+                      setStep("language");
                     }}
-                    className="btn-ghost-brass flex w-full items-center justify-between px-4 py-4 text-start"
                   >
-                    <span className="font-semibold text-cream">
-                      {lang ===
-                      "ar"
-                        ? item.name_ar
-                        : item.name_en}
-                    </span>
-                  </button>
+                    {lang === "ar" ? item.name_ar : item.name_en}
+                  </Button>
                 ),
               )}
 
@@ -986,9 +975,7 @@ function ScanPage() {
 
             {error && (
               <div className="mt-4">
-                <ErrorBox
-                  message={error}
-                />
+                <Alert tone="danger">{error}</Alert>
               </div>
             )}
           </section>
@@ -1014,36 +1001,28 @@ function ScanPage() {
             </h1>
 
             <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                disabled={busy}
+              <Button
+                size="lg"
+                loading={busy}
+                className="py-5 font-display text-xl"
                 onClick={() => {
-                  void chooseLanguage(
-                    "en",
-                  );
+                  void chooseLanguage("en");
                 }}
-                className="btn-brass py-5 font-display text-xl"
               >
                 English
-              </button>
+              </Button>
 
-              <button
-                type="button"
-                disabled={busy}
+              <Button
+                size="lg"
+                loading={busy}
+                className="py-5 font-display text-xl"
                 onClick={() => {
-                  void chooseLanguage(
-                    "ar",
-                  );
+                  void chooseLanguage("ar");
                 }}
-                className="btn-brass py-5 font-display text-xl"
               >
                 العربية
-              </button>
+              </Button>
             </div>
-
-            {busy && (
-              <Loader2 className="mx-auto mt-5 h-5 w-5 animate-spin text-caramel" />
-            )}
           </section>
         )}
 
@@ -1058,48 +1037,39 @@ function ScanPage() {
 
             {error && (
               <div className="mx-auto mt-4 w-full max-w-sm">
-                <ErrorBox
-                  message={error}
-                />
+                <Alert tone="danger">{error}</Alert>
               </div>
             )}
 
             <div className="kob-voyager-page-actions">
-              <button
-                type="button"
+              <Button
+                block
+                size="lg"
+                leadingIcon={<UserPlus className="h-5 w-5" />}
+                className="kob-voyager-register-button"
                 onClick={() => {
                   setError(null);
                   setInfo(null);
-                  setStep(
-                    "register",
-                  );
+                  setStep("register");
                 }}
-                className="btn-brass kob-voyager-register-button"
               >
-                <UserPlus className="h-5 w-5" />
+                {lang === "ar" ? "تسجيل" : "Register"}
+              </Button>
 
-                <span>
-                  {lang === "ar"
-                    ? "تسجيل"
-                    : "Register"}
-                </span>
-              </button>
-
-              <button
-                type="button"
+              <Button
+                block
+                variant="ghost"
+                className="kob-voyager-existing-button"
                 onClick={() => {
                   setError(null);
                   setInfo(null);
-                  setStep(
-                    "phone",
-                  );
+                  setStep("phone");
                 }}
-                className="kob-voyager-existing-button"
               >
                 {lang === "ar"
                   ? "لدي اشتراك بالفعل"
                   : "I already have a subscription"}
-              </button>
+              </Button>
             </div>
           </section>
         )}
