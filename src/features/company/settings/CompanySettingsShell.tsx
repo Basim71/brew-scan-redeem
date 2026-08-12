@@ -16,7 +16,7 @@ import {
   WalletCards,
 } from "lucide-react";
 
-import { ErrorState, Input, LoadingState, PageHeader, Select, SearchInput, WarningCard } from "@/components/kob";
+import { Button, ConfirmDialog, ErrorState, Input, LoadingState, PageContainer, PageHeader, Select, SearchInput, WarningCard } from "@/components/kob";
 import { useI18n } from "@/lib/i18n";
 import { useOrganization, type OrganizationRole } from "@/providers/OrganizationProvider";
 import {
@@ -294,7 +294,8 @@ export function CompanySettingsShell() {
   if (!organizationId) return null;
 
   return (
-    <div className="cs-shell" dir={isAr ? "rtl" : "ltr"}>
+    <PageContainer className="cs-shell" size="xl">
+      <div dir={isAr ? "rtl" : "ltr"} className="cs-page-stack">
       <PageHeader
         eyebrow={isAr ? "لوحة الشركة" : "Company"}
         title={isAr ? "مركز إدارة الشركة" : "Company Administration"}
@@ -328,15 +329,17 @@ export function CompanySettingsShell() {
               <div key={group.key} className="cs-nav-group">
                 <span className="cs-nav-group-title">{isAr ? group.ar : group.en}</span>
                 {items.map((s) => (
-                  <button
+                  <Button
                     key={s.key}
                     type="button"
-                    data-active={s.key === section ? "true" : "false"}
+                    variant="ghost"
+                    className="cs-nav-item"
+                    data-active={s.key === section ? "true" : undefined}
+                    leadingIcon={<s.icon className="h-4 w-4" />}
                     onClick={() => setSection(s.key)}
                   >
-                    <s.icon className="h-4 w-4" />
-                    <span>{isAr ? s.ar : s.en}</span>
-                  </button>
+                    {isAr ? s.ar : s.en}
+                  </Button>
                 ))}
               </div>
             );
@@ -377,7 +380,8 @@ export function CompanySettingsShell() {
           ) : null}
         </div>
       </div>
-    </div>
+      </div>
+    </PageContainer>
   );
 }
 
