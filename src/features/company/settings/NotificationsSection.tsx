@@ -1,5 +1,6 @@
 import { Mail, MessageCircle, MessageSquare, Bell } from "lucide-react";
 
+import { Badge } from "@/components/kob";
 import { Card, Row, Toggle } from "./parts";
 import { TextInput } from "./inputs";
 import type { SectionProps } from "./types";
@@ -87,9 +88,9 @@ export function NotificationsSection({ settings, isAr, canEdit, commit }: Sectio
                     onChange={(v) => commit({ [p.channel]: v } as any, "notifications")}
                   />
                 </header>
-                <span className="cs-provider-status" data-connected={connected ? "true" : "false"}>
+                <Badge tone={connected ? "success" : "neutral"}>
                   {connected ? (isAr ? "متصل" : "Connected") : isAr ? "غير متصل" : "Not connected"}
-                </span>
+                </Badge>
                 <label>{isAr ? p.hintAr : p.hintEn}</label>
                 <TextInput
                   isAr={isAr}
