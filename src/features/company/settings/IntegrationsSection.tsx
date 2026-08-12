@@ -1,5 +1,6 @@
 import { CreditCard, KeyRound, Link2, Store, Webhook } from "lucide-react";
 
+import { Badge } from "@/components/kob";
 import { Card, Row, Toggle } from "./parts";
 import { TextInput } from "./inputs";
 import type { SectionProps } from "./types";
@@ -77,9 +78,9 @@ export function IntegrationsSection({ settings, isAr, canEdit, commit }: Section
                   <header>
                     <item.icon className="h-4 w-4" />
                     <b>{isAr ? item.ar : item.en}</b>
-                    <span className="cs-provider-status" data-connected={connected ? "true" : "false"}>
+                    <Badge tone={connected ? "success" : "neutral"}>
                       {connected ? (isAr ? "متصل" : "Connected") : isAr ? "غير متصل" : "Not connected"}
-                    </span>
+                    </Badge>
                   </header>
                   <label>{isAr ? item.hintAr : item.hintEn}</label>
                   <TextInput

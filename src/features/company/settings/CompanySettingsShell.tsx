@@ -16,7 +16,7 @@ import {
   WalletCards,
 } from "lucide-react";
 
-import { ErrorState, Input, LoadingState, PageHeader, Select, SearchInput, WarningCard } from "@/components/kob";
+import { Button, ConfirmDialog, ErrorState, Input, LoadingState, PageContainer, PageHeader, Select, SearchInput, WarningCard } from "@/components/kob";
 import { useI18n } from "@/lib/i18n";
 import { useOrganization, type OrganizationRole } from "@/providers/OrganizationProvider";
 import {
@@ -294,7 +294,8 @@ export function CompanySettingsShell() {
   if (!organizationId) return null;
 
   return (
-    <div className="cs-shell" dir={isAr ? "rtl" : "ltr"}>
+    <PageContainer className="cs-shell" size="xl">
+      <div dir={isAr ? "rtl" : "ltr"} className="cs-page-stack">
       <PageHeader
         eyebrow={isAr ? "لوحة الشركة" : "Company"}
         title={isAr ? "مركز إدارة الشركة" : "Company Administration"}
@@ -328,15 +329,17 @@ export function CompanySettingsShell() {
               <div key={group.key} className="cs-nav-group">
                 <span className="cs-nav-group-title">{isAr ? group.ar : group.en}</span>
                 {items.map((s) => (
-                  <button
+                  <Button
                     key={s.key}
                     type="button"
-                    data-active={s.key === section ? "true" : "false"}
+                    variant="ghost"
+                    className="cs-nav-item"
+                    data-active={s.key === section ? "true" : undefined}
+                    leadingIcon={<s.icon className="h-4 w-4" />}
                     onClick={() => setSection(s.key)}
                   >
-                    <s.icon className="h-4 w-4" />
-                    <span>{isAr ? s.ar : s.en}</span>
-                  </button>
+                    {isAr ? s.ar : s.en}
+                  </Button>
                 ))}
               </div>
             );
@@ -377,7 +380,8 @@ export function CompanySettingsShell() {
           ) : null}
         </div>
       </div>
-    </div>
+      </div>
+    </PageContainer>
   );
 }
 
@@ -753,8 +757,50 @@ function OrderingSection({ settings, isAr, canEdit, commit }: BodyProps) {
 }
 
 
+type SecurityConfirmAction =
+  | { kind: "two_factor_off" }
+  | { kind: "restriction_none" }
+  | { kind: "audit_log_off" };
+
 function SecuritySection({ settings, isAr, canEdit, commit }: BodyProps) {
   const d = canEdit ? undefined : true;
+  const [pendingAction, setPendingAction] = useState<SecurityConfirmAction | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const runConfirmed = useCallback(
+    async (patch: SettingsPatch) => {
+      setBusy(true);
+      try {
+        await commit(patch, "security");
+      } finally {
+        setBusy(false);
+        setPendingAction(null);
+      }
+    },
+    [commit],
+  );
+
+  const confirmCopy: Record<SecurityConfirmAction["kind"], { title: string; description: string }> = {
+    two_factor_off: {
+      title: isAr ? "تعطيل التحقق بخطوتين؟" : "Turn off two-factor authentication?",
+      description: isAr
+        ? "سيصبح تسجيل الدخول ممكنًا بكلمة المرور فقط لكل أعضاء الشركة."
+        : "Sign-in will rely on password only for every member of this company.",
+    },
+    restriction_none: {
+      title: isAr ? "إزالة قيود الدخول؟" : "Remove the login restriction?",
+      description: isAr
+        ? "سيتمكن الأعضاء من تسجيل الدخول من أي عنوان IP وفي أي وقت."
+        : "Members will be able to sign in from any IP address and at any time.",
+    },
+    audit_log_off: {
+      title: isAr ? "تعطيل سجل التغييرات؟" : "Disable the audit log?",
+      description: isAr
+        ? "لن يتم تسجيل التغييرات القادمة على إعدادات الشركة."
+        : "Future changes to company settings will no longer be recorded.",
+    },
+  };
+
   return (
     <div className="cs-stack">
       <Card title={isAr ? "الجلسات وكلمات المرور" : "Sessions & passwords"}>
@@ -774,7 +820,18 @@ function SecuritySection({ settings, isAr, canEdit, commit }: BodyProps) {
           />
         </Row>
         <Row label={isAr ? "التحقق بخطوتين" : "Two factor authentication"}>
-          <Toggle label="2fa" disabled={d} checked={settings.two_factor_required} onChange={(v) => commit({ two_factor_required: v }, "security")} />
+          <Toggle
+            label="2fa"
+            disabled={d}
+            checked={settings.two_factor_required}
+            onChange={(v) => {
+              if (!v) {
+                setPendingAction({ kind: "two_factor_off" });
+                return;
+              }
+              void commit({ two_factor_required: true }, "security");
+            }}
+          />
         </Row>
       </Card>
       <Card title={isAr ? "قيود الدخول" : "Login restrictions"}>
@@ -782,7 +839,13 @@ function SecuritySection({ settings, isAr, canEdit, commit }: BodyProps) {
           <Segmented
             disabled={d}
             value={settings.login_restriction}
-            onChange={(v) => commit({ login_restriction: v }, "security")}
+            onChange={(v) => {
+              if (v === "none" && settings.login_restriction !== "none") {
+                setPendingAction({ kind: "restriction_none" });
+                return;
+              }
+              void commit({ login_restriction: v }, "security");
+            }}
             options={[
               { value: "none" as const, label: isAr ? "بدون" : "None" },
               { value: "ip_allowlist" as const, label: isAr ? "قائمة IP" : "IP allowlist" },
@@ -806,9 +869,37 @@ function SecuritySection({ settings, isAr, canEdit, commit }: BodyProps) {
           />
         </Row>
         <Row label={isAr ? "تفعيل سجل التغييرات" : "Audit log enabled"}>
-          <Toggle label="audit" disabled={d} checked={settings.audit_log_enabled} onChange={(v) => commit({ audit_log_enabled: v }, "security")} />
+          <Toggle
+            label="audit"
+            disabled={d}
+            checked={settings.audit_log_enabled}
+            onChange={(v) => {
+              if (!v) {
+                setPendingAction({ kind: "audit_log_off" });
+                return;
+              }
+              void commit({ audit_log_enabled: true }, "security");
+            }}
+          />
         </Row>
       </Card>
+
+      <ConfirmDialog
+        open={pendingAction !== null}
+        title={pendingAction ? confirmCopy[pendingAction.kind].title : ""}
+        description={pendingAction ? confirmCopy[pendingAction.kind].description : ""}
+        tone="danger"
+        busy={busy}
+        confirmLabel={isAr ? "تأكيد" : "Confirm"}
+        cancelLabel={isAr ? "إلغاء" : "Cancel"}
+        onCancel={() => setPendingAction(null)}
+        onConfirm={() => {
+          if (!pendingAction) return;
+          if (pendingAction.kind === "two_factor_off") void runConfirmed({ two_factor_required: false });
+          else if (pendingAction.kind === "restriction_none") void runConfirmed({ login_restriction: "none" });
+          else if (pendingAction.kind === "audit_log_off") void runConfirmed({ audit_log_enabled: false });
+        }}
+      />
     </div>
   );
 }

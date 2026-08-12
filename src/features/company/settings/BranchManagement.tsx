@@ -5,15 +5,12 @@ import {
   Building2,
   Clock,
   Copy,
-  Loader2,
   MapPin,
   Plus,
   QrCode,
-  Search,
   Store,
   Trash2,
   Users,
-  X,
 } from "lucide-react";
 
 import {
@@ -25,6 +22,21 @@ import {
   type BranchRow,
 } from "@/services/company/branches.service";
 import { listCompanyMembers } from "@/services/company/company-members.service";
+import {
+  Badge,
+  Button,
+  Card as KobCard,
+  CardBody,
+  DangerDialog,
+  EmptyState,
+  FormDialog,
+  Input,
+  LoadingState,
+  Modal,
+  SearchInput,
+  Select,
+  StatusBadge,
+} from "@/components/kob";
 import { Card, Row, Segmented, Toggle } from "./parts";
 import { LogoUploader } from "./LogoUploader";
 import { TextInput, translateError } from "./inputs";
@@ -199,8 +211,7 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
 
       <Card title={isAr ? "إعدادات الفروع" : "Branch defaults"}>
         <Row label={isAr ? "الفرع الافتراضي" : "Default branch"}>
-          <select
-            className="cs-input"
+          <Select
             disabled={d}
             value={settings.default_branch_id ?? ""}
             onChange={(e) => commit({ default_branch_id: e.target.value || null }, "branches")}
@@ -211,7 +222,7 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
                 {isAr ? b.name_ar : b.name_en}
               </option>
             ))}
-          </select>
+          </Select>
         </Row>
         <Row label={isAr ? "رمز QR" : "Branch QR"}>
           <Segmented
@@ -235,38 +246,43 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
         }
         aside={
           canEdit ? (
-            <button
-              type="button"
-              className="cs-primary-btn"
+            <Button
               disabled={busy}
+              leadingIcon={<Plus className="h-4 w-4" />}
               onClick={() => {
                 setDraftError(null);
                 setDraft(emptyBranchDraft());
               }}
             >
-              <Plus className="h-4 w-4" />
               {isAr ? "فرع جديد" : "New branch"}
-            </button>
+            </Button>
           ) : null
         }
       >
         <div className="cs-toolbar">
-          <label className="cs-search-field">
-            <Search className="h-3.5 w-3.5" />
-            <input
-              value={search}
-              placeholder={isAr ? "ابحث برمز أو اسم الفرع" : "Search by code or name"}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </label>
+          <SearchInput
+            value={search}
+            onValueChange={setSearch}
+            placeholder={isAr ? "ابحث برمز أو اسم الفرع" : "Search by code or name"}
+          />
         </div>
         {error ? <div className="cs-error-panel">{error}</div> : null}
         {branches.isLoading ? (
-          <div className="cs-loading">
-            <Loader2 className="h-4 w-4 animate-spin" />
-          </div>
+          <LoadingState label={isAr ? "جارٍ التحميل…" : "Loading…"} />
         ) : rows.length === 0 ? (
-          <div className="cs-empty">{isAr ? "لا توجد فروع." : "No branches yet."}</div>
+          <EmptyState
+            icon={<Store className="h-6 w-6" />}
+            title={isAr ? "لا توجد فروع" : "No branches yet"}
+            description={
+              search.trim()
+                ? isAr
+                  ? "لا نتائج مطابقة لبحثك."
+                  : "No results match your search."
+                : isAr
+                  ? "أضف أول فرع للبدء."
+                  : "Add your first branch to get started."
+            }
+          />
         ) : (
           <div className="cs-branch-list">
             {rows.map((branch) => (
@@ -286,117 +302,106 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
         )}
       </Card>
 
-      {draft ? (
-        <div className="cs-modal-backdrop" role="dialog" aria-modal="true">
-          <div className="cs-modal">
-            <header>
-              <h3>{isAr ? "إنشاء فرع" : "Create branch"}</h3>
-              <button type="button" className="cs-icon-btn" onClick={() => setDraft(null)} aria-label="close">
-                <X className="h-4 w-4" />
-              </button>
-            </header>
-            <div className="cs-modal-body">
-              <label className="cs-field">
-                <span>{isAr ? "الاسم بالعربية" : "Name (Arabic)"}</span>
-                <input className="cs-input" value={draft.name_ar} onChange={(e) => setDraft({ ...draft, name_ar: e.target.value })} />
-              </label>
-              <label className="cs-field">
-                <span>{isAr ? "الاسم بالإنجليزية" : "Name (English)"}</span>
-                <input className="cs-input" value={draft.name_en} onChange={(e) => setDraft({ ...draft, name_en: e.target.value })} />
-              </label>
-              <label className="cs-field">
-                <span>{isAr ? "رمز الفرع" : "Branch code"}</span>
-                <input
-                  className="cs-input"
-                  placeholder={isAr ? "يُولَّد تلقائيًا" : "Generated automatically"}
-                  value={draft.branch_code}
-                  onChange={(e) => setDraft({ ...draft, branch_code: e.target.value })}
-                />
-              </label>
-              <label className="cs-field">
-                <span>{isAr ? "رقم التواصل" : "Phone"}</span>
-                <input className="cs-input" placeholder="05XXXXXXXX" value={draft.phone} onChange={(e) => setDraft({ ...draft, phone: e.target.value })} />
-              </label>
-              <label className="cs-field cs-field-wide">
-                <span>{isAr ? "العنوان" : "Address"}</span>
-                <input className="cs-input" value={draft.address} onChange={(e) => setDraft({ ...draft, address: e.target.value })} />
-              </label>
-              <label className="cs-field cs-field-wide">
-                <span>{isAr ? "رابط الخريطة" : "Google Maps link"}</span>
-                <input className="cs-input" placeholder="https://maps.google.com/…" value={draft.maps_url} onChange={(e) => setDraft({ ...draft, maps_url: e.target.value })} />
-              </label>
-              <label className="cs-field">
-                <span>{isAr ? "وقت الافتتاح" : "Opening time"}</span>
-                <input className="cs-input" type="time" value={draft.opening_time} onChange={(e) => setDraft({ ...draft, opening_time: e.target.value })} />
-              </label>
-              <label className="cs-field">
-                <span>{isAr ? "وقت الإغلاق" : "Closing time"}</span>
-                <input className="cs-input" type="time" value={draft.closing_time} onChange={(e) => setDraft({ ...draft, closing_time: e.target.value })} />
-              </label>
-              <div className="cs-field cs-field-wide">
-                <span>{isAr ? "أيام العمل" : "Working days"}</span>
-                <div className="cs-chips">
-                  {DAYS.map(([key, ar, en]) => {
-                    const on = draft.working_days.includes(key);
-                    return (
-                      <button
-                        key={key}
-                        type="button"
-                        className="cs-chip"
-                        data-on={on ? "true" : "false"}
-                        onClick={() =>
-                          setDraft({
-                            ...draft,
-                            working_days: on
-                              ? draft.working_days.filter((day) => day !== key)
-                              : [...draft.working_days, key],
-                          })
-                        }
-                      >
-                        {isAr ? ar : en}
-                      </button>
-                    );
-                  })}
-                </div>
+      <FormDialog
+        open={!!draft}
+        onClose={() => setDraft(null)}
+        title={isAr ? "إنشاء فرع" : "Create branch"}
+        onSubmit={submitDraft}
+        busy={busy}
+        submitLabel={isAr ? "إنشاء" : "Create"}
+        cancelLabel={isAr ? "إلغاء" : "Cancel"}
+      >
+        {draft ? (
+          <div className="cs-modal-body">
+            <Input
+              label={isAr ? "الاسم بالعربية" : "Name (Arabic)"}
+              value={draft.name_ar}
+              onChange={(e) => setDraft({ ...draft, name_ar: e.target.value })}
+            />
+            <Input
+              label={isAr ? "الاسم بالإنجليزية" : "Name (English)"}
+              value={draft.name_en}
+              onChange={(e) => setDraft({ ...draft, name_en: e.target.value })}
+            />
+            <Input
+              label={isAr ? "رمز الفرع" : "Branch code"}
+              placeholder={isAr ? "يُولَّد تلقائيًا" : "Generated automatically"}
+              value={draft.branch_code}
+              onChange={(e) => setDraft({ ...draft, branch_code: e.target.value })}
+            />
+            <Input
+              label={isAr ? "رقم التواصل" : "Phone"}
+              placeholder="05XXXXXXXX"
+              value={draft.phone}
+              onChange={(e) => setDraft({ ...draft, phone: e.target.value })}
+            />
+            <Input
+              label={isAr ? "العنوان" : "Address"}
+              value={draft.address}
+              onChange={(e) => setDraft({ ...draft, address: e.target.value })}
+            />
+            <Input
+              label={isAr ? "رابط الخريطة" : "Google Maps link"}
+              placeholder="https://maps.google.com/…"
+              value={draft.maps_url}
+              onChange={(e) => setDraft({ ...draft, maps_url: e.target.value })}
+            />
+            <Input
+              label={isAr ? "وقت الافتتاح" : "Opening time"}
+              type="time"
+              value={draft.opening_time}
+              onChange={(e) => setDraft({ ...draft, opening_time: e.target.value })}
+            />
+            <Input
+              label={isAr ? "وقت الإغلاق" : "Closing time"}
+              type="time"
+              value={draft.closing_time}
+              onChange={(e) => setDraft({ ...draft, closing_time: e.target.value })}
+            />
+            <div className="cs-field cs-field-wide">
+              <span>{isAr ? "أيام العمل" : "Working days"}</span>
+              <div className="cs-chips">
+                {DAYS.map(([key, ar, en]) => {
+                  const on = draft.working_days.includes(key);
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      className="cs-chip"
+                      data-on={on ? "true" : "false"}
+                      onClick={() =>
+                        setDraft({
+                          ...draft,
+                          working_days: on
+                            ? draft.working_days.filter((day) => day !== key)
+                            : [...draft.working_days, key],
+                        })
+                      }
+                    >
+                      {isAr ? ar : en}
+                    </button>
+                  );
+                })}
               </div>
-              {draftError ? <div className="cs-error-panel cs-field-wide">{draftError}</div> : null}
             </div>
-            <footer>
-              <button type="button" className="cs-ghost-btn" onClick={() => setDraft(null)}>
-                {isAr ? "إلغاء" : "Cancel"}
-              </button>
-              <button type="button" className="cs-primary-btn" disabled={busy} onClick={submitDraft}>
-                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                {isAr ? "إنشاء" : "Create"}
-              </button>
-            </footer>
+            {draftError ? <div className="cs-error-panel cs-field-wide">{draftError}</div> : null}
           </div>
-        </div>
-      ) : null}
+        ) : null}
+      </FormDialog>
 
-      {forceDelete ? (
-        <div className="cs-modal-backdrop" role="dialog" aria-modal="true">
-          <div className="cs-modal">
-            <header>
-              <h3>{isAr ? "حذف الفرع مع سجلاته" : "Delete branch with its records"}</h3>
-              <button type="button" className="cs-icon-btn" onClick={() => setForceDelete(null)} aria-label="close">
-                <X className="h-4 w-4" />
-              </button>
-            </header>
-            <div className="cs-modal-body">
-              <p className="cs-field-wide">
-                {isAr
-                  ? `الفرع "${forceDelete.branch.name_ar}" مرتبط بـ ${forceDelete.subscriptions} اشتراك و ${forceDelete.orders} طلب. الحذف سيؤدي إلى إزالة هذه السجلات نهائيًا. يمكنك بدلًا من ذلك إيقاف الفرع للحفاظ على البيانات.`
-                  : `Branch "${forceDelete.branch.name_en}" has ${forceDelete.subscriptions} subscriptions and ${forceDelete.orders} orders. Deleting it removes those records permanently. You can deactivate the branch instead to keep the data.`}
-              </p>
-            </div>
-            <footer>
-              <button type="button" className="cs-ghost-btn" onClick={() => setForceDelete(null)}>
+      <Modal
+        open={!!forceDelete}
+        onClose={() => setForceDelete(null)}
+        title={isAr ? "حذف الفرع مع سجلاته" : "Delete branch with its records"}
+        size="sm"
+        footer={
+          forceDelete ? (
+            <>
+              <Button variant="ghost" onClick={() => setForceDelete(null)} disabled={busy}>
                 {isAr ? "إلغاء" : "Cancel"}
-              </button>
-              <button
-                type="button"
-                className="cs-ghost-btn"
+              </Button>
+              <Button
+                variant="secondary"
                 disabled={busy}
                 onClick={() => {
                   const target = forceDelete.branch;
@@ -405,20 +410,27 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
                 }}
               >
                 {isAr ? "إيقاف الفرع" : "Deactivate branch"}
-              </button>
-              <button
-                type="button"
-                className="cs-primary-btn"
-                disabled={busy}
+              </Button>
+              <Button
+                variant="danger"
+                loading={busy}
+                leadingIcon={<Trash2 className="h-4 w-4" />}
                 onClick={() => void removeBranch(forceDelete.branch, true)}
               >
-                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                 {isAr ? "حذف نهائي" : "Delete permanently"}
-              </button>
-            </footer>
-          </div>
-        </div>
-      ) : null}
+              </Button>
+            </>
+          ) : null
+        }
+      >
+        {forceDelete ? (
+          <p className="cs-field-wide">
+            {isAr
+              ? `الفرع "${forceDelete.branch.name_ar}" مرتبط بـ ${forceDelete.subscriptions} اشتراك و ${forceDelete.orders} طلب. الحذف سيؤدي إلى إزالة هذه السجلات نهائيًا. يمكنك بدلًا من ذلك إيقاف الفرع للحفاظ على البيانات.`
+              : `Branch "${forceDelete.branch.name_en}" has ${forceDelete.subscriptions} subscriptions and ${forceDelete.orders} orders. Deleting it removes those records permanently. You can deactivate the branch instead to keep the data.`}
+          </p>
+        ) : null}
+      </Modal>
     </div>
   );
 }
@@ -471,7 +483,7 @@ function BranchCard({
     <article className="cs-branch" data-open={open ? "true" : "false"}>
       <header>
         <button type="button" className="cs-branch-head" onClick={onToggle}>
-          <span className="cs-branch-code">{branch.branch_code ?? "—"}</span>
+          <Badge tone="espresso">{branch.branch_code ?? "—"}</Badge>
           <span className="cs-branch-name">
             <b>{isAr ? branch.name_ar : branch.name_en}</b>
             <small>
@@ -483,9 +495,9 @@ function BranchCard({
           <Users className="h-3.5 w-3.5" />
           {staffCount}
         </span>
-        <span className="cs-branch-state" data-on={branch.is_active ? "true" : "false"}>
+        <StatusBadge tone={branch.is_active ? "success" : "neutral"}>
           {branch.is_active ? (isAr ? "نشط" : "Active") : isAr ? "موقوف" : "Inactive"}
-        </span>
+        </StatusBadge>
       </header>
 
       {open ? (
@@ -541,8 +553,7 @@ function BranchCard({
               />
             </Row>
             <Row label={isAr ? "وقت الافتتاح" : "Opening time"}>
-              <input
-                className="cs-input"
+              <Input
                 type="time"
                 disabled={disabled}
                 value={branch.opening_time?.slice(0, 5) ?? "07:00"}
@@ -550,8 +561,7 @@ function BranchCard({
               />
             </Row>
             <Row label={isAr ? "وقت الإغلاق" : "Closing time"}>
-              <input
-                className="cs-input"
+              <Input
                 type="time"
                 disabled={disabled}
                 value={branch.closing_time?.slice(0, 5) ?? "23:00"}
@@ -601,49 +611,51 @@ function BranchCard({
           </div>
 
           <aside className="cs-branch-side">
-            <div className="cs-qr">
-              <div ref={qrWrap} className="cs-qr-canvas">
-                <QRCodeCanvas value={link} size={176} level="M" includeMargin bgColor="#ffffff" fgColor="#2B1A12" />
-              </div>
-              <code>{link}</code>
-              <div className="cs-qr-actions">
-                <button type="button" className="cs-ghost-btn" onClick={downloadQr}>
-                  <QrCode className="h-3.5 w-3.5" />
-                  {isAr ? "تحميل" : "Download"}
-                </button>
-                <button type="button" className="cs-ghost-btn" onClick={copyLink}>
-                  <Copy className="h-3.5 w-3.5" />
-                  {copied ? (isAr ? "تم النسخ" : "Copied") : isAr ? "نسخ الرابط" : "Copy link"}
-                </button>
-                {branch.maps_url ? (
-                  <a className="cs-ghost-btn" href={branch.maps_url} target="_blank" rel="noreferrer">
-                    <MapPin className="h-3.5 w-3.5" />
-                    {isAr ? "الخريطة" : "Map"}
-                  </a>
-                ) : null}
-              </div>
-            </div>
-            {!disabled ? (
-              confirming ? (
-                <div className="cs-danger-confirm">
-                  <span>{isAr ? "تأكيد حذف الفرع؟" : "Delete this branch?"}</span>
-                  <button type="button" className="cs-danger-btn" onClick={onDelete}>
-                    {isAr ? "حذف" : "Delete"}
-                  </button>
-                  <button type="button" className="cs-ghost-btn" onClick={() => setConfirming(false)}>
-                    {isAr ? "إلغاء" : "Cancel"}
-                  </button>
+            <KobCard tone="engraved">
+              <CardBody className="cs-qr">
+                <div ref={qrWrap} className="cs-qr-canvas">
+                  <QRCodeCanvas value={link} size={176} level="M" includeMargin bgColor="#ffffff" fgColor="#2B1A12" />
                 </div>
-              ) : (
-                <button type="button" className="cs-ghost-btn" onClick={() => setConfirming(true)}>
-                  <Trash2 className="h-3.5 w-3.5" />
-                  {isAr ? "حذف الفرع" : "Delete branch"}
-                </button>
-              )
+                <code>{link}</code>
+                <div className="cs-qr-actions">
+                  <Button variant="secondary" size="sm" leadingIcon={<QrCode className="h-3.5 w-3.5" />} onClick={downloadQr}>
+                    {isAr ? "تحميل" : "Download"}
+                  </Button>
+                  <Button variant="secondary" size="sm" leadingIcon={<Copy className="h-3.5 w-3.5" />} onClick={copyLink}>
+                    {copied ? (isAr ? "تم النسخ" : "Copied") : isAr ? "نسخ الرابط" : "Copy link"}
+                  </Button>
+                  {branch.maps_url ? (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      leadingIcon={<MapPin className="h-3.5 w-3.5" />}
+                      onClick={() => window.open(branch.maps_url!, "_blank", "noreferrer")}
+                    >
+                      {isAr ? "الخريطة" : "Map"}
+                    </Button>
+                  ) : null}
+                </div>
+              </CardBody>
+            </KobCard>
+            {!disabled ? (
+              <Button variant="danger" size="sm" leadingIcon={<Trash2 className="h-3.5 w-3.5" />} onClick={() => setConfirming(true)}>
+                {isAr ? "حذف الفرع" : "Delete branch"}
+              </Button>
             ) : null}
           </aside>
         </div>
       ) : null}
+
+      <DangerDialog
+        open={confirming}
+        onClose={() => setConfirming(false)}
+        title={isAr ? "تأكيد حذف الفرع؟" : "Delete this branch?"}
+        confirmLabel={isAr ? "حذف" : "Delete"}
+        onConfirm={() => {
+          setConfirming(false);
+          onDelete();
+        }}
+      />
     </article>
   );
 }
