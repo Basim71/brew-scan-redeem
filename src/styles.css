@@ -15262,7 +15262,6 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
   .kob-section-header { grid-template-columns: minmax(0, 1fr); }
   .kob-section-header-action { justify-self: stretch; }
   .kob-modal,
-  .cs-modal,
   .ds-modal { inline-size: 100%; max-inline-size: 100%; }
   .kob-drawer { inline-size: 100%; }
   .kob-pagination { justify-content: center; }
