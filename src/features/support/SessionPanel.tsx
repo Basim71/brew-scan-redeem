@@ -3,7 +3,7 @@ import { Check, MonitorPlay, Play, ShieldCheck, X } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
-import { Alert, Button, Card, CardBody, CardHeader, Field, Select, Text } from "@/components/kob";
+import { Alert, Button, Card, CardBody, CardHeader, Select, Text } from "@/components/kob";
 
 import { LiveSessionRoom } from "./LiveSessionRoom";
 import {
@@ -96,21 +96,17 @@ export function SessionPanel({ ticketId, organizationId, side }: Props) {
             <Text variant="bodySm" tone="muted">
               {t("support.session.panel.agentHint")}
             </Text>
-            <Field label={t("support.session.panel.modeLabel")}>
-              {({ id }) => (
-                <Select
-                  id={id}
-                  value={mode}
-                  onChange={(event) => setMode(event.target.value as SessionMode)}
-                >
-                  {Object.entries(modeLabels).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </Select>
-              )}
-            </Field>
+            <Select
+              label={t("support.session.panel.modeLabel")}
+              value={mode}
+              onChange={(event) => setMode(event.target.value as SessionMode)}
+            >
+              {Object.entries(modeLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </Select>
             <Button
               variant="primary"
               loading={busy}
