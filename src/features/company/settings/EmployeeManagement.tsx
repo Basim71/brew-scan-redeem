@@ -99,8 +99,8 @@ const emptyDraft = (role: CompanyMemberRole): Draft => ({
   password: "",
 });
 
-function formatDate(value: string | null, isAr: boolean): string {
-  if (!value) return t("settings.employees.never");
+function formatDate(value: string | null, isAr: boolean, neverLabel: string): string {
+  if (!value) return neverLabel;
   return new Intl.DateTimeFormat(isAr ? "ar-SA" : "en-GB", {
     dateStyle: "medium",
     timeStyle: "short",
@@ -298,7 +298,7 @@ export function EmployeeManagementSection({
     {
       key: "last_login",
       header: t("settings.employees.lastLogin"),
-      render: (m) => <span className="text-muted-foreground">{formatDate(m.last_login_at, isAr)}</span>,
+      render: (m) => <span className="text-muted-foreground">{formatDate(m.last_login_at, isAr, t("settings.employees.never"))}</span>,
     },
     {
       key: "active",
@@ -661,6 +661,7 @@ function PermissionsModal({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const { t } = useI18n();
   const base = useMemo(
     () =>
       Object.fromEntries(CAPABILITIES.map((cap) => [cap.key, cap.roles.includes(member.role)])) as Record<
@@ -731,6 +732,7 @@ function ActivityModal({
   organizationId: string;
   onClose: () => void;
 }) {
+  const { t } = useI18n();
   const activity = useQuery({
     queryKey: ["member-activity", organizationId, member.user_id],
     queryFn: () => listActivity(organizationId, { actorUserId: member.user_id, limit: 60 }),
@@ -751,7 +753,7 @@ function ActivityModal({
               : member.branch.name_en
             : t("settings.employees.allBranches")}
           <span>·</span>
-          {t("settings.employees.lastLoginLabel")} {formatDate(member.last_login_at, isAr)}
+          {t("settings.employees.lastLoginLabel")} {formatDate(member.last_login_at, isAr, t("settings.employees.never"))}
         </div>
         {activity.isLoading ? (
           <LoadingState label={t("common.loading")} />
@@ -768,7 +770,7 @@ function ActivityModal({
                   <strong>{row.action}</strong>
                   {row.entity_label ? <small>{row.entity_label}</small> : null}
                 </div>
-                <time>{formatDate(row.created_at, isAr)}</time>
+                <time>{formatDate(row.created_at, isAr, t("settings.employees.never"))}</time>
               </li>
             ))}
           </ol>
