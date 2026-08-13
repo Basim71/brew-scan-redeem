@@ -14,7 +14,16 @@ import {
 import { useEffect, useState } from "react";
 
 import { MetricCard } from "@/components/common/MetricCard";
-import { PageHeader } from "@/components/common/PageHeader";
+import {
+  Alert,
+  Badge,
+  BodySmall,
+  Caption,
+  Heading2,
+  PageContainer,
+  PageHeader,
+  Text,
+} from "@/components/kob";
 import {
   EMPTY_PLATFORM_METRICS,
   fetchPlatformMetrics,
@@ -70,24 +79,16 @@ function PlatformDashboard() {
   ] as const;
 
   return (
-    <div className="platform-page" dir="rtl">
+    <PageContainer className="platform-page">
       <PageHeader
         eyebrow="Platform Intelligence"
         title="إدارة منظومة KOB"
         description="نظرة مركزية على الشركات ونجاح العملاء والتشغيل اليومي."
-        action={
-          <div className="status-pill status-pill-success">
-            <i aria-hidden="true" />
-            النظام متصل
-          </div>
-        }
+        action={<Badge tone="success">النظام متصل</Badge>}
       />
 
       {loadError ? (
-        <div className="inline-alert" role="alert">
-          <CircleAlert aria-hidden="true" />
-          <span>تعذر تحميل بعض مؤشرات المنصة: {loadError}</span>
-        </div>
+        <Alert tone="danger">{`تعذر تحميل بعض مؤشرات المنصة: ${loadError}`}</Alert>
       ) : null}
 
       <section className="metrics-grid" aria-label="مؤشرات المنصة">
@@ -100,9 +101,13 @@ function PlatformDashboard() {
         <article className="insight-card">
           <ShieldCheck />
           <div>
-            <span className="insight-card-kicker">System Status</span>
-            <h2>{dbOk === null ? "قيد الفحص…" : dbOk ? "قاعدة البيانات متصلة" : "تعذر الاتصال بقاعدة البيانات"}</h2>
-            <p>حالة الوصول إلى بيانات المنصة يتم فحصها في كل تحميل.</p>
+            <Caption tone="muted" className="insight-card-kicker">
+              System Status
+            </Caption>
+            <Heading2 variant="h3">
+              {dbOk === null ? "قيد الفحص…" : dbOk ? "قاعدة البيانات متصلة" : "تعذر الاتصال بقاعدة البيانات"}
+            </Heading2>
+            <BodySmall tone="secondary">حالة الوصول إلى بيانات المنصة يتم فحصها في كل تحميل.</BodySmall>
             <div className="platform-quick-links">
               <Link to="/platform/companies"><Building2 /> الشركات</Link>
               <Link to="/platform/support"><Headphones /> الدعم الفني</Link>
@@ -113,16 +118,22 @@ function PlatformDashboard() {
         <article className="insight-card insight-card-dark">
           <Radio />
           <div>
-            <span className="insight-card-kicker">Recent Activity</span>
-            <h2>آخر الأحداث</h2>
+            <Caption tone="muted" className="insight-card-kicker">
+              Recent Activity
+            </Caption>
+            <Heading2 variant="h3">آخر الأحداث</Heading2>
             {activity.length === 0 ? (
-              <p>لا يوجد نشاط حديث في سجل الدعم.</p>
+              <BodySmall tone="secondary">لا يوجد نشاط حديث في سجل الدعم.</BodySmall>
             ) : (
               <ul className="platform-activity-list">
                 {activity.slice(0, 8).map((row) => (
                   <li key={row.id}>
-                    <b>{row.action}</b>
-                    <time>{new Date(row.created_at).toLocaleString("ar-SA")}</time>
+                    <Text variant="bodySm" as="span" truncate>
+                      {row.action}
+                    </Text>
+                    <Text variant="caption" tone="muted" as="time" numeric>
+                      {new Date(row.created_at).toLocaleString("ar-SA")}
+                    </Text>
                   </li>
                 ))}
               </ul>
@@ -130,6 +141,6 @@ function PlatformDashboard() {
           </div>
         </article>
       </section>
-    </div>
+    </PageContainer>
   );
 }
