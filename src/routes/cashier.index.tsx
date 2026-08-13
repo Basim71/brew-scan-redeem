@@ -1,21 +1,13 @@
-import {
-  createFileRoute,
-  useNavigate,
-} from "@tanstack/react-router";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Check,
   Clock3,
   Coffee,
   Inbox,
-  Loader2,
   Phone,
   RefreshCw,
+  Search,
   Tag,
   User,
   UserPlus,
@@ -25,30 +17,34 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { useRole } from "@/lib/use-auth";
-import { Button, Alert, Select, DateInput, LoadingState, EmptyState } from "@/components/kob";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  DateInput,
+  EmptyState,
+  Field,
+  LoadingState,
+  PageHeader,
+  PhoneInput,
+  Select,
+  StatCard,
+  StatGrid,
+  Tabs,
+} from "@/components/kob";
 
 export const Route = createFileRoute("/cashier/")({
   component: CashierQueuePage,
 });
 
-type QueueFilter =
-  | "all"
-  | "orders"
-  | "registrations";
-
-type OrderStatus =
-  | "pending"
-  | "approved"
-  | "rejected";
-
-type RegistrationStatus =
-  | "pending"
-  | "approved"
-  | "rejected";
+type QueueFilter = "all" | "orders" | "registrations";
 
 type OrderRow = {
   id: string;
-  status: OrderStatus;
+  status: "pending" | "approved" | "rejected";
   created_at: string;
   order_date?: string | null;
   selected_options: Array<{
@@ -58,25 +54,12 @@ type OrderRow = {
     option_name_ar: string;
   }>;
   customer_note: string | null;
-
-  drink: {
-    name_en: string;
-    name_ar: string;
-  } | null;
-
-  customer: {
-    name: string;
-    phone: string;
-  } | null;
-
+  drink: { name_en: string; name_ar: string } | null;
+  customer: { name: string; phone: string } | null;
   subscription: {
     id: string;
     end_date: string;
-
-    plan: {
-      name: string;
-      duration_days: number;
-    } | null;
+    plan: { name: string; duration_days: number } | null;
   } | null;
 };
 
@@ -87,7 +70,7 @@ type RegistrationRequest = {
   phone: string;
   branch_id: string;
   preferred_language: string;
-  status: RegistrationStatus;
+  status: "pending" | "approved" | "rejected";
   created_at: string;
 };
 
@@ -99,389 +82,146 @@ type CouponRow = {
   status: string;
 };
 
-type PlanRow = {
-  id: string;
-  name: string;
-  duration_days: number;
-};
+type PlanRow = { id: string; name: string; duration_days: number };
 
 type QueueItem =
-  | {
-      kind: "order";
-      id: string;
-      createdAt: string;
-      data: OrderRow;
-    }
-  | {
-      kind: "registration";
-      id: string;
-      createdAt: string;
-      data: RegistrationRequest;
-    };
+  | { kind: "order"; id: string; createdAt: string; data: OrderRow }
+  | { kind: "registration"; id: string; createdAt: string; data: RegistrationRequest };
+
+type LookupResult = {
+  found?: boolean;
+  customer?: { name?: string | null; phone?: string | null } | null;
+  subscription?: {
+    plan_name?: string | null;
+    end_date?: string | null;
+    remaining_days?: number | null;
+    status?: string | null;
+  } | null;
+  used_today?: number | null;
+};
 
 function CashierQueuePage() {
   const navigate = useNavigate();
   const { branchId } = useRole();
+  const { t, fmtNum, fmtDate, timeAgo, lang } = useI18n();
 
-  const {
-    t,
-    fmtNum,
-    timeAgo,
-    lang,
-  } = useI18n();
+  const [orders, setOrders] = useState<OrderRow[]>([]);
+  const [registrations, setRegistrations] = useState<RegistrationRequest[]>([]);
+  const [coupons, setCoupons] = useState<CouponRow[]>([]);
+  const [plans, setPlans] = useState<PlanRow[]>([]);
+  const [filter, setFilter] = useState<QueueFilter>("all");
+  const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [selectedCoupons, setSelectedCoupons] = useState<Record<string, string>>({});
+  const [selectedStartDates, setSelectedStartDates] = useState<Record<string, string>>({});
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
-  const [orders, setOrders] =
-    useState<OrderRow[]>([]);
+  const [searchPhone, setSearchPhone] = useState("");
+  const [searchBusy, setSearchBusy] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [searchResult, setSearchResult] = useState<LookupResult | null>(null);
 
-  const [
-    registrations,
-    setRegistrations,
-  ] = useState<
-    RegistrationRequest[]
-  >([]);
+  const planMap = useMemo(() => new Map(plans.map((plan) => [plan.id, plan])), [plans]);
 
-  const [coupons, setCoupons] =
-    useState<CouponRow[]>([]);
-
-  const [plans, setPlans] =
-    useState<PlanRow[]>([]);
-
-  const [filter, setFilter] =
-    useState<QueueFilter>("all");
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [busyId, setBusyId] =
-    useState<string | null>(null);
-
-  const [
-    selectedCoupons,
-    setSelectedCoupons,
-  ] = useState<
-    Record<string, string>
-  >({});
-
-  const [
-    selectedStartDates,
-    setSelectedStartDates,
-  ] = useState<
-    Record<string, string>
-  >({});
-
-  const [error, setError] =
-    useState<string | null>(null);
-
-  const [success, setSuccess] =
-    useState<string | null>(null);
-
-  const planMap = useMemo(
-    () =>
-      new Map(
-        plans.map((plan) => [
-          plan.id,
-          plan,
-        ]),
-      ),
-    [plans],
-  );
-
-  const loadQueue =
-    useCallback(async () => {
-      if (!branchId) {
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      setError(null);
-
-      const [
-        ordersResult,
-        registrationsResult,
-        couponsResult,
-        plansResult,
-      ] = await Promise.all([
-        supabase
-          .from("orders")
-          .select(
-            `
-              id,
-              status,
-              created_at,
-              order_date,
-              selected_options,
-              customer_note,
-              drink:drink_types(
-                name_en,
-                name_ar
-              ),
-              customer:customers(
-                name,
-                phone
-              ),
-              subscription:subscriptions(
-                id,
-                end_date,
-                plan:plans(
-                  name,
-                  duration_days
-                )
-              )
-            `,
-          )
-          .eq(
-            "branch_id",
-            branchId,
-          )
-          .eq(
-            "status",
-            "pending",
-          )
-          .order("created_at", {
-            ascending: false,
-          })
-          .limit(100),
-
-        supabase
-          .from(
-            "registration_requests",
-          )
-          .select(
-            `
-              id,
-              first_name,
-              last_name,
-              phone,
-              branch_id,
-              preferred_language,
-              status,
-              created_at
-            `,
-          )
-          .eq(
-            "branch_id",
-            branchId,
-          )
-          .eq(
-            "status",
-            "pending",
-          )
-          .order("created_at", {
-            ascending: false,
-          })
-          .limit(100),
-
-        supabase
-          .from("coupons")
-          .select(
-            `
-              id,
-              code,
-              plan_id,
-              branch_id,
-              status
-            `,
-          )
-          .eq(
-            "status",
-            "available",
-          )
-          .or(
-            `branch_id.eq.${branchId},branch_id.is.null`,
-          )
-          .order("created_at", {
-            ascending: false,
-          }),
-
-        supabase
-          .from("plans")
-          .select(
-            `
-              id,
-              name,
-              duration_days
-            `,
-          )
-          .order("name"),
-      ]);
-
-      const firstError =
-        ordersResult.error ??
-        registrationsResult.error ??
-        couponsResult.error ??
-        plansResult.error;
-
-      if (firstError) {
-        setError(
-          firstError.message,
-        );
-      }
-
-      setOrders(
-        (ordersResult.data ??
-          []) as unknown as OrderRow[],
-      );
-
-      setRegistrations(
-        (registrationsResult.data ??
-          []) as RegistrationRequest[],
-      );
-
-      setCoupons(
-        (couponsResult.data ??
-          []) as CouponRow[],
-      );
-
-      setPlans(
-        (plansResult.data ??
-          []) as PlanRow[],
-      );
-
+  const loadQueue = useCallback(async () => {
+    if (!branchId) {
       setLoading(false);
-    }, [branchId]);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    const [ordersResult, registrationsResult, couponsResult, plansResult] = await Promise.all([
+      supabase
+        .from("orders")
+        .select(
+          `id, status, created_at, order_date, selected_options, customer_note,
+           drink:drink_types(name_en, name_ar),
+           customer:customers(name, phone),
+           subscription:subscriptions(id, end_date, plan:plans(name, duration_days))`,
+        )
+        .eq("branch_id", branchId)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(100),
+      supabase
+        .from("registration_requests")
+        .select("id, first_name, last_name, phone, branch_id, preferred_language, status, created_at")
+        .eq("branch_id", branchId)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(100),
+      supabase
+        .from("coupons")
+        .select("id, code, plan_id, branch_id, status")
+        .eq("status", "available")
+        .or(`branch_id.eq.${branchId},branch_id.is.null`)
+        .order("created_at", { ascending: false }),
+      supabase.from("plans").select("id, name, duration_days").order("name"),
+    ]);
+
+    const firstError =
+      ordersResult.error ?? registrationsResult.error ?? couponsResult.error ?? plansResult.error;
+    if (firstError) setError(firstError.message);
+
+    setOrders((ordersResult.data ?? []) as unknown as OrderRow[]);
+    setRegistrations((registrationsResult.data ?? []) as RegistrationRequest[]);
+    setCoupons((couponsResult.data ?? []) as CouponRow[]);
+    setPlans((plansResult.data ?? []) as PlanRow[]);
+    setLoading(false);
+  }, [branchId]);
 
   useEffect(() => {
     void loadQueue();
   }, [loadQueue]);
 
   useEffect(() => {
-    if (!branchId) {
-      return;
-    }
+    if (!branchId) return;
+    const intervalId = window.setInterval(() => {
+      void loadQueue();
+    }, 5000);
+    return () => window.clearInterval(intervalId);
+  }, [branchId, loadQueue]);
 
-    const intervalId =
-      window.setInterval(() => {
-        void loadQueue();
-      }, 5000);
-
-    return () => {
-      window.clearInterval(
-        intervalId,
-      );
-    };
-  }, [
-    branchId,
-    loadQueue,
-  ]);
-
-  const pendingOrders = useMemo(
-    () =>
-      orders.filter(
-        (order) =>
-          order.status ===
-          "pending",
-      ),
-    [orders],
+  const pendingOrders = useMemo(() => orders.filter((o) => o.status === "pending"), [orders]);
+  const pendingRegistrations = useMemo(
+    () => registrations.filter((r) => r.status === "pending"),
+    [registrations],
   );
 
-  const pendingRegistrations =
-    useMemo(
-      () =>
-        registrations.filter(
-          (registration) =>
-            registration.status ===
-            "pending",
-        ),
-      [registrations],
-    );
+  const queueItems = useMemo<QueueItem[]>(() => {
+    const merged: QueueItem[] = [
+      ...pendingOrders.map((order) => ({
+        kind: "order" as const,
+        id: order.id,
+        createdAt: order.created_at,
+        data: order,
+      })),
+      ...pendingRegistrations.map((registration) => ({
+        kind: "registration" as const,
+        id: registration.id,
+        createdAt: registration.created_at,
+        data: registration,
+      })),
+    ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-  const queueItems =
-    useMemo<QueueItem[]>(() => {
-      const orderItems: QueueItem[] =
-        pendingOrders.map(
-          (order) => ({
-            kind: "order",
-            id: order.id,
-            createdAt:
-              order.created_at,
-            data: order,
-          }),
-        );
+    if (filter === "orders") return merged.filter((item) => item.kind === "order");
+    if (filter === "registrations") return merged.filter((item) => item.kind === "registration");
+    return merged;
+  }, [filter, pendingOrders, pendingRegistrations]);
 
-      const registrationItems:
-        QueueItem[] =
-          pendingRegistrations.map(
-            (registration) => ({
-              kind:
-                "registration",
-              id:
-                registration.id,
-              createdAt:
-                registration.created_at,
-              data:
-                registration,
-            }),
-          );
-
-      const merged = [
-        ...orderItems,
-        ...registrationItems,
-      ].sort(
-        (first, second) =>
-          new Date(
-            second.createdAt,
-          ).getTime() -
-          new Date(
-            first.createdAt,
-          ).getTime(),
-      );
-
-      if (filter === "orders") {
-        return merged.filter(
-          (item) =>
-            item.kind ===
-            "order",
-        );
-      }
-
-      if (
-        filter ===
-        "registrations"
-      ) {
-        return merged.filter(
-          (item) =>
-            item.kind ===
-            "registration",
-        );
-      }
-
-      return merged;
-    }, [
-      filter,
-      pendingOrders,
-      pendingRegistrations,
-    ]);
-
-  async function decideOrder(
-    orderId: string,
-    status:
-      | "approved"
-      | "rejected",
-  ) {
+  async function decideOrder(orderId: string, status: "approved" | "rejected") {
     setBusyId(orderId);
     setError(null);
     setSuccess(null);
 
-    const timestamp =
-      new Date().toISOString();
-
+    const timestamp = new Date().toISOString();
     const updateData =
-      status === "approved"
-        ? {
-            status,
-            approved_at:
-              timestamp,
-          }
-        : {
-            status,
-            rejected_at:
-              timestamp,
-          };
+      status === "approved" ? { status, approved_at: timestamp } : { status, rejected_at: timestamp };
 
-    const {
-      error: updateError,
-    } = await supabase
+    const { error: updateError } = await supabase
       .from("orders")
       .update(updateData)
       .eq("id", orderId)
@@ -490,53 +230,20 @@ function CashierQueuePage() {
     setBusyId(null);
 
     if (updateError) {
-      setError(
-        updateError.message,
-      );
+      setError(updateError.message);
       return;
     }
 
-    setSuccess(
-      status === "approved"
-        ? lang === "ar"
-          ? "تم قبول طلب القهوة."
-          : "Coffee order approved."
-        : lang === "ar"
-          ? "تم رفض طلب القهوة."
-          : "Coffee order rejected.",
-    );
-
-    setOrders((current) =>
-      current.filter(
-        (order) =>
-          order.id !==
-          orderId,
-      ),
-    );
+    setSuccess(t(status === "approved" ? "cashier.orderApproved" : "cashier.orderRejected"));
+    setOrders((current) => current.filter((order) => order.id !== orderId));
   }
 
-  async function activateRegistration(
-    request:
-      RegistrationRequest,
-  ) {
-    const couponId =
-      selectedCoupons[
-        request.id
-      ];
-
-    const startDate =
-      selectedStartDates[
-        request.id
-      ] ??
-      todayLocalISO();
+  async function activateRegistration(request: RegistrationRequest) {
+    const couponId = selectedCoupons[request.id];
+    const startDate = selectedStartDates[request.id] ?? todayLocalISO();
 
     if (!couponId) {
-      setError(
-        lang === "ar"
-          ? "اختر الكوبون والباقة قبل تفعيل الاشتراك."
-          : "Select a coupon and plan before activating the subscription.",
-      );
-
+      setError(t("cashier.selectCouponFirst"));
       return;
     }
 
@@ -544,716 +251,419 @@ function CashierQueuePage() {
     setError(null);
     setSuccess(null);
 
-    const {
-      error: rpcError,
-    } = await supabase.rpc(
-      "cashier_activate_registration",
-      {
-        _request_id:
-          request.id,
-
-        _coupon_id:
-          couponId,
-
-        _start_date:
-          startDate,
-      },
-    );
+    const { error: rpcError } = await supabase.rpc("cashier_activate_registration", {
+      _request_id: request.id,
+      _coupon_id: couponId,
+      _start_date: startDate,
+    });
 
     setBusyId(null);
 
     if (rpcError) {
-      setError(
-        translateActivationError(
-          rpcError.message,
-          lang,
-        ),
-      );
-
+      setError(translateActivationError(rpcError.message, t));
       return;
     }
 
-    setRegistrations(
-      (current) =>
-        current.filter(
-          (registration) =>
-            registration.id !==
-            request.id,
-        ),
-    );
-
-    setSelectedCoupons(
-      (current) => {
-        const next = {
-          ...current,
-        };
-
-        delete next[
-          request.id
-        ];
-
-        return next;
-      },
-    );
-
-    setSelectedStartDates(
-      (current) => {
-        const next = {
-          ...current,
-        };
-
-        delete next[
-          request.id
-        ];
-
-        return next;
-      },
-    );
-
-    setSuccess(
-      lang === "ar"
-        ? "تم ربط العميل وتفعيل الاشتراك."
-        : "Customer subscription activated successfully.",
-    );
-
+    setRegistrations((current) => current.filter((r) => r.id !== request.id));
+    setSelectedCoupons((current) => {
+      const next = { ...current };
+      delete next[request.id];
+      return next;
+    });
+    setSelectedStartDates((current) => {
+      const next = { ...current };
+      delete next[request.id];
+      return next;
+    });
+    setSuccess(t("cashier.registrationActivated"));
     await loadQueue();
   }
 
-  async function rejectRegistration(
-    requestId: string,
-  ) {
-    const confirmed =
-      window.confirm(
-        lang === "ar"
-          ? "هل تريد رفض طلب التسجيل؟"
-          : "Reject this registration request?",
-      );
-
-    if (!confirmed) {
-      return;
-    }
+  async function rejectRegistration(requestId: string) {
+    if (!window.confirm(t("cashier.confirmRejectRegistration"))) return;
 
     setBusyId(requestId);
     setError(null);
     setSuccess(null);
 
-    const {
-      error: rpcError,
-    } = await supabase.rpc(
-      "cashier_reject_registration",
-      {
-        _request_id:
-          requestId,
-      },
-    );
+    const { error: rpcError } = await supabase.rpc("cashier_reject_registration", {
+      _request_id: requestId,
+    });
 
     setBusyId(null);
 
     if (rpcError) {
-      setError(
-        rpcError.message,
-      );
+      setError(rpcError.message);
       return;
     }
 
-    setRegistrations(
-      (current) =>
-        current.filter(
-          (registration) =>
-            registration.id !==
-            requestId,
-        ),
-    );
+    setRegistrations((current) => current.filter((r) => r.id !== requestId));
+    setSuccess(t("cashier.registrationRejected"));
+  }
 
-    setSuccess(
-      lang === "ar"
-        ? "تم رفض طلب التسجيل."
-        : "Registration request rejected.",
-    );
+  async function lookupCustomer() {
+    if (!branchId) return;
+    const phone = searchPhone.trim();
+
+    if (!/^05\d{8}$/.test(phone)) {
+      setSearchError(t("cashier.invalidPhone"));
+      setSearchResult(null);
+      return;
+    }
+
+    setSearchBusy(true);
+    setSearchError(null);
+    setSearchResult(null);
+
+    const { data, error: lookupError } = await supabase.rpc("scan_lookup", {
+      _phone: phone,
+      _branch_id: branchId,
+    });
+
+    setSearchBusy(false);
+
+    if (lookupError) {
+      setSearchError(lookupError.message);
+      return;
+    }
+
+    const payload = (data ?? null) as LookupResult | null;
+
+    if (!payload?.found || !payload.subscription) {
+      setSearchError(t("cashier.noSubscriptionFound"));
+      return;
+    }
+
+    setSearchResult(payload);
   }
 
   if (!branchId) {
     return (
-      <div className="panel-warm mx-auto max-w-md p-8 text-center">
-        <h1 className="mb-2 font-display text-2xl font-bold text-cream">
-          {t("no_branch_h")}
-        </h1>
-
-        <p className="mb-6 text-sm text-cream-dim">
-          {t("no_branch_b")}
-        </p>
-
-        <Button
-          variant="ghost"
-          onClick={() => {
-            void supabase.auth
-              .signOut()
-              .then(() => {
-                navigate({
-                  to: "/auth",
-                });
-              });
-          }}
-        >
-          {t("signOut")}
-        </Button>
-      </div>
+      <Card tone="raised" className="mx-auto max-w-md text-center">
+        <CardBody>
+          <EmptyState
+            icon={<Inbox className="h-8 w-8" />}
+            title={t("no_branch_h")}
+            description={t("no_branch_b")}
+            action={
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  void supabase.auth.signOut().then(() => navigate({ to: "/auth" }));
+                }}
+              >
+                {t("signOut")}
+              </Button>
+            }
+          />
+        </CardBody>
+      </Card>
     );
   }
 
   return (
-    <div className="cashier-queue-page">
-      <header className="cashier-queue-header">
-        <div>
-          <div className="cashier-queue-eyebrow">
-            {lang === "ar"
-              ? "قائمة الانتظار"
-              : "Live Queue"}
-          </div>
+    <div className="kob-queue-page">
+      <PageHeader
+        eyebrow={t("cashier.eyebrow")}
+        title={t("cashier.title")}
+        description={t("cashier.description")}
+        action={
+          <Button
+            variant="ghost"
+            onClick={() => {
+              void loadQueue();
+            }}
+            loading={loading}
+            leadingIcon={<RefreshCw className="h-4 w-4" />}
+          >
+            {t("common.actions.refresh")}
+          </Button>
+        }
+      />
 
-          <h1 className="cashier-queue-title">
-            {lang === "ar"
-              ? "طلبات الفرع"
-              : "Branch Requests"}
-          </h1>
-
-          <p className="cashier-queue-description">
-            {lang === "ar"
-              ? "استقبل طلبات القهوة وطلبات التسجيل من مكان واحد."
-              : "Manage coffee orders and registration requests from one place."}
-          </p>
-        </div>
-
-        <Button
-          variant="ghost"
-          onClick={() => {
-            void loadQueue();
-          }}
-          loading={loading}
-          leadingIcon={<RefreshCw className="h-4 w-4" />}
-        >
-          {lang === "ar"
-            ? "تحديث"
-            : "Refresh"}
-        </Button>
-      </header>
-
-      <section className="cashier-summary-grid">
-        <SummaryCard
-          title={
-            lang === "ar"
-              ? "طلبات القهوة"
-              : "Coffee Orders"
-          }
-          value={
-            pendingOrders.length
-          }
-          icon={
-            <Coffee className="h-5 w-5" />
-          }
-          tone="coffee"
+      <StatGrid>
+        <StatCard
+          label={t("cashier.coffeeOrders")}
+          value={fmtNum(pendingOrders.length)}
+          hint={t("cashier.awaitingApproval")}
+          icon={<Coffee className="h-5 w-5" />}
+          tone="gold"
         />
-
-        <SummaryCard
-          title={
-            lang === "ar"
-              ? "طلبات التسجيل"
-              : "Registrations"
-          }
-          value={
-            pendingRegistrations.length
-          }
-          icon={
-            <UserPlus className="h-5 w-5" />
-          }
-          tone="registration"
+        <StatCard
+          label={t("cashier.registrations")}
+          value={fmtNum(pendingRegistrations.length)}
+          hint={t("cashier.awaitingActivation")}
+          icon={<UserPlus className="h-5 w-5" />}
+          tone="info"
         />
-      </section>
+        <StatCard
+          label={t("cashier.totalPending")}
+          value={fmtNum(pendingOrders.length + pendingRegistrations.length)}
+          hint={t("cashier.liveEveryFiveSeconds")}
+          icon={<Inbox className="h-5 w-5" />}
+        />
+      </StatGrid>
 
-      {error && (
-        <Alert tone="danger">{error}</Alert>
-      )}
+      {error ? <Alert tone="danger">{error}</Alert> : null}
+      {success ? <Alert tone="success">{success}</Alert> : null}
 
-      {success && (
-        <Alert tone="success">{success}</Alert>
-      )}
+      <Card tone="raised">
+        <CardHeader
+          title={t("cashier.lookupTitle")}
+          description={t("cashier.lookupDescription")}
+          icon={<Search className="h-4 w-4" />}
+        />
+        <CardBody>
+          <form
+            className="kob-queue-lookup"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void lookupCustomer();
+            }}
+          >
+            <PhoneInput
+              label={t("cashier.customerPhone")}
+              value={searchPhone}
+              onValueChange={(next) => {
+                setSearchPhone(next);
+                setSearchError(null);
+              }}
+            />
+            <Button type="submit" loading={searchBusy} leadingIcon={<Search className="h-4 w-4" />}>
+              {t("common.actions.search")}
+            </Button>
+          </form>
 
-      <section className="cashier-queue-panel panel">
-        <div className="cashier-queue-toolbar">
-          <div>
-            <h2 className="cashier-section-title">
-              {lang === "ar"
-                ? "الطلبات المعلّقة"
-                : "Pending Requests"}
-            </h2>
+          {searchError ? <Alert tone="warning">{searchError}</Alert> : null}
 
-            <p className="cashier-section-subtitle">
-              {fmtNum(
-                queueItems.length,
-              )}{" "}
-              {lang === "ar"
-                ? "طلب"
-                : queueItems.length ===
-                    1
-                  ? "request"
-                  : "requests"}
-            </p>
-          </div>
+          {searchResult?.subscription ? (
+            <div className="kob-queue-details">
+              <DetailRow
+                icon={<User className="h-4 w-4" />}
+                label={t("cashier.customer")}
+                value={searchResult.customer?.name || "—"}
+              />
+              <DetailRow
+                icon={<Tag className="h-4 w-4" />}
+                label={t("cashier.plan")}
+                value={searchResult.subscription.plan_name || "—"}
+              />
+              <DetailRow
+                icon={<Clock3 className="h-4 w-4" />}
+                label={t("cashier.remainingDays")}
+                value={
+                  searchResult.subscription.remaining_days != null
+                    ? fmtNum(searchResult.subscription.remaining_days)
+                    : "—"
+                }
+              />
+              <DetailRow
+                icon={<Coffee className="h-4 w-4" />}
+                label={t("cashier.usedToday")}
+                value={fmtNum(searchResult.used_today ?? 0)}
+              />
+              {searchResult.subscription.end_date ? (
+                <DetailRow
+                  icon={<Clock3 className="h-4 w-4" />}
+                  label={t("cashier.endDate")}
+                  value={fmtDate(searchResult.subscription.end_date)}
+                />
+              ) : null}
+            </div>
+          ) : null}
+        </CardBody>
+      </Card>
 
-          <QueueFilterControl
-            value={filter}
-            onChange={setFilter}
-            orderCount={
-              pendingOrders.length
-            }
-            registrationCount={
-              pendingRegistrations.length
-            }
-            language={lang}
-          />
-        </div>
-
-        {loading &&
-        queueItems.length === 0 ? (
-          <LoadingState
-            label={
-              lang === "ar"
-                ? "جاري تحميل الطلبات..."
-                : "Loading requests..."
-            }
-          />
-        ) : queueItems.length ===
-          0 ? (
-          <EmptyQueue
-            language={lang}
-            filter={filter}
-          />
-        ) : (
-          <div className="cashier-request-grid">
-            {queueItems.map(
-              (item) =>
-                item.kind ===
-                "order" ? (
+      <Card tone="raised">
+        <CardHeader
+          title={t("cashier.pendingRequests")}
+          description={t("cashier.requestsCount", { count: fmtNum(queueItems.length) })}
+          icon={<Inbox className="h-4 w-4" />}
+          action={
+            <Tabs
+              ariaLabel={t("cashier.filterLabel")}
+              value={filter}
+              onChange={(id) => setFilter(id as QueueFilter)}
+              items={[
+                {
+                  id: "all",
+                  label: t("cashier.filterAll"),
+                  badge: fmtNum(pendingOrders.length + pendingRegistrations.length),
+                },
+                { id: "orders", label: t("cashier.filterOrders"), badge: fmtNum(pendingOrders.length) },
+                {
+                  id: "registrations",
+                  label: t("cashier.filterRegistrations"),
+                  badge: fmtNum(pendingRegistrations.length),
+                },
+              ]}
+            />
+          }
+        />
+        <CardBody>
+          {loading && queueItems.length === 0 ? (
+            <LoadingState label={t("cashier.loadingRequests")} />
+          ) : queueItems.length === 0 ? (
+            <EmptyState
+              icon={<Inbox className="h-8 w-8" />}
+              title={t("cashier.emptyTitle")}
+              description={t("cashier.emptyDescription")}
+            />
+          ) : (
+            <div className="kob-queue-grid">
+              {queueItems.map((item) =>
+                item.kind === "order" ? (
                   <CoffeeOrderCard
                     key={`order-${item.id}`}
                     order={item.data}
-                    busy={
-                      busyId ===
-                      item.id
-                    }
-                    language={lang}
-                    timeLabel={timeAgo(
-                      item.createdAt,
-                    )}
+                    busy={busyId === item.id}
+                    isAr={lang === "ar"}
+                    t={t}
+                    timeLabel={timeAgo(item.createdAt)}
                     onApprove={() => {
-                      void decideOrder(
-                        item.id,
-                        "approved",
-                      );
+                      void decideOrder(item.id, "approved");
                     }}
                     onReject={() => {
-                      void decideOrder(
-                        item.id,
-                        "rejected",
-                      );
+                      void decideOrder(item.id, "rejected");
                     }}
                   />
                 ) : (
                   <RegistrationCard
                     key={`registration-${item.id}`}
-                    request={
-                      item.data
-                    }
-                    busy={
-                      busyId ===
-                      item.id
-                    }
-                    coupons={
-                      coupons
-                    }
-                    planMap={
-                      planMap
-                    }
-                    branchId={
-                      branchId
-                    }
-                    selectedCoupon={
-                      selectedCoupons[
-                        item.id
-                      ] ?? ""
-                    }
-                    selectedStartDate={
-                      selectedStartDates[
-                        item.id
-                      ] ??
-                      todayLocalISO()
-                    }
-                    language={lang}
-                    timeLabel={timeAgo(
-                      item.createdAt,
-                    )}
-                    onCouponChange={(
-                      couponId,
-                    ) => {
-                      setSelectedCoupons(
-                        (
-                          current,
-                        ) => ({
-                          ...current,
-                          [item.id]:
-                            couponId,
-                        }),
-                      );
+                    request={item.data}
+                    busy={busyId === item.id}
+                    coupons={coupons}
+                    planMap={planMap}
+                    branchId={branchId}
+                    t={t}
+                    selectedCoupon={selectedCoupons[item.id] ?? ""}
+                    selectedStartDate={selectedStartDates[item.id] ?? todayLocalISO()}
+                    timeLabel={timeAgo(item.createdAt)}
+                    onCouponChange={(couponId) => {
+                      setSelectedCoupons((current) => ({ ...current, [item.id]: couponId }));
                     }}
-                    onStartDateChange={(
-                      date,
-                    ) => {
-                      setSelectedStartDates(
-                        (
-                          current,
-                        ) => ({
-                          ...current,
-                          [item.id]:
-                            date,
-                        }),
-                      );
+                    onStartDateChange={(date) => {
+                      setSelectedStartDates((current) => ({ ...current, [item.id]: date }));
                     }}
                     onActivate={() => {
-                      void activateRegistration(
-                        item.data,
-                      );
+                      void activateRegistration(item.data);
                     }}
                     onReject={() => {
-                      void rejectRegistration(
-                        item.id,
-                      );
+                      void rejectRegistration(item.id);
                     }}
                   />
                 ),
-            )}
-          </div>
-        )}
-      </section>
+              )}
+            </div>
+          )}
+        </CardBody>
+      </Card>
     </div>
   );
 }
 
-type SummaryCardProps = {
-  title: string;
-  value: number;
-  icon: React.ReactNode;
-  tone:
-    | "coffee"
-    | "registration";
-};
-
-function SummaryCard({
-  title,
-  value,
-  icon,
-  tone,
-}: SummaryCardProps) {
-  return (
-    <article
-      className={`cashier-summary-card cashier-summary-${tone}`}
-    >
-      <div className="cashier-summary-icon">
-        {icon}
-      </div>
-
-      <div>
-        <div className="cashier-summary-label">
-          {title}
-        </div>
-
-        <strong className="cashier-summary-value">
-          {value}
-        </strong>
-      </div>
-    </article>
-  );
-}
-
-type QueueFilterControlProps = {
-  value: QueueFilter;
-  onChange: (
-    value: QueueFilter,
-  ) => void;
-  orderCount: number;
-  registrationCount: number;
-  language: string;
-};
-
-function QueueFilterControl({
-  value,
-  onChange,
-  orderCount,
-  registrationCount,
-  language,
-}: QueueFilterControlProps) {
-  const filters: Array<{
-    value: QueueFilter;
-    label: string;
-    count: number;
-  }> = [
-    {
-      value: "all",
-      label:
-        language === "ar"
-          ? "الكل"
-          : "All",
-      count:
-        orderCount +
-        registrationCount,
-    },
-    {
-      value: "orders",
-      label:
-        language === "ar"
-          ? "الطلبات"
-          : "Orders",
-      count: orderCount,
-    },
-    {
-      value: "registrations",
-      label:
-        language === "ar"
-          ? "التسجيلات"
-          : "Registrations",
-      count:
-        registrationCount,
-    },
-  ];
-
-  return (
-    <div className="cashier-filter-control">
-      {filters.map(
-        (filter) => (
-          <button
-            key={filter.value}
-            type="button"
-            onClick={() => {
-              onChange(
-                filter.value,
-              );
-            }}
-            className={
-              value ===
-              filter.value
-                ? "cashier-filter-button cashier-filter-button-active"
-                : "cashier-filter-button"
-            }
-          >
-            <span>
-              {filter.label}
-            </span>
-
-            <span className="cashier-filter-count">
-              {filter.count}
-            </span>
-          </button>
-        ),
-      )}
-    </div>
-  );
-}
-
-type CoffeeOrderCardProps = {
-  order: OrderRow;
-  busy: boolean;
-  language: string;
-  timeLabel: string;
-  onApprove: () => void;
-  onReject: () => void;
-};
+type Translate = (key: string, vars?: Record<string, string | number>) => string;
 
 function CoffeeOrderCard({
   order,
   busy,
-  language,
+  isAr,
+  t,
   timeLabel,
   onApprove,
   onReject,
-}: CoffeeOrderCardProps) {
-  const drinkName =
-    language === "ar"
-      ? order.drink
-          ?.name_ar
-      : order.drink
-          ?.name_en;
+}: {
+  order: OrderRow;
+  busy: boolean;
+  isAr: boolean;
+  t: Translate;
+  timeLabel: string;
+  onApprove: () => void;
+  onReject: () => void;
+}) {
+  const drinkName = isAr ? order.drink?.name_ar : order.drink?.name_en;
 
   return (
-    <article className="cashier-request-card cashier-order-card">
-      <div className="cashier-card-accent" />
+    <Card tone="raised" className="kob-queue-card" data-kind="order">
+      <CardBody>
+        <div className="kob-queue-card-top">
+          <Badge tone="gold">
+            <Coffee className="h-3.5 w-3.5" /> {t("cashier.coffeeOrder")}
+          </Badge>
+          <span className="kob-queue-time">{timeLabel}</span>
+        </div>
 
-      <div className="cashier-card-header">
-        <div className="cashier-request-type cashier-request-type-order">
-          <Coffee className="h-4 w-4" />
-
-          <span>
-            {language === "ar"
-              ? "طلب قهوة"
-              : "Coffee Order"}
+        <div className="kob-queue-headline">
+          <span className="kob-queue-headline-icon" aria-hidden>
+            <Coffee className="h-7 w-7" />
           </span>
-        </div>
-
-        <span className="cashier-new-badge">
-          {language === "ar"
-            ? "جديد"
-            : "NEW"}
-        </span>
-      </div>
-
-      <div className="cashier-drink-display">
-        <div className="cashier-drink-icon">
-          <Coffee className="h-8 w-8" />
-        </div>
-
-        <div>
-          <div className="cashier-drink-label">
-            {language === "ar"
-              ? "المشروب"
-              : "Drink"}
+          <div className="kob-min-w-0">
+            <span className="kob-queue-headline-label">{t("cashier.drink")}</span>
+            <h3 className="kob-queue-headline-value">{drinkName ?? "—"}</h3>
           </div>
-
-          <h3 className="cashier-drink-name">
-            {drinkName ?? "—"}
-          </h3>
         </div>
-      </div>
 
-      <div className="cashier-card-details">
-        <DetailRow
-          icon={
-            <User className="h-4 w-4" />
-          }
-          label={
-            language === "ar"
-              ? "العميل"
-              : "Customer"
-          }
-          value={
-            order.customer
-              ?.name || "—"
-          }
-        />
-
-        <DetailRow
-          icon={
-            <Phone className="h-4 w-4" />
-          }
-          label={
-            language === "ar"
-              ? "الجوال"
-              : "Phone"
-          }
-          value={
-            order.customer
-              ?.phone || "—"
-          }
-          mono
-        />
-
-        <DetailRow
-          icon={
-            <Tag className="h-4 w-4" />
-          }
-          label={
-            language === "ar"
-              ? "الباقة"
-              : "Plan"
-          }
-          value={
-            order.subscription
-              ?.plan?.name ||
-            "—"
-          }
-        />
-
-        <DetailRow
-          icon={
-            <Clock3 className="h-4 w-4" />
-          }
-          label={
-            language === "ar"
-              ? "الوقت"
-              : "Time"
-          }
-          value={timeLabel}
-        />
-      </div>
-
-      {(order.selected_options?.length > 0 || order.customer_note) && (
-        <div className="cashier-customization-summary">
-          {order.selected_options?.length > 0 && (
-            <div>
-              <span className="cashier-customization-title">
-                {language === "ar" ? "الخيارات" : "Options"}
-              </span>
-              <ul>
-                {order.selected_options.map((option, index) => (
-                  <li key={`${option.option_name_en}-${index}`}>
-                    <b>{language === "ar" ? option.group_name_ar : option.group_name_en}:</b>{" "}
-                    {language === "ar" ? option.option_name_ar : option.option_name_en}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {order.customer_note && (
-            <div className="cashier-customer-note">
-              <span>{language === "ar" ? "تعليق العميل" : "Customer note"}</span>
-              <p>{order.customer_note}</p>
-            </div>
-          )}
+        <div className="kob-queue-details">
+          <DetailRow
+            icon={<User className="h-4 w-4" />}
+            label={t("cashier.customer")}
+            value={order.customer?.name || "—"}
+          />
+          <DetailRow
+            icon={<Phone className="h-4 w-4" />}
+            label={t("cashier.phone")}
+            value={order.customer?.phone || "—"}
+            mono
+          />
+          <DetailRow
+            icon={<Tag className="h-4 w-4" />}
+            label={t("cashier.plan")}
+            value={order.subscription?.plan?.name || "—"}
+          />
         </div>
-      )}
 
-      <div className="cashier-card-actions">
-        <Button
-          variant="danger"
-          disabled={busy}
-          onClick={onReject}
-          leadingIcon={<X className="h-4 w-4" />}
-        >
-          {language === "ar" ? "رفض" : "Reject"}
-        </Button>
+        {order.selected_options?.length || order.customer_note ? (
+          <div className="kob-queue-extras">
+            {order.selected_options?.length ? (
+              <div>
+                <span className="kob-queue-extras-title">{t("cashier.options")}</span>
+                <ul>
+                  {order.selected_options.map((option, index) => (
+                    <li key={`${option.option_name_en}-${index}`}>
+                      <b>{isAr ? option.group_name_ar : option.group_name_en}:</b>{" "}
+                      {isAr ? option.option_name_ar : option.option_name_en}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+            {order.customer_note ? (
+              <div className="kob-queue-note">
+                <span className="kob-queue-extras-title">{t("cashier.customerNote")}</span>
+                <p>{order.customer_note}</p>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
 
-        <Button
-          loading={busy}
-          disabled={busy}
-          onClick={onApprove}
-          leadingIcon={!busy ? <Check className="h-4 w-4" /> : undefined}
-        >
-          {language === "ar" ? "قبول الطلب" : "Approve Order"}
-        </Button>
-      </div>
-    </article>
+        <div className="kob-queue-actions">
+          <Button variant="danger" disabled={busy} onClick={onReject} leadingIcon={<X className="h-4 w-4" />}>
+            {t("cashier.reject")}
+          </Button>
+          <Button
+            size="lg"
+            loading={busy}
+            disabled={busy}
+            onClick={onApprove}
+            leadingIcon={!busy ? <Check className="h-5 w-5" /> : undefined}
+          >
+            {t("cashier.approveOrder")}
+          </Button>
+        </div>
+      </CardBody>
+    </Card>
   );
 }
-
-type RegistrationCardProps = {
-  request: RegistrationRequest;
-  busy: boolean;
-  coupons: CouponRow[];
-  planMap: Map<
-    string,
-    PlanRow
-  >;
-  branchId: string;
-  selectedCoupon: string;
-  selectedStartDate: string;
-  language: string;
-  timeLabel: string;
-  onCouponChange: (
-    couponId: string,
-  ) => void;
-  onStartDateChange: (
-    date: string,
-  ) => void;
-  onActivate: () => void;
-  onReject: () => void;
-};
 
 function RegistrationCard({
   request,
@@ -1261,343 +671,148 @@ function RegistrationCard({
   coupons,
   planMap,
   branchId,
+  t,
   selectedCoupon,
   selectedStartDate,
-  language,
   timeLabel,
   onCouponChange,
   onStartDateChange,
   onActivate,
   onReject,
-}: RegistrationCardProps) {
-  const fullName =
-    `${request.first_name} ${request.last_name}`.trim();
-
-  const availableCoupons =
-    coupons.filter(
-      (coupon) =>
-        !coupon.branch_id ||
-        coupon.branch_id ===
-          branchId,
-    );
+}: {
+  request: RegistrationRequest;
+  busy: boolean;
+  coupons: CouponRow[];
+  planMap: Map<string, PlanRow>;
+  branchId: string;
+  t: Translate;
+  selectedCoupon: string;
+  selectedStartDate: string;
+  timeLabel: string;
+  onCouponChange: (couponId: string) => void;
+  onStartDateChange: (date: string) => void;
+  onActivate: () => void;
+  onReject: () => void;
+}) {
+  const fullName = `${request.first_name} ${request.last_name}`.trim();
+  const availableCoupons = coupons.filter(
+    (coupon) => !coupon.branch_id || coupon.branch_id === branchId,
+  );
 
   return (
-    <article className="cashier-request-card cashier-registration-card">
-      <div className="cashier-card-accent" />
+    <Card tone="raised" className="kob-queue-card" data-kind="registration">
+      <CardBody>
+        <div className="kob-queue-card-top">
+          <Badge tone="info">
+            <UserPlus className="h-3.5 w-3.5" /> {t("cashier.registration")}
+          </Badge>
+          <span className="kob-queue-time">{timeLabel}</span>
+        </div>
 
-      <div className="cashier-card-header">
-        <div className="cashier-request-type cashier-request-type-registration">
-          <UserPlus className="h-4 w-4" />
-
-          <span>
-            {language === "ar"
-              ? "طلب تسجيل"
-              : "Registration"}
+        <div className="kob-queue-headline">
+          <span className="kob-queue-headline-icon" aria-hidden>
+            <UserPlus className="h-7 w-7" />
           </span>
-        </div>
-
-        <span className="cashier-new-badge">
-          {language === "ar"
-            ? "جديد"
-            : "NEW"}
-        </span>
-      </div>
-
-      <div className="cashier-registration-customer">
-        <div className="cashier-registration-avatar">
-          <UserPlus className="h-7 w-7" />
-        </div>
-
-        <div className="min-w-0">
-          <div className="cashier-drink-label">
-            {language === "ar"
-              ? "عميل جديد"
-              : "New Customer"}
-          </div>
-
-          <h3 className="cashier-registration-name">
-            {fullName || "—"}
-          </h3>
-
-          <div className="cashier-registration-phone">
-            <Phone className="h-3.5 w-3.5" />
-
-            <span>
+          <div className="kob-min-w-0">
+            <span className="kob-queue-headline-label">{t("cashier.newCustomer")}</span>
+            <h3 className="kob-queue-headline-value">{fullName || "—"}</h3>
+            <span className="kob-queue-phone" dir="ltr">
               {request.phone}
             </span>
           </div>
         </div>
-      </div>
 
-      <div className="cashier-registration-meta">
-        <span>
-          {request.preferred_language.toUpperCase()}
-        </span>
-
-        <span>•</span>
-
-        <span>
-          {timeLabel}
-        </span>
-      </div>
-
-      <div className="cashier-registration-form">
-        <label className="cashier-form-field">
-          <span>
-            {language === "ar"
-              ? "الكوبون والباقة"
-              : "Coupon and Plan"}
-          </span>
-
-          <Select
-            value={
-              selectedCoupon
-            }
-            disabled={busy}
-            onChange={(event) => {
-              onCouponChange(
-                event.target
-                  .value,
-              );
-            }}
-          >
-            <option value="">
-              {language === "ar"
-                ? "اختر الكوبون"
-                : "Select coupon"}
-            </option>
-
-            {availableCoupons.map(
-              (coupon) => {
-                const plan =
-                  planMap.get(
-                    coupon.plan_id,
+        <div className="kob-queue-form">
+          <Field label={t("cashier.couponAndPlan")}>
+            {() => (
+              <Select
+                value={selectedCoupon}
+                disabled={busy}
+                onChange={(event) => onCouponChange(event.target.value)}
+              >
+                <option value="">{t("cashier.selectCoupon")}</option>
+                {availableCoupons.map((coupon) => {
+                  const plan = planMap.get(coupon.plan_id);
+                  return (
+                    <option key={coupon.id} value={coupon.id}>
+                      {coupon.code} · {plan?.name ?? "—"} ·{" "}
+                      {t("cashier.daysCount", { count: plan?.duration_days ?? 0 })}
+                    </option>
                   );
-
-                return (
-                  <option
-                    key={
-                      coupon.id
-                    }
-                    value={
-                      coupon.id
-                    }
-                  >
-                    {coupon.code}
-                    {" · "}
-                    {plan?.name ??
-                      "—"}
-                    {" · "}
-                    {plan
-                      ?.duration_days ??
-                      0}
-                    {language === "ar"
-                      ? " يوم"
-                      : " days"}
-                  </option>
-                );
-              },
+                })}
+              </Select>
             )}
-          </Select>
-        </label>
+          </Field>
 
-        <label className="cashier-form-field">
-          <span>
-            {language === "ar"
-              ? "تاريخ البداية"
-              : "Start Date"}
-          </span>
-
-          <DateInput
-            value={
-              selectedStartDate
-            }
-            disabled={busy}
-            onChange={(event) => {
-              onStartDateChange(
-                event.target
-                  .value,
-              );
-            }}
-          />
-        </label>
-      </div>
-
-      {availableCoupons.length ===
-        0 && (
-        <div className="cashier-card-warning">
-          {language === "ar"
-            ? "لا توجد كوبونات متاحة لهذا الفرع."
-            : "No available coupons for this branch."}
+          <Field label={t("cashier.startDate")}>
+            {() => (
+              <DateInput
+                value={selectedStartDate}
+                disabled={busy}
+                onChange={(event) => onStartDateChange(event.target.value)}
+              />
+            )}
+          </Field>
         </div>
-      )}
 
-      <div className="cashier-card-actions">
-        <Button
-          variant="danger"
-          disabled={busy}
-          onClick={onReject}
-          leadingIcon={<X className="h-4 w-4" />}
-        >
-          {language === "ar" ? "رفض" : "Reject"}
-        </Button>
+        {availableCoupons.length === 0 ? (
+          <Alert tone="warning">{t("cashier.noCouponsForBranch")}</Alert>
+        ) : null}
 
-        <Button
-          loading={busy}
-          disabled={
-            busy ||
-            !selectedCoupon
-          }
-          onClick={onActivate}
-          leadingIcon={!busy ? <Check className="h-4 w-4" /> : undefined}
-        >
-          {language === "ar" ? "تفعيل الاشتراك" : "Activate Subscription"}
-        </Button>
-      </div>
-    </article>
+        <div className="kob-queue-actions">
+          <Button variant="danger" disabled={busy} onClick={onReject} leadingIcon={<X className="h-4 w-4" />}>
+            {t("cashier.reject")}
+          </Button>
+          <Button
+            size="lg"
+            loading={busy}
+            disabled={busy || !selectedCoupon}
+            onClick={onActivate}
+            leadingIcon={!busy ? <Check className="h-5 w-5" /> : undefined}
+          >
+            {t("cashier.activateSubscription")}
+          </Button>
+        </div>
+      </CardBody>
+    </Card>
   );
 }
-
-type DetailRowProps = {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  mono?: boolean;
-};
 
 function DetailRow({
   icon,
   label,
   value,
   mono = false,
-}: DetailRowProps) {
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
   return (
-    <div className="cashier-detail-row">
-      <div className="cashier-detail-icon">
+    <div className="kob-queue-detail">
+      <span className="kob-queue-detail-icon" aria-hidden>
         {icon}
-      </div>
-
-      <div className="min-w-0 flex-1">
-        <div className="cashier-detail-label">
-          {label}
-        </div>
-
-        <div
-          className={
-            mono
-              ? "cashier-detail-value font-mono"
-              : "cashier-detail-value"
-          }
-        >
+      </span>
+      <div className="kob-min-w-0 flex-1">
+        <span className="kob-queue-detail-label">{label}</span>
+        <span className={mono ? "kob-queue-detail-value font-mono" : "kob-queue-detail-value"} dir={mono ? "ltr" : undefined}>
           {value}
-        </div>
+        </span>
       </div>
     </div>
   );
 }
 
-function EmptyQueue({
-  language,
-  filter,
-}: {
-  language: string;
-  filter: QueueFilter;
-}) {
-  let title =
-    language === "ar"
-      ? "كل شيء محدّث"
-      : "Everything is up to date";
-
-  let description =
-    language === "ar"
-      ? "لا توجد طلبات معلّقة حاليًا."
-      : "There are no pending requests right now.";
-
-  if (filter === "orders") {
-    title =
-      language === "ar"
-        ? "لا توجد طلبات قهوة"
-        : "No coffee orders";
-
-    description =
-      language === "ar"
-        ? "لا توجد طلبات قهوة معلّقة حاليًا."
-        : "There are no pending coffee orders.";
-  }
-
-  if (
-    filter ===
-    "registrations"
-  ) {
-    title =
-      language === "ar"
-        ? "لا توجد طلبات تسجيل"
-        : "No registrations";
-
-    description =
-      language === "ar"
-        ? "لا توجد طلبات تسجيل معلّقة حاليًا."
-        : "There are no pending registration requests.";
-  }
-
-  return (
-    <EmptyState
-      icon={<Inbox className="h-8 w-8" />}
-      title={title}
-      description={description}
-    />
-  );
-}
-
 function todayLocalISO() {
-  const date =
-    new Date();
-
-  const timezoneOffset =
-    date.getTimezoneOffset();
-
-  return new Date(
-    date.getTime() -
-      timezoneOffset *
-        60000,
-  )
-    .toISOString()
-    .slice(0, 10);
+  const date = new Date();
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 }
 
-function translateActivationError(
-  message: string,
-  language: string,
-) {
-  if (
-    message.includes(
-      "coupon_not_available",
-    )
-  ) {
-    return language === "ar"
-      ? "الكوبون غير متاح أو تم استخدامه."
-      : "The coupon is unavailable or has already been used.";
-  }
-
-  if (
-    message.includes(
-      "coupon_wrong_branch",
-    )
-  ) {
-    return language === "ar"
-      ? "الكوبون غير مخصص لهذا الفرع."
-      : "This coupon belongs to another branch.";
-  }
-
-  if (
-    message.includes(
-      "registration_already_processed",
-    )
-  ) {
-    return language === "ar"
-      ? "تمت معالجة طلب التسجيل مسبقًا."
-      : "This registration request has already been processed.";
-  }
-
+function translateActivationError(message: string, t: Translate) {
+  if (message.includes("coupon_not_available")) return t("cashier.errors.couponNotAvailable");
+  if (message.includes("coupon_wrong_branch")) return t("cashier.errors.couponWrongBranch");
+  if (message.includes("registration_already_processed"))
+    return t("cashier.errors.registrationProcessed");
   return message;
 }

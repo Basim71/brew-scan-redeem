@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
-import { Inbox, ShoppingCart } from "lucide-react";
+import { Inbox } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { AppWorkspace } from "@/layouts/AppWorkspace";
@@ -50,10 +50,7 @@ function CashierLayout() {
     };
   }, [branchId, lang]);
 
-  const items = [
-    { to: "/cashier", label: t("pending_orders"), icon: Inbox, exact: true },
-    { to: "/cashier/sell-coupon", label: t("nav_sell_coupon"), icon: ShoppingCart },
-  ];
+  const items = [{ to: "/cashier", label: t("pending_orders"), icon: Inbox, exact: true }];
 
   async function handleSignOut() {
     clearOrganization();

@@ -26,12 +26,10 @@ import { Route as AdminDrinksRouteImport } from './routes/admin.drinks'
 import { Route as AdminFinancialReportsRouteImport } from './routes/admin.financial-reports'
 import { Route as AdminPlansRouteImport } from './routes/admin.plans'
 import { Route as AdminReportsRouteImport } from './routes/admin.reports'
-import { Route as AdminSellCouponRouteImport } from './routes/admin.sell-coupon'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as AdminSupportRouteImport } from './routes/admin.support'
 import { Route as CashierIndexRouteImport } from './routes/cashier.index'
-import { Route as CashierSellCouponRouteImport } from './routes/cashier.sell-coupon'
 import { Route as PlatformIndexRouteImport } from './routes/platform.index'
 import { Route as PlatformAnnouncementsRouteImport } from './routes/platform.announcements'
 import { Route as PlatformAuditRouteImport } from './routes/platform.audit'
@@ -132,11 +130,6 @@ const AdminReportsRoute = AdminReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminSellCouponRoute = AdminSellCouponRouteImport.update({
-  id: '/sell-coupon',
-  path: '/sell-coupon',
-  getParentRoute: () => AdminRoute,
-} as any)
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -155,11 +148,6 @@ const AdminSupportRoute = AdminSupportRouteImport.update({
 const CashierIndexRoute = CashierIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => CashierRoute,
-} as any)
-const CashierSellCouponRoute = CashierSellCouponRouteImport.update({
-  id: '/sell-coupon',
-  path: '/sell-coupon',
   getParentRoute: () => CashierRoute,
 } as any)
 const PlatformIndexRoute = PlatformIndexRouteImport.update({
@@ -251,11 +239,9 @@ export interface FileRoutesByFullPath {
   '/admin/financial-reports': typeof AdminFinancialReportsRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/reports': typeof AdminReportsRoute
-  '/admin/sell-coupon': typeof AdminSellCouponRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/admin/support': typeof AdminSupportRouteWithChildren
-  '/cashier/sell-coupon': typeof CashierSellCouponRoute
   '/platform/announcements': typeof PlatformAnnouncementsRoute
   '/platform/audit': typeof PlatformAuditRoute
   '/platform/companies': typeof PlatformCompaniesRouteWithChildren
@@ -287,10 +273,8 @@ export interface FileRoutesByTo {
   '/admin/financial-reports': typeof AdminFinancialReportsRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/reports': typeof AdminReportsRoute
-  '/admin/sell-coupon': typeof AdminSellCouponRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
-  '/cashier/sell-coupon': typeof CashierSellCouponRoute
   '/platform/announcements': typeof PlatformAnnouncementsRoute
   '/platform/audit': typeof PlatformAuditRoute
   '/platform/companies': typeof PlatformCompaniesRouteWithChildren
@@ -325,11 +309,9 @@ export interface FileRoutesById {
   '/admin/financial-reports': typeof AdminFinancialReportsRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/reports': typeof AdminReportsRoute
-  '/admin/sell-coupon': typeof AdminSellCouponRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/admin/support': typeof AdminSupportRouteWithChildren
-  '/cashier/sell-coupon': typeof CashierSellCouponRoute
   '/platform/announcements': typeof PlatformAnnouncementsRoute
   '/platform/audit': typeof PlatformAuditRoute
   '/platform/companies': typeof PlatformCompaniesRouteWithChildren
@@ -366,11 +348,9 @@ export interface FileRouteTypes {
     | '/admin/financial-reports'
     | '/admin/plans'
     | '/admin/reports'
-    | '/admin/sell-coupon'
     | '/admin/settings'
     | '/admin/subscriptions'
     | '/admin/support'
-    | '/cashier/sell-coupon'
     | '/platform/announcements'
     | '/platform/audit'
     | '/platform/companies'
@@ -402,10 +382,8 @@ export interface FileRouteTypes {
     | '/admin/financial-reports'
     | '/admin/plans'
     | '/admin/reports'
-    | '/admin/sell-coupon'
     | '/admin/settings'
     | '/admin/subscriptions'
-    | '/cashier/sell-coupon'
     | '/platform/announcements'
     | '/platform/audit'
     | '/platform/companies'
@@ -439,11 +417,9 @@ export interface FileRouteTypes {
     | '/admin/financial-reports'
     | '/admin/plans'
     | '/admin/reports'
-    | '/admin/sell-coupon'
     | '/admin/settings'
     | '/admin/subscriptions'
     | '/admin/support'
-    | '/cashier/sell-coupon'
     | '/platform/announcements'
     | '/platform/audit'
     | '/platform/companies'
@@ -593,13 +569,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminReportsRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/sell-coupon': {
-      id: '/admin/sell-coupon'
-      path: '/sell-coupon'
-      fullPath: '/admin/sell-coupon'
-      preLoaderRoute: typeof AdminSellCouponRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/admin/settings': {
       id: '/admin/settings'
       path: '/settings'
@@ -626,13 +595,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/cashier/'
       preLoaderRoute: typeof CashierIndexRouteImport
-      parentRoute: typeof CashierRoute
-    }
-    '/cashier/sell-coupon': {
-      id: '/cashier/sell-coupon'
-      path: '/sell-coupon'
-      fullPath: '/cashier/sell-coupon'
-      preLoaderRoute: typeof CashierSellCouponRouteImport
       parentRoute: typeof CashierRoute
     }
     '/platform/': {
@@ -760,7 +722,6 @@ interface AdminRouteChildren {
   AdminFinancialReportsRoute: typeof AdminFinancialReportsRoute
   AdminPlansRoute: typeof AdminPlansRoute
   AdminReportsRoute: typeof AdminReportsRoute
-  AdminSellCouponRoute: typeof AdminSellCouponRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   AdminSupportRoute: typeof AdminSupportRouteWithChildren
@@ -777,7 +738,6 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminFinancialReportsRoute: AdminFinancialReportsRoute,
   AdminPlansRoute: AdminPlansRoute,
   AdminReportsRoute: AdminReportsRoute,
-  AdminSellCouponRoute: AdminSellCouponRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   AdminSupportRoute: AdminSupportRouteWithChildren,
@@ -787,12 +747,10 @@ const AdminRouteChildren: AdminRouteChildren = {
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface CashierRouteChildren {
-  CashierSellCouponRoute: typeof CashierSellCouponRoute
   CashierIndexRoute: typeof CashierIndexRoute
 }
 
 const CashierRouteChildren: CashierRouteChildren = {
-  CashierSellCouponRoute: CashierSellCouponRoute,
   CashierIndexRoute: CashierIndexRoute,
 }
 
