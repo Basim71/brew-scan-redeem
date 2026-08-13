@@ -42,7 +42,7 @@ const EMPTY_DATASET: AnalyticsDataset = {
 };
 
 export function AnalyticsShell() {
-  const { lang } = useI18n();
+  const { t, lang } = useI18n();
   const isAr = lang === "ar";
 
   const [preset, setPreset] = useState<PresetKey>("last30");
@@ -89,18 +89,18 @@ export function AnalyticsShell() {
 
   const data = useMemo(() => applyFilters(raw, filters), [raw, filters]);
   const kpis = useMemo(() => computeKpis(data, range), [data, range]);
-  const tables = useMemo(() => buildTables(data, isAr, localize, money), [data, isAr, localize, money]);
+  const tables = useMemo(() => buildTables(data, isAr, localize, money, t), [data, isAr, localize, money, t]);
   const insights = useMemo(() => buildInsights(data, kpis, isAr), [data, kpis, isAr]);
 
   const kpiSummary = useMemo(
     () => [
-      { label: isAr ? "الإيرادات" : "Revenue", value: money(kpis.revenue) },
-      { label: isAr ? "الطلبات" : "Orders", value: num(kpis.orders) },
-      { label: isAr ? "متوسط الطلب" : "Average Order", value: money(kpis.averageOrder) },
-      { label: isAr ? "الاشتراكات المباعة" : "Subscriptions Sold", value: num(kpis.subscriptionsSold) },
-      { label: isAr ? "أعضاء نشطون" : "Active Members", value: num(kpis.activeMembers) },
+      { label: t("analytics.kpis.revenue"), value: money(kpis.revenue) },
+      { label: t("analytics.kpis.orders"), value: num(kpis.orders) },
+      { label: t("analytics.kpis.averageOrder"), value: money(kpis.averageOrder) },
+      { label: t("analytics.kpis.subscriptionsSold"), value: num(kpis.subscriptionsSold) },
+      { label: t("analytics.kpis.activeMembers"), value: num(kpis.activeMembers) },
     ],
-    [isAr, kpis, money, num],
+    [kpis, money, num, t],
   );
 
   const handlePreset = (next: PresetKey) => {
@@ -110,33 +110,29 @@ export function AnalyticsShell() {
 
   const handleExport = (kind: "csv" | "excel" | "pdf" | "print") => {
     const filename = `KOB-business-analytics-${range.from}-${range.to}`;
-    const title = isAr ? "تحليلات الأعمال" : "Business Analytics";
+    const title = t("analytics.title");
     const subtitle = `${range.from} — ${range.to}`;
     if (kind === "csv") {
       exportCsv(tables.sales, filename);
-      toast.success(isAr ? "تم تصدير CSV" : "CSV exported");
+      toast.success(t("analytics.toast.csvExported"));
       return;
     }
     if (kind === "excel") {
       exportExcel(tables.sales, filename);
-      toast.success(isAr ? "تم تصدير Excel" : "Excel exported");
+      toast.success(t("analytics.toast.excelExported"));
       return;
     }
     const run = kind === "pdf" ? exportPdf : printReport;
     const opened = run({ title, subtitle, kpis: kpiSummary, table: tables.sales, isAr });
-    if (!opened) toast.error(isAr ? "الرجاء السماح بالنوافذ المنبثقة للطباعة." : "Allow pop-ups to print the report.");
+    if (!opened) toast.error(t("analytics.toast.popupBlocked"));
   };
 
   return (
     <PageContainer className="an-page">
       <PageHeader
         eyebrow="KOB Intelligence"
-        title={isAr ? "تحليلات الأعمال" : "Business Analytics"}
-        description={
-          isAr
-            ? "تحليلات شاملة للاشتراكات والمشروبات والإيرادات والعملاء."
-            : "Complete analytics across subscriptions, drinks, revenue and customers."
-        }
+        title={t("analytics.title")}
+        description={t("analytics.description")}
         action={
           <Button
             variant="secondary"
@@ -144,7 +140,7 @@ export function AnalyticsShell() {
             leadingIcon={<RefreshCw className="h-4 w-4" />}
             onClick={() => void load()}
           >
-            {isAr ? "تحديث" : "Refresh"}
+            {t("analytics.refresh")}
           </Button>
         }
       />
