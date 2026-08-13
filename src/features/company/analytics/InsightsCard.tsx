@@ -1,22 +1,27 @@
 import { Sparkles } from "lucide-react";
 
-import { Card, CardBody, CardHeader } from "@/components/kob";
+import { useI18n } from "@/lib/i18n";
+import { BodySmall, Caption, Card, CardBody, CardHeader } from "@/components/kob";
 
 export function InsightsCard({ insights, isAr }: { insights: string[]; isAr: boolean }) {
+  const { t } = useI18n();
+  void isAr;
   return (
     <Card>
-      <CardHeader title={isAr ? "رؤى ذكية" : "AI Insights"} icon={<Sparkles className="h-4 w-4" />} />
+      <CardHeader title={t("analytics.insights.title")} icon={<Sparkles className="h-4 w-4" />} />
       <CardBody>
-        <ul className="an-insights-list list-disc space-y-1 ps-5 text-sm text-[var(--kob-ink-muted,inherit)]">
+        <ul className="an-insights-list list-disc space-y-1 ps-5">
           {insights.map((insight, index) => (
-            <li key={index}>{insight}</li>
+            <li key={index}>
+              <BodySmall as="span" tone="muted">
+                {insight}
+              </BodySmall>
+            </li>
           ))}
         </ul>
-        <p className="mt-3 text-xs opacity-70">
-          {isAr
-            ? "تُحسب هذه الرؤى حاليًا من بياناتك مباشرة، وسيتم ربطها بمحرك ذكاء اصطناعي لاحقًا."
-            : "These insights are derived from your data today and will connect to an AI engine later."}
-        </p>
+        <Caption tone="muted" as="p" className="mt-3">
+          {t("analytics.insights.note")}
+        </Caption>
       </CardBody>
     </Card>
   );

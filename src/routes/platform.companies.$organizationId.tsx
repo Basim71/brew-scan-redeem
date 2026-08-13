@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowRight, Building2, ShieldCheck, ShieldOff } from "lucide-react";
+import { Button } from "@/components/kob";
 import { PlatformGate } from "@/features/platform/PlatformGate";
 import { ROLE_MATRIX, canManageCompanyStatus } from "@/features/platform/access";
 import {
@@ -82,9 +83,9 @@ function CompanyDetails() {
                   {company.status === "active" ? "نشطة" : "موقوفة"}
                 </span>
                 {canManage && (
-                  <button className="platform-primary-button" disabled={saving} onClick={toggleStatus}>
+                  <Button variant="primary" loading={saving} onClick={toggleStatus}>
                     {company.status === "active" ? "إيقاف" : "تفعيل"}
-                  </button>
+                  </Button>
                 )}
               </div>
             </header>

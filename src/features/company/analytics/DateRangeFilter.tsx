@@ -1,16 +1,17 @@
 import { CalendarRange } from "lucide-react";
 
-import { Button, Card, CardBody, CardHeader, DateRangeInput } from "@/components/kob";
+import { useI18n } from "@/lib/i18n";
+import { Button, Card, CardBody, CardHeader, Caption, DateRangeInput } from "@/components/kob";
 import type { DateRange, PresetKey } from "./types";
 
-const PRESETS: Array<{ key: PresetKey; ar: string; en: string }> = [
-  { key: "today", ar: "اليوم", en: "Today" },
-  { key: "yesterday", ar: "أمس", en: "Yesterday" },
-  { key: "last7", ar: "آخر ٧ أيام", en: "Last 7 Days" },
-  { key: "last30", ar: "آخر ٣٠ يومًا", en: "Last 30 Days" },
-  { key: "this_month", ar: "هذا الشهر", en: "This Month" },
-  { key: "last_month", ar: "الشهر الماضي", en: "Last Month" },
-  { key: "custom", ar: "فترة مخصصة", en: "Custom Range" },
+const PRESETS: Array<{ key: PresetKey }> = [
+  { key: "today" },
+  { key: "yesterday" },
+  { key: "last7" },
+  { key: "last30" },
+  { key: "this_month" },
+  { key: "last_month" },
+  { key: "custom" },
 ];
 
 export function DateRangeFilter({
@@ -26,9 +27,11 @@ export function DateRangeFilter({
   onPreset: (preset: PresetKey) => void;
   onRange: (range: DateRange) => void;
 }) {
+  const { t } = useI18n();
+  void isAr;
   return (
     <Card>
-      <CardHeader title={isAr ? "الفترة الزمنية" : "Date range"} icon={<CalendarRange className="h-4 w-4" />} />
+      <CardHeader title={t("analytics.dateRange.title")} icon={<CalendarRange className="h-4 w-4" />} />
       <CardBody>
         <div className="flex flex-wrap gap-2" role="group">
           {PRESETS.map((item) => (
@@ -38,15 +41,15 @@ export function DateRangeFilter({
               size="sm"
               onClick={() => onPreset(item.key)}
             >
-              {isAr ? item.ar : item.en}
+              {t(`analytics.dateRange.presets.${item.key}`)}
             </Button>
           ))}
         </div>
         {preset === "custom" ? (
           <div className="mt-3">
             <DateRangeInput
-              fromLabel={isAr ? "من" : "From"}
-              toLabel={isAr ? "إلى" : "To"}
+              fromLabel={t("analytics.dateRange.from")}
+              toLabel={t("analytics.dateRange.to")}
               from={range.from}
               to={range.to}
               onFromChange={(from) => onRange({ ...range, from })}
@@ -54,9 +57,9 @@ export function DateRangeFilter({
             />
           </div>
         ) : (
-          <p className="an-range-hint mt-3 text-sm opacity-70">
+          <Caption tone="muted" as="p" className="an-range-hint mt-3">
             {range.from} — {range.to}
-          </p>
+          </Caption>
         )}
       </CardBody>
     </Card>

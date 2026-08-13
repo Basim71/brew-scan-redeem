@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { useState } from "react";
 import { Smartphone } from "lucide-react";
 
@@ -43,6 +44,7 @@ const FIELDS: Record<StepKey, Array<[keyof OrganizationSettingsRow, keyof Organi
 };
 
 export function CustomerExperienceSection({ settings, isAr, canEdit, commit }: SectionProps) {
+  const { t } = useI18n();
   const d = canEdit ? undefined : true;
   const [step, setStep] = useState<StepKey>("welcome");
   const [previewLang, setPreviewLang] = useState<"ar" | "en">(isAr ? "ar" : "en");
@@ -53,11 +55,9 @@ export function CustomerExperienceSection({ settings, isAr, canEdit, commit }: S
   return (
     <div className="flex flex-col gap-4">
       <Card
-        title={isAr ? "رحلة العميل" : "Customer journey"}
+        title={t("settings.customerExperience.customerJourney")}
         description={
-          isAr
-            ? "اختر خطوة لتحرير نصوصها، وشاهد النتيجة فورًا على الجوال."
-            : "Pick a step to edit its copy and watch the phone preview update instantly."
+          t("settings.customerExperience.pickAStepToEditIts")
         }
       >
         <div className="flex flex-wrap gap-2">
@@ -78,30 +78,28 @@ export function CustomerExperienceSection({ settings, isAr, canEdit, commit }: S
           <div className="flex flex-col gap-3 min-w-0">
             {fields.length === 0 ? (
               <div className="rounded-lg border border-dashed border-border bg-muted/40 p-4 text-sm text-muted-foreground">
-                {isAr
-                  ? "هذه الخطوة لا تحتوي على نصوص قابلة للتعديل — يتحكم بها النظام."
-                  : "This step has no editable copy — it is system generated."}
+                {t("settings.customerExperience.thisStepHasNoEditableCopy")}
               </div>
             ) : (
               fields.map(([arKey, enKey, arLabel, enLabel]) => (
                 <div key={String(arKey)} className="flex flex-col gap-2 rounded-xl border border-border p-3">
-                  <Row label={`${isAr ? arLabel : enLabel} — ${isAr ? "عربي" : "Arabic"}`}>
+                  <Row label={`${isAr ? arLabel : enLabel} — ${t("settings.customerExperience.arabic")}`}>
                     <TextInput
                       isAr={isAr}
                       multiline
                       disabled={d}
                       value={(settings[arKey] as string | null) ?? ""}
-                      validate={(v) => (v.length > 200 ? (isAr ? "الحد ٢٠٠ حرف" : "Max 200 characters") : null)}
+                      validate={(v) => (v.length > 200 ? (t("settings.customerExperience.max200Characters")) : null)}
                       onCommit={(v) => commit({ [arKey]: v.trim() || null } as any, "experience")}
                     />
                   </Row>
-                  <Row label={`${isAr ? arLabel : enLabel} — ${isAr ? "إنجليزي" : "English"}`}>
+                  <Row label={`${isAr ? arLabel : enLabel} — ${t("settings.customerExperience.english")}`}>
                     <TextInput
                       isAr={isAr}
                       multiline
                       disabled={d}
                       value={(settings[enKey] as string | null) ?? ""}
-                      validate={(v) => (v.length > 200 ? (isAr ? "الحد ٢٠٠ حرف" : "Max 200 characters") : null)}
+                      validate={(v) => (v.length > 200 ? (t("settings.customerExperience.max200Characters")) : null)}
                       onCommit={(v) => commit({ [enKey]: v.trim() || null } as any, "experience")}
                     />
                   </Row>

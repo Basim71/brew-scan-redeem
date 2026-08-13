@@ -203,7 +203,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const PHONE_RE = /^(05\d{8}|\+9665\d{8})$/;
 
 export function CompanySettingsShell() {
-  const { lang } = useI18n();
+  const { lang, t } = useI18n();
   const isAr = lang === "ar";
   const { organization, role } = useOrganization();
   const organizationId = organization?.id ?? null;
@@ -256,7 +256,7 @@ export function CompanySettingsShell() {
         flashSaved();
       } catch (err: any) {
         setSaveState("error");
-        setSaveMessage(translateError(err?.message, isAr));
+        setSaveMessage(translateError(err?.message, isAr, t));
       }
     },
     [canEdit, flashSaved, isAr, save],
@@ -285,7 +285,7 @@ export function CompanySettingsShell() {
       } catch (err: any) {
         queryClient.setQueryData(["company-profile", organizationId], previous);
         setSaveState("error");
-        setSaveMessage(translateError(err?.message, isAr));
+        setSaveMessage(translateError(err?.message, isAr, t));
       }
     },
     [canEdit, flashSaved, isAr, organizationId, profile, queryClient],
@@ -297,30 +297,26 @@ export function CompanySettingsShell() {
     <PageContainer className="" size="xl">
       <div dir={isAr ? "rtl" : "ltr"} className="flex flex-col gap-5">
       <PageHeader
-        eyebrow={isAr ? "لوحة الشركة" : "Company"}
-        title={isAr ? "مركز إدارة الشركة" : "Company Administration"}
+        eyebrow={t("settings.shell.eyebrow")}
+        title={t("settings.shell.pageTitle")}
         description={
-          isAr
-            ? "مصدر واحد لكل إعدادات الشركة — كل تغيير يُحفظ فورًا ويُطبَّق على النظام بالكامل."
-            : "One source of truth for company configuration — every change saves instantly and applies everywhere."
+          t("settings.shell.pageDescription")
         }
         action={<SaveIndicator state={saveState} lang={isAr ? "ar" : "en"} message={saveMessage} />}
       />
 
       {!canEdit ? (
         <WarningCard>
-          {isAr
-            ? "لديك صلاحية عرض فقط. تعديل إعدادات الشركة متاح لمالك الشركة والمشرفين."
-            : "You have read-only access. Only company owners and admins can edit settings."}
+          {t("settings.shell.readOnlyWarning")}
         </WarningCard>
       ) : null}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[260px_1fr] lg:items-start">
-        <nav className="flex flex-col gap-3" aria-label={isAr ? "أقسام الإعدادات" : "Settings sections"}>
+        <nav className="flex flex-col gap-3" aria-label={t("settings.shell.navLabel")}>
           <SearchInput
             value={navQuery}
             onValueChange={setNavQuery}
-            placeholder={isAr ? "ابحث في الإعدادات" : "Search settings"}
+            placeholder={t("settings.shell.searchPlaceholder")}
           />
           {GROUPS.map((group) => {
             const items = navItems.filter((item) => item.group === group.key);
@@ -345,7 +341,7 @@ export function CompanySettingsShell() {
             );
           })}
           {navItems.length === 0 ? (
-            <p className="px-2 py-4 text-center text-sm text-muted-foreground">{isAr ? "لا نتائج مطابقة." : "No matching sections."}</p>
+            <p className="px-2 py-4 text-center text-sm text-muted-foreground">{t("settings.shell.noMatchingSections")}</p>
           ) : null}
         </nav>
 
@@ -429,14 +425,15 @@ function SectionBody(props: BodyProps) {
 }
 
 function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfile }: BodyProps) {
+  const { t } = useI18n();
   const d = canEdit ? undefined : true;
   return (
     <div className="flex flex-col gap-4">
       <Card
-        title={isAr ? "هوية الشركة" : "Company identity"}
-        description={isAr ? "تظهر هذه البيانات في كل الواجهات والفواتير." : "Used across every screen and invoice."}
+        title={t("settings.fields.companyIdentity")}
+        description={t("settings.fields.companyIdentityDesc")}
       >
-        <Row label={isAr ? "شعار الشركة" : "Company logo"} hint={isAr ? "رابط صورة مباشر" : "Direct image URL"}>
+        <Row label={t("settings.fields.companyLogo")} hint={t("settings.fields.directImageUrl")}>
           <LogoUploader
             isAr={isAr}
             disabled={d}
@@ -445,53 +442,53 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
             onChange={(url) => commitProfile({ logo_url: url })}
           />
         </Row>
-        <Row label={isAr ? "الاسم بالعربية" : "Company name (Arabic)"}>
+        <Row label={t("settings.fields.companyNameArabic")}>
           <TextInput
             isAr={isAr}
             disabled={d}
             value={profile?.name_ar ?? ""}
-            validate={(v) => (v.trim().length < 2 ? (isAr ? "الاسم مطلوب" : "Name is required") : null)}
+            validate={(v) => (v.trim().length < 2 ? (t("settings.fields.nameRequired")) : null)}
             onCommit={(v) => commitProfile({ name_ar: v.trim() })}
           />
         </Row>
-        <Row label={isAr ? "الاسم بالإنجليزية" : "Company name (English)"}>
+        <Row label={t("settings.fields.companyNameEnglish")}>
           <TextInput isAr={isAr} disabled={d} value={profile?.name_en ?? ""} onCommit={(v) => commitProfile({ name_en: v.trim() || null })} />
         </Row>
-        <Row label={isAr ? "رمز الشركة" : "Company code"} hint={isAr ? "للقراءة فقط" : "Read only"}>
+        <Row label={t("settings.fields.companyCode")} hint={t("settings.fields.readOnly")}>
           <Input value={profile?.organization_code ?? ""} readOnly disabled />
         </Row>
-        <Row label={isAr ? "البريد الإلكتروني" : "Email"}>
+        <Row label={t("settings.fields.email")}>
           <TextInput
             isAr={isAr}
             disabled={d}
             value={profile?.email ?? ""}
-            validate={(v) => (v && !EMAIL_RE.test(v) ? (isAr ? "بريد غير صحيح" : "Invalid email") : null)}
+            validate={(v) => (v && !EMAIL_RE.test(v) ? (t("settings.fields.invalidEmail")) : null)}
             onCommit={(v) => commitProfile({ email: v.trim() || null })}
           />
         </Row>
-        <Row label={isAr ? "رقم الجوال" : "Phone"} hint="05XXXXXXXX">
+        <Row label={t("settings.fields.phone")} hint="05XXXXXXXX">
           <TextInput
             isAr={isAr}
             disabled={d}
             value={profile?.phone ?? ""}
-            validate={(v) => (v && !PHONE_RE.test(v.trim()) ? (isAr ? "رقم غير صحيح" : "Invalid phone number") : null)}
+            validate={(v) => (v && !PHONE_RE.test(v.trim()) ? (t("settings.fields.invalidPhoneNumber")) : null)}
             onCommit={(v) => commitProfile({ phone: v.trim() || null })}
           />
         </Row>
-        <Row label={isAr ? "العنوان" : "Address"}>
+        <Row label={t("settings.fields.address")}>
           <TextInput isAr={isAr} disabled={d} value={settings.address ?? ""} onCommit={(v) => commit({ address: v.trim() || null }, "general")} />
         </Row>
-        <Row label={isAr ? "الموقع الإلكتروني" : "Website"}>
+        <Row label={t("settings.fields.website")}>
           <TextInput
             isAr={isAr}
             disabled={d}
             value={profile?.website ?? ""}
             placeholder="https://…"
-            validate={(v) => (v && !/^https?:\/\//.test(v) ? (isAr ? "رابط غير صحيح" : "Invalid URL") : null)}
+            validate={(v) => (v && !/^https?:\/\//.test(v) ? (t("settings.fields.invalidUrl")) : null)}
             onCommit={(v) => commitProfile({ website: v.trim() || null })}
           />
         </Row>
-        <Row label={isAr ? "السجل التجاري" : "Commercial registration"}>
+        <Row label={t("settings.fields.commercialRegistration")}>
           <TextInput
             isAr={isAr}
             disabled={d}
@@ -499,7 +496,7 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
             onCommit={(v) => commit({ commercial_registration: v.trim() || null }, "general")}
           />
         </Row>
-        <Row label={isAr ? "الرقم الضريبي" : "VAT number"}>
+        <Row label={t("settings.fields.vatNumber")}>
           <TextInput
             isAr={isAr}
             disabled={d}
@@ -509,8 +506,8 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
         </Row>
       </Card>
 
-      <Card title={isAr ? "المنطقة واللغة" : "Locale"} description={isAr ? "تتحكم في التواريخ والعملة والواجهات." : "Controls dates, currency and default UI language."}>
-        <Row label={isAr ? "المنطقة الزمنية" : "Time zone"}>
+      <Card title={t("settings.fields.locale")} description={t("settings.fields.localeDesc")}>
+        <Row label={t("settings.fields.timeZone")}>
           <Select disabled={d} value={settings.timezone} onChange={(e) => commit({ timezone: e.target.value }, "general")}>
             {["Asia/Riyadh", "Asia/Dubai", "Asia/Kuwait", "Asia/Qatar", "Africa/Cairo", "UTC"].map((tz) => (
               <option key={tz} value={tz}>
@@ -519,7 +516,7 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
             ))}
           </Select>
         </Row>
-        <Row label={isAr ? "اللغة الافتراضية" : "Language"}>
+        <Row label={t("settings.fields.language")}>
           <Segmented
             disabled={d}
             value={settings.default_language}
@@ -530,16 +527,16 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
             ]}
           />
         </Row>
-        <Row label={isAr ? "العملة" : "Currency"} hint={isAr ? "رمز من ٣ أحرف" : "3-letter code"}>
+        <Row label={t("settings.fields.currency")} hint={t("settings.fields.threeLetterCode")}>
           <TextInput
             isAr={isAr}
             disabled={d}
             value={settings.currency}
-            validate={(v) => (!/^[A-Za-z]{3}$/.test(v.trim()) ? (isAr ? "رمز عملة غير صحيح" : "Invalid currency code") : null)}
+            validate={(v) => (!/^[A-Za-z]{3}$/.test(v.trim()) ? (t("settings.fields.invalidCurrencyCode")) : null)}
             onCommit={(v) => commit({ currency: v.trim().toUpperCase() }, "general")}
           />
         </Row>
-        <Row label={isAr ? "صيغة التاريخ" : "Date format"}>
+        <Row label={t("settings.fields.dateFormat")}>
           <Segmented
             disabled={d}
             value={settings.date_format}
@@ -551,7 +548,7 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
             ]}
           />
         </Row>
-        <Row label={isAr ? "صيغة الأرقام" : "Number format"}>
+        <Row label={t("settings.fields.numberFormat")}>
           <Segmented
             disabled={d}
             value={settings.number_format}
@@ -568,6 +565,7 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
 }
 
 function BusinessSection({ settings, isAr, canEdit, commit }: BodyProps) {
+  const { t } = useI18n();
   const d = canEdit ? undefined : true;
   const toggleMethod = (method: PaymentMethod, on: boolean) => {
     const next = on
@@ -582,15 +580,15 @@ function BusinessSection({ settings, isAr, canEdit, commit }: BodyProps) {
   return (
     <div className="flex flex-col gap-4">
       <Card
-        title={isAr ? "قنوات البيع" : "Sales channels"}
-        description={isAr ? "تحدد أين يمكن بيع الاشتراكات فعليًا." : "Controls where subscriptions can actually be sold."}
+        title={t("settings.fields.salesChannels")}
+        description={t("settings.fields.salesChannelsDesc")}
       >
         {(
           [
-            ["sales_channel_customer_app", isAr ? "تطبيق العميل" : "Customer App"],
-            ["sales_channel_cashier", isAr ? "الكاشير" : "Cashier"],
-            ["sales_channel_website", isAr ? "الموقع الإلكتروني" : "Website"],
-            ["sales_channel_external_api", isAr ? "واجهة خارجية (API)" : "External API"],
+            ["sales_channel_customer_app", t("settings.fields.customerApp")],
+            ["sales_channel_cashier", t("settings.fields.cashier")],
+            ["sales_channel_website", t("settings.fields.website")],
+            ["sales_channel_external_api", t("settings.fields.externalApi")],
           ] as const
         ).map(([key, label]) => (
           <Row key={key} label={label}>
@@ -605,8 +603,8 @@ function BusinessSection({ settings, isAr, canEdit, commit }: BodyProps) {
       </Card>
 
       <Card
-        title={isAr ? "وسائل الدفع" : "Payment methods"}
-        description={isAr ? "الكاشير وصفحة الدفع يعرضان الوسائل المفعّلة فقط." : "Cashier and checkout only show enabled methods."}
+        title={t("settings.fields.paymentMethods")}
+        description={t("settings.fields.paymentMethodsDesc")}
       >
         <div className="flex flex-wrap gap-2 py-2">
           {PAYMENT_METHODS.map((m) => (
@@ -619,7 +617,7 @@ function BusinessSection({ settings, isAr, canEdit, commit }: BodyProps) {
             />
           ))}
         </div>
-        <Row label={isAr ? "وسيلة الدفع الافتراضية" : "Default payment method"}>
+        <Row label={t("settings.fields.defaultPaymentMethod")}>
           <Select
             disabled={d}
             value={settings.default_payment_method}
@@ -634,11 +632,11 @@ function BusinessSection({ settings, isAr, canEdit, commit }: BodyProps) {
         </Row>
       </Card>
 
-      <Card title={isAr ? "الضريبة" : "Tax"} description={isAr ? "تُطبَّق على كل الفواتير والتقارير." : "Applied to every invoice and report."}>
-        <Row label={isAr ? "تفعيل الضريبة" : "Tax enabled"}>
+      <Card title={t("settings.fields.tax")} description={t("settings.fields.taxDesc")}>
+        <Row label={t("settings.fields.taxEnabled")}>
           <Toggle label="tax" disabled={d} checked={settings.tax_enabled} onChange={(v) => commit({ tax_enabled: v }, "business")} />
         </Row>
-        <Row label={isAr ? "نسبة الضريبة %" : "Tax percentage %"}>
+        <Row label={t("settings.fields.taxPercentage")}>
           <NumberInput
             isAr={isAr}
             disabled={d || !settings.tax_enabled}
@@ -648,7 +646,7 @@ function BusinessSection({ settings, isAr, canEdit, commit }: BodyProps) {
             onCommit={(v) => commit({ tax_percentage: v }, "business")}
           />
         </Row>
-        <Row label={isAr ? "السعر شامل الضريبة" : "Prices include tax"}>
+        <Row label={t("settings.fields.pricesIncludeTax")}>
           <Toggle
             label="tax included"
             disabled={d || !settings.tax_enabled}
@@ -662,32 +660,33 @@ function BusinessSection({ settings, isAr, canEdit, commit }: BodyProps) {
 }
 
 function MembershipSection({ settings, isAr, canEdit, commit }: BodyProps) {
+  const { t } = useI18n();
   const d = canEdit ? undefined : true;
   return (
     <div className="flex flex-col gap-4">
-      <Card title={isAr ? "تفعيل الاشتراك" : "Subscription activation"}>
-        <Row label={isAr ? "التفعيل الافتراضي" : "Default activation"}>
+      <Card title={t("settings.fields.subscriptionActivation")}>
+        <Row label={t("settings.fields.defaultActivation")}>
           <Segmented
             disabled={d}
             value={settings.default_activation}
             onChange={(v) => commit({ default_activation: v }, "membership")}
             options={[
-              { value: "immediate" as const, label: isAr ? "فوري" : "Immediately" },
-              { value: "manual" as const, label: isAr ? "يدوي" : "Manual" },
-              { value: "scheduled" as const, label: isAr ? "مجدول" : "Scheduled" },
+              { value: "immediate" as const, label: t("settings.fields.immediately") },
+              { value: "manual" as const, label: t("settings.fields.manual") },
+              { value: "scheduled" as const, label: t("settings.fields.scheduled") },
             ]}
           />
         </Row>
-        <Row label={isAr ? "التجديد التلقائي" : "Auto renewal"}>
+        <Row label={t("settings.fields.autoRenewal")}>
           <Toggle label="auto renewal" disabled={d} checked={settings.auto_renewal} onChange={(v) => commit({ auto_renewal: v }, "membership")} />
         </Row>
         <Row
-          label={isAr ? "أيام المكافأة الافتراضية" : "Default bonus days"}
-          hint={isAr ? "يمكن لكل خطة تجاوزها" : "Each plan can override this"}
+          label={t("settings.fields.defaultBonusDays")}
+          hint={t("settings.fields.eachPlanCanOverride")}
         >
           <NumberInput isAr={isAr} disabled={d} value={settings.default_bonus_days} min={0} max={365} onCommit={(v) => commit({ default_bonus_days: v }, "membership")} />
         </Row>
-        <Row label={isAr ? "مشروب واحد يوميًا" : "One drink per day"}>
+        <Row label={t("settings.fields.oneDrinkPerDay")}>
           <Toggle label="one per day" disabled={d} checked={settings.one_drink_per_day} onChange={(v) => commit({ one_drink_per_day: v }, "membership")} />
         </Row>
       </Card>
@@ -696,38 +695,39 @@ function MembershipSection({ settings, isAr, canEdit, commit }: BodyProps) {
 }
 
 function OrderingSection({ settings, isAr, canEdit, commit }: BodyProps) {
+  const { t } = useI18n();
   const d = canEdit ? undefined : true;
   return (
     <div className="flex flex-col gap-4">
-      <Card title={isAr ? "قواعد الطلبات" : "Ordering rules"}>
-        <Row label={isAr ? "مدة تحضير الطلب (دقيقة)" : "Order preparation time (minutes)"}>
+      <Card title={t("settings.fields.orderingRules")}>
+        <Row label={t("settings.fields.orderPrepMinutes")}>
           <NumberInput isAr={isAr} disabled={d} value={settings.order_prep_minutes} min={0} max={240} onCommit={(v) => commit({ order_prep_minutes: v }, "ordering")} />
         </Row>
-        <Row label={isAr ? "صيغة رقم الطلب" : "Order number format"}>
+        <Row label={t("settings.fields.orderNumberFormat")}>
           <Segmented
             disabled={d}
             value={settings.order_number_format}
             onChange={(v) => commit({ order_number_format: v }, "ordering")}
             options={[
-              { value: "sequential" as const, label: isAr ? "تسلسلي" : "Sequential" },
-              { value: "daily" as const, label: isAr ? "يومي" : "Daily" },
-              { value: "branch_prefixed" as const, label: isAr ? "برمز الفرع" : "Branch prefixed" },
+              { value: "sequential" as const, label: t("settings.fields.sequential") },
+              { value: "daily" as const, label: t("settings.fields.daily") },
+              { value: "branch_prefixed" as const, label: t("settings.fields.branchPrefixed") },
             ]}
           />
         </Row>
-        <Row label={isAr ? "سلوك الطابور" : "Queue behaviour"}>
+        <Row label={t("settings.fields.queueBehaviour")}>
           <Segmented
             disabled={d}
             value={settings.queue_behavior}
             onChange={(v) => commit({ queue_behavior: v }, "ordering")}
             options={[
-              { value: "fifo" as const, label: isAr ? "الأقدم أولًا" : "FIFO" },
-              { value: "priority" as const, label: isAr ? "حسب الأولوية" : "Priority" },
-              { value: "manual" as const, label: isAr ? "يدوي" : "Manual" },
+              { value: "fifo" as const, label: t("settings.fields.fifo") },
+              { value: "priority" as const, label: t("settings.fields.priority") },
+              { value: "manual" as const, label: t("settings.fields.manual") },
             ]}
           />
         </Row>
-        <Row label={isAr ? "تسجيل العملاء الذاتي" : "Customer self-registration"}>
+        <Row label={t("settings.fields.customerSelfRegistration")}>
           <Toggle
             label="registration"
             disabled={d}
@@ -735,7 +735,7 @@ function OrderingSection({ settings, isAr, canEdit, commit }: BodyProps) {
             onChange={(v) => commit({ customer_registration_enabled: v }, "ordering")}
           />
         </Row>
-        <Row label={isAr ? "تعليقات العملاء" : "Customer comments"}>
+        <Row label={t("settings.fields.customerComments")}>
           <Toggle
             label="comments"
             disabled={d}
@@ -743,7 +743,7 @@ function OrderingSection({ settings, isAr, canEdit, commit }: BodyProps) {
             onChange={(v) => commit({ customer_comments_enabled: v }, "ordering")}
           />
         </Row>
-        <Row label={isAr ? "السماح بأكثر من طلب نشط" : "Allow multiple active orders"}>
+        <Row label={t("settings.fields.allowMultipleActiveOrders")}>
           <Toggle
             label="multiple orders"
             disabled={d}
@@ -763,6 +763,7 @@ type SecurityConfirmAction =
   | { kind: "audit_log_off" };
 
 function SecuritySection({ settings, isAr, canEdit, commit }: BodyProps) {
+  const { t } = useI18n();
   const d = canEdit ? undefined : true;
   const [pendingAction, setPendingAction] = useState<SecurityConfirmAction | null>(null);
   const [busy, setBusy] = useState(false);
@@ -782,44 +783,38 @@ function SecuritySection({ settings, isAr, canEdit, commit }: BodyProps) {
 
   const confirmCopy: Record<SecurityConfirmAction["kind"], { title: string; description: string }> = {
     two_factor_off: {
-      title: isAr ? "تعطيل التحقق بخطوتين؟" : "Turn off two-factor authentication?",
-      description: isAr
-        ? "سيصبح تسجيل الدخول ممكنًا بكلمة المرور فقط لكل أعضاء الشركة."
-        : "Sign-in will rely on password only for every member of this company.",
+      title: t("settings.fields.turnOffTwoFactor"),
+      description: t("settings.fields.turnOffTwoFactorDesc"),
     },
     restriction_none: {
-      title: isAr ? "إزالة قيود الدخول؟" : "Remove the login restriction?",
-      description: isAr
-        ? "سيتمكن الأعضاء من تسجيل الدخول من أي عنوان IP وفي أي وقت."
-        : "Members will be able to sign in from any IP address and at any time.",
+      title: t("settings.fields.removeLoginRestriction"),
+      description: t("settings.fields.removeLoginRestrictionDesc"),
     },
     audit_log_off: {
-      title: isAr ? "تعطيل سجل التغييرات؟" : "Disable the audit log?",
-      description: isAr
-        ? "لن يتم تسجيل التغييرات القادمة على إعدادات الشركة."
-        : "Future changes to company settings will no longer be recorded.",
+      title: t("settings.fields.disableAuditLog"),
+      description: t("settings.fields.disableAuditLogDesc"),
     },
   };
 
   return (
     <div className="flex flex-col gap-4">
-      <Card title={isAr ? "الجلسات وكلمات المرور" : "Sessions & passwords"}>
-        <Row label={isAr ? "انتهاء الجلسة (دقيقة)" : "Session timeout (minutes)"}>
+      <Card title={t("settings.fields.sessionsAndPasswords")}>
+        <Row label={t("settings.fields.sessionTimeout")}>
           <NumberInput isAr={isAr} disabled={d} value={settings.session_timeout_minutes} min={15} max={10080} onCommit={(v) => commit({ session_timeout_minutes: v }, "security")} />
         </Row>
-        <Row label={isAr ? "سياسة كلمة المرور" : "Password policy"}>
+        <Row label={t("settings.fields.passwordPolicy")}>
           <Segmented
             disabled={d}
             value={settings.password_policy}
             onChange={(v) => commit({ password_policy: v }, "security")}
             options={[
-              { value: "standard" as const, label: isAr ? "قياسية" : "Standard" },
-              { value: "strong" as const, label: isAr ? "قوية" : "Strong" },
-              { value: "strict" as const, label: isAr ? "صارمة" : "Strict" },
+              { value: "standard" as const, label: t("settings.fields.standard") },
+              { value: "strong" as const, label: t("settings.fields.strong") },
+              { value: "strict" as const, label: t("settings.fields.strict") },
             ]}
           />
         </Row>
-        <Row label={isAr ? "التحقق بخطوتين" : "Two factor authentication"}>
+        <Row label={t("settings.fields.twoFactorAuthentication")}>
           <Toggle
             label="2fa"
             disabled={d}
@@ -834,8 +829,8 @@ function SecuritySection({ settings, isAr, canEdit, commit }: BodyProps) {
           />
         </Row>
       </Card>
-      <Card title={isAr ? "قيود الدخول" : "Login restrictions"}>
-        <Row label={isAr ? "نوع القيد" : "Restriction"}>
+      <Card title={t("settings.fields.loginRestrictions")}>
+        <Row label={t("settings.fields.restriction")}>
           <Segmented
             disabled={d}
             value={settings.login_restriction}
@@ -847,13 +842,13 @@ function SecuritySection({ settings, isAr, canEdit, commit }: BodyProps) {
               void commit({ login_restriction: v }, "security");
             }}
             options={[
-              { value: "none" as const, label: isAr ? "بدون" : "None" },
-              { value: "ip_allowlist" as const, label: isAr ? "قائمة IP" : "IP allowlist" },
-              { value: "business_hours" as const, label: isAr ? "ساعات العمل" : "Business hours" },
+              { value: "none" as const, label: t("settings.fields.none") },
+              { value: "ip_allowlist" as const, label: t("settings.fields.ipAllowlist") },
+              { value: "business_hours" as const, label: t("settings.fields.businessHours") },
             ]}
           />
         </Row>
-        <Row label={isAr ? "عناوين IP المسموحة" : "Allowed IP addresses"} hint={isAr ? "افصل بفاصلة" : "Comma separated"}>
+        <Row label={t("settings.fields.allowedIpAddresses")} hint={t("settings.fields.commaSeparated")}>
           <TextInput
             isAr={isAr}
             disabled={d || settings.login_restriction !== "ip_allowlist"}
@@ -861,14 +856,14 @@ function SecuritySection({ settings, isAr, canEdit, commit }: BodyProps) {
             validate={(v) => {
               const items = v.split(",").map((x) => x.trim()).filter(Boolean);
               const ok = items.every((ip) => /^(\d{1,3}\.){3}\d{1,3}(\/\d{1,2})?$/.test(ip));
-              return ok ? null : isAr ? "عنوان IP غير صحيح" : "Invalid IP address";
+              return ok ? null : t("settings.fields.invalidIpAddress");
             }}
             onCommit={(v) =>
               commit({ allowed_ip_addresses: v.split(",").map((x) => x.trim()).filter(Boolean) }, "security")
             }
           />
         </Row>
-        <Row label={isAr ? "تفعيل سجل التغييرات" : "Audit log enabled"}>
+        <Row label={t("settings.fields.auditLogEnabled")}>
           <Toggle
             label="audit"
             disabled={d}
@@ -890,8 +885,8 @@ function SecuritySection({ settings, isAr, canEdit, commit }: BodyProps) {
         description={pendingAction ? confirmCopy[pendingAction.kind].description : ""}
         tone="danger"
         busy={busy}
-        confirmLabel={isAr ? "تأكيد" : "Confirm"}
-        cancelLabel={isAr ? "إلغاء" : "Cancel"}
+        confirmLabel={t("common.confirm")}
+        cancelLabel={t("common.cancel")}
         onCancel={() => setPendingAction(null)}
         onConfirm={() => {
           if (!pendingAction) return;

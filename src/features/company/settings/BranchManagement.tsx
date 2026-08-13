@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { QRCodeCanvas } from "qrcode.react";
@@ -83,6 +84,7 @@ const emptyBranchDraft = (): BranchDraft => ({
 });
 
 export function BranchManagementSection({ settings, organizationId, isAr, canEdit, commit }: SectionProps) {
+  const { t } = useI18n();
   const d = canEdit ? undefined : true;
   const queryClient = useQueryClient();
   const branches = useQuery({ queryKey: ["company-branches"], queryFn: () => listBranches() });
@@ -151,14 +153,14 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
     if (!draft) return;
     setDraftError(null);
     if (draft.name_ar.trim().length < 2 || draft.name_en.trim().length < 2)
-      return setDraftError(isAr ? "الاسم بالعربية والإنجليزية مطلوب" : "Arabic and English names are required");
+      return setDraftError(t("settings.branches.arabicAndEnglishNamesAreRequired"));
     if (draft.phone.trim() && !/^(05\d{8}|\+9665\d{8})$/.test(draft.phone.trim()))
-      return setDraftError(isAr ? "رقم جوال غير صحيح" : "Invalid phone number");
+      return setDraftError(t("settings.branches.invalidPhoneNumber"));
     if (draft.maps_url.trim() && !/^https?:\/\//.test(draft.maps_url.trim()))
-      return setDraftError(isAr ? "رابط خريطة غير صحيح" : "Invalid map link");
+      return setDraftError(t("settings.branches.invalidMapLink"));
     const code = draft.branch_code.trim().toUpperCase();
     if (code && (branches.data ?? []).some((b) => (b.branch_code ?? "").toUpperCase() === code))
-      return setDraftError(isAr ? "رمز الفرع مستخدم بالفعل" : "Branch code already in use");
+      return setDraftError(t("settings.branches.branchCodeAlreadyInUse"));
 
     try {
       await run(() =>
@@ -185,12 +187,12 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
 
   const all = branches.data ?? [];
   const stats = [
-    { icon: Store, label: isAr ? "إجمالي الفروع" : "Total branches", value: all.length },
-    { icon: Building2, label: isAr ? "فروع نشطة" : "Active", value: all.filter((b) => b.is_active).length },
-    { icon: Users, label: isAr ? "موظفون مرتبطون بفروع" : "Branch-assigned staff", value: staffPerBranch.size ? Array.from(staffPerBranch.values()).reduce((a, b) => a + b, 0) : 0 },
+    { icon: Store, label: t("settings.branches.totalBranches"), value: all.length },
+    { icon: Building2, label: t("settings.branches.active"), value: all.filter((b) => b.is_active).length },
+    { icon: Users, label: t("settings.branches.branchAssignedStaff"), value: staffPerBranch.size ? Array.from(staffPerBranch.values()).reduce((a, b) => a + b, 0) : 0 },
     {
       icon: Clock,
-      label: isAr ? "أطول ساعات عمل" : "Longest hours",
+      label: t("settings.branches.longestHours"),
       value: all.length
         ? `${all[0]!.opening_time?.slice(0, 5)}–${all[0]!.closing_time?.slice(0, 5)}`
         : "—",
@@ -209,14 +211,14 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
         ))}
       </div>
 
-      <Card title={isAr ? "إعدادات الفروع" : "Branch defaults"}>
-        <Row label={isAr ? "الفرع الافتراضي" : "Default branch"}>
+      <Card title={t("settings.branches.branchDefaults")}>
+        <Row label={t("settings.branches.defaultBranch")}>
           <Select
             disabled={d}
             value={settings.default_branch_id ?? ""}
             onChange={(e) => commit({ default_branch_id: e.target.value || null }, "branches")}
           >
-            <option value="">{isAr ? "بدون" : "None"}</option>
+            <option value="">{t("settings.branches.none")}</option>
             {(branches.data ?? []).map((b) => (
               <option key={b.id} value={b.id}>
                 {isAr ? b.name_ar : b.name_en}
@@ -224,25 +226,23 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
             ))}
           </Select>
         </Row>
-        <Row label={isAr ? "رمز QR" : "Branch QR"}>
+        <Row label={t("settings.branches.branchQr")}>
           <Segmented
             disabled={d}
             value={settings.branch_qr_mode}
             onChange={(v) => commit({ branch_qr_mode: v }, "branches")}
             options={[
-              { value: "per_branch" as const, label: isAr ? "رمز لكل فرع" : "Per branch" },
-              { value: "single" as const, label: isAr ? "رمز موحّد" : "Single code" },
+              { value: "per_branch" as const, label: t("settings.branches.perBranch") },
+              { value: "single" as const, label: t("settings.branches.singleCode") },
             ]}
           />
         </Row>
       </Card>
 
       <Card
-        title={isAr ? "الفروع" : "Branches"}
+        title={t("settings.branches.branches")}
         description={
-          isAr
-            ? "كل فرع كيان مستقل: رمز، QR، ساعات عمل، موظفون، مشروبات وخطط."
-            : "Each branch is its own entity: code, QR, hours, staff, drinks and plans."
+          t("settings.branches.eachBranchIsItsOwnEntity")
         }
         aside={
           canEdit ? (
@@ -254,7 +254,7 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
                 setDraft(emptyBranchDraft());
               }}
             >
-              {isAr ? "فرع جديد" : "New branch"}
+              {t("settings.branches.newBranch")}
             </Button>
           ) : null
         }
@@ -263,24 +263,20 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
           <SearchInput
             value={search}
             onValueChange={setSearch}
-            placeholder={isAr ? "ابحث برمز أو اسم الفرع" : "Search by code or name"}
+            placeholder={t("settings.branches.searchByCodeOrName")}
           />
         </div>
         {error ? <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</div> : null}
         {branches.isLoading ? (
-          <LoadingState label={isAr ? "جارٍ التحميل…" : "Loading…"} />
+          <LoadingState label={t("common.loading")} />
         ) : rows.length === 0 ? (
           <EmptyState
             icon={<Store className="h-6 w-6" />}
-            title={isAr ? "لا توجد فروع" : "No branches yet"}
+            title={t("settings.branches.noBranchesYet")}
             description={
               search.trim()
-                ? isAr
-                  ? "لا نتائج مطابقة لبحثك."
-                  : "No results match your search."
-                : isAr
-                  ? "أضف أول فرع للبدء."
-                  : "Add your first branch to get started."
+                ? t("settings.branches.noResultsMatchYourSearch")
+                : t("settings.branches.addYourFirstBranchToGet")
             }
           />
         ) : (
@@ -305,61 +301,61 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
       <FormDialog
         open={!!draft}
         onClose={() => setDraft(null)}
-        title={isAr ? "إنشاء فرع" : "Create branch"}
+        title={t("settings.branches.createBranch")}
         onSubmit={submitDraft}
         busy={busy}
-        submitLabel={isAr ? "إنشاء" : "Create"}
-        cancelLabel={isAr ? "إلغاء" : "Cancel"}
+        submitLabel={t("common.actions.create")}
+        cancelLabel={t("common.actions.cancel")}
       >
         {draft ? (
           <div className="flex flex-col gap-3">
             <Input
-              label={isAr ? "الاسم بالعربية" : "Name (Arabic)"}
+              label={t("settings.branches.nameArabic")}
               value={draft.name_ar}
               onChange={(e) => setDraft({ ...draft, name_ar: e.target.value })}
             />
             <Input
-              label={isAr ? "الاسم بالإنجليزية" : "Name (English)"}
+              label={t("settings.branches.nameEnglish")}
               value={draft.name_en}
               onChange={(e) => setDraft({ ...draft, name_en: e.target.value })}
             />
             <Input
-              label={isAr ? "رمز الفرع" : "Branch code"}
-              placeholder={isAr ? "يُولَّد تلقائيًا" : "Generated automatically"}
+              label={t("settings.branches.branchCode")}
+              placeholder={t("settings.branches.generatedAutomatically")}
               value={draft.branch_code}
               onChange={(e) => setDraft({ ...draft, branch_code: e.target.value })}
             />
             <Input
-              label={isAr ? "رقم التواصل" : "Phone"}
+              label={t("settings.branches.phone")}
               placeholder="05XXXXXXXX"
               value={draft.phone}
               onChange={(e) => setDraft({ ...draft, phone: e.target.value })}
             />
             <Input
-              label={isAr ? "العنوان" : "Address"}
+              label={t("settings.branches.address")}
               value={draft.address}
               onChange={(e) => setDraft({ ...draft, address: e.target.value })}
             />
             <Input
-              label={isAr ? "رابط الخريطة" : "Google Maps link"}
+              label={t("settings.branches.googleMapsLink")}
               placeholder="https://maps.google.com/…"
               value={draft.maps_url}
               onChange={(e) => setDraft({ ...draft, maps_url: e.target.value })}
             />
             <Input
-              label={isAr ? "وقت الافتتاح" : "Opening time"}
+              label={t("settings.branches.openingTime")}
               type="time"
               value={draft.opening_time}
               onChange={(e) => setDraft({ ...draft, opening_time: e.target.value })}
             />
             <Input
-              label={isAr ? "وقت الإغلاق" : "Closing time"}
+              label={t("settings.branches.closingTime")}
               type="time"
               value={draft.closing_time}
               onChange={(e) => setDraft({ ...draft, closing_time: e.target.value })}
             />
             <div className="col-span-full flex flex-col gap-1">
-              <span>{isAr ? "أيام العمل" : "Working days"}</span>
+              <span>{t("settings.branches.workingDays")}</span>
               <div className="flex flex-wrap gap-2 py-2">
                 {DAYS.map(([key, ar, en]) => {
                   const on = draft.working_days.includes(key);
@@ -392,13 +388,13 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
       <Modal
         open={!!forceDelete}
         onClose={() => setForceDelete(null)}
-        title={isAr ? "حذف الفرع مع سجلاته" : "Delete branch with its records"}
+        title={t("settings.branches.deleteBranchWithItsRecords")}
         size="sm"
         footer={
           forceDelete ? (
             <>
               <Button variant="ghost" onClick={() => setForceDelete(null)} disabled={busy}>
-                {isAr ? "إلغاء" : "Cancel"}
+                {t("common.actions.cancel")}
               </Button>
               <Button
                 variant="secondary"
@@ -409,7 +405,7 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
                   void run(() => updateBranch(target.id, { is_active: false }));
                 }}
               >
-                {isAr ? "إيقاف الفرع" : "Deactivate branch"}
+                {t("settings.branches.deactivateBranch")}
               </Button>
               <Button
                 variant="danger"
@@ -417,7 +413,7 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
                 leadingIcon={<Trash2 className="h-4 w-4" />}
                 onClick={() => void removeBranch(forceDelete.branch, true)}
               >
-                {isAr ? "حذف نهائي" : "Delete permanently"}
+                {t("settings.branches.deletePermanently")}
               </Button>
             </>
           ) : null
@@ -454,6 +450,7 @@ function BranchCard({
   onPatch: (patch: Partial<BranchRow>) => void;
   onDelete: () => void;
 }) {
+  const { t } = useI18n();
   const [confirming, setConfirming] = useState(false);
   const [copied, setCopied] = useState(false);
   const qrWrap = useRef<HTMLDivElement>(null);
@@ -496,43 +493,43 @@ function BranchCard({
           {staffCount}
         </span>
         <StatusBadge tone={branch.is_active ? "success" : "neutral"}>
-          {branch.is_active ? (isAr ? "نشط" : "Active") : isAr ? "موقوف" : "Inactive"}
+          {branch.is_active ? (t("common.status.active")) : t("settings.branches.inactive")}
         </StatusBadge>
       </header>
 
       {open ? (
         <div className="grid grid-cols-1 gap-4 border-t border-border p-3 lg:grid-cols-[1fr_260px]">
           <div className="flex flex-col">
-            <Row label={isAr ? "الاسم بالعربية" : "Name (Arabic)"}>
+            <Row label={t("settings.branches.nameArabic")}>
               <TextInput
                 isAr={isAr}
                 disabled={disabled}
                 value={branch.name_ar}
-                validate={(v) => (v.trim().length < 2 ? (isAr ? "الاسم مطلوب" : "Name is required") : null)}
+                validate={(v) => (v.trim().length < 2 ? (t("settings.branches.nameIsRequired")) : null)}
                 onCommit={(v) => onPatch({ name_ar: v.trim() })}
               />
             </Row>
-            <Row label={isAr ? "الاسم بالإنجليزية" : "Name (English)"}>
+            <Row label={t("settings.branches.nameEnglish")}>
               <TextInput
                 isAr={isAr}
                 disabled={disabled}
                 value={branch.name_en}
-                validate={(v) => (v.trim().length < 2 ? (isAr ? "الاسم مطلوب" : "Name is required") : null)}
+                validate={(v) => (v.trim().length < 2 ? (t("settings.branches.nameIsRequired")) : null)}
                 onCommit={(v) => onPatch({ name_en: v.trim() })}
               />
             </Row>
-            <Row label={isAr ? "رقم التواصل" : "Phone"} hint="05XXXXXXXX">
+            <Row label={t("settings.branches.phone")} hint="05XXXXXXXX">
               <TextInput
                 isAr={isAr}
                 disabled={disabled}
                 value={branch.phone ?? ""}
                 validate={(v) =>
-                  v && !/^(05\d{8}|\+9665\d{8})$/.test(v.trim()) ? (isAr ? "رقم غير صحيح" : "Invalid phone") : null
+                  v && !/^(05\d{8}|\+9665\d{8})$/.test(v.trim()) ? (t("settings.branches.invalidPhone")) : null
                 }
                 onCommit={(v) => onPatch({ phone: v.trim() || null })}
               />
             </Row>
-            <Row label={isAr ? "العنوان" : "Address"}>
+            <Row label={t("settings.branches.address")}>
               <TextInput
                 isAr={isAr}
                 disabled={disabled}
@@ -542,17 +539,17 @@ function BranchCard({
                 }
               />
             </Row>
-            <Row label={isAr ? "رابط الخريطة" : "Google Maps link"}>
+            <Row label={t("settings.branches.googleMapsLink")}>
               <TextInput
                 isAr={isAr}
                 disabled={disabled}
                 value={branch.maps_url ?? ""}
                 placeholder="https://maps.google.com/…"
-                validate={(v) => (v && !/^https?:\/\//.test(v) ? (isAr ? "رابط غير صحيح" : "Invalid URL") : null)}
+                validate={(v) => (v && !/^https?:\/\//.test(v) ? (t("settings.branches.invalidUrl")) : null)}
                 onCommit={(v) => onPatch({ maps_url: v.trim() || null })}
               />
             </Row>
-            <Row label={isAr ? "وقت الافتتاح" : "Opening time"}>
+            <Row label={t("settings.branches.openingTime")}>
               <Input
                 type="time"
                 disabled={disabled}
@@ -560,7 +557,7 @@ function BranchCard({
                 onChange={(e) => onPatch({ opening_time: e.target.value })}
               />
             </Row>
-            <Row label={isAr ? "وقت الإغلاق" : "Closing time"}>
+            <Row label={t("settings.branches.closingTime")}>
               <Input
                 type="time"
                 disabled={disabled}
@@ -568,7 +565,7 @@ function BranchCard({
                 onChange={(e) => onPatch({ closing_time: e.target.value })}
               />
             </Row>
-            <Row label={isAr ? "أيام العمل" : "Working days"}>
+            <Row label={t("settings.branches.workingDays")}>
               <div className="flex flex-wrap gap-2 py-2">
                 {DAYS.map(([key, ar, en]) => {
                   const on = days.includes(key);
@@ -591,7 +588,7 @@ function BranchCard({
                 })}
               </div>
             </Row>
-            <Row label={isAr ? "الفرع نشط" : "Branch active"}>
+            <Row label={t("settings.branches.branchActive")}>
               <Toggle
                 label="active"
                 disabled={disabled}
@@ -599,7 +596,7 @@ function BranchCard({
                 onChange={(v) => onPatch({ is_active: v })}
               />
             </Row>
-            <Row label={isAr ? "شعار الفرع" : "Branch logo"}>
+            <Row label={t("settings.branches.branchLogo")}>
               <LogoUploader
                 isAr={isAr}
                 disabled={disabled}
@@ -619,10 +616,10 @@ function BranchCard({
                 <code>{link}</code>
                 <div className="flex flex-wrap justify-center gap-2">
                   <Button variant="secondary" size="sm" leadingIcon={<QrCode className="h-3.5 w-3.5" />} onClick={downloadQr}>
-                    {isAr ? "تحميل" : "Download"}
+                    {t("settings.branches.download")}
                   </Button>
                   <Button variant="secondary" size="sm" leadingIcon={<Copy className="h-3.5 w-3.5" />} onClick={copyLink}>
-                    {copied ? (isAr ? "تم النسخ" : "Copied") : isAr ? "نسخ الرابط" : "Copy link"}
+                    {copied ? (t("settings.branches.copied")) : t("settings.branches.copyLink")}
                   </Button>
                   {branch.maps_url ? (
                     <Button
@@ -631,7 +628,7 @@ function BranchCard({
                       leadingIcon={<MapPin className="h-3.5 w-3.5" />}
                       onClick={() => window.open(branch.maps_url!, "_blank", "noreferrer")}
                     >
-                      {isAr ? "الخريطة" : "Map"}
+                      {t("settings.branches.map")}
                     </Button>
                   ) : null}
                 </div>
@@ -639,7 +636,7 @@ function BranchCard({
             </KobCard>
             {!disabled ? (
               <Button variant="danger" size="sm" leadingIcon={<Trash2 className="h-3.5 w-3.5" />} onClick={() => setConfirming(true)}>
-                {isAr ? "حذف الفرع" : "Delete branch"}
+                {t("settings.branches.deleteBranch")}
               </Button>
             ) : null}
           </aside>
@@ -649,8 +646,8 @@ function BranchCard({
       <DangerDialog
         open={confirming}
         onClose={() => setConfirming(false)}
-        title={isAr ? "تأكيد حذف الفرع؟" : "Delete this branch?"}
-        confirmLabel={isAr ? "حذف" : "Delete"}
+        title={t("settings.branches.deleteThisBranch")}
+        confirmLabel={t("common.actions.delete")}
         onConfirm={() => {
           setConfirming(false);
           onDelete();

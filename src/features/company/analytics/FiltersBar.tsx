@@ -1,22 +1,11 @@
 import { Filter, X } from "lucide-react";
 
+import { useI18n } from "@/lib/i18n";
 import { Badge, Button, Card, CardBody, CardHeader, Select as KobSelect, Input } from "@/components/kob";
 import { EMPTY_FILTERS, type AnalyticsDataset, type AnalyticsFilters } from "./types";
 
-const PAYMENT_LABELS: Record<string, [string, string]> = {
-  cash: ["نقدي", "Cash"],
-  card: ["بطاقة", "Card"],
-  apple_pay: ["Apple Pay", "Apple Pay"],
-  stc_pay: ["STC Pay", "STC Pay"],
-  mada: ["مدى", "Mada"],
-  bank_transfer: ["تحويل بنكي", "Bank Transfer"],
-};
-
-const STATUS_LABELS: Record<string, [string, string]> = {
-  pending: ["قيد الانتظار", "Pending"],
-  approved: ["مقبول", "Approved"],
-  rejected: ["مرفوض", "Rejected"],
-};
+const PAYMENT_KEYS = ["cash", "card", "apple_pay", "stc_pay", "mada", "bank_transfer"] as const;
+const STATUS_KEYS = ["pending", "approved", "rejected"] as const;
 
 function FilterSelect({
   label,
@@ -54,6 +43,7 @@ export function FiltersBar({
   isAr: boolean;
   onChange: (filters: AnalyticsFilters) => void;
 }) {
+  const { t } = useI18n();
   const set = (patch: Partial<AnalyticsFilters>) => onChange({ ...filters, ...patch });
   const name = (row: { name_ar: string | null; name_en: string | null }) =>
     (isAr ? row.name_ar || row.name_en : row.name_en || row.name_ar) ?? "—";
@@ -65,14 +55,14 @@ export function FiltersBar({
         title={
           <span className="flex items-center gap-2">
             <Filter className="h-4 w-4 shrink-0" />
-            {isAr ? "الفلاتر" : "Filters"}
+            {t("analytics.filters.title")}
             {active > 0 ? <Badge tone="gold">{active}</Badge> : null}
           </span>
         }
         action={
           active > 0 ? (
             <Button variant="ghost" size="sm" leadingIcon={<X className="h-3.5 w-3.5" />} onClick={() => onChange(EMPTY_FILTERS)}>
-              {isAr ? "مسح" : "Clear"}
+              {t("analytics.filters.clear")}
             </Button>
           ) : null
         }
@@ -80,64 +70,64 @@ export function FiltersBar({
       <CardBody>
         <div className="an-filters-grid grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <FilterSelect
-            label={isAr ? "الفرع" : "Branch"}
+            label={t("analytics.filters.branch")}
             value={filters.branchId}
             onChange={(branchId) => set({ branchId })}
-            placeholder={isAr ? "كل الفروع" : "All branches"}
+            placeholder={t("analytics.filters.allBranches")}
             options={data.branches.map((row) => ({ value: row.id, label: name(row) }))}
           />
           <FilterSelect
-            label={isAr ? "المشروب" : "Drink"}
+            label={t("analytics.filters.drink")}
             value={filters.drinkId}
             onChange={(drinkId) => set({ drinkId })}
-            placeholder={isAr ? "كل المشروبات" : "All drinks"}
+            placeholder={t("analytics.filters.allDrinks")}
             options={data.drinks.map((row) => ({ value: row.id, label: name(row) }))}
           />
           <FilterSelect
-            label={isAr ? "الباقة" : "Subscription Plan"}
+            label={t("analytics.filters.plan")}
             value={filters.planId}
             onChange={(planId) => set({ planId })}
-            placeholder={isAr ? "كل الباقات" : "All plans"}
+            placeholder={t("analytics.filters.allPlans")}
             options={data.plans.map((row) => ({ value: row.id, label: name(row) }))}
           />
           <FilterSelect
-            label={isAr ? "الكاشير" : "Cashier"}
+            label={t("analytics.filters.cashier")}
             value={filters.cashierId}
             onChange={(cashierId) => set({ cashierId })}
-            placeholder={isAr ? "كل الموظفين" : "All cashiers"}
+            placeholder={t("analytics.filters.allCashiers")}
             options={data.cashiers.map((row) => ({ value: row.id, label: row.name }))}
           />
           <FilterSelect
-            label={isAr ? "العميل" : "Customer"}
+            label={t("analytics.filters.customer")}
             value={filters.customerId}
             onChange={(customerId) => set({ customerId })}
-            placeholder={isAr ? "كل العملاء" : "All customers"}
+            placeholder={t("analytics.filters.allCustomers")}
             options={data.customerOptions.map((row) => ({ value: row.id, label: row.name }))}
           />
           <Input
-            label={isAr ? "الكوبون" : "Coupon"}
+            label={t("analytics.filters.coupon")}
             value={filters.couponCode}
-            placeholder={isAr ? "ابحث بالكود" : "Search code"}
+            placeholder={t("analytics.filters.searchCode")}
             onChange={(event) => set({ couponCode: event.target.value })}
           />
           <FilterSelect
-            label={isAr ? "طريقة الدفع" : "Payment Method"}
+            label={t("analytics.filters.paymentMethod")}
             value={filters.paymentMethod}
             onChange={(paymentMethod) => set({ paymentMethod })}
-            placeholder={isAr ? "كل الطرق" : "All methods"}
+            placeholder={t("analytics.filters.allMethods")}
             options={data.paymentMethods.map((value) => ({
               value,
-              label: (isAr ? PAYMENT_LABELS[value]?.[0] : PAYMENT_LABELS[value]?.[1]) ?? value,
+              label: t(`analytics.payment.${value}`),
             }))}
           />
           <FilterSelect
-            label={isAr ? "الحالة" : "Status"}
+            label={t("analytics.filters.status")}
             value={filters.status}
             onChange={(status) => set({ status })}
-            placeholder={isAr ? "كل الحالات" : "All statuses"}
-            options={Object.keys(STATUS_LABELS).map((value) => ({
+            placeholder={t("analytics.filters.allStatuses")}
+            options={STATUS_KEYS.map((value) => ({
               value,
-              label: (isAr ? STATUS_LABELS[value]?.[0] : STATUS_LABELS[value]?.[1]) ?? value,
+              label: t(`analytics.status.${value}`),
             }))}
           />
         </div>
@@ -146,10 +136,10 @@ export function FiltersBar({
   );
 }
 
-export function statusLabel(status: string, isAr: boolean) {
-  return (isAr ? STATUS_LABELS[status]?.[0] : STATUS_LABELS[status]?.[1]) ?? status;
+export function statusLabel(status: string, t: (key: string) => string) {
+  return (STATUS_KEYS as readonly string[]).includes(status) ? t(`analytics.status.${status}`) : status;
 }
 
-export function paymentLabel(method: string, isAr: boolean) {
-  return (isAr ? PAYMENT_LABELS[method]?.[0] : PAYMENT_LABELS[method]?.[1]) ?? method;
+export function paymentLabel(method: string, t: (key: string) => string) {
+  return (PAYMENT_KEYS as readonly string[]).includes(method) ? t(`analytics.payment.${method}`) : method;
 }

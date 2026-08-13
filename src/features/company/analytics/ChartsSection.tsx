@@ -14,6 +14,7 @@ import {
   YAxis,
 } from "recharts";
 
+import { useI18n } from "@/lib/i18n";
 import { Card, CardHeader, CardBody } from "@/components/kob";
 import type { SeriesPoint } from "./derive";
 
@@ -57,9 +58,11 @@ export function ChartsSection({
   branches: SeriesPoint[];
   money: (value: number) => string;
 }) {
+  const { t } = useI18n();
+  void isAr;
   return (
     <div className="an-charts">
-      <ChartCard title={isAr ? "اتجاه الإيرادات" : "Revenue Trend"}>
+      <ChartCard title={t("analytics.charts.revenueTrend")}>
         <LineChart data={revenue} margin={{ top: 8, right: 12, left: -12, bottom: 0 }}>
           <CartesianGrid strokeDasharray="4 8" vertical={false} stroke={GRID} />
           <XAxis dataKey="label" axisLine={false} tickLine={false} tick={AXIS} />
@@ -69,7 +72,7 @@ export function ChartsSection({
         </LineChart>
       </ChartCard>
 
-      <ChartCard title={isAr ? "اتجاه الطلبات" : "Orders Trend"}>
+      <ChartCard title={t("analytics.charts.ordersTrend")}>
         <LineChart data={orders} margin={{ top: 8, right: 12, left: -18, bottom: 0 }}>
           <CartesianGrid strokeDasharray="4 8" vertical={false} stroke={GRID} />
           <XAxis dataKey="label" axisLine={false} tickLine={false} tick={AXIS} />
@@ -79,7 +82,7 @@ export function ChartsSection({
         </LineChart>
       </ChartCard>
 
-      <ChartCard title={isAr ? "توزيع الاشتراكات" : "Subscription Distribution"}>
+      <ChartCard title={t("analytics.charts.subscriptionDistribution")}>
         <PieChart>
           <Pie data={distribution} dataKey="value" nameKey="label" innerRadius="45%" outerRadius="72%" paddingAngle={2}>
             {distribution.map((_, index) => (
@@ -91,7 +94,7 @@ export function ChartsSection({
         </PieChart>
       </ChartCard>
 
-      <ChartCard title={isAr ? "المشروبات الأكثر طلبًا" : "Drink Popularity"}>
+      <ChartCard title={t("analytics.charts.drinkPopularity")}>
         <BarChart data={drinks} margin={{ top: 8, right: 12, left: -18, bottom: 0 }}>
           <CartesianGrid strokeDasharray="4 8" vertical={false} stroke={GRID} />
           <XAxis dataKey="label" axisLine={false} tickLine={false} tick={AXIS} />
@@ -101,7 +104,7 @@ export function ChartsSection({
         </BarChart>
       </ChartCard>
 
-      <ChartCard title={isAr ? "مقارنة الفروع" : "Branch Comparison"}>
+      <ChartCard title={t("analytics.charts.branchComparison")}>
         <BarChart data={branches} margin={{ top: 8, right: 12, left: -12, bottom: 0 }}>
           <CartesianGrid strokeDasharray="4 8" vertical={false} stroke={GRID} />
           <XAxis dataKey="label" axisLine={false} tickLine={false} tick={AXIS} />

@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -98,8 +99,8 @@ const emptyDraft = (role: CompanyMemberRole): Draft => ({
   password: "",
 });
 
-function formatDate(value: string | null, isAr: boolean): string {
-  if (!value) return isAr ? "لم يسجّل الدخول" : "Never";
+function formatDate(value: string | null, isAr: boolean, neverLabel: string): string {
+  if (!value) return neverLabel;
   return new Intl.DateTimeFormat(isAr ? "ar-SA" : "en-GB", {
     dateStyle: "medium",
     timeStyle: "short",
@@ -116,6 +117,7 @@ export function EmployeeManagementSection({
 }: SectionProps) {
   const d = canEdit ? undefined : true;
   const queryClient = useQueryClient();
+  const { t } = useI18n();
   const members = useQuery({
     queryKey: ["company-members", organizationId],
     queryFn: () => listCompanyMembers(organizationId),
@@ -179,13 +181,13 @@ export function EmployeeManagementSection({
   const submitDraft = async () => {
     if (!draft) return;
     setDraftError(null);
-    if (draft.fullName.trim().length < 2) return setDraftError(isAr ? "الاسم مطلوب" : "Name is required");
+    if (draft.fullName.trim().length < 2) return setDraftError(t("settings.employees.nameIsRequired"));
     if (!draft.memberId && !EMAIL_RE.test(draft.email.trim()))
-      return setDraftError(isAr ? "بريد إلكتروني غير صحيح" : "Invalid email address");
+      return setDraftError(t("settings.employees.invalidEmailAddress"));
     if (draft.phone.trim() && !PHONE_RE.test(draft.phone.trim()))
-      return setDraftError(isAr ? "رقم جوال غير صحيح" : "Invalid phone number");
+      return setDraftError(t("settings.employees.invalidPhoneNumber"));
     if (draft.password.trim() && draft.password.trim().length < 8)
-      return setDraftError(isAr ? "كلمة المرور ٨ أحرف على الأقل" : "Password must be at least 8 characters");
+      return setDraftError(t("settings.employees.passwordMustBeAtLeast8"));
 
     setSaving(true);
     try {
@@ -245,7 +247,7 @@ export function EmployeeManagementSection({
   const columns: Column<CompanyMemberRow>[] = [
     {
       key: "employee",
-      header: isAr ? "الموظف" : "Employee",
+      header: t("settings.employees.employee"),
       render: (m) => (
         <div className="min-w-0">
           <strong className="block">{m.profile?.full_name || m.profile?.email || m.user_id.slice(0, 8)}</strong>
@@ -256,7 +258,7 @@ export function EmployeeManagementSection({
     },
     {
       key: "role",
-      header: isAr ? "الدور" : "Role",
+      header: t("settings.employees.role"),
       render: (m) => (
         <Select
           disabled={d || busy === m.id}
@@ -275,7 +277,7 @@ export function EmployeeManagementSection({
     },
     {
       key: "branch",
-      header: isAr ? "الفرع" : "Branch",
+      header: t("settings.employees.branch"),
       render: (m) => (
         <Select
           disabled={d || busy === m.id}
@@ -284,7 +286,7 @@ export function EmployeeManagementSection({
             run(m.id, () => updateMemberDetails(organizationId, m.id, { branch_id: e.target.value || null }))
           }
         >
-          <option value="">{isAr ? "كل الفروع" : "All branches"}</option>
+          <option value="">{t("settings.employees.allBranches")}</option>
           {(branches.data ?? []).map((b) => (
             <option key={b.id} value={b.id}>
               {isAr ? b.name_ar : b.name_en}
@@ -295,15 +297,15 @@ export function EmployeeManagementSection({
     },
     {
       key: "last_login",
-      header: isAr ? "آخر دخول" : "Last login",
-      render: (m) => <span className="text-muted-foreground">{formatDate(m.last_login_at, isAr)}</span>,
+      header: t("settings.employees.lastLogin"),
+      render: (m) => <span className="text-muted-foreground">{formatDate(m.last_login_at, isAr, t("settings.employees.never"))}</span>,
     },
     {
       key: "active",
-      header: isAr ? "نشط" : "Active",
+      header: t("common.status.active"),
       render: (m) => (
         <Toggle
-          label={isAr ? "نشط" : "Active"}
+          label={t("common.status.active")}
           disabled={d || busy === m.id}
           checked={m.status === "active"}
           onChange={(v) => run(m.id, () => setMemberStatus(organizationId, m.id, v ? "active" : "inactive"))}
@@ -317,7 +319,7 @@ export function EmployeeManagementSection({
       render: (m) => (
         <div className="flex items-center justify-end gap-1">
           <IconButton
-            label={isAr ? "تعديل" : "Edit"}
+            label={t("common.actions.edit")}
             disabled={d}
             onClick={() => {
               setDraftError(null);
@@ -336,21 +338,21 @@ export function EmployeeManagementSection({
           >
             <Pencil className="h-3.5 w-3.5" />
           </IconButton>
-          <IconButton label={isAr ? "الصلاحيات" : "Permissions"} disabled={d} onClick={() => setPermissionsFor(m)}>
+          <IconButton label={t("settings.employees.permissionsAction")} disabled={d} onClick={() => setPermissionsFor(m)}>
             <ShieldCheck className="h-3.5 w-3.5" />
           </IconButton>
-          <IconButton label={isAr ? "النشاط" : "Activity"} onClick={() => setActivityFor(m)}>
+          <IconButton label={t("settings.employees.activity")} onClick={() => setActivityFor(m)}>
             <Activity className="h-3.5 w-3.5" />
           </IconButton>
           <IconButton
-            label={isAr ? "إعادة تعيين كلمة المرور" : "Reset password"}
+            label={t("settings.employees.resetPassword")}
             disabled={d || busy === m.id}
             onClick={() => doResetPassword(m)}
           >
             <KeyRound className="h-3.5 w-3.5" />
           </IconButton>
           <IconButton
-            label={isAr ? "حذف" : "Delete"}
+            label={t("common.actions.delete")}
             variant="danger"
             disabled={d || busy === m.id}
             onClick={() => setConfirmDelete(m)}
@@ -365,16 +367,16 @@ export function EmployeeManagementSection({
   return (
     <div className="flex flex-col gap-4">
       <StatGrid>
-        <StatCard icon={<Users className="h-4 w-4" />} label={isAr ? "إجمالي الفريق" : "Team size"} value={stats.total} />
-        <StatCard icon={<BadgeCheck className="h-4 w-4" />} label={isAr ? "نشِط" : "Active"} value={stats.active} />
+        <StatCard icon={<Users className="h-4 w-4" />} label={t("settings.employees.teamSize")} value={stats.total} />
+        <StatCard icon={<BadgeCheck className="h-4 w-4" />} label={t("settings.employees.active")} value={stats.active} />
         <StatCard
           icon={<ShieldCheck className="h-4 w-4" />}
-          label={isAr ? "صلاحيات إدارية" : "Administrators"}
+          label={t("settings.employees.administrators")}
           value={stats.admins}
         />
         <StatCard
           icon={<Activity className="h-4 w-4" />}
-          label={isAr ? "دخول آخر ٧ أيام" : "Signed in (7d)"}
+          label={t("settings.employees.signedIn7d")}
           value={stats.recent}
         />
       </StatGrid>
@@ -382,11 +384,9 @@ export function EmployeeManagementSection({
       <InformationDialog
         open={Boolean(credential)}
         onClose={() => setCredential(null)}
-        title={isAr ? "بيانات الدخول المؤقتة" : "Temporary sign-in details"}
+        title={t("settings.employees.temporarySignInDetails")}
         description={
-          isAr
-            ? "انسخ كلمة المرور الآن وسلّمها للموظف — لن تظهر مرة أخرى."
-            : "Copy this password now and hand it to the employee — it will not be shown again."
+          t("settings.employees.copyThisPasswordNowAndHand")
         }
       >
         {credential ? (
@@ -398,11 +398,9 @@ export function EmployeeManagementSection({
       </InformationDialog>
 
       <Card
-        title={isAr ? "الفريق" : "Team"}
+        title={t("settings.employees.team")}
         description={
-          isAr
-            ? "أضف الموظفين وعدّل أدوارهم وفروعهم وصلاحياتهم وتابع آخر دخول ونشاط."
-            : "Add employees, manage roles, branches and permissions, and track last login and activity."
+          t("settings.employees.addEmployeesManageRolesBranchesAnd")
         }
         aside={
           canEdit ? (
@@ -413,7 +411,7 @@ export function EmployeeManagementSection({
                 setDraft(emptyDraft((settings.default_employee_role as CompanyMemberRole) || "cashier"));
               }}
             >
-              {isAr ? "إضافة موظف" : "Add employee"}
+              {t("settings.employees.addEmployee")}
             </Button>
           ) : null
         }
@@ -422,10 +420,10 @@ export function EmployeeManagementSection({
           <SearchInput
             value={search}
             onValueChange={setSearch}
-            placeholder={isAr ? "ابحث بالاسم أو البريد أو الفرع" : "Search name, email or branch"}
+            placeholder={t("settings.employees.searchNameEmailOrBranch")}
           />
           <Select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value as any)}>
-            <option value="all">{isAr ? "كل الأدوار" : "All roles"}</option>
+            <option value="all">{t("settings.employees.allRoles")}</option>
             {ROLES.map((r) => (
               <option key={r} value={r}>
                 {isAr ? ROLE_LABEL[r][0] : ROLE_LABEL[r][1]}
@@ -433,30 +431,30 @@ export function EmployeeManagementSection({
             ))}
           </Select>
           <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as any)}>
-            <option value="all">{isAr ? "كل الحالات" : "All statuses"}</option>
-            <option value="active">{isAr ? "نشط" : "Active"}</option>
-            <option value="inactive">{isAr ? "موقوف" : "Suspended"}</option>
+            <option value="all">{t("settings.employees.allStatuses")}</option>
+            <option value="active">{t("common.status.active")}</option>
+            <option value="inactive">{t("settings.employees.suspended")}</option>
           </Select>
         </div>
 
         {rowError ? (
-          <Alert tone="danger" onDismiss={() => setRowError(null)} dismissLabel={isAr ? "إغلاق" : "Dismiss"}>
+          <Alert tone="danger" onDismiss={() => setRowError(null)} dismissLabel={t("settings.employees.dismiss")}>
             {rowError}
           </Alert>
         ) : null}
 
         {members.isLoading ? (
-          <LoadingState label={isAr ? "جارٍ التحميل…" : "Loading…"} />
+          <LoadingState label={t("common.loading")} />
         ) : rows.length === 0 ? (
           hasFilters ? (
             <NoResultsState
-              title={isAr ? "لا يوجد موظفون مطابقون" : "No matching employees"}
-              description={isAr ? "جرّب تعديل البحث أو الفلاتر." : "Try adjusting your search or filters."}
+              title={t("settings.employees.noMatchingEmployees")}
+              description={t("settings.employees.tryAdjustingYourSearchOrFilters")}
             />
           ) : (
             <EmptyState
-              title={isAr ? "لا يوجد موظفون بعد" : "No employees yet"}
-              description={isAr ? "أضف أول موظف لفريقك." : "Add your first team member."}
+              title={t("settings.employees.noEmployeesYet")}
+              description={t("settings.employees.addYourFirstTeamMember")}
             />
           )
         ) : (
@@ -464,58 +462,58 @@ export function EmployeeManagementSection({
             columns={columns}
             rows={rows}
             rowKey={(m) => m.id}
-            caption={isAr ? "قائمة الموظفين" : "Employee list"}
+            caption={t("settings.employees.employeeList")}
           />
         )}
       </Card>
 
-      <Card title={isAr ? "الإعدادات الافتراضية للموظفين" : "Employee defaults"}>
-        <Row label={isAr ? "الدور الافتراضي" : "Default role"}>
+      <Card title={t("settings.employees.employeeDefaults")}>
+        <Row label={t("settings.employees.defaultRole")}>
           <Segmented
             disabled={d}
             value={settings.default_employee_role}
             onChange={(v) => commit({ default_employee_role: v }, "employees")}
             options={[
-              { value: "cashier", label: isAr ? "كاشير" : "Cashier" },
-              { value: "manager", label: isAr ? "مدير فرع" : "Manager" },
-              { value: "admin", label: isAr ? "مشرف" : "Admin" },
+              { value: "cashier", label: t("settings.employees.cashier") },
+              { value: "manager", label: t("settings.employees.manager") },
+              { value: "admin", label: t("settings.employees.admin") },
             ]}
           />
         </Row>
-        <Row label={isAr ? "دعوة الموظفين" : "Employee invitations"}>
+        <Row label={t("settings.employees.employeeInvitations")}>
           <Segmented
             disabled={d}
             value={settings.employee_invite_mode}
             onChange={(v) => commit({ employee_invite_mode: v }, "employees")}
             options={[
-              { value: "admin_only" as const, label: isAr ? "المشرفون فقط" : "Admins only" },
-              { value: "managers_allowed" as const, label: isAr ? "المديرون أيضًا" : "Managers too" },
-              { value: "disabled" as const, label: isAr ? "معطّلة" : "Disabled" },
+              { value: "admin_only" as const, label: t("settings.employees.adminsOnly") },
+              { value: "managers_allowed" as const, label: t("settings.employees.managersToo") },
+              { value: "disabled" as const, label: t("settings.employees.disabled") },
             ]}
           />
         </Row>
-        <Row label={isAr ? "إعادة تعيين كلمة المرور" : "Password reset policy"}>
+        <Row label={t("settings.employees.passwordResetPolicy")}>
           <Segmented
             disabled={d}
             value={settings.password_reset_policy}
             onChange={(v) => commit({ password_reset_policy: v }, "employees")}
             options={[
-              { value: "self_service" as const, label: isAr ? "ذاتية" : "Self service" },
-              { value: "admin_only" as const, label: isAr ? "عبر المشرف" : "Admin only" },
+              { value: "self_service" as const, label: t("settings.employees.selfService") },
+              { value: "admin_only" as const, label: t("settings.employees.adminOnly") },
             ]}
           />
         </Row>
       </Card>
 
       <Card
-        title={isAr ? "مصفوفة الأدوار" : "Role matrix"}
-        description={isAr ? "الصلاحيات الفعلية لكل دور في النظام." : "Effective capabilities for each role."}
+        title={t("settings.employees.roleMatrix")}
+        description={t("settings.employees.effectiveCapabilitiesForEachRole")}
       >
         <div className="kob-table-scroll">
           <table className="kob-table ">
             <thead>
               <tr>
-                <th>{isAr ? "الصلاحية" : "Capability"}</th>
+                <th>{t("settings.employees.capability")}</th>
                 {ROLES.map((r) => (
                   <th key={r}>{isAr ? ROLE_LABEL[r][0] : ROLE_LABEL[r][1]}</th>
                 ))}
@@ -540,39 +538,39 @@ export function EmployeeManagementSection({
       <FormDialog
         open={Boolean(draft)}
         onClose={() => setDraft(null)}
-        title={draft?.memberId ? (isAr ? "تعديل موظف" : "Edit employee") : isAr ? "إضافة موظف" : "Add employee"}
+        title={draft?.memberId ? (t("settings.employees.editEmployee")) : t("settings.employees.addEmployee")}
         onSubmit={submitDraft}
         busy={saving}
-        submitLabel={draft?.memberId ? (isAr ? "حفظ" : "Save") : isAr ? "إنشاء الحساب" : "Create account"}
-        cancelLabel={isAr ? "إلغاء" : "Cancel"}
+        submitLabel={draft?.memberId ? (t("common.actions.save")) : t("settings.employees.createAccount")}
+        cancelLabel={t("common.actions.cancel")}
       >
         {draft ? (
           <div className="flex flex-col gap-3">
             <Input
-              label={isAr ? "الاسم الكامل" : "Full name"}
+              label={t("settings.employees.fullName")}
               value={draft.fullName}
               onChange={(e) => setDraft({ ...draft, fullName: e.target.value })}
             />
             <Input
-              label={isAr ? "البريد الإلكتروني" : "Email"}
+              label={t("common.labels.email")}
               type="email"
               disabled={Boolean(draft.memberId)}
               value={draft.email}
               onChange={(e) => setDraft({ ...draft, email: e.target.value })}
             />
             <Input
-              label={isAr ? "رقم الجوال" : "Phone"}
+              label={t("common.labels.phone")}
               placeholder="05XXXXXXXX"
               value={draft.phone}
               onChange={(e) => setDraft({ ...draft, phone: e.target.value })}
             />
             <Input
-              label={isAr ? "المسمى الوظيفي" : "Job title"}
+              label={t("settings.employees.jobTitle")}
               value={draft.jobTitle}
               onChange={(e) => setDraft({ ...draft, jobTitle: e.target.value })}
             />
             <Select
-              label={isAr ? "الدور" : "Role"}
+              label={t("settings.employees.role")}
               value={draft.role}
               onChange={(e) => setDraft({ ...draft, role: e.target.value as CompanyMemberRole })}
             >
@@ -583,11 +581,11 @@ export function EmployeeManagementSection({
               ))}
             </Select>
             <Select
-              label={isAr ? "الفرع" : "Branch"}
+              label={t("settings.employees.branch")}
               value={draft.branchId}
               onChange={(e) => setDraft({ ...draft, branchId: e.target.value })}
             >
-              <option value="">{isAr ? "كل الفروع" : "All branches"}</option>
+              <option value="">{t("settings.employees.allBranches")}</option>
               {(branches.data ?? []).map((b) => (
                 <option key={b.id} value={b.id}>
                   {isAr ? b.name_ar : b.name_en}
@@ -596,9 +594,9 @@ export function EmployeeManagementSection({
             </Select>
             {!draft.memberId ? (
               <Input
-                label={isAr ? "كلمة مرور مبدئية (اختياري)" : "Initial password (optional)"}
+                label={t("settings.employees.initialPasswordOptional")}
                 value={draft.password}
-                placeholder={isAr ? "تُولَّد تلقائيًا إن تُركت فارغة" : "Generated automatically when left blank"}
+                placeholder={t("settings.employees.generatedAutomaticallyWhenLeftBlank")}
                 onChange={(e) => setDraft({ ...draft, password: e.target.value })}
               />
             ) : null}
@@ -630,7 +628,7 @@ export function EmployeeManagementSection({
       <DangerDialog
         open={Boolean(confirmDelete)}
         onClose={() => setConfirmDelete(null)}
-        title={isAr ? "حذف الموظف" : "Delete employee"}
+        title={t("settings.employees.deleteEmployee")}
         description={
           confirmDelete
             ? isAr
@@ -638,7 +636,7 @@ export function EmployeeManagementSection({
               : `${confirmDelete.profile?.full_name || confirmDelete.profile?.email} will be removed from this company and lose access.`
             : undefined
         }
-        confirmLabel={isAr ? "حذف" : "Delete"}
+        confirmLabel={t("common.actions.delete")}
         onConfirm={() => confirmDelete && doDelete(confirmDelete)}
         busy={busy === confirmDelete?.id}
       />
@@ -663,6 +661,7 @@ function PermissionsModal({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const { t } = useI18n();
   const base = useMemo(
     () =>
       Object.fromEntries(CAPABILITIES.map((cap) => [cap.key, cap.roles.includes(member.role)])) as Record<
@@ -697,12 +696,12 @@ function PermissionsModal({
     <FormDialog
       open
       onClose={onClose}
-      title={`${isAr ? "صلاحيات" : "Permissions"} — ${member.profile?.full_name || member.profile?.email}`}
+      title={`${t("settings.employees.permissionsDialogTitle")} — ${member.profile?.full_name || member.profile?.email}`}
       onSubmit={save}
       busy={saving}
       submitDisabled={!canEdit}
-      submitLabel={isAr ? "حفظ الصلاحيات" : "Save permissions"}
-      cancelLabel={isAr ? "إغلاق" : "Close"}
+      submitLabel={t("settings.employees.savePermissions")}
+      cancelLabel={t("common.actions.close")}
     >
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {CAPABILITIES.map((cap) => (
@@ -733,6 +732,7 @@ function ActivityModal({
   organizationId: string;
   onClose: () => void;
 }) {
+  const { t } = useI18n();
   const activity = useQuery({
     queryKey: ["member-activity", organizationId, member.user_id],
     queryFn: () => listActivity(organizationId, { actorUserId: member.user_id, limit: 60 }),
@@ -742,7 +742,7 @@ function ActivityModal({
     <InformationDialog
       open
       onClose={onClose}
-      title={`${isAr ? "نشاط" : "Activity"} — ${member.profile?.full_name || member.profile?.email}`}
+      title={`${t("settings.employees.activityDialogTitle")} — ${member.profile?.full_name || member.profile?.email}`}
     >
       <div className="col-span-full">
         <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
@@ -751,18 +751,16 @@ function ActivityModal({
             ? isAr
               ? member.branch.name_ar
               : member.branch.name_en
-            : isAr
-              ? "كل الفروع"
-              : "All branches"}
+            : t("settings.employees.allBranches")}
           <span>·</span>
-          {isAr ? "آخر دخول:" : "Last login:"} {formatDate(member.last_login_at, isAr)}
+          {t("settings.employees.lastLoginLabel")} {formatDate(member.last_login_at, isAr, t("settings.employees.never"))}
         </div>
         {activity.isLoading ? (
-          <LoadingState label={isAr ? "جارٍ التحميل…" : "Loading…"} />
+          <LoadingState label={t("common.loading")} />
         ) : (activity.data ?? []).length === 0 ? (
           <EmptyState
-            title={isAr ? "لا يوجد نشاط" : "No activity"}
-            description={isAr ? "لا يوجد نشاط مسجّل بعد." : "No recorded activity yet."}
+            title={t("settings.employees.noActivity")}
+            description={t("settings.employees.noRecordedActivityYet")}
           />
         ) : (
           <ol className="flex flex-col gap-2">
@@ -772,7 +770,7 @@ function ActivityModal({
                   <strong>{row.action}</strong>
                   {row.entity_label ? <small>{row.entity_label}</small> : null}
                 </div>
-                <time>{formatDate(row.created_at, isAr)}</time>
+                <time>{formatDate(row.created_at, isAr, t("settings.employees.never"))}</time>
               </li>
             ))}
           </ol>

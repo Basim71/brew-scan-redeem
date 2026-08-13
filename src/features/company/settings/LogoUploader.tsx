@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { ImagePlus, Loader2, Trash2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/kob";
 
 export function LogoUploader({
@@ -19,6 +20,7 @@ export function LogoUploader({
   folder: string;
   label?: string;
 }) {
+  const { t } = useI18n();
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [over, setOver] = useState(false);
@@ -27,11 +29,11 @@ export function LogoUploader({
   const upload = async (file: File) => {
     setError(null);
     if (!file.type.startsWith("image/")) {
-      setError(isAr ? "الملف ليس صورة" : "File is not an image");
+      setError(t("settings.logoUploader.fileIsNotAnImage"));
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      setError(isAr ? "الحجم الأقصى ٢ ميجابايت" : "Max size is 2 MB");
+      setError(t("settings.logoUploader.maxSizeIs2Mb"));
       return;
     }
     setBusy(true);
@@ -45,7 +47,7 @@ export function LogoUploader({
       const { data } = supabase.storage.from("drink-images").getPublicUrl(path);
       onChange(data.publicUrl);
     } catch (err: any) {
-      setError(err?.message || (isAr ? "فشل الرفع" : "Upload failed"));
+      setError(err?.message || (t("settings.logoUploader.uploadFailed")));
     } finally {
       setBusy(false);
     }
@@ -59,7 +61,7 @@ export function LogoUploader({
         data-disabled={disabled ? "true" : "false"}
         role="button"
         tabIndex={0}
-        aria-label={label || (isAr ? "رفع الشعار" : "Upload logo")}
+        aria-label={label || (t("settings.logoUploader.uploadLogo"))}
         onClick={() => !disabled && inputRef.current?.click()}
         onKeyDown={(e) => {
           if (!disabled && (e.key === "Enter" || e.key === " ")) inputRef.current?.click();
@@ -78,13 +80,13 @@ export function LogoUploader({
         }}
       >
         {value ? (
-          <img src={value} alt={label || (isAr ? "الشعار" : "Logo")} className="max-h-20 max-w-full rounded-lg object-contain" />
+          <img src={value} alt={label || (t("settings.logoUploader.logo"))} className="max-h-20 max-w-full rounded-lg object-contain" />
         ) : busy ? (
           <Loader2 className="h-5 w-5 animate-spin" />
         ) : (
           <>
             <ImagePlus className="h-5 w-5" />
-            <span>{isAr ? "اسحب الصورة أو اضغط للرفع" : "Drag an image or click to upload"}</span>
+            <span>{t("settings.logoUploader.dragAnImageOrClickTo")}</span>
           </>
         )}
         {busy && value ? (
@@ -112,7 +114,7 @@ export function LogoUploader({
           leadingIcon={<Trash2 className="h-3.5 w-3.5" />}
           onClick={() => onChange(null)}
         >
-          {isAr ? "إزالة" : "Remove"}
+          {t("settings.logoUploader.remove")}
         </Button>
       ) : null}
       {error ? (

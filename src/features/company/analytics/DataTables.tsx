@@ -1,20 +1,27 @@
 import { useMemo, useState } from "react";
 import { Eye, FileDown, FileSpreadsheet, FileText, Printer } from "lucide-react";
 
-import { Button, Card, CardBody, DataTable, Modal, StatusBadge, Tabs, type Column, type StatusTone } from "@/components/kob";
+import { useI18n } from "@/lib/i18n";
+import {
+  Button,
+  Card,
+  CardBody,
+  Caption,
+  DataTable,
+  Modal,
+  StatusBadge,
+  Tabs,
+  Text,
+  type Column,
+  type StatusTone,
+} from "@/components/kob";
 import { paymentLabel, statusLabel } from "./FiltersBar";
 import type { ExportTable } from "./exporters";
 import type { AnalyticsDataset, SaleRecord } from "./types";
 
 export type TabKey = "sales" | "subscriptions" | "customers" | "coupons" | "exports";
 
-const TABS: Array<{ key: TabKey; ar: string; en: string }> = [
-  { key: "sales", ar: "المبيعات", en: "Sales" },
-  { key: "subscriptions", ar: "الاشتراكات", en: "Subscriptions" },
-  { key: "customers", ar: "العملاء", en: "Customers" },
-  { key: "coupons", ar: "الكوبونات", en: "Coupons" },
-  { key: "exports", ar: "التصدير", en: "Exports" },
-];
+const TAB_KEYS: TabKey[] = ["sales", "subscriptions", "customers", "coupons", "exports"];
 
 const STATUS_TONE: Record<string, StatusTone> = {
   approved: "success",
@@ -23,18 +30,30 @@ const STATUS_TONE: Record<string, StatusTone> = {
 };
 
 type Localize = (value: { ar: string | null; en: string | null }) => string;
+type T = (key: string) => string;
 
 export function buildTables(
   data: AnalyticsDataset,
   isAr: boolean,
   localize: Localize,
   money: (value: number) => string,
+  t: T,
 ): Record<Exclude<TabKey, "exports">, ExportTable> {
   return {
     sales: {
-      columns: isAr
-        ? ["رقم الفاتورة", "العميل", "الكاشير", "الفرع", "المشروب", "الباقة", "الكوبون", "الدفع", "القيمة", "الحالة", "التاريخ"]
-        : ["Receipt #", "Customer", "Cashier", "Branch", "Drink", "Subscription", "Coupon", "Payment", "Amount", "Status", "Created At"],
+      columns: [
+        t("analytics.tables.columns.receipt"),
+        t("analytics.tables.columns.customer"),
+        t("analytics.tables.columns.cashier"),
+        t("analytics.tables.columns.branch"),
+        t("analytics.tables.columns.drink"),
+        t("analytics.tables.columns.subscription"),
+        t("analytics.tables.columns.coupon"),
+        t("analytics.tables.columns.payment"),
+        t("analytics.tables.columns.amount"),
+        t("analytics.tables.columns.status"),
+        t("analytics.tables.columns.createdAt"),
+      ],
       rows: data.sales.map((row) => [
         row.receipt,
         row.customerName ?? "—",
@@ -43,16 +62,24 @@ export function buildTables(
         localize(row.drinkName),
         localize(row.planName),
         row.couponCode ?? "—",
-        paymentLabel(row.paymentMethod, isAr),
+        paymentLabel(row.paymentMethod, t),
         money(row.amount),
-        statusLabel(row.status, isAr),
+        statusLabel(row.status, t),
         row.createdAt,
       ]),
     },
     subscriptions: {
-      columns: isAr
-        ? ["العميل", "الجوال", "الباقة", "الفرع", "الكوبون", "البداية", "النهاية", "القيمة", "الحالة"]
-        : ["Customer", "Phone", "Plan", "Branch", "Coupon", "Start", "End", "Amount", "Status"],
+      columns: [
+        t("analytics.tables.columns.customer"),
+        t("analytics.tables.columns.phone"),
+        t("analytics.tables.columns.plan"),
+        t("analytics.tables.columns.branch"),
+        t("analytics.tables.columns.coupon"),
+        t("analytics.tables.columns.start"),
+        t("analytics.tables.columns.end"),
+        t("analytics.tables.columns.amount"),
+        t("analytics.tables.columns.status"),
+      ],
       rows: data.subscriptions.map((row) => [
         row.customerName ?? "—",
         row.customerPhone ?? "—",
@@ -66,9 +93,15 @@ export function buildTables(
       ]),
     },
     customers: {
-      columns: isAr
-        ? ["العميل", "الجوال", "الاشتراكات", "الطلبات", "الإنفاق", "آخر نشاط", "تاريخ التسجيل"]
-        : ["Customer", "Phone", "Subscriptions", "Orders", "Spend", "Last Activity", "Joined"],
+      columns: [
+        t("analytics.tables.columns.customer"),
+        t("analytics.tables.columns.phone"),
+        t("analytics.tables.columns.subscriptionsCount"),
+        t("analytics.tables.columns.orders"),
+        t("analytics.tables.columns.spend"),
+        t("analytics.tables.columns.lastActivity"),
+        t("analytics.tables.columns.joined"),
+      ],
       rows: data.customers.map((row) => [
         row.name,
         row.phone,
@@ -80,9 +113,14 @@ export function buildTables(
       ]),
     },
     coupons: {
-      columns: isAr
-        ? ["الكود", "الباقة", "الفرع", "القيمة", "الحالة", "تاريخ البيع"]
-        : ["Code", "Plan", "Branch", "Amount", "Status", "Sold At"],
+      columns: [
+        t("analytics.tables.columns.code"),
+        t("analytics.tables.columns.plan"),
+        t("analytics.tables.columns.branch"),
+        t("analytics.tables.columns.amount"),
+        t("analytics.tables.columns.status"),
+        t("analytics.tables.columns.soldAt"),
+      ],
       rows: data.coupons.map((row) => [
         row.code,
         localize(row.planName),
@@ -110,6 +148,7 @@ export function DataTables({
   tables: Record<Exclude<TabKey, "exports">, ExportTable>;
   onExport: (kind: "csv" | "excel" | "pdf" | "print") => void;
 }) {
+  const { t } = useI18n();
   const [tab, setTab] = useState<TabKey>("sales");
   const [receipt, setReceipt] = useState<SaleRecord | null>(null);
   const dateFmt = useMemo(
@@ -119,30 +158,30 @@ export function DataTables({
   const fmtDate = (value: string | null) => (value ? dateFmt.format(new Date(value)) : "—");
 
   const active = tab === "exports" ? null : tables[tab];
-  const noDataLabel = isAr ? "لا توجد بيانات لهذه الفترة." : "No data for this period.";
+  const noDataLabel = t("analytics.tables.noData");
 
   const salesColumns: Column<SaleRecord>[] = [
-    { key: "receipt", header: isAr ? "رقم الفاتورة" : "Receipt #", render: (row) => <span className="font-mono">{row.receipt}</span> },
-    { key: "customer", header: isAr ? "العميل" : "Customer", render: (row) => row.customerName ?? "—" },
-    { key: "cashier", header: isAr ? "الكاشير" : "Cashier", render: (row) => row.cashierName ?? "—" },
-    { key: "branch", header: isAr ? "الفرع" : "Branch", render: (row) => localize(row.branchName) },
-    { key: "drink", header: isAr ? "المشروب" : "Drink", render: (row) => localize(row.drinkName) },
-    { key: "plan", header: isAr ? "الباقة" : "Subscription", render: (row) => localize(row.planName) },
-    { key: "coupon", header: isAr ? "الكوبون" : "Coupon", render: (row) => <span className="font-mono">{row.couponCode ?? "—"}</span> },
-    { key: "payment", header: isAr ? "الدفع" : "Payment", render: (row) => paymentLabel(row.paymentMethod, isAr) },
-    { key: "amount", header: isAr ? "القيمة" : "Amount", numeric: true, align: "end", render: (row) => money(row.amount) },
+    { key: "receipt", header: t("analytics.tables.columns.receipt"), render: (row) => <span className="font-mono">{row.receipt}</span> },
+    { key: "customer", header: t("analytics.tables.columns.customer"), render: (row) => row.customerName ?? "—" },
+    { key: "cashier", header: t("analytics.tables.columns.cashier"), render: (row) => row.cashierName ?? "—" },
+    { key: "branch", header: t("analytics.tables.columns.branch"), render: (row) => localize(row.branchName) },
+    { key: "drink", header: t("analytics.tables.columns.drink"), render: (row) => localize(row.drinkName) },
+    { key: "plan", header: t("analytics.tables.columns.subscription"), render: (row) => localize(row.planName) },
+    { key: "coupon", header: t("analytics.tables.columns.coupon"), render: (row) => <span className="font-mono">{row.couponCode ?? "—"}</span> },
+    { key: "payment", header: t("analytics.tables.columns.payment"), render: (row) => paymentLabel(row.paymentMethod, t) },
+    { key: "amount", header: t("analytics.tables.columns.amount"), numeric: true, align: "end", render: (row) => money(row.amount) },
     {
       key: "status",
-      header: isAr ? "الحالة" : "Status",
-      render: (row) => <StatusBadge tone={STATUS_TONE[row.status] ?? "neutral"}>{statusLabel(row.status, isAr)}</StatusBadge>,
+      header: t("analytics.tables.columns.status"),
+      render: (row) => <StatusBadge tone={STATUS_TONE[row.status] ?? "neutral"}>{statusLabel(row.status, t)}</StatusBadge>,
     },
-    { key: "createdAt", header: isAr ? "التاريخ" : "Created At", render: (row) => fmtDate(row.createdAt) },
+    { key: "createdAt", header: t("analytics.tables.columns.createdAt"), render: (row) => fmtDate(row.createdAt) },
     {
       key: "actions",
-      header: isAr ? "إجراءات" : "Actions",
+      header: t("analytics.tables.columns.actions"),
       render: (row) => (
         <Button variant="ghost" size="sm" leadingIcon={<Eye className="h-3.5 w-3.5" />} onClick={() => setReceipt(row)}>
-          {isAr ? "عرض" : "View"}
+          {t("analytics.tables.view")}
         </Button>
       ),
     },
@@ -159,8 +198,8 @@ export function DataTables({
     <Card>
       <CardBody className="an-tables">
         <Tabs
-          ariaLabel={isAr ? "جداول التحليلات" : "Analytics tables"}
-          items={TABS.map((item) => ({ id: item.key, label: isAr ? item.ar : item.en }))}
+          ariaLabel={t("analytics.tables.ariaLabel")}
+          items={TAB_KEYS.map((key) => ({ id: key, label: t(`analytics.tables.tabs.${key}`) }))}
           value={tab}
           onChange={(id) => setTab(id as TabKey)}
         />
@@ -170,26 +209,26 @@ export function DataTables({
             <div className="an-export-grid grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <ExportTile
                 icon={<FileDown className="h-5 w-5" />}
-                title={isAr ? "تصدير CSV" : "Export CSV"}
-                hint={isAr ? "ملف نصي مناسب لأي نظام" : "Universal spreadsheet file"}
+                title={t("analytics.exports.csvTitle")}
+                hint={t("analytics.exports.csvHint")}
                 onClick={() => onExport("csv")}
               />
               <ExportTile
                 icon={<FileSpreadsheet className="h-5 w-5" />}
-                title={isAr ? "تصدير Excel" : "Export Excel"}
-                hint={isAr ? "يفتح مباشرة في Excel" : "Opens natively in Excel"}
+                title={t("analytics.exports.excelTitle")}
+                hint={t("analytics.exports.excelHint")}
                 onClick={() => onExport("excel")}
               />
               <ExportTile
                 icon={<FileText className="h-5 w-5" />}
-                title={isAr ? "تصدير PDF" : "Export PDF"}
-                hint={isAr ? "حفظ التقرير كملف PDF" : "Save the report as PDF"}
+                title={t("analytics.exports.pdfTitle")}
+                hint={t("analytics.exports.pdfHint")}
                 onClick={() => onExport("pdf")}
               />
               <ExportTile
                 icon={<Printer className="h-5 w-5" />}
-                title={isAr ? "طباعة التقرير" : "Print Report"}
-                hint={isAr ? "طباعة ملخص الفترة" : "Print the period summary"}
+                title={t("analytics.exports.printTitle")}
+                hint={t("analytics.exports.printHint")}
                 onClick={() => onExport("print")}
               />
             </div>
@@ -198,7 +237,7 @@ export function DataTables({
               columns={salesColumns}
               rows={data.sales}
               rowKey={(row) => row.id}
-              caption={isAr ? "جدول المبيعات" : "Sales table"}
+              caption={t("analytics.tables.salesCaption")}
               emptyDescription={noDataLabel}
             />
           ) : (
@@ -206,7 +245,7 @@ export function DataTables({
               columns={genericColumns}
               rows={active!.rows}
               rowKey={(_row, index) => String(index)}
-              caption={isAr ? (TABS.find((t) => t.key === tab)?.ar ?? "") : (TABS.find((t) => t.key === tab)?.en ?? "")}
+              caption={t(`analytics.tables.tabs.${tab}`)}
               emptyDescription={noDataLabel}
             />
           )}
@@ -216,28 +255,28 @@ export function DataTables({
       <Modal
         open={Boolean(receipt)}
         onClose={() => setReceipt(null)}
-        title={isAr ? "تفاصيل الفاتورة" : "Receipt details"}
+        title={t("analytics.tables.receipt.title")}
         description={receipt ? <span className="font-mono">{receipt.receipt}</span> : undefined}
         footer={
           <Button variant="secondary" onClick={() => setReceipt(null)}>
-            {isAr ? "إغلاق" : "Close"}
+            {t("analytics.tables.receipt.close")}
           </Button>
         }
       >
         {receipt ? (
           <dl className="an-receipt grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <ReceiptRow label={isAr ? "العميل" : "Customer"} value={receipt.customerName ?? "—"} />
-            <ReceiptRow label={isAr ? "الجوال" : "Phone"} value={receipt.customerPhone ?? "—"} />
-            <ReceiptRow label={isAr ? "الكاشير" : "Cashier"} value={receipt.cashierName ?? "—"} />
-            <ReceiptRow label={isAr ? "الفرع" : "Branch"} value={localize(receipt.branchName)} />
-            <ReceiptRow label={isAr ? "المشروب" : "Drink"} value={localize(receipt.drinkName)} />
-            <ReceiptRow label={isAr ? "الباقة" : "Subscription"} value={localize(receipt.planName)} />
-            <ReceiptRow label={isAr ? "الكوبون" : "Coupon"} value={receipt.couponCode ?? "—"} />
-            <ReceiptRow label={isAr ? "طريقة الدفع" : "Payment"} value={paymentLabel(receipt.paymentMethod, isAr)} />
-            <ReceiptRow label={isAr ? "القيمة" : "Amount"} value={money(receipt.amount)} />
-            <ReceiptRow label={isAr ? "الحالة" : "Status"} value={statusLabel(receipt.status, isAr)} />
-            <ReceiptRow label={isAr ? "التاريخ" : "Created At"} value={fmtDate(receipt.createdAt)} />
-            {receipt.note ? <ReceiptRow label={isAr ? "ملاحظة" : "Note"} value={receipt.note} /> : null}
+            <ReceiptRow label={t("analytics.tables.columns.customer")} value={receipt.customerName ?? "—"} />
+            <ReceiptRow label={t("analytics.tables.columns.phone")} value={receipt.customerPhone ?? "—"} />
+            <ReceiptRow label={t("analytics.tables.columns.cashier")} value={receipt.cashierName ?? "—"} />
+            <ReceiptRow label={t("analytics.tables.columns.branch")} value={localize(receipt.branchName)} />
+            <ReceiptRow label={t("analytics.tables.columns.drink")} value={localize(receipt.drinkName)} />
+            <ReceiptRow label={t("analytics.tables.columns.subscription")} value={localize(receipt.planName)} />
+            <ReceiptRow label={t("analytics.tables.columns.coupon")} value={receipt.couponCode ?? "—"} />
+            <ReceiptRow label={t("analytics.tables.columns.payment")} value={paymentLabel(receipt.paymentMethod, t)} />
+            <ReceiptRow label={t("analytics.tables.columns.amount")} value={money(receipt.amount)} />
+            <ReceiptRow label={t("analytics.tables.columns.status")} value={statusLabel(receipt.status, t)} />
+            <ReceiptRow label={t("analytics.tables.columns.createdAt")} value={fmtDate(receipt.createdAt)} />
+            {receipt.note ? <ReceiptRow label={t("analytics.tables.receipt.note")} value={receipt.note} /> : null}
           </dl>
         ) : null}
       </Modal>
@@ -248,8 +287,12 @@ export function DataTables({
 function ReceiptRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs opacity-60">{label}</dt>
-      <dd className="text-sm font-medium">{value}</dd>
+      <Caption as="dt" tone="muted">
+        {label}
+      </Caption>
+      <Text as="dd" variant="bodySm" className="font-medium">
+        {value}
+      </Text>
     </div>
   );
 }
@@ -268,8 +311,12 @@ function ExportTile({
   return (
     <button type="button" className="an-export-tile" onClick={onClick}>
       <span aria-hidden="true">{icon}</span>
-      <strong>{title}</strong>
-      <small>{hint}</small>
+      <Text as="strong" variant="bodySm" className="font-semibold">
+        {title}
+      </Text>
+      <Caption as="small" tone="muted">
+        {hint}
+      </Caption>
     </button>
   );
 }
