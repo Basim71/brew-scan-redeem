@@ -249,8 +249,8 @@ export function EmployeeManagementSection({
       render: (m) => (
         <div className="min-w-0">
           <strong className="block">{m.profile?.full_name || m.profile?.email || m.user_id.slice(0, 8)}</strong>
-          <small className="block cs-muted">{m.profile?.email}</small>
-          {m.job_title ? <small className="cs-muted">{m.job_title}</small> : null}
+          <small className="block text-muted-foreground">{m.profile?.email}</small>
+          {m.job_title ? <small className="text-muted-foreground">{m.job_title}</small> : null}
         </div>
       ),
     },
@@ -296,7 +296,7 @@ export function EmployeeManagementSection({
     {
       key: "last_login",
       header: isAr ? "آخر دخول" : "Last login",
-      render: (m) => <span className="cs-muted">{formatDate(m.last_login_at, isAr)}</span>,
+      render: (m) => <span className="text-muted-foreground">{formatDate(m.last_login_at, isAr)}</span>,
     },
     {
       key: "active",
@@ -315,7 +315,7 @@ export function EmployeeManagementSection({
       header: "",
       align: "end",
       render: (m) => (
-        <div className="cs-row-actions">
+        <div className="flex items-center justify-end gap-1">
           <IconButton
             label={isAr ? "تعديل" : "Edit"}
             disabled={d}
@@ -363,7 +363,7 @@ export function EmployeeManagementSection({
   ];
 
   return (
-    <div className="cs-stack">
+    <div className="flex flex-col gap-4">
       <StatGrid>
         <StatCard icon={<Users className="h-4 w-4" />} label={isAr ? "إجمالي الفريق" : "Team size"} value={stats.total} />
         <StatCard icon={<BadgeCheck className="h-4 w-4" />} label={isAr ? "نشِط" : "Active"} value={stats.active} />
@@ -390,7 +390,7 @@ export function EmployeeManagementSection({
         }
       >
         {credential ? (
-          <div className="cs-credential-body">
+          <div className="flex flex-col gap-2 rounded-lg bg-muted p-3 font-mono text-sm">
             <code>{credential.email}</code>
             <code>{credential.password}</code>
           </div>
@@ -418,7 +418,7 @@ export function EmployeeManagementSection({
           ) : null
         }
       >
-        <div className="cs-toolbar">
+        <div className="flex flex-wrap items-center gap-2">
           <SearchInput
             value={search}
             onValueChange={setSearch}
@@ -511,8 +511,8 @@ export function EmployeeManagementSection({
         title={isAr ? "مصفوفة الأدوار" : "Role matrix"}
         description={isAr ? "الصلاحيات الفعلية لكل دور في النظام." : "Effective capabilities for each role."}
       >
-        <div className="cs-table-scroll">
-          <table className="cs-table cs-matrix">
+        <div className="kob-table-scroll">
+          <table className="kob-table ">
             <thead>
               <tr>
                 <th>{isAr ? "الصلاحية" : "Capability"}</th>
@@ -547,7 +547,7 @@ export function EmployeeManagementSection({
         cancelLabel={isAr ? "إلغاء" : "Cancel"}
       >
         {draft ? (
-          <div className="cs-modal-body">
+          <div className="flex flex-col gap-3">
             <Input
               label={isAr ? "الاسم الكامل" : "Full name"}
               value={draft.fullName}
@@ -704,7 +704,7 @@ function PermissionsModal({
       submitLabel={isAr ? "حفظ الصلاحيات" : "Save permissions"}
       cancelLabel={isAr ? "إغلاق" : "Close"}
     >
-      <div className="cs-permission-grid">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {CAPABILITIES.map((cap) => (
           <KobToggle
             key={cap.key}
@@ -744,8 +744,8 @@ function ActivityModal({
       onClose={onClose}
       title={`${isAr ? "نشاط" : "Activity"} — ${member.profile?.full_name || member.profile?.email}`}
     >
-      <div className="cs-field-wide">
-        <div className="cs-meta-line">
+      <div className="col-span-full">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
           <Building2 className="h-3.5 w-3.5" />
           {member.branch
             ? isAr
@@ -765,7 +765,7 @@ function ActivityModal({
             description={isAr ? "لا يوجد نشاط مسجّل بعد." : "No recorded activity yet."}
           />
         ) : (
-          <ol className="cs-timeline">
+          <ol className="flex flex-col gap-2">
             {(activity.data ?? []).map((row) => (
               <li key={row.id} data-severity={row.severity}>
                 <div>

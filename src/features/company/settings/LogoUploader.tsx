@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { ImagePlus, Loader2, Trash2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/kob";
 
 export function LogoUploader({
   value,
@@ -51,9 +52,9 @@ export function LogoUploader({
   };
 
   return (
-    <div className="cs-upload-wrap">
+    <div className="flex flex-col items-start gap-2">
       <div
-        className="cs-dropzone"
+        className="relative flex min-h-24 w-full max-w-xs cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-1.5 border-dashed border-border bg-muted p-3 text-center text-xs text-muted-foreground transition-colors data-[over=true]:border-accent data-[over=true]:bg-accent/10 data-[disabled=true]:cursor-not-allowed data-[disabled=true]:opacity-60"
         data-over={over ? "true" : "false"}
         data-disabled={disabled ? "true" : "false"}
         role="button"
@@ -77,7 +78,7 @@ export function LogoUploader({
         }}
       >
         {value ? (
-          <img src={value} alt={label || (isAr ? "الشعار" : "Logo")} />
+          <img src={value} alt={label || (isAr ? "الشعار" : "Logo")} className="max-h-20 max-w-full rounded-lg object-contain" />
         ) : busy ? (
           <Loader2 className="h-5 w-5 animate-spin" />
         ) : (
@@ -86,7 +87,11 @@ export function LogoUploader({
             <span>{isAr ? "اسحب الصورة أو اضغط للرفع" : "Drag an image or click to upload"}</span>
           </>
         )}
-        {busy && value ? <div className="cs-dropzone-busy"><Loader2 className="h-4 w-4 animate-spin" /></div> : null}
+        {busy && value ? (
+          <div className="absolute inset-0 grid place-items-center rounded-xl bg-card/60">
+            <Loader2 className="h-4 w-4 animate-spin" />
+          </div>
+        ) : null}
       </div>
       <input
         ref={inputRef}
@@ -100,12 +105,21 @@ export function LogoUploader({
         }}
       />
       {value && !disabled ? (
-        <button type="button" className="cs-ghost-btn" onClick={() => onChange(null)}>
-          <Trash2 className="h-3.5 w-3.5" />
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          leadingIcon={<Trash2 className="h-3.5 w-3.5" />}
+          onClick={() => onChange(null)}
+        >
           {isAr ? "إزالة" : "Remove"}
-        </button>
+        </Button>
       ) : null}
-      {error ? <span className="cs-error">{error}</span> : null}
+      {error ? (
+        <span className="text-xs text-destructive" role="alert">
+          {error}
+        </span>
+      ) : null}
     </div>
   );
 }

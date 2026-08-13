@@ -198,10 +198,10 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
   ];
 
   return (
-    <div className="cs-stack">
-      <div className="cs-stat-grid">
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {stats.map((stat) => (
-          <article key={stat.label} className="cs-stat">
+          <article key={stat.label} className="flex flex-col gap-1 rounded-xl border border-border bg-card p-3">
             <stat.icon className="h-4 w-4" />
             <b>{stat.value}</b>
             <span>{stat.label}</span>
@@ -259,14 +259,14 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
           ) : null
         }
       >
-        <div className="cs-toolbar">
+        <div className="flex flex-wrap items-center gap-2">
           <SearchInput
             value={search}
             onValueChange={setSearch}
             placeholder={isAr ? "ابحث برمز أو اسم الفرع" : "Search by code or name"}
           />
         </div>
-        {error ? <div className="cs-error-panel">{error}</div> : null}
+        {error ? <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</div> : null}
         {branches.isLoading ? (
           <LoadingState label={isAr ? "جارٍ التحميل…" : "Loading…"} />
         ) : rows.length === 0 ? (
@@ -284,7 +284,7 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
             }
           />
         ) : (
-          <div className="cs-branch-list">
+          <div className="flex flex-col gap-3">
             {rows.map((branch) => (
               <BranchCard
                 key={branch.id}
@@ -312,7 +312,7 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
         cancelLabel={isAr ? "إلغاء" : "Cancel"}
       >
         {draft ? (
-          <div className="cs-modal-body">
+          <div className="flex flex-col gap-3">
             <Input
               label={isAr ? "الاسم بالعربية" : "Name (Arabic)"}
               value={draft.name_ar}
@@ -358,16 +358,16 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
               value={draft.closing_time}
               onChange={(e) => setDraft({ ...draft, closing_time: e.target.value })}
             />
-            <div className="cs-field cs-field-wide">
+            <div className="col-span-full flex flex-col gap-1">
               <span>{isAr ? "أيام العمل" : "Working days"}</span>
-              <div className="cs-chips">
+              <div className="flex flex-wrap gap-2 py-2">
                 {DAYS.map(([key, ar, en]) => {
                   const on = draft.working_days.includes(key);
                   return (
                     <button
                       key={key}
                       type="button"
-                      className="cs-chip"
+                      className="kob-chip"
                       data-on={on ? "true" : "false"}
                       onClick={() =>
                         setDraft({
@@ -384,7 +384,7 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
                 })}
               </div>
             </div>
-            {draftError ? <div className="cs-error-panel cs-field-wide">{draftError}</div> : null}
+            {draftError ? <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive col-span-full">{draftError}</div> : null}
           </div>
         ) : null}
       </FormDialog>
@@ -424,7 +424,7 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
         }
       >
         {forceDelete ? (
-          <p className="cs-field-wide">
+          <p className="col-span-full">
             {isAr
               ? `الفرع "${forceDelete.branch.name_ar}" مرتبط بـ ${forceDelete.subscriptions} اشتراك و ${forceDelete.orders} طلب. الحذف سيؤدي إلى إزالة هذه السجلات نهائيًا. يمكنك بدلًا من ذلك إيقاف الفرع للحفاظ على البيانات.`
               : `Branch "${forceDelete.branch.name_en}" has ${forceDelete.subscriptions} subscriptions and ${forceDelete.orders} orders. Deleting it removes those records permanently. You can deactivate the branch instead to keep the data.`}
@@ -480,18 +480,18 @@ function BranchCard({
   };
 
   return (
-    <article className="cs-branch" data-open={open ? "true" : "false"}>
+    <article className="rounded-xl border border-border bg-card" data-open={open ? "true" : "false"}>
       <header>
-        <button type="button" className="cs-branch-head" onClick={onToggle}>
+        <button type="button" className="flex w-full items-center gap-3 p-3 text-start" onClick={onToggle}>
           <Badge tone="espresso">{branch.branch_code ?? "—"}</Badge>
-          <span className="cs-branch-name">
+          <span className="flex min-w-0 flex-col">
             <b>{isAr ? branch.name_ar : branch.name_en}</b>
             <small>
               {branch.opening_time?.slice(0, 5)} – {branch.closing_time?.slice(0, 5)}
             </small>
           </span>
         </button>
-        <span className="cs-branch-staff">
+        <span className="flex items-center gap-1 text-sm text-muted-foreground">
           <Users className="h-3.5 w-3.5" />
           {staffCount}
         </span>
@@ -501,8 +501,8 @@ function BranchCard({
       </header>
 
       {open ? (
-        <div className="cs-branch-body">
-          <div className="cs-branch-main">
+        <div className="grid grid-cols-1 gap-4 border-t border-border p-3 lg:grid-cols-[1fr_260px]">
+          <div className="flex flex-col">
             <Row label={isAr ? "الاسم بالعربية" : "Name (Arabic)"}>
               <TextInput
                 isAr={isAr}
@@ -569,14 +569,14 @@ function BranchCard({
               />
             </Row>
             <Row label={isAr ? "أيام العمل" : "Working days"}>
-              <div className="cs-chips">
+              <div className="flex flex-wrap gap-2 py-2">
                 {DAYS.map(([key, ar, en]) => {
                   const on = days.includes(key);
                   return (
                     <button
                       key={key}
                       type="button"
-                      className="cs-chip"
+                      className="kob-chip"
                       data-on={on ? "true" : "false"}
                       disabled={disabled}
                       onClick={() =>
@@ -610,14 +610,14 @@ function BranchCard({
             </Row>
           </div>
 
-          <aside className="cs-branch-side">
+          <aside className="flex flex-col gap-3">
             <KobCard tone="engraved">
-              <CardBody className="cs-qr">
-                <div ref={qrWrap} className="cs-qr-canvas">
+              <CardBody className="items-center gap-2 text-center">
+                <div ref={qrWrap} className="flex justify-center rounded-lg bg-card p-2">
                   <QRCodeCanvas value={link} size={176} level="M" includeMargin bgColor="#ffffff" fgColor="#2B1A12" />
                 </div>
                 <code>{link}</code>
-                <div className="cs-qr-actions">
+                <div className="flex flex-wrap justify-center gap-2">
                   <Button variant="secondary" size="sm" leadingIcon={<QrCode className="h-3.5 w-3.5" />} onClick={downloadQr}>
                     {isAr ? "تحميل" : "Download"}
                   </Button>

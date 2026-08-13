@@ -1,10 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { AlertCircle, CheckCircle2, Headphones, MessageSquarePlus, Radio, ShieldCheck } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { CheckCircle2, Headphones, MessageSquarePlus, Radio, ShieldCheck } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "@/providers/OrganizationProvider";
+import { useI18n } from "@/lib/i18n";
 import { createTicket, listTickets } from "@/features/support/api";
+import { uploadTicketFile } from "@/features/support/sessions";
 import {
   categoryLabels,
   collectBrowserContext,
@@ -12,7 +14,31 @@ import {
   priorityLabels,
   statusLabels,
   type Ticket,
+  type TicketPriority,
+  type TicketStatus,
 } from "@/features/support/types";
+import {
+  Alert,
+  Badge,
+  Button,
+  DataTable,
+  Field,
+  FileUpload,
+  FormDialog,
+  Input,
+  kobToast,
+  PageContainer,
+  PageHeader,
+  Pagination,
+  SearchInput,
+  Select,
+  StatGrid,
+  StatCard,
+  StatusBadge,
+  Textarea,
+  Toggle,
+  type Column,
+} from "@/components/kob";
 
 export const Route = createFileRoute("/admin/support/")({
   head: () => ({
@@ -41,22 +67,55 @@ const emptyForm = {
   allowRecording: false,
 };
 
+const STATUS_TONE: Record<TicketStatus, "success" | "warning" | "error" | "info" | "neutral"> = {
+  new: "info",
+  waiting: "warning",
+  accepted: "info",
+  assigned: "info",
+  waiting_company: "warning",
+  scheduled: "info",
+  live: "success",
+  resolved: "success",
+  closed: "neutral",
+  cancelled: "neutral",
+  rejected: "error",
+};
+
+const PRIORITY_TONE: Record<TicketPriority, "success" | "warning" | "error" | "info" | "neutral"> = {
+  low: "neutral",
+  medium: "info",
+  high: "warning",
+  critical: "error",
+};
+
+const PAGE_SIZE = 10;
+
 function CompanySupportPortal() {
   const navigate = useNavigate();
+  const { t, fmtDate } = useI18n();
   const { organization, membership } = useOrganization();
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState(emptyForm);
+  const [attachments, setAttachments] = useState<File[]>([]);
   const [open, setOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [priorityFilter, setPriorityFilter] = useState<string>("all");
+  const [page, setPage] = useState(1);
 
   async function load() {
     if (!organization) return;
+    setLoading(true);
     try {
       setTickets(await listTickets(organization.id));
       setError(null);
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "تعذر تحميل التذاكر");
+      setError(loadError instanceof Error ? loadError.message : t("support.list.load_error_title"));
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -87,11 +146,32 @@ function CompanySupportPortal() {
     [tickets],
   );
 
-  async function submit(event: FormEvent) {
-    event.preventDefault();
+  const filteredTickets = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return tickets.filter((ticket) => {
+      if (statusFilter !== "all" && ticket.status !== statusFilter) return false;
+      if (priorityFilter !== "all" && ticket.priority !== priorityFilter) return false;
+      if (q && !`${ticket.ticketNumber} ${ticket.subject}`.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [tickets, search, statusFilter, priorityFilter]);
+
+  const pageCount = Math.max(1, Math.ceil(filteredTickets.length / PAGE_SIZE));
+  const pagedTickets = filteredTickets.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, statusFilter, priorityFilter]);
+
+  function closeDialog() {
+    setOpen(false);
+    setForm(emptyForm);
+    setAttachments([]);
+  }
+
+  async function submit() {
     if (!organization) return;
     setCreating(true);
-    setError(null);
     try {
       const created = await createTicket({
         organizationId: organization.id,
@@ -108,209 +188,238 @@ function CompanySupportPortal() {
         allowRecording: form.allowRecording,
         context: collectBrowserContext(),
       });
-      setForm(emptyForm);
-      setOpen(false);
+      if (attachments.length) {
+        try {
+          for (const file of attachments) {
+            await uploadTicketFile(created.id, file);
+          }
+        } catch {
+          kobToast.error(t("support.form.attachment_error"));
+        }
+      }
+      kobToast.success(t("support.form.create_success"));
+      closeDialog();
       await load();
       navigate({ to: "/admin/support/$ticketId", params: { ticketId: created.id } });
     } catch (createError) {
-      setError(createError instanceof Error ? createError.message : "تعذر إنشاء التذكرة");
+      kobToast.error(createError instanceof Error ? createError.message : t("support.form.create_error"));
     } finally {
       setCreating(false);
     }
   }
 
+  const columns: Column<Ticket>[] = [
+    { key: "number", header: t("support.list.col_number"), render: (row) => row.ticketNumber },
+    {
+      key: "subject",
+      header: t("support.list.col_subject"),
+      render: (row) => (
+        <div className="kob-min-w-0">
+          <strong>{row.subject}</strong>
+          <p className="kob-truncate-1">{row.description}</p>
+        </div>
+      ),
+    },
+    {
+      key: "status",
+      header: t("support.list.col_status"),
+      render: (row) => <StatusBadge tone={STATUS_TONE[row.status]}>{statusLabels[row.status]}</StatusBadge>,
+    },
+    {
+      key: "priority",
+      header: t("support.list.col_priority"),
+      render: (row) => <Badge tone={PRIORITY_TONE[row.priority]}>{priorityLabels[row.priority]}</Badge>,
+    },
+    {
+      key: "created",
+      header: t("support.list.col_created"),
+      render: (row) => fmtDate(row.createdAt),
+    },
+  ];
+
   return (
-    <div className="sc-page" dir="rtl">
-      <header className="sc-hero">
-        <div>
-          <span>KOB Support Center</span>
-          <h1>مركز الدعم الفني</h1>
-          <p>
-            أنشئ تذكرة دعم، تابع المحادثة المباشرة مع فريق KOB، وتحكّم في صلاحيات الجلسة — كل ذلك داخل
-            المتصفح دون أي برامج خارجية.
-          </p>
-        </div>
-        <button className="sc-primary" onClick={() => setOpen((value) => !value)}>
-          <MessageSquarePlus size={16} /> تذكرة جديدة
-        </button>
-      </header>
+    <PageContainer>
+      <PageHeader
+        eyebrow="KOB Support Center"
+        title={t("support.title")}
+        description={t("support.subtitle")}
+        action={
+          <Button leadingIcon={<MessageSquarePlus size={16} />} onClick={() => setOpen(true)}>
+            {t("support.new_ticket")}
+          </Button>
+        }
+      />
 
-      {error && (
-        <div className="sc-error">
-          <AlertCircle size={16} />
-          {error}
-        </div>
+      {error && <Alert tone="danger" title={t("support.list.load_error_title")}>{error}</Alert>}
+
+      <StatGrid>
+        <StatCard icon={<Headphones />} label={t("support.stats.open")} value={stats.open} />
+        <StatCard icon={<ShieldCheck />} label={t("support.stats.waiting")} value={stats.waiting} tone="warning" />
+        <StatCard icon={<Radio />} label={t("support.stats.live")} value={stats.live} tone="success" />
+        <StatCard icon={<CheckCircle2 />} label={t("support.stats.resolved")} value={stats.resolved} tone="neutral" />
+      </StatGrid>
+
+      <div className="kob-toolbar">
+        <SearchInput value={search} onValueChange={setSearch} placeholder={t("support.list.search_placeholder")} />
+        <Select
+          label={t("support.list.status_filter")}
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          <option value="all">{t("support.list.all")}</option>
+          {Object.entries(statusLabels).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </Select>
+        <Select
+          label={t("support.list.priority_filter")}
+          value={priorityFilter}
+          onChange={(e) => setPriorityFilter(e.target.value)}
+        >
+          <option value="all">{t("support.list.all")}</option>
+          {Object.entries(priorityLabels).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </Select>
+      </div>
+
+      <DataTable
+        columns={columns}
+        rows={pagedTickets}
+        rowKey={(row) => row.id}
+        loading={loading}
+        caption={t("support.list.title")}
+        emptyTitle={t("support.list.empty_title")}
+        emptyDescription={t("support.list.empty_description")}
+        emptyAction={
+          <Button leadingIcon={<MessageSquarePlus size={16} />} onClick={() => setOpen(true)}>
+            {t("support.new_ticket")}
+          </Button>
+        }
+      />
+
+      {!loading && filteredTickets.length > 0 && (
+        <Pagination page={page} pageCount={pageCount} onPageChange={setPage} total={filteredTickets.length} />
       )}
 
-      <section className="sc-stats">
-        <article>
-          <Headphones />
-          <div>
-            <b>{stats.open}</b>
-            <span>تذاكر مفتوحة</span>
-          </div>
-        </article>
-        <article>
-          <ShieldCheck />
-          <div>
-            <b>{stats.waiting}</b>
-            <span>بانتظار ردكم</span>
-          </div>
-        </article>
-        <article>
-          <Radio />
-          <div>
-            <b>{stats.live}</b>
-            <span>جلسات مباشرة</span>
-          </div>
-        </article>
-        <article>
-          <CheckCircle2 />
-          <div>
-            <b>{stats.resolved}</b>
-            <span>تم حلها</span>
-          </div>
-        </article>
-      </section>
-
-      {open && (
-        <form className="sc-form" onSubmit={submit}>
-          <h2>إنشاء تذكرة دعم</h2>
-          <div className="sc-form-grid">
-            <label>
-              نوع المشكلة
-              <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
-                {Object.entries(categoryLabels).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              الأولوية
-              <select value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })}>
-                {Object.entries(priorityLabels).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="wide">
-              الموضوع
-              <input
-                required
-                maxLength={160}
-                value={form.subject}
-                onChange={(e) => setForm({ ...form, subject: e.target.value })}
-              />
-            </label>
-            <label className="wide">
-              وصف المشكلة
-              <textarea
-                required
-                rows={5}
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-              />
-            </label>
-            <label>
-              نوع المساعدة
-              <select
-                value={form.sessionPreference}
-                onChange={(e) => setForm({ ...form, sessionPreference: e.target.value })}
-              >
-                <option value="none">بدون جلسة</option>
-                <option value="chat">محادثة</option>
-                <option value="voice">صوت</option>
-                <option value="scheduled">موعد مجدول</option>
-                <option value="immediate">مساعدة فورية</option>
-              </select>
-            </label>
-            {form.sessionPreference === "scheduled" && (
-              <label>
-                الموعد
-                <input
-                  type="datetime-local"
-                  required
-                  value={form.scheduledAt}
-                  onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })}
-                />
-              </label>
-            )}
-          </div>
-          <div className="sc-permissions">
-            <span className="sc-permissions-title">صلاحيات الجلسة (يمكن تغييرها لاحقًا)</span>
-            <label>
-              <input
-                type="checkbox"
-                checked={form.allowView}
-                onChange={(e) => setForm({ ...form, allowView: e.target.checked })}
-              />
-              مشاركة الشاشة للمشاهدة
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                checked={form.allowRemoteControl}
-                onChange={(e) => setForm({ ...form, allowRemoteControl: e.target.checked })}
-              />
-              تحكّم مشترك داخل KOB
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                checked={form.allowVoice}
-                onChange={(e) => setForm({ ...form, allowVoice: e.target.checked })}
-              />
-              المحادثة الصوتية
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                checked={form.allowRecording}
-                onChange={(e) => setForm({ ...form, allowRecording: e.target.checked })}
-              />
-              تسجيل الجلسة
-            </label>
-          </div>
-          <div className="sc-actions">
-            <button type="button" onClick={() => setOpen(false)}>
-              إلغاء
-            </button>
-            <button className="sc-primary" disabled={creating}>
-              {creating ? "جارٍ الإنشاء..." : "إنشاء التذكرة"}
-            </button>
-          </div>
-        </form>
-      )}
-
-      <section className="sc-list">
-        <div className="sc-section-title">
-          <h2>تذاكر الشركة</h2>
-          <span>{tickets.length} تذكرة</span>
-        </div>
-        {tickets.map((ticket) => (
-          <button
-            key={ticket.id}
-            className="sc-ticket"
-            onClick={() => navigate({ to: "/admin/support/$ticketId", params: { ticketId: ticket.id } })}
+      <FormDialog
+        open={open}
+        onClose={closeDialog}
+        title={t("support.form.title")}
+        description={t("support.form.description")}
+        onSubmit={() => void submit()}
+        submitLabel={t("support.form.submit")}
+        busy={creating}
+        size="lg"
+      >
+        <div className="kob-form-grid">
+          <Select
+            label={t("support.form.category")}
+            value={form.category}
+            onChange={(e) => setForm({ ...form, category: e.target.value })}
           >
-            <div>
-              <b>{ticket.ticketNumber}</b>
-              <h3>{ticket.subject}</h3>
-              <p>{ticket.description}</p>
+            {Object.entries(categoryLabels).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </Select>
+          <Select
+            label={t("support.form.priority")}
+            value={form.priority}
+            onChange={(e) => setForm({ ...form, priority: e.target.value })}
+          >
+            {Object.entries(priorityLabels).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </Select>
+          <Input
+            className="kob-col-span-2"
+            label={t("support.form.subject")}
+            required
+            maxLength={160}
+            value={form.subject}
+            onChange={(e) => setForm({ ...form, subject: e.target.value })}
+          />
+          <Textarea
+            className="kob-col-span-2"
+            label={t("support.form.description_field")}
+            required
+            rows={5}
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+          />
+          <Select
+            label={t("support.form.session_preference")}
+            value={form.sessionPreference}
+            onChange={(e) => setForm({ ...form, sessionPreference: e.target.value })}
+          >
+            <option value="none">{t("support.form.session_none")}</option>
+            <option value="chat">{t("support.form.session_chat")}</option>
+            <option value="voice">{t("support.form.session_voice")}</option>
+            <option value="scheduled">{t("support.form.session_scheduled")}</option>
+            <option value="immediate">{t("support.form.session_immediate")}</option>
+          </Select>
+          {form.sessionPreference === "scheduled" && (
+            <Input
+              type="datetime-local"
+              label={t("support.form.scheduled_at")}
+              required
+              value={form.scheduledAt}
+              onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })}
+            />
+          )}
+        </div>
+
+        <Field label={t("support.form.permissions_title")}>
+          {() => (
+            <div className="kob-toggle-list">
+              <Toggle
+                label={t("support.form.permission_view")}
+                checked={form.allowView}
+                onCheckedChange={(next) => setForm({ ...form, allowView: next })}
+              />
+              <Toggle
+                label={t("support.form.permission_control")}
+                checked={form.allowRemoteControl}
+                onCheckedChange={(next) => setForm({ ...form, allowRemoteControl: next })}
+              />
+              <Toggle
+                label={t("support.form.permission_voice")}
+                checked={form.allowVoice}
+                onCheckedChange={(next) => setForm({ ...form, allowVoice: next })}
+              />
+              <Toggle
+                label={t("support.form.permission_recording")}
+                checked={form.allowRecording}
+                onCheckedChange={(next) => setForm({ ...form, allowRecording: next })}
+              />
             </div>
-            <div className="sc-ticket-meta">
-              <span className={`sc-status status-${ticket.status}`}>{statusLabels[ticket.status]}</span>
-              <span className={`sc-priority priority-${ticket.priority}`}>{priorityLabels[ticket.priority]}</span>
-              <time>{new Date(ticket.createdAt).toLocaleString("ar-SA")}</time>
-            </div>
-          </button>
-        ))}
-        {!tickets.length && <div className="sc-empty">لا توجد تذاكر بعد. أنشئ أول تذكرة دعم.</div>}
-      </section>
-    </div>
+          )}
+        </Field>
+
+        <FileUpload
+          label={t("support.form.attachments")}
+          hint={t("support.form.attachments_hint")}
+          multiple
+          onFiles={(files) => setAttachments((prev) => [...prev, ...files])}
+        >
+          {t("support.form.upload_cta")}
+        </FileUpload>
+        {attachments.length > 0 && (
+          <ul className="kob-file-list">
+            {attachments.map((file, index) => (
+              <li key={`${file.name}-${index}`}>{file.name}</li>
+            ))}
+          </ul>
+        )}
+      </FormDialog>
+    </PageContainer>
   );
 }

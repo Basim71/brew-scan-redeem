@@ -4,7 +4,6 @@ import {
   Circle,
   Compass,
   Crosshair,
-  Loader2,
   MonitorPlay,
   MonitorUp,
   MousePointer2,
@@ -16,6 +15,21 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { useI18n } from "@/lib/i18n";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  EmptyState,
+  IconButton,
+  Input,
+  StatusDot,
+  Text,
+  Toggle,
+} from "@/components/kob";
 
 import { listMessages, sendMessage } from "./api";
 import {
@@ -25,7 +39,6 @@ import {
   listPermissions,
   listTicketFiles,
   logActivity,
-  permissionLabels,
   PERMISSION_KEYS,
   saveRecording,
   setPermission,
@@ -56,15 +69,16 @@ const RTC_CONFIG: RTCConfiguration = {
   iceServers: [{ urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] }],
 };
 
-const QUICK_PATHS: Array<{ label: string; path: string }> = [
-  { label: "لوحة الشركة", path: "/admin" },
-  { label: "الخطط", path: "/admin/plans" },
-  { label: "الكوبونات", path: "/admin/coupons" },
-  { label: "المشروبات", path: "/admin/drinks" },
-  { label: "الإعدادات", path: "/admin/settings" },
+const QUICK_PATHS: Array<{ key: string; path: string }> = [
+  { key: "admin", path: "/admin" },
+  { key: "plans", path: "/admin/plans" },
+  { key: "coupons", path: "/admin/coupons" },
+  { key: "drinks", path: "/admin/drinks" },
+  { key: "settings", path: "/admin/settings" },
 ];
 
 export function LiveSessionRoom({ session, ticketId, side, onSessionChange }: Props) {
+  const { t, lang } = useI18n();
   const navigate = useNavigate();
   const channelRef = useRef<any>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
@@ -73,6 +87,8 @@ export function LiveSessionRoom({ session, ticketId, side, onSessionChange }: Pr
   const recorderRef = useRef<MediaRecorder | null>(null);
   const recordStartRef = useRef<number>(0);
   const chunksRef = useRef<Blob[]>([]);
+
+  const locale = lang === "ar" ? "ar-SA" : "en-US";
 
   const [permissions, setPermissions] = useState<Record<string, boolean>>({});
   const [activity, setActivity] = useState<ActivityRow[]>([]);
@@ -93,6 +109,36 @@ export function LiveSessionRoom({ session, ticketId, side, onSessionChange }: Pr
   const screenAllowed = Boolean(permissions.screen_share);
   const recordingAllowed = Boolean(permissions.recording);
 
+  const permissionLabels: Record<PermissionKey, string> = {
+    co_control: t("support.session.permissions.coControl"),
+    screen_share: t("support.session.permissions.screenShare"),
+    recording: t("support.session.permissions.recording"),
+    voice: t("support.session.permissions.voice"),
+    files: t("support.session.permissions.files"),
+  };
+
+  const actionLabels: Record<string, string> = {
+    session_requested: t("support.session.log.actions.session_requested"),
+    session_approved: t("support.session.log.actions.session_approved"),
+    session_rejected: t("support.session.log.actions.session_rejected"),
+    session_started: t("support.session.log.actions.session_started"),
+    session_ended: t("support.session.log.actions.session_ended"),
+    permission_granted: t("support.session.log.actions.permission_granted"),
+    permission_revoked: t("support.session.log.actions.permission_revoked"),
+    screen_share_started: t("support.session.log.actions.screen_share_started"),
+    screen_share_stopped: t("support.session.log.actions.screen_share_stopped"),
+    recording_started: t("support.session.log.actions.recording_started"),
+    recording_saved: t("support.session.log.actions.recording_saved"),
+    co_control_navigate: t("support.session.log.actions.co_control_navigate"),
+    co_control_highlight: t("support.session.log.actions.co_control_highlight"),
+    co_control_scroll: t("support.session.log.actions.co_control_scroll"),
+    file_shared: t("support.session.log.actions.file_shared"),
+  };
+
+  function describeAction(action: string): string {
+    return actionLabels[action] ?? action;
+  }
+
   const refreshMeta = useCallback(async () => {
     try {
       const [perm, log, msgs, fileRows] = await Promise.all([
@@ -110,9 +156,9 @@ export function LiveSessionRoom({ session, ticketId, side, onSessionChange }: Pr
       setMessages(msgs);
       setFiles(fileRows);
     } catch (metaError) {
-      setError(metaError instanceof Error ? metaError.message : "تعذر تحميل بيانات الجلسة");
+      setError(metaError instanceof Error ? metaError.message : t("support.session.errors.loadMeta"));
     }
-  }, [session.id, ticketId, side]);
+  }, [session.id, ticketId, side, t]);
 
   /* ------------ realtime channel: signaling + presence + cursor + co-control ------------ */
   useEffect(() => {
@@ -210,14 +256,14 @@ export function LiveSessionRoom({ session, ticketId, side, onSessionChange }: Pr
         }
       }
     } catch (signalError) {
-      setError(signalError instanceof Error ? signalError.message : "تعذر إنشاء اتصال الجلسة");
+      setError(signalError instanceof Error ? signalError.message : t("support.session.errors.signal"));
     }
   }
 
   /** Company-only: publish the KOB screen to the agent. */
   async function startScreenShare() {
     if (!screenAllowed) {
-      setError("يجب تفعيل صلاحية مشاركة الشاشة أولاً.");
+      setError(t("support.session.errors.shareNotAllowed"));
       return;
     }
     try {
@@ -234,7 +280,7 @@ export function LiveSessionRoom({ session, ticketId, side, onSessionChange }: Pr
       await logActivity(session.id, "screen_share_started", { path: window.location.pathname });
       broadcast("refresh", {});
     } catch (shareError) {
-      setError(shareError instanceof Error ? shareError.message : "تعذر بدء مشاركة الشاشة");
+      setError(shareError instanceof Error ? shareError.message : t("support.session.errors.startShare"));
     }
   }
 
@@ -255,11 +301,11 @@ export function LiveSessionRoom({ session, ticketId, side, onSessionChange }: Pr
     }
     const stream = (remoteVideoRef.current?.srcObject as MediaStream | null) ?? null;
     if (!stream) {
-      setError("لا يوجد بث لتسجيله.");
+      setError(t("support.session.errors.noStream"));
       return;
     }
     if (!recordingAllowed) {
-      setError("تسجيل الجلسة غير مسموح من الشركة.");
+      setError(t("support.session.errors.recordingNotAllowed"));
       return;
     }
     const recorder = new MediaRecorder(stream, { mimeType: "video/webm" });
@@ -282,7 +328,7 @@ export function LiveSessionRoom({ session, ticketId, side, onSessionChange }: Pr
         broadcast("refresh", {});
         void refreshMeta();
       } catch (recordError) {
-        setError(recordError instanceof Error ? recordError.message : "تعذر حفظ التسجيل");
+        setError(recordError instanceof Error ? recordError.message : t("support.session.errors.saveRecording"));
       }
     };
     recorder.start(1000);
@@ -314,7 +360,7 @@ export function LiveSessionRoom({ session, ticketId, side, onSessionChange }: Pr
 
   function sendCoControl(action: CoControlAction) {
     if (!coControlAllowed) {
-      setError("التحكّم المشترك غير مسموح من الشركة.");
+      setError(t("support.session.errors.coControlNotAllowed"));
       return;
     }
     broadcast("co_control", action);
@@ -330,7 +376,7 @@ export function LiveSessionRoom({ session, ticketId, side, onSessionChange }: Pr
       await refreshMeta();
       broadcast("refresh", {});
     } catch (permError) {
-      setError(permError instanceof Error ? permError.message : "تعذر تحديث الصلاحية");
+      setError(permError instanceof Error ? permError.message : t("support.session.errors.updatePermission"));
     } finally {
       setBusy(false);
     }
@@ -358,7 +404,7 @@ export function LiveSessionRoom({ session, ticketId, side, onSessionChange }: Pr
       await refreshMeta();
       broadcast("refresh", {});
     } catch (sendError) {
-      setError(sendError instanceof Error ? sendError.message : "تعذر إرسال الرسالة");
+      setError(sendError instanceof Error ? sendError.message : t("support.session.errors.sendMessage"));
     }
   }
 
@@ -371,7 +417,7 @@ export function LiveSessionRoom({ session, ticketId, side, onSessionChange }: Pr
       await refreshMeta();
       broadcast("refresh", {});
     } catch (uploadError) {
-      setError(uploadError instanceof Error ? uploadError.message : "تعذر رفع الملف");
+      setError(uploadError instanceof Error ? uploadError.message : t("support.session.errors.uploadFile"));
     } finally {
       setBusy(false);
     }
@@ -390,7 +436,7 @@ export function LiveSessionRoom({ session, ticketId, side, onSessionChange }: Pr
       onSessionChange?.(next);
       broadcast("refresh", {});
     } catch (endError) {
-      setError(endError instanceof Error ? endError.message : "تعذر إنهاء الجلسة");
+      setError(endError instanceof Error ? endError.message : t("support.session.errors.endSession"));
     } finally {
       setBusy(false);
     }
@@ -409,212 +455,272 @@ export function LiveSessionRoom({ session, ticketId, side, onSessionChange }: Pr
   const bothPresent = peers.includes("company") && peers.includes("agent");
   const chat = useMemo(() => messages.slice(-40), [messages]);
 
+  const modeLabel =
+    session.mode === "control"
+      ? t("support.session.mode.control")
+      : session.mode === "assist"
+        ? t("support.session.mode.assist")
+        : t("support.session.mode.view");
+
   return (
-    <section className="sc-room" dir="rtl">
-      <header className="sc-room-head">
-        <div className="sc-room-title">
-          <span className="sc-live-dot" />
-          <h3>جلسة دعم مباشرة</h3>
-          <span className="sc-room-mode">{session.mode === "control" ? "تحكّم مشترك" : session.mode === "assist" ? "مساعدة" : "مشاهدة"}</span>
-        </div>
-        <div className="sc-room-presence">
-          <span className={peers.includes("company") ? "on" : "off"}>الشركة</span>
-          <span className={peers.includes("agent") ? "on" : "off"}>فريق KOB</span>
-          {!bothPresent && <em>بانتظار الطرف الآخر…</em>}
-        </div>
-        <button className="sc-danger" onClick={() => void finish()} disabled={busy}>
-          <PhoneOff size={15} /> إنهاء الجلسة
-        </button>
-      </header>
+    <section className="kob-flex kob-flex-col kob-gap-4">
+      <Card>
+        <CardBody className="kob-flex kob-flex-wrap kob-items-center kob-justify-between kob-gap-3">
+          <div className="kob-flex kob-items-center kob-gap-2">
+            <StatusDot tone="success" label={t("support.session.title")} />
+            <Text variant="h3">{t("support.session.title")}</Text>
+            <Badge tone="gold">{modeLabel}</Badge>
+          </div>
+          <div className="kob-flex kob-items-center kob-gap-3">
+            <Badge tone={peers.includes("company") ? "success" : "neutral"}>
+              {t("support.session.presence.company")}
+            </Badge>
+            <Badge tone={peers.includes("agent") ? "success" : "neutral"}>
+              {t("support.session.presence.agent")}
+            </Badge>
+            {!bothPresent && (
+              <Text variant="caption" tone="muted">
+                {t("support.session.presence.waiting")}
+              </Text>
+            )}
+          </div>
+          <Button variant="danger" size="sm" loading={busy} leadingIcon={<PhoneOff size={15} />} onClick={() => void finish()}>
+            {t("support.session.end")}
+          </Button>
+        </CardBody>
+      </Card>
 
-      {error && <div className="sc-error">{error}</div>}
+      {error && <Alert tone="danger">{error}</Alert>}
 
-      <div className="sc-room-grid">
-        <div className="sc-room-stage">
-          {side === "agent" ? (
-            <div
-              className="sc-stage-video"
-              onPointerMove={(event) => {
-                const rect = event.currentTarget.getBoundingClientRect();
-                broadcast("cursor", {
-                  x: (event.clientX - rect.left) / rect.width,
-                  y: (event.clientY - rect.top) / rect.height,
-                });
-              }}
-            >
-              <video ref={remoteVideoRef} playsInline autoPlay muted />
-              {!receiving && (
-                <div className="sc-stage-empty">
-                  <MonitorPlay size={28} />
-                  <p>بانتظار مشاركة الشاشة من الشركة.</p>
+      <div className="kob-grid kob-grid-cols-1 xl:kob-grid-cols-[2fr_1fr] kob-gap-4">
+        <div className="kob-flex kob-flex-col kob-gap-3">
+          <Card>
+            <CardBody>
+              {side === "agent" ? (
+                <div
+                  className="kob-relative kob-aspect-video kob-overflow-hidden kob-rounded-lg kob-bg-black/80"
+                  onPointerMove={(event) => {
+                    const rect = event.currentTarget.getBoundingClientRect();
+                    broadcast("cursor", {
+                      x: (event.clientX - rect.left) / rect.width,
+                      y: (event.clientY - rect.top) / rect.height,
+                    });
+                  }}
+                >
+                  <video ref={remoteVideoRef} playsInline autoPlay muted className="kob-h-full kob-w-full kob-object-contain" />
+                  {!receiving && (
+                    <div className="kob-absolute kob-inset-0 kob-flex kob-flex-col kob-items-center kob-justify-center kob-gap-2 kob-text-white">
+                      <MonitorPlay size={28} />
+                      <Text variant="bodySm" tone="inverse">
+                        {t("support.session.stage.waitingShare")}
+                      </Text>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="kob-flex kob-flex-col kob-items-center kob-gap-3 kob-py-8 kob-text-center">
+                  <MonitorUp size={26} />
+                  <Text variant="h4">
+                    {sharing ? t("support.session.stage.sharingActive") : t("support.session.stage.sharingInactive")}
+                  </Text>
+                  <Text variant="bodySm" tone="muted" className="kob-max-w-md">
+                    {t("support.session.stage.shareHint")}
+                  </Text>
+                  {sharing ? (
+                    <Button variant="danger" leadingIcon={<ShieldOff size={15} />} onClick={() => void stopScreenShare()}>
+                      {t("support.session.stage.stopShare")}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="primary"
+                      leadingIcon={<MonitorUp size={15} />}
+                      disabled={!screenAllowed}
+                      onClick={() => void startScreenShare()}
+                    >
+                      {t("support.session.stage.startShare")}
+                    </Button>
+                  )}
                 </div>
               )}
-            </div>
-          ) : (
-            <div className="sc-stage-host">
-              <MonitorUp size={26} />
-              <h4>{sharing ? "تتم مشاركة شاشتك الآن" : "شاشتك غير مشاركة"}</h4>
-              <p>
-                لن يرى فريق KOB أي شيء قبل موافقتك، ويمكنك الإيقاف في أي لحظة. التحكّم المشترك يعمل داخل تطبيق KOB
-                فقط ولا يمس جهازك.
-              </p>
-              {sharing ? (
-                <button className="sc-danger" onClick={() => void stopScreenShare()}>
-                  <ShieldOff size={15} /> إيقاف المشاركة
-                </button>
-              ) : (
-                <button className="sc-primary" onClick={() => void startScreenShare()} disabled={!screenAllowed}>
-                  <MonitorUp size={15} /> بدء مشاركة الشاشة
-                </button>
-              )}
-            </div>
-          )}
+            </CardBody>
+          </Card>
 
           {side === "agent" && (
-            <div className="sc-stage-tools">
-              <button onClick={toggleRecording} className={recording ? "active" : ""} disabled={!recordingAllowed}>
-                {recording ? <Circle size={14} /> : <Video size={14} />} {recording ? "إيقاف التسجيل" : "تسجيل"}
-              </button>
-              <div className="sc-cocontrol">
-                <span>
-                  <Crosshair size={14} /> تحكّم مشترك داخل KOB {coControlAllowed ? "" : "(غير مسموح)"}
-                </span>
-                <div className="sc-cocontrol-quick">
-                  {QUICK_PATHS.map((item) => (
-                    <button key={item.path} onClick={() => sendCoControl({ type: "navigate", path: item.path })}>
-                      <Compass size={13} /> {item.label}
-                    </button>
-                  ))}
+            <Card>
+              <CardBody className="kob-flex kob-flex-col kob-gap-3">
+                <Button
+                  variant={recording ? "danger" : "secondary"}
+                  size="sm"
+                  disabled={!recordingAllowed}
+                  leadingIcon={recording ? <Circle size={14} /> : <Video size={14} />}
+                  onClick={toggleRecording}
+                >
+                  {recording ? t("support.session.recording.stop") : t("support.session.recording.start")}
+                </Button>
+
+                <div className="kob-flex kob-flex-col kob-gap-2">
+                  <div className="kob-flex kob-items-center kob-gap-2">
+                    <Crosshair size={14} />
+                    <Text variant="label">
+                      {t("support.session.coControl.label")}
+                      {!coControlAllowed ? ` ${t("support.session.coControl.notAllowed")}` : ""}
+                    </Text>
+                  </div>
+                  <div className="kob-flex kob-flex-wrap kob-gap-2">
+                    {QUICK_PATHS.map((item) => (
+                      <Button
+                        key={item.path}
+                        variant="ghost"
+                        size="sm"
+                        leadingIcon={<Compass size={13} />}
+                        onClick={() => sendCoControl({ type: "navigate", path: item.path })}
+                      >
+                        {t(`support.session.coControl.quickPaths.${item.key}`)}
+                      </Button>
+                    ))}
+                  </div>
+                  <div className="kob-flex kob-flex-wrap kob-items-center kob-gap-2">
+                    <Input
+                      value={pathInput}
+                      placeholder={t("support.session.coControl.pathPlaceholder")}
+                      onChange={(event) => setPathInput(event.target.value)}
+                    />
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        if (pathInput.trim().startsWith("/")) sendCoControl({ type: "navigate", path: pathInput.trim() });
+                      }}
+                    >
+                      {t("support.session.coControl.go")}
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => sendCoControl({ type: "scroll", direction: "bottom" })}>
+                      {t("support.session.coControl.scrollBottom")}
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => sendCoControl({ type: "scroll", direction: "top" })}>
+                      {t("support.session.coControl.scrollTop")}
+                    </Button>
+                  </div>
                 </div>
-                <div className="sc-cocontrol-row">
-                  <input
-                    value={pathInput}
-                    placeholder="/admin/plans"
-                    onChange={(event) => setPathInput(event.target.value)}
-                  />
-                  <button
-                    onClick={() => {
-                      if (pathInput.trim().startsWith("/")) sendCoControl({ type: "navigate", path: pathInput.trim() });
-                    }}
-                  >
-                    انتقال
-                  </button>
-                  <button onClick={() => sendCoControl({ type: "scroll", direction: "bottom" })}>أسفل الصفحة</button>
-                  <button onClick={() => sendCoControl({ type: "scroll", direction: "top" })}>أعلى الصفحة</button>
-                </div>
-              </div>
-            </div>
+              </CardBody>
+            </Card>
           )}
         </div>
 
-        <aside className="sc-room-side">
+        <div className="kob-flex kob-flex-col kob-gap-3">
           {side === "company" && (
-            <section className="sc-card">
-              <h3>صلاحيات الجلسة</h3>
-              <p className="sc-hint">أنت من يمنح الصلاحيات، ويمكن سحبها فورًا.</p>
-              {PERMISSION_KEYS.map((key) => (
-                <label key={key} className="sc-switch-row">
-                  <span>{permissionLabels[key]}</span>
-                  <input
-                    type="checkbox"
+            <Card>
+              <CardHeader title={t("support.session.permissions.title")} description={t("support.session.permissions.hint")} />
+              <CardBody className="kob-flex kob-flex-col kob-gap-2">
+                {PERMISSION_KEYS.map((key) => (
+                  <Toggle
+                    key={key}
+                    label={permissionLabels[key]}
                     checked={Boolean(permissions[key])}
                     disabled={busy}
-                    onChange={(event) => void togglePermission(key, event.target.checked)}
+                    onCheckedChange={(next) => void togglePermission(key, next)}
                   />
-                </label>
-              ))}
-              <button className="sc-ghost" onClick={() => void revokeAll()} disabled={busy}>
-                <ShieldOff size={14} /> سحب كل الصلاحيات
-              </button>
-            </section>
+                ))}
+                <Button variant="ghost" size="sm" disabled={busy} leadingIcon={<ShieldOff size={14} />} onClick={() => void revokeAll()}>
+                  {t("support.session.permissions.revokeAll")}
+                </Button>
+              </CardBody>
+            </Card>
           )}
 
-          <section className="sc-card sc-room-chat">
-            <h3>محادثة الجلسة</h3>
-            <div className="sc-room-chat-body">
-              {chat.map((message) => (
-                <div key={message.id} className={`sc-room-bubble ${message.senderKind === side ? "own" : ""}`}>
-                  <b>{message.senderKind === "company" ? "الشركة" : message.senderKind === "agent" ? "KOB" : "النظام"}</b>
-                  <p>{message.body}</p>
-                </div>
-              ))}
-              {!chat.length && <div className="sc-empty">لا توجد رسائل.</div>}
-            </div>
-            <div className="sc-room-composer">
-              <input
-                value={body}
-                placeholder="اكتب رسالة…"
-                onChange={(event) => setBody(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") void submitMessage();
-                }}
-              />
-              <label className="sc-attach">
-                <Paperclip size={15} />
-                <input type="file" hidden onChange={(event) => void upload(event.target.files?.[0])} />
-              </label>
-              <button className="sc-primary" onClick={() => void submitMessage()}>
-                {busy ? <Loader2 className="sc-spin" size={15} /> : <Send size={15} />}
-              </button>
-            </div>
-            {files.length > 0 && (
-              <ul className="sc-file-list">
-                {files.slice(0, 5).map((file) => (
-                  <li key={file.id}>
-                    <button onClick={() => void openFile(file)}>{file.fileName}</button>
+          <Card>
+            <CardHeader title={t("support.session.chat.title")} />
+            <CardBody className="kob-flex kob-flex-col kob-gap-2">
+              <div className="kob-flex kob-flex-col kob-gap-2 kob-max-h-[280px] kob-overflow-y-auto">
+                {chat.map((message) => {
+                  const own = message.senderKind === side;
+                  return (
+                    <div key={message.id} className="kob-flex kob-flex-col" style={{ alignItems: own ? "flex-end" : "flex-start" }}>
+                      <Card tone={own ? "espresso" : "surface"} className="kob-max-w-[85%]">
+                        <CardBody className="kob-flex kob-flex-col kob-gap-1">
+                          <Text variant="label" tone={own ? "inverse" : "primary"}>
+                            {message.senderKind === "company"
+                              ? t("support.session.presence.company")
+                              : message.senderKind === "agent"
+                                ? t("support.session.presence.agent")
+                                : t("support.conversation.senders.system")}
+                          </Text>
+                          <Text variant="bodySm" tone={own ? "inverse" : "primary"}>
+                            {message.body}
+                          </Text>
+                        </CardBody>
+                      </Card>
+                    </div>
+                  );
+                })}
+                {!chat.length && <EmptyState title={t("support.session.chat.empty")} />}
+              </div>
+              <div className="kob-flex kob-items-center kob-gap-2">
+                <Input
+                  value={body}
+                  placeholder={t("support.session.chat.placeholder")}
+                  onChange={(event) => setBody(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") void submitMessage();
+                  }}
+                />
+                <label className="kob-btn kob-icon-btn" data-variant="ghost" data-size="md" title={t("support.session.chat.attach")}>
+                  <Paperclip size={15} />
+                  <input type="file" hidden onChange={(event) => void upload(event.target.files?.[0])} />
+                </label>
+                <IconButton label={t("support.conversation.send")} variant="primary" onClick={() => void submitMessage()}>
+                  <Send size={15} />
+                </IconButton>
+              </div>
+              {files.length > 0 && (
+                <ul className="kob-flex kob-flex-col kob-gap-1">
+                  {files.slice(0, 5).map((file) => (
+                    <li key={file.id}>
+                      <Button variant="ghost" size="sm" onClick={() => void openFile(file)}>
+                        {file.fileName}
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardBody>
+          </Card>
+
+          <Card>
+            <CardHeader title={t("support.session.log.title")} />
+            <CardBody>
+              <ol className="kob-flex kob-flex-col kob-gap-2">
+                {activity.slice(0, 14).map((row) => (
+                  <li key={row.id} className="kob-flex kob-items-center kob-justify-between kob-gap-2">
+                    <Text variant="bodySm">{describeAction(row.action)}</Text>
+                    <Text variant="caption" tone="muted">
+                      {new Date(row.createdAt).toLocaleTimeString(locale)}
+                    </Text>
                   </li>
                 ))}
-              </ul>
-            )}
-          </section>
-
-          <section className="sc-card">
-            <h3>سجل الجلسة</h3>
-            <ol className="sc-audit">
-              {activity.slice(0, 14).map((row) => (
-                <li key={row.id}>
-                  <b>{describeAction(row.action)}</b>
-                  <time>{new Date(row.createdAt).toLocaleTimeString("ar-SA")}</time>
-                </li>
-              ))}
-              {!activity.length && <li className="sc-empty">لا توجد أحداث.</li>}
-            </ol>
-          </section>
-        </aside>
+                {!activity.length && (
+                  <li>
+                    <Text variant="bodySm" tone="muted">
+                      {t("support.session.log.empty")}
+                    </Text>
+                  </li>
+                )}
+              </ol>
+            </CardBody>
+          </Card>
+        </div>
       </div>
 
       {side === "company" && cursor && sharing && (
         <div
-          className="sc-remote-cursor"
+          className="kob-fixed kob-pointer-events-none kob-z-50 kob-flex kob-items-center kob-gap-1"
           style={{ left: `${cursor.x * 100}vw`, top: `${cursor.y * 100}vh` }}
           aria-hidden
         >
           <MousePointer2 size={18} />
-          <span>KOB</span>
+          <Badge tone="gold">KOB</Badge>
         </div>
       )}
     </section>
   );
-}
-
-const ACTION_LABELS: Record<string, string> = {
-  session_requested: "طلب جلسة",
-  session_approved: "موافقة الشركة",
-  session_rejected: "رفض الشركة",
-  session_started: "بدء الجلسة",
-  session_ended: "إنهاء الجلسة",
-  permission_granted: "منح صلاحية",
-  permission_revoked: "سحب صلاحية",
-  screen_share_started: "بدء مشاركة الشاشة",
-  screen_share_stopped: "إيقاف مشاركة الشاشة",
-  recording_started: "بدء التسجيل",
-  recording_saved: "حفظ التسجيل",
-  co_control_navigate: "تنقّل بالتحكّم المشترك",
-  co_control_highlight: "تحديد عنصر",
-  co_control_scroll: "تمرير الصفحة",
-  file_shared: "مشاركة ملف",
-};
-
-function describeAction(action: string): string {
-  return ACTION_LABELS[action] ?? action;
 }

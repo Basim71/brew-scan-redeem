@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight, MonitorPlay, Star } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { useI18n } from "@/lib/i18n";
 import { TicketConversation } from "@/features/support/TicketConversation";
 import { SessionPanel } from "@/features/support/SessionPanel";
 import { getRating, getTicket, setTicketStatus, submitRating, updateTicket } from "@/features/support/api";
@@ -11,7 +12,24 @@ import {
   priorityLabels,
   statusLabels,
   type Ticket,
+  type TicketPriority,
+  type TicketStatus,
 } from "@/features/support/types";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  IconButton,
+  kobToast,
+  LoadingState,
+  PageContainer,
+  PageHeader,
+  StatusBadge,
+  Textarea,
+} from "@/components/kob";
 
 export const Route = createFileRoute("/admin/support/$ticketId")({
   head: () => ({
@@ -27,16 +45,38 @@ export const Route = createFileRoute("/admin/support/$ticketId")({
   component: CompanyTicketDetail,
 });
 
-const PERMISSIONS: Array<{ key: keyof Ticket; column: string; label: string }> = [
-  { key: "allowView", column: "allow_view", label: "مشاركة الشاشة للمشاهدة" },
-  { key: "allowRemoteControl", column: "allow_remote_control", label: "تحكّم مشترك داخل KOB" },
-  { key: "allowVoice", column: "allow_voice", label: "المحادثة الصوتية" },
-  { key: "allowRecording", column: "allow_recording", label: "تسجيل الجلسة" },
+const PERMISSIONS: Array<{ key: keyof Ticket; column: string; labelKey: string }> = [
+  { key: "allowView", column: "allow_view", labelKey: "support.form.permission_view" },
+  { key: "allowRemoteControl", column: "allow_remote_control", labelKey: "support.form.permission_control" },
+  { key: "allowVoice", column: "allow_voice", labelKey: "support.form.permission_voice" },
+  { key: "allowRecording", column: "allow_recording", labelKey: "support.form.permission_recording" },
 ];
+
+const STATUS_TONE: Record<TicketStatus, "success" | "warning" | "error" | "info" | "neutral"> = {
+  new: "info",
+  waiting: "warning",
+  accepted: "info",
+  assigned: "info",
+  waiting_company: "warning",
+  scheduled: "info",
+  live: "success",
+  resolved: "success",
+  closed: "neutral",
+  cancelled: "neutral",
+  rejected: "error",
+};
+
+const PRIORITY_TONE: Record<TicketPriority, "success" | "warning" | "error" | "info" | "neutral"> = {
+  low: "neutral",
+  medium: "info",
+  high: "warning",
+  critical: "error",
+};
 
 function CompanyTicketDetail() {
   const { ticketId } = useParams({ from: "/admin/support/$ticketId" });
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [rating, setRating] = useState<any>(null);
   const [stars, setStars] = useState(5);
@@ -50,7 +90,7 @@ function CompanyTicketDetail() {
       setRating(nextRating);
       setError(null);
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "تعذر تحميل التذكرة");
+      setError(loadError instanceof Error ? loadError.message : t("support.detail.load_error_title"));
     }
   }
 
@@ -71,16 +111,20 @@ function CompanyTicketDetail() {
   async function togglePermission(column: string, value: boolean) {
     try {
       setTicket(await updateTicket(ticketId, { [column]: value }));
+      kobToast.success(t("support.detail.permission_update_success"));
     } catch (toggleError) {
-      setError(toggleError instanceof Error ? toggleError.message : "تعذر تحديث الصلاحيات");
+      kobToast.error(
+        toggleError instanceof Error ? toggleError.message : t("support.detail.permission_update_error"),
+      );
     }
   }
 
   async function close() {
     try {
       setTicket(await setTicketStatus(ticketId, "closed"));
+      kobToast.success(t("support.detail.close_success"));
     } catch (closeError) {
-      setError(closeError instanceof Error ? closeError.message : "تعذر إغلاق التذكرة");
+      kobToast.error(closeError instanceof Error ? closeError.message : t("support.detail.close_error"));
     }
   }
 
@@ -89,117 +133,138 @@ function CompanyTicketDetail() {
       await submitRating({ ticketId, rating: stars, resolved: true, comment });
       setComment("");
       await load();
+      kobToast.success(t("support.detail.rating_success"));
     } catch (rateError) {
-      setError(rateError instanceof Error ? rateError.message : "تعذر إرسال التقييم");
+      kobToast.error(rateError instanceof Error ? rateError.message : t("support.detail.rating_error"));
     }
   }
 
   if (!ticket) {
     return (
-      <div className="sc-page" dir="rtl">
-        {error ? <div className="sc-error">{error}</div> : <div className="sc-empty">جارٍ التحميل...</div>}
-      </div>
+      <PageContainer>
+        {error ? <Alert tone="danger" title={t("support.detail.load_error_title")}>{error}</Alert> : <LoadingState label={t("support.detail.loading")} />}
+      </PageContainer>
     );
   }
 
   return (
-    <div className="sc-page" dir="rtl">
-      <header className="sc-detail-head">
-        <button className="sc-back" onClick={() => navigate({ to: "/admin/support" })}>
-          <ArrowRight size={16} /> رجوع للتذاكر
-        </button>
-        <div>
-          <span>{ticket.ticketNumber}</span>
-          <h1>{ticket.subject}</h1>
-          <p>{ticket.description}</p>
-        </div>
-        <div className="sc-detail-badges">
-          <span className={`sc-status status-${ticket.status}`}>{statusLabels[ticket.status]}</span>
-          <span className={`sc-priority priority-${ticket.priority}`}>{priorityLabels[ticket.priority]}</span>
-          <span className="sc-chip">{categoryLabels[ticket.category]}</span>
-        </div>
-      </header>
+    <PageContainer>
+      <Button variant="ghost" leadingIcon={<ArrowRight size={16} />} onClick={() => navigate({ to: "/admin/support" })}>
+        {t("support.back_to_tickets")}
+      </Button>
 
-      {error && <div className="sc-error">{error}</div>}
+      <PageHeader
+        eyebrow={ticket.ticketNumber}
+        title={ticket.subject}
+        description={ticket.description}
+        action={
+          <div className="kob-inline-badges">
+            <StatusBadge tone={STATUS_TONE[ticket.status]}>{statusLabels[ticket.status]}</StatusBadge>
+            <Badge tone={PRIORITY_TONE[ticket.priority]}>{priorityLabels[ticket.priority]}</Badge>
+            <Badge tone="neutral">{categoryLabels[ticket.category]}</Badge>
+          </div>
+        }
+      />
+
+      {error && <Alert tone="danger" title={t("support.detail.load_error_title")}>{error}</Alert>}
 
       <SessionPanel ticketId={ticket.id} organizationId={ticket.organizationId} side="company" />
 
-      <div className="sc-detail-grid">
+      <div className="kob-detail-grid">
         <TicketConversation ticketId={ticket.id} side="company" />
 
-        <aside className="sc-side">
-          <section className="sc-card">
-            <h3>
-              <MonitorPlay size={16} /> صلاحيات الجلسة
-            </h3>
-            <p className="sc-hint">
-              لا يستطيع فريق KOB مشاهدة شاشتك أو التحكّم داخل التطبيق إلا بعد تفعيلك للصلاحية المناسبة.
-            </p>
-            {PERMISSIONS.map((permission) => (
-              <label key={permission.column} className="sc-switch-row">
-                <span>{permission.label}</span>
-                <input
-                  type="checkbox"
-                  checked={Boolean(ticket[permission.key])}
-                  onChange={(event) => void togglePermission(permission.column, event.target.checked)}
-                />
-              </label>
-            ))}
-          </section>
+        <aside className="kob-side-stack">
+          <Card>
+            <CardHeader
+              title={
+                <span className="kob-inline-icon">
+                  <MonitorPlay size={16} /> {t("support.detail.permissions_title")}
+                </span>
+              }
+            />
+            <CardBody>
+              <p className="kob-hint">{t("support.detail.permissions_hint")}</p>
+              <div className="kob-toggle-list">
+                {PERMISSIONS.map((permission) => (
+                  <label key={permission.column} className="kob-switch-row">
+                    <span>{t(permission.labelKey)}</span>
+                    <input
+                      type="checkbox"
+                      className="kob-toggle-input"
+                      checked={Boolean(ticket[permission.key])}
+                      onChange={(event) => void togglePermission(permission.column, event.target.checked)}
+                    />
+                  </label>
+                ))}
+              </div>
+            </CardBody>
+          </Card>
 
-          <section className="sc-card">
-            <h3>معلومات تم جمعها تلقائيًا</h3>
-            <ul className="sc-context">
-              {Object.entries(ticket.context ?? {}).map(([key, value]) => (
-                <li key={key}>
-                  <b>{key}</b>
-                  <span>{String(value)}</span>
-                </li>
-              ))}
-              {!Object.keys(ticket.context ?? {}).length && <li className="sc-empty">لا توجد بيانات.</li>}
-            </ul>
-          </section>
+          <Card>
+            <CardHeader title={t("support.detail.context_title")} />
+            <CardBody>
+              <ul className="kob-context-list">
+                {Object.entries(ticket.context ?? {}).map(([key, value]) => (
+                  <li key={key}>
+                    <b>{key}</b>
+                    <span>{String(value)}</span>
+                  </li>
+                ))}
+                {!Object.keys(ticket.context ?? {}).length && (
+                  <li className="kob-hint">{t("support.detail.context_empty")}</li>
+                )}
+              </ul>
+            </CardBody>
+          </Card>
 
-          <section className="sc-card">
-            <h3>
-              <Star size={16} /> التقييم
-            </h3>
-            {rating ? (
-              <p className="sc-hint">تم إرسال تقييمكم: {rating.rating} / 5</p>
-            ) : (
-              <>
-                <div className="sc-stars">
-                  {[1, 2, 3, 4, 5].map((value) => (
-                    <button
-                      key={value}
-                      type="button"
-                      className={value <= stars ? "active" : ""}
-                      onClick={() => setStars(value)}
-                    >
-                      <Star size={18} />
-                    </button>
-                  ))}
-                </div>
-                <textarea
-                  rows={3}
-                  value={comment}
-                  placeholder="ملاحظاتكم (اختياري)"
-                  onChange={(event) => setComment(event.target.value)}
-                />
-                <button className="sc-primary" onClick={() => void rate()}>
-                  إرسال التقييم
-                </button>
-              </>
-            )}
-          </section>
+          <Card>
+            <CardHeader
+              title={
+                <span className="kob-inline-icon">
+                  <Star size={16} /> {t("support.detail.rating_title")}
+                </span>
+              }
+            />
+            <CardBody>
+              {rating ? (
+                <p className="kob-hint">{t("support.detail.rating_submitted", { rating: rating.rating })}</p>
+              ) : (
+                <>
+                  <div className="kob-star-row">
+                    {[1, 2, 3, 4, 5].map((value) => (
+                      <IconButton
+                        key={value}
+                        label={t("support.detail.star_label", { value })}
+                        variant="ghost"
+                        size="sm"
+                        data-active={value <= stars || undefined}
+                        onClick={() => setStars(value)}
+                      >
+                        <Star size={18} />
+                      </IconButton>
+                    ))}
+                  </div>
+                  <Textarea
+                    rows={3}
+                    value={comment}
+                    placeholder={t("support.detail.rating_comment_placeholder")}
+                    onChange={(event) => setComment(event.target.value)}
+                  />
+                  <Button block onClick={() => void rate()}>
+                    {t("support.detail.rating_submit")}
+                  </Button>
+                </>
+              )}
+            </CardBody>
+          </Card>
 
           {!["closed", "cancelled"].includes(ticket.status) && (
-            <button className="sc-ghost" onClick={() => void close()}>
-              إغلاق التذكرة
-            </button>
+            <Button variant="secondary" block onClick={() => void close()}>
+              {t("support.detail.close_ticket")}
+            </Button>
           )}
         </aside>
       </div>
-    </div>
+    </PageContainer>
   );
 }

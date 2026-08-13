@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { Check, MonitorPlay, Play, ShieldCheck, X } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { useI18n } from "@/lib/i18n";
+import { Alert, Button, Card, CardBody, CardHeader, Select, Text } from "@/components/kob";
 
 import { LiveSessionRoom } from "./LiveSessionRoom";
 import {
@@ -21,27 +23,28 @@ type Props = {
   side: "company" | "agent";
 };
 
-const MODE_LABELS: Record<SessionMode, string> = {
-  view: "مشاهدة فقط",
-  assist: "مساعدة موجّهة",
-  control: "تحكّم مشترك داخل KOB",
-};
-
 /** Session lifecycle: request → company approval → live room → end. */
 export function SessionPanel({ ticketId, organizationId, side }: Props) {
+  const { t } = useI18n();
   const [session, setSession] = useState<TicketSession | null>(null);
   const [mode, setMode] = useState<SessionMode>("assist");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const modeLabels: Record<SessionMode, string> = {
+    view: t("support.session.mode.view"),
+    assist: t("support.session.mode.assist"),
+    control: t("support.session.mode.control"),
+  };
 
   const load = useCallback(async () => {
     try {
       setSession(await getLiveSession(ticketId));
       setError(null);
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "تعذر تحميل الجلسة");
+      setError(loadError instanceof Error ? loadError.message : t("support.session.errors.loadSession"));
     }
-  }, [ticketId]);
+  }, [ticketId, t]);
 
   useEffect(() => {
     void load();
@@ -65,7 +68,7 @@ export function SessionPanel({ ticketId, organizationId, side }: Props) {
     try {
       setSession(await action());
     } catch (actionError) {
-      setError(actionError instanceof Error ? actionError.message : "تعذر تنفيذ العملية");
+      setError(actionError instanceof Error ? actionError.message : t("support.session.errors.action"));
     } finally {
       setBusy(false);
     }
@@ -83,70 +86,103 @@ export function SessionPanel({ ticketId, organizationId, side }: Props) {
   }
 
   return (
-    <section className="sc-card sc-session-panel" dir="rtl">
-      <h3>
-        <MonitorPlay size={16} /> الجلسة المباشرة
-      </h3>
-      {error && <div className="sc-error">{error}</div>}
+    <Card>
+      <CardHeader title={t("support.session.panel.title")} icon={<MonitorPlay size={18} />} />
+      <CardBody className="kob-flex kob-flex-col kob-gap-4">
+        {error && <Alert tone="danger">{error}</Alert>}
 
-      {!session && side === "agent" && (
-        <>
-          <p className="sc-hint">اطلب من الشركة جلسة مباشرة. لا تبدأ الجلسة قبل موافقتها الصريحة.</p>
-          <label className="sc-field">
-            نوع الجلسة
-            <select value={mode} onChange={(event) => setMode(event.target.value as SessionMode)}>
-              {Object.entries(MODE_LABELS).map(([value, label]) => (
+        {!session && side === "agent" && (
+          <>
+            <Text variant="bodySm" tone="muted">
+              {t("support.session.panel.agentHint")}
+            </Text>
+            <Select
+              label={t("support.session.panel.modeLabel")}
+              value={mode}
+              onChange={(event) => setMode(event.target.value as SessionMode)}
+            >
+              {Object.entries(modeLabels).map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}
                 </option>
               ))}
-            </select>
-          </label>
-          <button
-            className="sc-primary"
-            disabled={busy}
-            onClick={() => void run(() => requestSession({ ticketId, organizationId, mode }))}
-          >
-            <ShieldCheck size={15} /> طلب جلسة من الشركة
-          </button>
-        </>
-      )}
+            </Select>
+            <Button
+              variant="primary"
+              loading={busy}
+              leadingIcon={<ShieldCheck size={16} />}
+              onClick={() => void run(() => requestSession({ ticketId, organizationId, mode }))}
+            >
+              {t("support.session.panel.requestButton")}
+            </Button>
+          </>
+        )}
 
-      {!session && side === "company" && <p className="sc-hint">لا توجد جلسة مباشرة حالية.</p>}
+        {!session && side === "company" && (
+          <Text variant="bodySm" tone="muted">
+            {t("support.session.panel.noSessionCompany")}
+          </Text>
+        )}
 
-      {session?.status === "requested" && side === "company" && (
-        <>
-          <p className="sc-hint">
-            طلب فريق KOB جلسة مباشرة ({MODE_LABELS[session.mode]}). الموافقة صالحة حتى{" "}
-            {session.approvalExpiresAt ? new Date(session.approvalExpiresAt).toLocaleTimeString("ar-SA") : "—"}.
-          </p>
-          <div className="sc-session-actions">
-            <button className="sc-primary" disabled={busy} onClick={() => void run(() => approveSession(session.id))}>
-              <Check size={15} /> موافقة
-            </button>
-            <button className="sc-ghost" disabled={busy} onClick={() => void run(() => rejectSession(session.id))}>
-              <X size={15} /> رفض
-            </button>
-          </div>
-        </>
-      )}
+        {session?.status === "requested" && side === "company" && (
+          <>
+            <Text variant="bodySm" tone="muted">
+              {t("support.session.panel.requestedCompany", {
+                mode: modeLabels[session.mode],
+                time: session.approvalExpiresAt
+                  ? new Date(session.approvalExpiresAt).toLocaleTimeString("ar-SA")
+                  : "—",
+              })}
+            </Text>
+            <div className="kob-flex kob-gap-2">
+              <Button
+                variant="primary"
+                loading={busy}
+                leadingIcon={<Check size={16} />}
+                onClick={() => void run(() => approveSession(session.id))}
+              >
+                {t("support.session.panel.approve")}
+              </Button>
+              <Button
+                variant="ghost"
+                disabled={busy}
+                leadingIcon={<X size={16} />}
+                onClick={() => void run(() => rejectSession(session.id))}
+              >
+                {t("support.session.panel.reject")}
+              </Button>
+            </div>
+          </>
+        )}
 
-      {session?.status === "requested" && side === "agent" && (
-        <p className="sc-hint">بانتظار موافقة الشركة على الجلسة…</p>
-      )}
+        {session?.status === "requested" && side === "agent" && (
+          <Text variant="bodySm" tone="muted">
+            {t("support.session.panel.requestedAgent")}
+          </Text>
+        )}
 
-      {session?.status === "approved" && (
-        <>
-          <p className="sc-hint">وافقت الشركة على الجلسة ({MODE_LABELS[session.mode]}).</p>
-          {side === "agent" ? (
-            <button className="sc-primary" disabled={busy} onClick={() => void run(() => startSession(session.id))}>
-              <Play size={15} /> بدء الجلسة
-            </button>
-          ) : (
-            <p className="sc-hint">سيبدأ فريق KOB الجلسة الآن.</p>
-          )}
-        </>
-      )}
-    </section>
+        {session?.status === "approved" && (
+          <>
+            <Text variant="bodySm" tone="muted">
+              {t("support.session.panel.approvedCompany", { mode: modeLabels[session.mode] })}
+            </Text>
+            {side === "agent" ? (
+              <Button
+                variant="primary"
+                loading={busy}
+                leadingIcon={<Play size={16} />}
+                onClick={() => void run(() => startSession(session.id))}
+              >
+                {t("support.session.panel.startSession")}
+              </Button>
+            ) : (
+              <Text variant="bodySm" tone="muted">
+                {t("support.session.panel.approvedAgent")}
+              </Text>
+            )}
+          </>
+        )}
+      </CardBody>
+    </Card>
   );
 }
