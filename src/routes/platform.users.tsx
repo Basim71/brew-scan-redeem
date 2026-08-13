@@ -4,6 +4,7 @@ import { Shield, UserPlus } from "lucide-react";
 import { PlatformGate } from "@/features/platform/PlatformGate";
 import { ROLE_MATRIX } from "@/features/platform/access";
 import { listPlatformStaff, type PlatformStaffRow } from "@/services/platform/platform-users.service";
+import { Button } from "@/components/kob";
 
 export const Route = createFileRoute("/platform/users")({ component: UsersPage });
 
@@ -26,7 +27,7 @@ function UsersPage() {
     <div className="platform-page" dir="rtl">
       <header className="platform-page-header">
         <div><span>Access Control</span><h1>فريق المنصة</h1><p>موظفو KOB محفوظون في organization_members، وهذه الصفحة تقرأ العرض الموحد فقط.</p></div>
-        <button className="platform-primary-button" type="button"><UserPlus /> إضافة موظف</button>
+        <Button variant="primary" leadingIcon={<UserPlus className="h-4 w-4" />}>إضافة موظف</Button>
       </header>
       {error && <p className="platform-auth-error">تعذر تحميل الفريق: {error}</p>}
       <div className="platform-table-wrap">

@@ -82,9 +82,9 @@ function CompanyDetails() {
                   {company.status === "active" ? "نشطة" : "موقوفة"}
                 </span>
                 {canManage && (
-                  <button className="platform-primary-button" disabled={saving} onClick={toggleStatus}>
+                  <Button variant="primary" loading={saving} onClick={toggleStatus}>
                     {company.status === "active" ? "إيقاف" : "تفعيل"}
-                  </button>
+                  </Button>
                 )}
               </div>
             </header>

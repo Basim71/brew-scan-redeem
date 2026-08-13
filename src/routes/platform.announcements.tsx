@@ -5,6 +5,7 @@ import { PlatformGate } from "@/features/platform/PlatformGate";
 import { ROLE_MATRIX, canWriteAnnouncements } from "@/features/platform/access";
 import { listAnnouncements, type Announcement } from "@/services/platform/announcements.service";
 import { usePlatform } from "@/providers/PlatformProvider";
+import { Button } from "@/components/kob";
 
 export const Route = createFileRoute("/platform/announcements")({ component: AnnouncementsPage });
 
@@ -24,7 +25,7 @@ function AnnouncementsPage() {
             <h1>الإعلانات</h1>
             <p>إعلانات المنصة الموجّهة للشركات والفريق الداخلي.</p>
           </div>
-          {canWrite && <button className="platform-primary-button" disabled title="سيتم تفعيل الإرسال بعد اعتماد التخزين"><Plus /> إعلان جديد</button>}
+          {canWrite && <Button variant="primary" disabled title="سيتم تفعيل الإرسال بعد اعتماد التخزين" leadingIcon={<Plus className="h-4 w-4" />}>إعلان جديد</Button>}
         </header>
         <div className="platform-empty">
           <Bell style={{ display: "inline-block", marginInlineEnd: 8 }} />
