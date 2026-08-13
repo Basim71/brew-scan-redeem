@@ -425,6 +425,7 @@ function SectionBody(props: BodyProps) {
 }
 
 function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfile }: BodyProps) {
+  const { t } = useI18n();
   const d = canEdit ? undefined : true;
   return (
     <div className="flex flex-col gap-4">
@@ -564,6 +565,7 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
 }
 
 function BusinessSection({ settings, isAr, canEdit, commit }: BodyProps) {
+  const { t } = useI18n();
   const d = canEdit ? undefined : true;
   const toggleMethod = (method: PaymentMethod, on: boolean) => {
     const next = on
@@ -658,6 +660,7 @@ function BusinessSection({ settings, isAr, canEdit, commit }: BodyProps) {
 }
 
 function MembershipSection({ settings, isAr, canEdit, commit }: BodyProps) {
+  const { t } = useI18n();
   const d = canEdit ? undefined : true;
   return (
     <div className="flex flex-col gap-4">
@@ -692,6 +695,7 @@ function MembershipSection({ settings, isAr, canEdit, commit }: BodyProps) {
 }
 
 function OrderingSection({ settings, isAr, canEdit, commit }: BodyProps) {
+  const { t } = useI18n();
   const d = canEdit ? undefined : true;
   return (
     <div className="flex flex-col gap-4">
@@ -759,6 +763,7 @@ type SecurityConfirmAction =
   | { kind: "audit_log_off" };
 
 function SecuritySection({ settings, isAr, canEdit, commit }: BodyProps) {
+  const { t } = useI18n();
   const d = canEdit ? undefined : true;
   const [pendingAction, setPendingAction] = useState<SecurityConfirmAction | null>(null);
   const [busy, setBusy] = useState(false);
