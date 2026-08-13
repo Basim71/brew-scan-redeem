@@ -19,7 +19,7 @@ import {
   Badge,
   BodySmall,
   Caption,
-  Heading2,
+  Heading3,
   PageContainer,
   PageHeader,
   Text,
@@ -104,9 +104,9 @@ function PlatformDashboard() {
             <Caption tone="muted" className="insight-card-kicker">
               System Status
             </Caption>
-            <Heading2 variant="h3">
+            <Heading3>
               {dbOk === null ? "قيد الفحص…" : dbOk ? "قاعدة البيانات متصلة" : "تعذر الاتصال بقاعدة البيانات"}
-            </Heading2>
+            </Heading3>
             <BodySmall tone="secondary">حالة الوصول إلى بيانات المنصة يتم فحصها في كل تحميل.</BodySmall>
             <div className="platform-quick-links">
               <Link to="/platform/companies"><Building2 /> الشركات</Link>
@@ -121,7 +121,7 @@ function PlatformDashboard() {
             <Caption tone="muted" className="insight-card-kicker">
               Recent Activity
             </Caption>
-            <Heading2 variant="h3">آخر الأحداث</Heading2>
+            <Heading3>آخر الأحداث</Heading3>
             {activity.length === 0 ? (
               <BodySmall tone="secondary">لا يوجد نشاط حديث في سجل الدعم.</BodySmall>
             ) : (
