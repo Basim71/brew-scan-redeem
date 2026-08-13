@@ -691,5 +691,138 @@
     "confirmTitle": "Please confirm",
     "deleteTitle": "Delete this item?",
     "deleteBody": "This action cannot be undone."
+  },
+  "analytics": {
+    "title": "Business Analytics",
+    "description": "Complete analytics across subscriptions, drinks, revenue and customers.",
+    "refresh": "Refresh",
+    "toast": {
+      "csvExported": "CSV exported",
+      "excelExported": "Excel exported",
+      "popupBlocked": "Allow pop-ups to print the report."
+    },
+    "kpis": {
+      "revenue": "Revenue",
+      "orders": "Orders",
+      "averageOrder": "Average Order",
+      "subscriptionsSold": "Subscriptions Sold",
+      "activeMembers": "Active Members",
+      "renewals": "Renewals",
+      "expiredMemberships": "Expired Memberships",
+      "couponsRedeemed": "Coupons Redeemed",
+      "newCustomers": "New Customers",
+      "returningCustomers": "Returning Customers"
+    },
+    "dateRange": {
+      "title": "Date range",
+      "from": "From",
+      "to": "To",
+      "presets": {
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "last7": "Last 7 Days",
+        "last30": "Last 30 Days",
+        "this_month": "This Month",
+        "last_month": "Last Month",
+        "custom": "Custom Range"
+      }
+    },
+    "filters": {
+      "title": "Filters",
+      "clear": "Clear",
+      "branch": "Branch",
+      "drink": "Drink",
+      "plan": "Subscription Plan",
+      "cashier": "Cashier",
+      "customer": "Customer",
+      "coupon": "Coupon",
+      "paymentMethod": "Payment Method",
+      "status": "Status",
+      "allBranches": "All branches",
+      "allDrinks": "All drinks",
+      "allPlans": "All plans",
+      "allCashiers": "All cashiers",
+      "allCustomers": "All customers",
+      "searchCode": "Search code",
+      "allMethods": "All methods",
+      "allStatuses": "All statuses"
+    },
+    "payment": {
+      "cash": "Cash",
+      "card": "Card",
+      "apple_pay": "Apple Pay",
+      "stc_pay": "STC Pay",
+      "mada": "Mada",
+      "bank_transfer": "Bank Transfer"
+    },
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "charts": {
+      "revenueTrend": "Revenue Trend",
+      "ordersTrend": "Orders Trend",
+      "subscriptionDistribution": "Subscription Distribution",
+      "drinkPopularity": "Drink Popularity",
+      "branchComparison": "Branch Comparison"
+    },
+    "insights": {
+      "title": "AI Insights",
+      "note": "These insights are derived from your data today and will connect to an AI engine later."
+    },
+    "tables": {
+      "tabs": {
+        "sales": "Sales",
+        "subscriptions": "Subscriptions",
+        "customers": "Customers",
+        "coupons": "Coupons",
+        "exports": "Exports"
+      },
+      "noData": "No data for this period.",
+      "salesCaption": "Sales table",
+      "ariaLabel": "Analytics tables",
+      "view": "View",
+      "columns": {
+        "receipt": "Receipt #",
+        "customer": "Customer",
+        "cashier": "Cashier",
+        "branch": "Branch",
+        "drink": "Drink",
+        "subscription": "Subscription",
+        "coupon": "Coupon",
+        "payment": "Payment",
+        "amount": "Amount",
+        "status": "Status",
+        "createdAt": "Created At",
+        "actions": "Actions",
+        "phone": "Phone",
+        "plan": "Plan",
+        "start": "Start",
+        "end": "End",
+        "code": "Code",
+        "soldAt": "Sold At",
+        "subscriptionsCount": "Subscriptions",
+        "orders": "Orders",
+        "spend": "Spend",
+        "lastActivity": "Last Activity",
+        "joined": "Joined"
+      },
+      "receipt": {
+        "title": "Receipt details",
+        "close": "Close",
+        "note": "Note"
+      }
+    },
+    "exports": {
+      "csvTitle": "Export CSV",
+      "csvHint": "Universal spreadsheet file",
+      "excelTitle": "Export Excel",
+      "excelHint": "Opens natively in Excel",
+      "pdfTitle": "Export PDF",
+      "pdfHint": "Save the report as PDF",
+      "printTitle": "Print Report",
+      "printHint": "Print the period summary"
+    }
   }
 }

@@ -691,5 +691,138 @@
     "confirmTitle": "يرجى التأكيد",
     "deleteTitle": "حذف هذا العنصر؟",
     "deleteBody": "لا يمكن التراجع عن هذا الإجراء."
+  },
+  "analytics": {
+    "title": "تحليلات الأعمال",
+    "description": "تحليلات شاملة للاشتراكات والمشروبات والإيرادات والعملاء.",
+    "refresh": "تحديث",
+    "toast": {
+      "csvExported": "تم تصدير CSV",
+      "excelExported": "تم تصدير Excel",
+      "popupBlocked": "الرجاء السماح بالنوافذ المنبثقة للطباعة."
+    },
+    "kpis": {
+      "revenue": "الإيرادات",
+      "orders": "الطلبات",
+      "averageOrder": "متوسط الطلب",
+      "subscriptionsSold": "الاشتراكات المباعة",
+      "activeMembers": "أعضاء نشطون",
+      "renewals": "التجديدات",
+      "expiredMemberships": "عضويات منتهية",
+      "couponsRedeemed": "كوبونات مستخدمة",
+      "newCustomers": "عملاء جدد",
+      "returningCustomers": "عملاء عائدون"
+    },
+    "dateRange": {
+      "title": "الفترة الزمنية",
+      "from": "من",
+      "to": "إلى",
+      "presets": {
+        "today": "اليوم",
+        "yesterday": "أمس",
+        "last7": "آخر ٧ أيام",
+        "last30": "آخر ٣٠ يومًا",
+        "this_month": "هذا الشهر",
+        "last_month": "الشهر الماضي",
+        "custom": "فترة مخصصة"
+      }
+    },
+    "filters": {
+      "title": "الفلاتر",
+      "clear": "مسح",
+      "branch": "الفرع",
+      "drink": "المشروب",
+      "plan": "الباقة",
+      "cashier": "الكاشير",
+      "customer": "العميل",
+      "coupon": "الكوبون",
+      "paymentMethod": "طريقة الدفع",
+      "status": "الحالة",
+      "allBranches": "كل الفروع",
+      "allDrinks": "كل المشروبات",
+      "allPlans": "كل الباقات",
+      "allCashiers": "كل الموظفين",
+      "allCustomers": "كل العملاء",
+      "searchCode": "ابحث بالكود",
+      "allMethods": "كل الطرق",
+      "allStatuses": "كل الحالات"
+    },
+    "payment": {
+      "cash": "نقدي",
+      "card": "بطاقة",
+      "apple_pay": "Apple Pay",
+      "stc_pay": "STC Pay",
+      "mada": "مدى",
+      "bank_transfer": "تحويل بنكي"
+    },
+    "status": {
+      "pending": "قيد الانتظار",
+      "approved": "مقبول",
+      "rejected": "مرفوض"
+    },
+    "charts": {
+      "revenueTrend": "اتجاه الإيرادات",
+      "ordersTrend": "اتجاه الطلبات",
+      "subscriptionDistribution": "توزيع الاشتراكات",
+      "drinkPopularity": "المشروبات الأكثر طلبًا",
+      "branchComparison": "مقارنة الفروع"
+    },
+    "insights": {
+      "title": "رؤى ذكية",
+      "note": "تُحسب هذه الرؤى حاليًا من بياناتك مباشرة، وسيتم ربطها بمحرك ذكاء اصطناعي لاحقًا."
+    },
+    "tables": {
+      "tabs": {
+        "sales": "المبيعات",
+        "subscriptions": "الاشتراكات",
+        "customers": "العملاء",
+        "coupons": "الكوبونات",
+        "exports": "التصدير"
+      },
+      "noData": "لا توجد بيانات لهذه الفترة.",
+      "salesCaption": "جدول المبيعات",
+      "ariaLabel": "جداول التحليلات",
+      "view": "عرض",
+      "columns": {
+        "receipt": "رقم الفاتورة",
+        "customer": "العميل",
+        "cashier": "الكاشير",
+        "branch": "الفرع",
+        "drink": "المشروب",
+        "subscription": "الباقة",
+        "coupon": "الكوبون",
+        "payment": "الدفع",
+        "amount": "القيمة",
+        "status": "الحالة",
+        "createdAt": "التاريخ",
+        "actions": "إجراءات",
+        "phone": "الجوال",
+        "plan": "الباقة",
+        "start": "البداية",
+        "end": "النهاية",
+        "code": "الكود",
+        "soldAt": "تاريخ البيع",
+        "subscriptionsCount": "الاشتراكات",
+        "orders": "الطلبات",
+        "spend": "الإنفاق",
+        "lastActivity": "آخر نشاط",
+        "joined": "تاريخ التسجيل"
+      },
+      "receipt": {
+        "title": "تفاصيل الفاتورة",
+        "close": "إغلاق",
+        "note": "ملاحظة"
+      }
+    },
+    "exports": {
+      "csvTitle": "تصدير CSV",
+      "csvHint": "ملف نصي مناسب لأي نظام",
+      "excelTitle": "تصدير Excel",
+      "excelHint": "يفتح مباشرة في Excel",
+      "pdfTitle": "تصدير PDF",
+      "pdfHint": "حفظ التقرير كملف PDF",
+      "printTitle": "طباعة التقرير",
+      "printHint": "طباعة ملخص الفترة"
+    }
   }
 }
