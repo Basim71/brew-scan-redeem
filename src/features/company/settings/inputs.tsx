@@ -1,8 +1,29 @@
 import { useEffect, useRef, useState } from "react";
 
 import { Input, Textarea } from "@/components/kob";
+import { useI18n } from "@/lib/i18n";
 
-export function translateError(code: string | undefined, isAr: boolean): string {
+/**
+ * Resolves a settings error code to a user-facing message.
+ * Pass `t` (from useI18n) to use the localized copy; without it, falls back
+ * to the legacy bilingual map for callers that have not migrated yet.
+ */
+export function translateError(code: string | undefined, isAr: boolean, t?: (key: string, vars?: Record<string, any>) => string): string {
+  if (t) {
+    const keyMap: Record<string, string> = {
+      settings_invalid_currency: "settings.shell.errors.settingsInvalidCurrency",
+      settings_invalid_tax: "settings.shell.errors.settingsInvalidTax",
+      settings_no_payment_method: "settings.shell.errors.settingsNoPaymentMethod",
+      settings_default_payment_not_enabled: "settings.shell.errors.settingsDefaultPaymentNotEnabled",
+      settings_invalid_bonus_days: "settings.shell.errors.settingsInvalidBonusDays",
+      settings_invalid_prep_time: "settings.shell.errors.settingsInvalidPrepTime",
+      settings_invalid_session_timeout: "settings.shell.errors.settingsInvalidSessionTimeout",
+      cannot_demote_last_owner: "settings.shell.errors.cannotDemoteLastOwner",
+    };
+    if (code && keyMap[code]) return t(keyMap[code]!);
+    return code || t("settings.shell.errors.couldNotSave");
+  }
+
   const map: Record<string, [string, string]> = {
     settings_invalid_currency: ["العملة غير صحيحة", "Invalid currency code"],
     settings_invalid_tax: ["نسبة الضريبة غير صحيحة", "Tax percentage must be 0–100"],
@@ -39,6 +60,7 @@ export function TextInput({
   isAr: boolean;
   multiline?: boolean;
 }) {
+  const { t } = useI18n();
   const [local, setLocal] = useState(value);
   const [error, setError] = useState<string | null>(null);
   const timer = useRef<number | null>(null);
@@ -53,7 +75,7 @@ export function TextInput({
     onCommit(next);
   };
 
-  const hint = !error && local !== value ? (isAr ? "سيتم الحفظ تلقائيًا…" : "Saves automatically…") : undefined;
+  const hint = !error && local !== value ? t("settings.fields.savesAutomatically") : undefined;
 
   const shared = {
     value: local,
@@ -91,6 +113,7 @@ export function NumberInput({
   disabled?: boolean;
   isAr: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <TextInput
       isAr={isAr}
@@ -99,8 +122,8 @@ export function NumberInput({
       value={String(value)}
       validate={(raw) => {
         const n = Number(raw);
-        if (raw.trim() === "" || Number.isNaN(n)) return isAr ? "قيمة غير صحيحة" : "Invalid number";
-        if (n < min || n > max) return isAr ? `القيمة بين ${min} و ${max}` : `Value must be ${min}–${max}`;
+        if (raw.trim() === "" || Number.isNaN(n)) return t("settings.fields.invalidNumber");
+        if (n < min || n > max) return t("settings.fields.valueBetween", { min, max });
         return null;
       }}
       onCommit={(raw) => onCommit(Number(raw))}

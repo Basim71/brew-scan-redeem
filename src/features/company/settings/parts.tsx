@@ -2,27 +2,28 @@ import type { ReactNode } from "react";
 import { Check, Loader2, TriangleAlert } from "lucide-react";
 
 import { Badge, Button, Card as KobCard, CardBody, CardHeader, Toggle as KobToggle } from "@/components/kob";
+import { useI18n } from "@/lib/i18n";
 
 export type SaveState = "idle" | "saving" | "saved" | "error";
 
 export function SaveIndicator({ state, lang, message }: { state: SaveState; lang: "ar" | "en"; message?: string | null }) {
-  const isAr = lang === "ar";
+  const { t } = useI18n();
   if (state === "idle") return null;
   if (state === "saving")
     return (
       <Badge tone="info" icon={<Loader2 className="h-3.5 w-3.5 animate-spin" />}>
-        {isAr ? "جارٍ الحفظ…" : "Saving…"}
+        {t("settings.shell.saving")}
       </Badge>
     );
   if (state === "saved")
     return (
       <Badge tone="success" icon={<Check className="h-3.5 w-3.5" />}>
-        {isAr ? "تم الحفظ" : "Saved"}
+        {t("settings.shell.saved")}
       </Badge>
     );
   return (
     <Badge tone="error" icon={<TriangleAlert className="h-3.5 w-3.5" />}>
-      {message || (isAr ? "فشل الحفظ" : "Save failed")}
+      {message || t("settings.shell.saveFailed")}
     </Badge>
   );
 }
