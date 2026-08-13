@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { Mail, MessageCircle, MessageSquare, Bell } from "lucide-react";
 
 import { Badge } from "@/components/kob";
@@ -52,6 +53,7 @@ const TEMPLATES: Array<[string, string, string]> = [
 ];
 
 export function NotificationsSection({ settings, isAr, canEdit, commit }: SectionProps) {
+  const { t } = useI18n();
   const d = canEdit ? undefined : true;
   const providers = settings.notification_providers ?? {};
   const events = settings.notification_events ?? {};
@@ -65,11 +67,9 @@ export function NotificationsSection({ settings, isAr, canEdit, commit }: Sectio
   return (
     <div className="flex flex-col gap-4">
       <Card
-        title={isAr ? "قنوات التواصل" : "Communication providers"}
+        title={t("settings.notifications.communicationProviders")}
         description={
-          isAr
-            ? "فعّل القناة وأضف مرجع الحساب. لا تُخزَّن أي مفاتيح سرية هنا."
-            : "Enable a channel and store its account reference. No secret keys are kept here."
+          t("settings.notifications.enableAChannelAndStoreIts")
         }
       >
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -89,14 +89,14 @@ export function NotificationsSection({ settings, isAr, canEdit, commit }: Sectio
                   />
                 </header>
                 <Badge tone={connected ? "success" : "neutral"}>
-                  {connected ? (isAr ? "متصل" : "Connected") : isAr ? "غير متصل" : "Not connected"}
+                  {connected ? (t("settings.notifications.connected")) : t("settings.notifications.notConnected")}
                 </Badge>
                 <label>{isAr ? p.hintAr : p.hintEn}</label>
                 <TextInput
                   isAr={isAr}
                   disabled={d || !on}
                   value={providers[p.key]?.reference ?? ""}
-                  validate={(v) => (v.length > 120 ? (isAr ? "الحد ١٢٠ حرف" : "Max 120 characters") : null)}
+                  validate={(v) => (v.length > 120 ? (t("settings.notifications.max120Characters")) : null)}
                   onCommit={(v) => setProvider(p.key, { reference: v.trim(), connected: Boolean(v.trim()) })}
                 />
               </article>
@@ -105,7 +105,7 @@ export function NotificationsSection({ settings, isAr, canEdit, commit }: Sectio
         </div>
       </Card>
 
-      <Card title={isAr ? "مشغّلات الأحداث" : "Event triggers"}>
+      <Card title={t("settings.notifications.eventTriggers")}>
         {EVENTS.map(([key, ar, en]) => (
           <Row key={String(key)} label={isAr ? ar : en}>
             <Toggle
@@ -129,8 +129,8 @@ export function NotificationsSection({ settings, isAr, canEdit, commit }: Sectio
       </Card>
 
       <Card
-        title={isAr ? "قوالب الرسائل" : "Message templates"}
-        description={isAr ? "استخدم {name} و {branch} و {drink} كمتغيرات." : "Use {name}, {branch} and {drink} as variables."}
+        title={t("settings.notifications.messageTemplates")}
+        description={t("settings.notifications.useNameBranchAndDrinkAs")}
       >
         {TEMPLATES.map(([key, ar, en]) => (
           <Row key={key} label={isAr ? ar : en}>
@@ -139,7 +139,7 @@ export function NotificationsSection({ settings, isAr, canEdit, commit }: Sectio
               multiline
               disabled={d}
               value={templates[key] ?? ""}
-              validate={(v) => (v.length > 300 ? (isAr ? "الحد ٣٠٠ حرف" : "Max 300 characters") : null)}
+              validate={(v) => (v.length > 300 ? (t("settings.notifications.max300Characters")) : null)}
               onCommit={(v) => {
                 const next = { ...templates };
                 if (v.trim()) next[key] = v.trim();

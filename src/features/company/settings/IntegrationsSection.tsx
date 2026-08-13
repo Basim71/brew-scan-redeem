@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { CreditCard, KeyRound, Link2, Store, Webhook } from "lucide-react";
 
 import { Badge } from "@/components/kob";
@@ -52,6 +53,7 @@ const GROUPS: Array<{ key: Integration["group"]; ar: string; en: string; descAr:
 ];
 
 export function IntegrationsSection({ settings, isAr, canEdit, commit }: SectionProps) {
+  const { t } = useI18n();
   const d = canEdit ? undefined : true;
   const current = (settings.integrations ?? {}) as Record<string, string>;
 
@@ -79,7 +81,7 @@ export function IntegrationsSection({ settings, isAr, canEdit, commit }: Section
                     <item.icon className="h-4 w-4" />
                     <b>{isAr ? item.ar : item.en}</b>
                     <Badge tone={connected ? "success" : "neutral"}>
-                      {connected ? (isAr ? "متصل" : "Connected") : isAr ? "غير متصل" : "Not connected"}
+                      {connected ? (t("settings.integrations.connected")) : t("settings.integrations.notConnected")}
                     </Badge>
                   </header>
                   <label>{isAr ? item.hintAr : item.hintEn}</label>
@@ -87,7 +89,7 @@ export function IntegrationsSection({ settings, isAr, canEdit, commit }: Section
                     isAr={isAr}
                     disabled={d}
                     value={current[item.key] ?? ""}
-                    validate={(v) => (v.length > 160 ? (isAr ? "الحد ١٦٠ حرف" : "Max 160 characters") : null)}
+                    validate={(v) => (v.length > 160 ? (t("settings.integrations.max160Characters")) : null)}
                     onCommit={(v) => setValue(item.key, v)}
                   />
                 </article>
@@ -97,10 +99,10 @@ export function IntegrationsSection({ settings, isAr, canEdit, commit }: Section
         </Card>
       ))}
 
-      <Card title={isAr ? "واجهة خارجية" : "External API"}>
+      <Card title={t("settings.integrations.externalApi")}>
         <Row
-          label={isAr ? "تفعيل قناة الواجهة الخارجية" : "Enable external API channel"}
-          hint={isAr ? "يتحكم في بيع الاشتراكات عبر API" : "Controls selling subscriptions through the API"}
+          label={t("settings.integrations.enableExternalApiChannel")}
+          hint={t("settings.integrations.controlsSellingSubscriptionsThroughTheApi")}
         >
           <Toggle
             label="external api"
@@ -109,10 +111,10 @@ export function IntegrationsSection({ settings, isAr, canEdit, commit }: Section
             onChange={(v) => commit({ sales_channel_external_api: v }, "integrations")}
           />
         </Row>
-        <Row label={isAr ? "مستند الربط" : "Integration docs"}>
+        <Row label={t("settings.integrations.integrationDocs")}>
           <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <Link2 className="h-3.5 w-3.5" />
-            {isAr ? "تُدار نقاط النهاية من فريق KOB." : "Endpoints are provisioned by the KOB team."}
+            {t("settings.integrations.endpointsAreProvisionedByTheKob")}
           </span>
         </Row>
       </Card>

@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ShieldAlert } from "lucide-react";
@@ -21,6 +22,7 @@ import type { SectionProps } from "./types";
 const SECURITY_SECTIONS = new Set(["security", "employees"]);
 
 export function AuditLogSection({ organizationId, isAr, isOwner }: SectionProps) {
+  const { t } = useI18n();
   const audit = useQuery({
     queryKey: ["company-settings-audit", organizationId],
     enabled: isOwner,
@@ -43,10 +45,10 @@ export function AuditLogSection({ organizationId, isAr, isOwner }: SectionProps)
   if (!isOwner)
     return (
       <div className="flex flex-col gap-4">
-        <Card title={isAr ? "سجل التغييرات" : "Audit log"}>
+        <Card title={t("settings.audit.auditLog")}>
           <EmptyState
-            title={isAr ? "غير متاح" : "Not available"}
-            description={isAr ? "سجل التغييرات متاح لمالك الشركة فقط." : "The audit log is available to the company owner only."}
+            title={t("settings.audit.notAvailable")}
+            description={t("settings.audit.theAuditLogIsAvailableTo")}
           />
         </Card>
       </div>
@@ -58,7 +60,7 @@ export function AuditLogSection({ organizationId, isAr, isOwner }: SectionProps)
   const columns: Column<SettingsAuditRow>[] = [
     {
       key: "timestamp",
-      header: isAr ? "التاريخ" : "Timestamp",
+      header: t("settings.audit.timestamp"),
       render: (row) => (
         <button type="button" className="text-sm font-medium text-accent underline-offset-2 hover:underline" onClick={() => setSelected(row)}>
           {formatDate(row.created_at)}
@@ -67,7 +69,7 @@ export function AuditLogSection({ organizationId, isAr, isOwner }: SectionProps)
     },
     {
       key: "section",
-      header: isAr ? "القسم" : "Section",
+      header: t("settings.audit.section"),
       render: (row) => (
         <Badge tone={SECURITY_SECTIONS.has(row.section) ? "warning" : "neutral"} icon={SECURITY_SECTIONS.has(row.section) ? <ShieldAlert className="h-3 w-3" /> : undefined}>
           {row.section}
@@ -76,12 +78,12 @@ export function AuditLogSection({ organizationId, isAr, isOwner }: SectionProps)
     },
     {
       key: "field",
-      header: isAr ? "الحقل" : "Field",
+      header: t("settings.audit.field"),
       render: (row) => <b>{row.field}</b>,
     },
     {
       key: "change",
-      header: isAr ? "التغيير" : "Change",
+      header: t("settings.audit.change"),
       render: (row) => (
         <span>
           {fmt(row.old_value)} → {fmt(row.new_value)}
@@ -92,11 +94,11 @@ export function AuditLogSection({ organizationId, isAr, isOwner }: SectionProps)
 
   return (
     <div className="flex flex-col gap-4">
-      <Card title={isAr ? "لوحة السجل" : "Audit overview"}>
+      <Card title={t("settings.audit.auditOverview")}>
         <StatGrid>
-          <StatCard label={isAr ? "تغييرات مسجّلة" : "Recorded changes"} value={(audit.data ?? []).length} />
+          <StatCard label={t("settings.audit.recordedChanges")} value={(audit.data ?? []).length} />
           <StatCard
-            label={isAr ? "أحداث أمنية" : "Security events"}
+            label={t("settings.audit.securityEvents")}
             value={securityCount}
             icon={<ShieldAlert className="h-4 w-4" />}
             tone={securityCount > 0 ? "warning" : "neutral"}
@@ -104,27 +106,27 @@ export function AuditLogSection({ organizationId, isAr, isOwner }: SectionProps)
         </StatGrid>
       </Card>
 
-      <Card title={isAr ? "الخط الزمني" : "Timeline"}>
+      <Card title={t("settings.audit.timeline")}>
         <div className="flex flex-wrap items-center gap-2">
           <SearchInput
             value={search}
             onValueChange={setSearch}
-            placeholder={isAr ? "ابحث في السجل" : "Search the log"}
-            label={isAr ? "ابحث في السجل" : "Search the log"}
+            placeholder={t("settings.audit.searchTheLog")}
+            label={t("settings.audit.searchTheLog")}
           />
         </div>
         {audit.isLoading ? (
-          <LoadingState label={isAr ? "جارٍ التحميل…" : "Loading…"} />
+          <LoadingState label={t("common.loading")} />
         ) : (audit.data ?? []).length === 0 ? (
-          <EmptyState title={isAr ? "لا توجد تغييرات بعد." : "No changes recorded yet."} />
+          <EmptyState title={t("settings.audit.noChangesRecordedYet")} />
         ) : rows.length === 0 ? (
           <NoResultsState
-            title={isAr ? "لا توجد نتائج" : "No results"}
-            description={isAr ? "جرّب كلمة بحث مختلفة." : "Try a different search term."}
+            title={t("settings.audit.noResults")}
+            description={t("settings.audit.tryADifferentSearchTerm")}
           />
         ) : (
           <DataTable
-            caption={isAr ? "سجل التغييرات" : "Audit log"}
+            caption={t("settings.audit.auditLog")}
             columns={columns}
             rows={rows}
             rowKey={(row) => row.id}
@@ -140,13 +142,13 @@ export function AuditLogSection({ organizationId, isAr, isOwner }: SectionProps)
       >
         {selected ? (
           <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-sm">
-            <dt>{isAr ? "القسم" : "Section"}</dt>
+            <dt>{t("settings.audit.section")}</dt>
             <dd>{selected.section}</dd>
-            <dt>{isAr ? "التاريخ" : "When"}</dt>
+            <dt>{t("settings.audit.when")}</dt>
             <dd>{formatDate(selected.created_at)}</dd>
-            <dt>{isAr ? "القيمة السابقة" : "Old value"}</dt>
+            <dt>{t("settings.audit.oldValue")}</dt>
             <dd><code>{selected.old_value ?? "—"}</code></dd>
-            <dt>{isAr ? "القيمة الجديدة" : "New value"}</dt>
+            <dt>{t("settings.audit.newValue")}</dt>
             <dd><code>{selected.new_value ?? "—"}</code></dd>
           </dl>
         ) : null}
