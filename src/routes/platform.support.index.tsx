@@ -6,7 +6,26 @@ import { supabase } from "@/integrations/supabase/client";
 import { PlatformGate } from "@/features/platform/PlatformGate";
 import { ROLE_MATRIX } from "@/features/platform/access";
 import { claimTicket, listTickets } from "@/features/support/api";
-import { categoryLabels, priorityLabels, statusLabels, type Ticket } from "@/features/support/types";
+import { categoryLabels, priorityLabels, statusLabels, type Ticket, type TicketPriority } from "@/features/support/types";
+import { useI18n } from "@/lib/i18n";
+import {
+  Badge,
+  type BadgeTone,
+  Button,
+  DataTable,
+  type Column,
+  ErrorState,
+  Pagination,
+  PageContainer,
+  SearchInput,
+  SectionHeader,
+  StatCard,
+  StatGrid,
+  StatusBadge,
+  type StatusTone,
+  Tabs,
+  kobToast,
+} from "@/components/kob";
 
 export const Route = createFileRoute("/platform/support/")({
   head: () => ({
@@ -22,20 +41,57 @@ export const Route = createFileRoute("/platform/support/")({
   component: PlatformSupportDashboard,
 });
 
-const TABS: Array<[string, string, any]> = [
-  ["inbox", "الواردة", UserCheck],
-  ["mine", "تذاكري", Headphones],
-  ["live", "جلسات مباشرة", Radio],
-  ["scheduled", "مجدولة", CalendarClock],
-  ["closed", "المغلقة", CheckCircle2],
-  ["all", "الكل", Search],
-];
+const STATUS_TONE: Record<Ticket["status"], StatusTone> = {
+  new: "info",
+  waiting: "warning",
+  accepted: "info",
+  assigned: "info",
+  waiting_company: "warning",
+  scheduled: "info",
+  live: "success",
+  resolved: "success",
+  closed: "neutral",
+  cancelled: "neutral",
+  rejected: "error",
+};
+
+const PRIORITY_TONE: Record<TicketPriority, BadgeTone> = {
+  critical: "error",
+  high: "warning",
+  medium: "info",
+  low: "neutral",
+};
+
+/** SLA thresholds in minutes per priority — presentation-only, derived from existing timestamps. */
+const SLA_THRESHOLD_MINUTES: Record<TicketPriority, number> = {
+  critical: 30,
+  high: 60,
+  medium: 240,
+  low: 480,
+};
+
+const CLOSED_STATUSES: Ticket["status"][] = ["resolved", "closed", "cancelled", "rejected"];
+
+function getSlaTone(ticket: Ticket): { tone: BadgeTone; key: "ok" | "warning" | "danger" | "done" } {
+  if (CLOSED_STATUSES.includes(ticket.status)) return { tone: "neutral", key: "done" };
+  const reference = ticket.firstResponseAt ?? ticket.createdAt;
+  const ageMinutes = (Date.now() - new Date(reference).getTime()) / 60000;
+  const threshold = SLA_THRESHOLD_MINUTES[ticket.priority];
+  if (ageMinutes < threshold * 0.6) return { tone: "success", key: "ok" };
+  if (ageMinutes < threshold) return { tone: "warning", key: "warning" };
+  return { tone: "error", key: "danger" };
+}
+
+const PAGE_SIZE = 10;
 
 function PlatformSupportDashboard() {
   const navigate = useNavigate();
+  const { t, fmtDate } = useI18n();
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("inbox");
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [userId, setUserId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,7 +100,9 @@ function PlatformSupportDashboard() {
       setTickets(await listTickets());
       setError(null);
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "تعذر تحميل التذاكر");
+      setError(loadError instanceof Error ? loadError.message : t("support.queue.loadError"));
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -58,7 +116,21 @@ function PlatformSupportDashboard() {
     return () => {
       void supabase.removeChannel(channel);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    setPage(1);
+  }, [tab, search]);
+
+  const TABS = [
+    { id: "inbox", label: t("support.queue.tabs.inbox"), icon: <UserCheck size={16} /> },
+    { id: "mine", label: t("support.queue.tabs.mine"), icon: <Headphones size={16} /> },
+    { id: "live", label: t("support.queue.tabs.live"), icon: <Radio size={16} /> },
+    { id: "scheduled", label: t("support.queue.tabs.scheduled"), icon: <CalendarClock size={16} /> },
+    { id: "closed", label: t("support.queue.tabs.closed"), icon: <CheckCircle2 size={16} /> },
+    { id: "all", label: t("support.queue.tabs.all"), icon: <Search size={16} /> },
+  ];
 
   const shown = useMemo(
     () =>
@@ -74,11 +146,14 @@ function PlatformSupportDashboard() {
           (tab === "mine" && ticket.assignedAgentUserId === userId && !["closed", "cancelled"].includes(ticket.status)) ||
           (tab === "live" && ticket.status === "live") ||
           (tab === "scheduled" && ticket.status === "scheduled") ||
-          (tab === "closed" && ["resolved", "closed", "cancelled", "rejected"].includes(ticket.status));
+          (tab === "closed" && CLOSED_STATUSES.includes(ticket.status));
         return matches && tabMatch;
       }),
     [tickets, search, tab, userId],
   );
+
+  const pageCount = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
+  const pageRows = shown.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const stats = {
     inbox: tickets.filter((ticket) => ["new", "waiting"].includes(ticket.status)).length,
@@ -93,117 +168,114 @@ function PlatformSupportDashboard() {
     try {
       await claimTicket(ticketId);
       await load();
+      kobToast.success(t("support.queue.claimed"), t("support.queue.claimedDescription"));
       navigate({ to: "/platform/support/$ticketId", params: { ticketId } });
     } catch (claimError) {
-      setError(claimError instanceof Error ? claimError.message : "تعذر استلام التذكرة");
+      kobToast.error(t("support.queue.claimError"));
     }
   }
 
+  const columns: Column<Ticket>[] = [
+    {
+      key: "ticket",
+      header: t("support.queue.table.ticket"),
+      render: (ticket) => (
+        <div className="kob-min-w-0">
+          <strong>{ticket.ticketNumber}</strong>
+          <div>{ticket.subject}</div>
+        </div>
+      ),
+    },
+    {
+      key: "company",
+      header: t("support.queue.table.company"),
+      render: (ticket) => ticket.organization?.name_ar || ticket.organization?.name_en || "-",
+    },
+    {
+      key: "status",
+      header: t("support.queue.table.status"),
+      render: (ticket) => <StatusBadge tone={STATUS_TONE[ticket.status]}>{statusLabels[ticket.status]}</StatusBadge>,
+    },
+    {
+      key: "priority",
+      header: t("support.queue.table.priority"),
+      render: (ticket) => <Badge tone={PRIORITY_TONE[ticket.priority]}>{priorityLabels[ticket.priority]}</Badge>,
+    },
+    {
+      key: "sla",
+      header: t("support.queue.table.sla"),
+      render: (ticket) => {
+        const sla = getSlaTone(ticket);
+        return <Badge tone={sla.tone}>{t(`support.queue.sla.${sla.key}`)}</Badge>;
+      },
+    },
+    {
+      key: "updated",
+      header: t("support.queue.table.updated"),
+      render: (ticket) => fmtDate(ticket.scheduledAt || ticket.createdAt),
+    },
+    {
+      key: "actions",
+      header: t("support.queue.table.actions"),
+      align: "end",
+      render: (ticket) => (
+        <div className="kob-row-actions">
+          {["new", "waiting"].includes(ticket.status) && (
+            <Button size="sm" variant="secondary" onClick={() => void claim(ticket.id)}>
+              {t("support.queue.claim")}
+            </Button>
+          )}
+          <Button
+            size="sm"
+            variant="primary"
+            onClick={() => navigate({ to: "/platform/support/$ticketId", params: { ticketId: ticket.id } })}
+          >
+            {t("support.queue.open")}
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <PlatformGate allow={ROLE_MATRIX["/platform/support"]}>
-      <div className="platform-page sc-page" dir="rtl">
-        <header className="platform-page-header">
-          <div>
-            <span>KOB Support Center</span>
-            <h1>لوحة الدعم الفني</h1>
-            <p>استلم التذاكر، تابع المحادثات، وابدأ الجلسات المباشرة من مساحة عمل واحدة.</p>
-          </div>
-          <div className="platform-live-pill">
-            <i /> تحديث مباشر
-          </div>
-        </header>
+      <PageContainer size="xl">
+        <SectionHeader
+          title={t("support.queue.title")}
+          description={t("support.queue.subtitle")}
+          action={
+            <Badge tone="success" icon={<Radio size={13} />}>
+              {t("support.queue.liveUpdates")}
+            </Badge>
+          }
+        />
 
-        {error && (
-          <div className="sc-error">
-            <AlertTriangle size={16} />
-            {error}
-          </div>
-        )}
+        {error && <ErrorState description={error} onRetry={() => void load()} />}
 
-        <section className="sc-stats">
-          <article>
-            <Headphones />
-            <div>
-              <b>{stats.inbox}</b>
-              <span>بانتظار الاستلام</span>
-            </div>
-          </article>
-          <article>
-            <Radio />
-            <div>
-              <b>{stats.live}</b>
-              <span>جلسات نشطة</span>
-            </div>
-          </article>
-          <article>
-            <CalendarClock />
-            <div>
-              <b>{stats.scheduled}</b>
-              <span>مجدولة</span>
-            </div>
-          </article>
-          <article>
-            <AlertTriangle />
-            <div>
-              <b>{stats.critical}</b>
-              <span>تذاكر حرجة</span>
-            </div>
-          </article>
-        </section>
+        <StatGrid>
+          <StatCard icon={<Headphones size={18} />} label={t("support.queue.stats.inbox")} value={stats.inbox} />
+          <StatCard icon={<Radio size={18} />} label={t("support.queue.stats.live")} value={stats.live} tone="success" />
+          <StatCard icon={<CalendarClock size={18} />} label={t("support.queue.stats.scheduled")} value={stats.scheduled} tone="info" />
+          <StatCard icon={<AlertTriangle size={18} />} label={t("support.queue.stats.critical")} value={stats.critical} tone="danger" />
+        </StatGrid>
 
-        <div className="sc-toolbar">
-          <div className="support-tabs">
-            {TABS.map(([id, label, Icon]) => (
-              <button key={id} className={tab === id ? "active" : ""} onClick={() => setTab(id)}>
-                <Icon size={16} />
-                {label}
-              </button>
-            ))}
-          </div>
-          <label className="sc-search">
-            <Search size={16} />
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="بحث برقم التذكرة أو الشركة..."
-            />
-          </label>
+        <div className="kob-toolbar">
+          <Tabs items={TABS} value={tab} onChange={setTab} ariaLabel={t("support.queue.title")} />
+          <SearchInput value={search} onValueChange={setSearch} placeholder={t("support.queue.searchPlaceholder")} />
         </div>
 
-        <div className="support-request-grid">
-          {shown.map((ticket) => (
-            <article key={ticket.id} className={`support-request-card priority-${ticket.priority}`}>
-              <div className="support-request-top">
-                <span>{ticket.ticketNumber}</span>
-                <b>{priorityLabels[ticket.priority]}</b>
-              </div>
-              <h3>{ticket.subject}</h3>
-              <p>{ticket.organization?.name_ar || ticket.organization?.name_en || "شركة"}</p>
-              <div className="sc-card-status">
-                <span className={`sc-status status-${ticket.status}`}>{statusLabels[ticket.status]}</span>
-                <span className="sc-chip">{categoryLabels[ticket.category]}</span>
-              </div>
-              <footer>
-                <time>{new Date(ticket.scheduledAt || ticket.createdAt).toLocaleString("ar-SA")}</time>
-                <div className="sc-card-actions">
-                  {["new", "waiting"].includes(ticket.status) && (
-                    <button className="sc-ghost" onClick={() => void claim(ticket.id)}>
-                      استلام
-                    </button>
-                  )}
-                  <button
-                    className="platform-primary-button"
-                    onClick={() => navigate({ to: "/platform/support/$ticketId", params: { ticketId: ticket.id } })}
-                  >
-                    فتح التذكرة
-                  </button>
-                </div>
-              </footer>
-            </article>
-          ))}
-          {!shown.length && <div className="platform-empty">لا توجد تذاكر مطابقة.</div>}
-        </div>
-      </div>
+        <DataTable
+          columns={columns}
+          rows={pageRows}
+          rowKey={(row) => row.id}
+          loading={loading}
+          caption={t("support.queue.table.caption")}
+          emptyTitle={t("support.queue.emptyTitle")}
+          emptyDescription={t("support.queue.emptyDescription")}
+        />
+
+        <Pagination page={page} pageCount={pageCount} onPageChange={setPage} total={shown.length} />
+      </PageContainer>
     </PlatformGate>
   );
 }

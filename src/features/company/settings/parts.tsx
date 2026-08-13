@@ -58,14 +58,21 @@ export function Row({
   error?: string | null;
 }) {
   return (
-    <div className={`cs-row${error ? " cs-row-error" : ""}`}>
-      <div className="cs-row-label min-w-0">
-        <span>{label}</span>
-        {hint ? <small>{hint}</small> : null}
+    <div
+      className="grid min-w-0 grid-cols-1 gap-2 border-b border-border py-3 last:border-b-0 sm:grid-cols-[minmax(0,220px)_minmax(0,1fr)] sm:items-start sm:gap-4"
+      data-invalid={error ? "true" : undefined}
+    >
+      <div className="min-w-0">
+        <span className="text-sm font-semibold text-foreground">{label}</span>
+        {hint ? <small className="mt-0.5 block text-xs text-muted-foreground">{hint}</small> : null}
       </div>
-      <div className="cs-row-control min-w-0">
+      <div className="min-w-0 space-y-1">
         {children}
-        {error ? <span className="cs-error">{error}</span> : null}
+        {error ? (
+          <span className="block text-xs text-destructive" role="alert">
+            {error}
+          </span>
+        ) : null}
       </div>
     </div>
   );

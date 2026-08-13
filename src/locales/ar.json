@@ -216,7 +216,280 @@
     "label": "الدعم",
     "title": "مركز الدعم",
     "subtitle": "تواصل مع فريق KOB مباشرة.",
-    "new_ticket": "تذكرة جديدة"
+    "new_ticket": "تذكرة جديدة",
+    "back_to_tickets": "رجوع للتذاكر",
+    "stats": {
+      "open": "تذاكر مفتوحة",
+      "waiting": "بانتظار ردكم",
+      "live": "جلسات مباشرة",
+      "resolved": "تم حلها"
+    },
+    "list": {
+      "title": "تذاكر الشركة",
+      "count": "{count} تذكرة",
+      "search_placeholder": "ابحث عن تذكرة برقمها أو موضوعها",
+      "status_filter": "الحالة",
+      "priority_filter": "الأولوية",
+      "all": "الكل",
+      "empty_title": "لا توجد تذاكر بعد",
+      "empty_description": "أنشئ أول تذكرة دعم للتواصل مع فريق KOB.",
+      "load_error_title": "تعذّر تحميل التذاكر",
+      "col_number": "رقم التذكرة",
+      "col_subject": "الموضوع",
+      "col_status": "الحالة",
+      "col_priority": "الأولوية",
+      "col_created": "تاريخ الإنشاء"
+    },
+    "form": {
+      "title": "إنشاء تذكرة دعم",
+      "description": "صف مشكلتك بالتفصيل وسيتواصل معك فريق الدعم في أقرب وقت.",
+      "category": "نوع المشكلة",
+      "priority": "الأولوية",
+      "subject": "الموضوع",
+      "description_field": "وصف المشكلة",
+      "session_preference": "نوع المساعدة",
+      "session_none": "بدون جلسة",
+      "session_chat": "محادثة",
+      "session_voice": "صوت",
+      "session_scheduled": "موعد مجدول",
+      "session_immediate": "مساعدة فورية",
+      "scheduled_at": "الموعد",
+      "permissions_title": "صلاحيات الجلسة (يمكن تغييرها لاحقًا)",
+      "permission_view": "مشاركة الشاشة للمشاهدة",
+      "permission_control": "تحكّم مشترك داخل KOB",
+      "permission_voice": "المحادثة الصوتية",
+      "permission_recording": "تسجيل الجلسة",
+      "attachments": "المرفقات (اختياري)",
+      "attachments_hint": "أرفق لقطات شاشة أو ملفات توضّح المشكلة.",
+      "upload_cta": "إرفاق ملف",
+      "submit": "إنشاء التذكرة",
+      "create_success": "تم إنشاء التذكرة بنجاح",
+      "create_error": "تعذر إنشاء التذكرة",
+      "attachment_error": "تعذّر رفع أحد المرفقات"
+    },
+    "detail": {
+      "back": "رجوع للوحة الدعم",
+      "loading": "جارٍ التحميل...",
+      "management": "الإدارة",
+      "assignToMe": "استلام التذكرة",
+      "assignedToYou": "التذكرة معيّنة لك.",
+      "priority": "الأولوية",
+      "statusActions": "الحالة",
+      "companyPermissions": "صلاحيات الشركة",
+      "permissionsHint": "هذه الصلاحيات تُمنح من الشركة فقط ولا يمكن تعديلها من هنا.",
+      "allowed": "مسموح",
+      "notAllowed": "غير مسموح",
+      "context": "سياق الشركة",
+      "company": "الشركة",
+      "you": "أنت",
+      "presenceOnline": "أنت متصل الآن",
+      "timeline": "الجدول الزمني",
+      "timelineEmpty": "لا توجد أحداث بعد.",
+      "attachments": "المرفقات",
+      "attachmentsEmpty": "لا توجد مرفقات بعد.",
+      "download": "تنزيل",
+      "statusError": "تعذر تحديث الحالة",
+      "priorityError": "تعذر تحديث الأولوية",
+      "claimError": "تعذر استلام التذكرة",
+      "customerInfo": "معلومات العميل",
+      "ticketNumber": "رقم التذكرة",
+      "createdAt": "تاريخ الإنشاء",
+      "scheduledAt": "موعد الجلسة"
+    },
+    "session": {
+      "title": "جلسة دعم مباشرة",
+      "mode": {
+        "view": "مشاهدة فقط",
+        "assist": "مساعدة موجّهة",
+        "control": "تحكّم مشترك داخل KOB"
+      },
+      "presence": {
+        "company": "الشركة",
+        "agent": "فريق KOB",
+        "waiting": "بانتظار الطرف الآخر…"
+      },
+      "end": "إنهاء الجلسة",
+      "stage": {
+        "waitingShare": "بانتظار مشاركة الشاشة من الشركة.",
+        "sharingActive": "تتم مشاركة شاشتك الآن",
+        "sharingInactive": "شاشتك غير مشاركة",
+        "shareHint": "لن يرى فريق KOB أي شيء قبل موافقتك، ويمكنك الإيقاف في أي لحظة. التحكّم المشترك يعمل داخل تطبيق KOB فقط ولا يمس جهازك.",
+        "stopShare": "إيقاف المشاركة",
+        "startShare": "بدء مشاركة الشاشة"
+      },
+      "recording": {
+        "start": "تسجيل",
+        "stop": "إيقاف التسجيل"
+      },
+      "coControl": {
+        "label": "تحكّم مشترك داخل KOB",
+        "notAllowed": "(غير مسموح)",
+        "pathPlaceholder": "/admin/plans",
+        "go": "انتقال",
+        "scrollBottom": "أسفل الصفحة",
+        "scrollTop": "أعلى الصفحة",
+        "quickPaths": {
+          "admin": "لوحة الشركة",
+          "plans": "الخطط",
+          "coupons": "الكوبونات",
+          "drinks": "المشروبات",
+          "settings": "الإعدادات"
+        }
+      },
+      "permissions": {
+        "title": "صلاحيات الجلسة",
+        "hint": "أنت من يمنح الصلاحيات، ويمكن سحبها فورًا.",
+        "revokeAll": "سحب كل الصلاحيات",
+        "coControl": "تحكّم مشترك داخل KOB",
+        "screenShare": "مشاركة الشاشة",
+        "recording": "تسجيل الجلسة"
+      },
+      "chat": {
+        "title": "محادثة الجلسة",
+        "placeholder": "اكتب رسالة…",
+        "empty": "لا توجد رسائل.",
+        "attach": "إرفاق ملف"
+      },
+      "log": {
+        "title": "سجل الجلسة",
+        "empty": "لا توجد أحداث.",
+        "actions": {
+          "session_requested": "طلب جلسة",
+          "session_approved": "موافقة الشركة",
+          "session_rejected": "رفض الشركة",
+          "session_started": "بدء الجلسة",
+          "session_ended": "إنهاء الجلسة",
+          "permission_granted": "منح صلاحية",
+          "permission_revoked": "سحب صلاحية",
+          "screen_share_started": "بدء مشاركة الشاشة",
+          "screen_share_stopped": "إيقاف مشاركة الشاشة",
+          "recording_started": "بدء التسجيل",
+          "recording_saved": "حفظ التسجيل",
+          "co_control_navigate": "تنقّل بالتحكّم المشترك",
+          "co_control_highlight": "تحديد عنصر",
+          "co_control_scroll": "تمرير الصفحة",
+          "file_shared": "مشاركة ملف"
+        }
+      },
+      "errors": {
+        "loadMeta": "تعذر تحميل بيانات الجلسة",
+        "signal": "تعذر إنشاء اتصال الجلسة",
+        "shareNotAllowed": "يجب تفعيل صلاحية مشاركة الشاشة أولاً.",
+        "startShare": "تعذر بدء مشاركة الشاشة",
+        "noStream": "لا يوجد بث لتسجيله.",
+        "recordingNotAllowed": "تسجيل الجلسة غير مسموح من الشركة.",
+        "saveRecording": "تعذر حفظ التسجيل",
+        "coControlNotAllowed": "التحكّم المشترك غير مسموح من الشركة.",
+        "updatePermission": "تعذر تحديث الصلاحية",
+        "sendMessage": "تعذر إرسال الرسالة",
+        "uploadFile": "تعذر رفع الملف",
+        "endSession": "تعذر إنهاء الجلسة",
+        "loadSession": "تعذر تحميل الجلسة",
+        "action": "تعذر تنفيذ العملية",
+        "loadConversation": "تعذر تحميل المحادثة"
+      },
+      "panel": {
+        "title": "الجلسة المباشرة",
+        "agentHint": "اطلب من الشركة جلسة مباشرة. لا تبدأ الجلسة قبل موافقتها الصريحة.",
+        "modeLabel": "نوع الجلسة",
+        "requestButton": "طلب جلسة من الشركة",
+        "noSessionCompany": "لا توجد جلسة مباشرة حالية.",
+        "requestedCompany": "طلب فريق KOB جلسة مباشرة ({mode}). الموافقة صالحة حتى {time}.",
+        "approve": "موافقة",
+        "reject": "رفض",
+        "requestedAgent": "بانتظار موافقة الشركة على الجلسة…",
+        "approvedCompany": "وافقت الشركة على الجلسة ({mode}).",
+        "approvedAgent": "سيبدأ فريق KOB الجلسة الآن.",
+        "startSession": "بدء الجلسة"
+      }
+    },
+    "conversation": {
+      "title": "المحادثة",
+      "messageCount": "{n} رسالة",
+      "internalNote": "ملاحظة داخلية",
+      "placeholder": "اكتب رسالتك...",
+      "send": "إرسال",
+      "empty": "لا توجد رسائل بعد.",
+      "timeline": "الخط الزمني",
+      "timelineEmpty": "لا توجد أحداث.",
+      "senders": {
+        "company": "الشركة",
+        "agent": "فريق KOB",
+        "system": "النظام",
+        "ai": "مساعد KOB"
+      },
+      "events": {
+        "ticketCreated": "تم إنشاء التذكرة",
+        "assigned": "تم تعيين موظف دعم",
+        "statusChanged": "تغيّرت الحالة من {from} إلى {to}"
+      },
+      "error": "تعذر تحميل المحادثة",
+      "sendError": "تعذر إرسال الرسالة"
+    },
+    "queue": {
+      "eyebrow": "مركز دعم KOB",
+      "title": "لوحة الدعم الفني",
+      "subtitle": "استلم التذاكر، تابع المحادثات، وابدأ الجلسات المباشرة من مساحة عمل واحدة.",
+      "liveUpdates": "تحديث مباشر",
+      "searchPlaceholder": "بحث برقم التذكرة أو الشركة...",
+      "tabs": {
+        "inbox": "الواردة",
+        "mine": "تذاكري",
+        "live": "جلسات مباشرة",
+        "scheduled": "مجدولة",
+        "closed": "المغلقة",
+        "all": "الكل"
+      },
+      "stats": {
+        "inbox": "بانتظار الاستلام",
+        "live": "جلسات نشطة",
+        "scheduled": "مجدولة",
+        "critical": "تذاكر حرجة"
+      },
+      "table": {
+        "caption": "تذاكر الدعم",
+        "ticket": "التذكرة",
+        "company": "الشركة",
+        "status": "الحالة",
+        "priority": "الأولوية",
+        "sla": "الاتفاقية",
+        "updated": "آخر تحديث",
+        "actions": "إجراءات"
+      },
+      "sla": {
+        "ok": "ضمن الوقت",
+        "warning": "قريب من التأخير",
+        "danger": "تجاوز الوقت",
+        "done": "مغلقة"
+      },
+      "claim": "استلام",
+      "open": "فتح التذكرة",
+      "emptyTitle": "لا توجد تذاكر مطابقة",
+      "emptyDescription": "جرّب علامة تبويب أو كلمة بحث مختلفة.",
+      "loadError": "تعذر تحميل التذاكر",
+      "claimError": "تعذر استلام التذكرة",
+      "claimed": "تم استلام التذكرة",
+      "claimedDescription": "تم تعيين التذكرة لك."
+    },
+    "assist": {
+      "title": "مساعد KOB الذكي",
+      "subtitle": "اقتراحات الذكاء الاصطناعي تحتاج مراجعتك قبل استخدامها.",
+      "summarize": "تلخيص",
+      "suggestReply": "اقتراح رد",
+      "triage": "تصنيف وتوجيه",
+      "noSuggestions": "لا توجد اقتراحات بعد.",
+      "useReply": "استخدام كرد",
+      "approveHint": "لا يتم إرسال مسودات الذكاء الاصطناعي تلقائيًا أبدًا — راجع ووافق قبل إدراجها.",
+      "insertedTitle": "تم إدراج المسودة",
+      "insertedDescription": "راجع الرسالة قبل إرسالها للعميل.",
+      "generateError": "تعذر توليد الاقتراح",
+      "notesTitle": "ملاحظات داخلية",
+      "notePlaceholder": "ملاحظة داخلية لفريق KOB...",
+      "saveNote": "حفظ الملاحظة",
+      "notesEmpty": "لا توجد ملاحظات.",
+      "noteSaved": "تم حفظ الملاحظة",
+      "noteError": "تعذر حفظ الملاحظة"
+    }
   },
   "states": {
     "loading": "جارٍ التحميل…",

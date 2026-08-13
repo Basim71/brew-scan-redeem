@@ -216,7 +216,280 @@
     "label": "Support",
     "title": "Support Center",
     "subtitle": "Talk to the KOB team in real time.",
-    "new_ticket": "New ticket"
+    "new_ticket": "New ticket",
+    "back_to_tickets": "Back to tickets",
+    "stats": {
+      "open": "Open tickets",
+      "waiting": "Awaiting your reply",
+      "live": "Live sessions",
+      "resolved": "Resolved"
+    },
+    "list": {
+      "title": "Company tickets",
+      "count": "{count} tickets",
+      "search_placeholder": "Search by ticket number or subject",
+      "status_filter": "Status",
+      "priority_filter": "Priority",
+      "all": "All",
+      "empty_title": "No tickets yet",
+      "empty_description": "Create your first support ticket to reach the KOB team.",
+      "load_error_title": "Couldn't load tickets",
+      "col_number": "Ticket #",
+      "col_subject": "Subject",
+      "col_status": "Status",
+      "col_priority": "Priority",
+      "col_created": "Created"
+    },
+    "form": {
+      "title": "Create support ticket",
+      "description": "Describe your issue in detail and our support team will get back to you shortly.",
+      "category": "Issue type",
+      "priority": "Priority",
+      "subject": "Subject",
+      "description_field": "Issue description",
+      "session_preference": "Assistance type",
+      "session_none": "No session",
+      "session_chat": "Chat",
+      "session_voice": "Voice",
+      "session_scheduled": "Scheduled appointment",
+      "session_immediate": "Immediate assistance",
+      "scheduled_at": "Scheduled time",
+      "permissions_title": "Session permissions (can be changed later)",
+      "permission_view": "Screen sharing for viewing",
+      "permission_control": "Shared control within KOB",
+      "permission_voice": "Voice chat",
+      "permission_recording": "Session recording",
+      "attachments": "Attachments (optional)",
+      "attachments_hint": "Attach screenshots or files that illustrate the issue.",
+      "upload_cta": "Attach file",
+      "submit": "Create ticket",
+      "create_success": "Ticket created successfully",
+      "create_error": "Couldn't create the ticket",
+      "attachment_error": "Couldn't upload one of the attachments"
+    },
+    "detail": {
+      "back": "Back to support dashboard",
+      "loading": "Loading...",
+      "management": "Management",
+      "assignToMe": "Claim ticket",
+      "assignedToYou": "This ticket is assigned to you.",
+      "priority": "Priority",
+      "statusActions": "Status",
+      "companyPermissions": "Company permissions",
+      "permissionsHint": "These permissions are granted by the company only and cannot be edited here.",
+      "allowed": "Allowed",
+      "notAllowed": "Not allowed",
+      "context": "Company context",
+      "company": "Company",
+      "you": "You",
+      "presenceOnline": "You're online",
+      "timeline": "Timeline",
+      "timelineEmpty": "No events yet.",
+      "attachments": "Attachments",
+      "attachmentsEmpty": "No attachments yet.",
+      "download": "Download",
+      "statusError": "Couldn't update status",
+      "priorityError": "Couldn't update priority",
+      "claimError": "Couldn't claim the ticket",
+      "customerInfo": "Customer information",
+      "ticketNumber": "Ticket number",
+      "createdAt": "Created",
+      "scheduledAt": "Scheduled for"
+    },
+    "session": {
+      "title": "Live Support Session",
+      "mode": {
+        "view": "View only",
+        "assist": "Guided assist",
+        "control": "Co-control inside KOB"
+      },
+      "presence": {
+        "company": "Company",
+        "agent": "KOB Team",
+        "waiting": "Waiting for the other side…"
+      },
+      "end": "End session",
+      "stage": {
+        "waitingShare": "Waiting for the company to share their screen.",
+        "sharingActive": "Your screen is being shared now",
+        "sharingInactive": "Your screen is not shared",
+        "shareHint": "The KOB team can't see anything until you approve, and you can stop at any time. Co-control only works inside the KOB app and never touches your device.",
+        "stopShare": "Stop sharing",
+        "startShare": "Start screen sharing"
+      },
+      "recording": {
+        "start": "Record",
+        "stop": "Stop recording"
+      },
+      "coControl": {
+        "label": "Co-control inside KOB",
+        "notAllowed": "(not allowed)",
+        "pathPlaceholder": "/admin/plans",
+        "go": "Go",
+        "scrollBottom": "Bottom of page",
+        "scrollTop": "Top of page",
+        "quickPaths": {
+          "admin": "Company dashboard",
+          "plans": "Plans",
+          "coupons": "Coupons",
+          "drinks": "Drinks",
+          "settings": "Settings"
+        }
+      },
+      "permissions": {
+        "title": "Session permissions",
+        "hint": "Only you grant permissions, and you can revoke them instantly.",
+        "revokeAll": "Revoke all permissions",
+        "coControl": "Co-control inside KOB",
+        "screenShare": "Screen sharing",
+        "recording": "Session recording"
+      },
+      "chat": {
+        "title": "Session chat",
+        "placeholder": "Write a message…",
+        "empty": "No messages yet.",
+        "attach": "Attach file"
+      },
+      "log": {
+        "title": "Session log",
+        "empty": "No events yet.",
+        "actions": {
+          "session_requested": "Session requested",
+          "session_approved": "Company approved",
+          "session_rejected": "Company rejected",
+          "session_started": "Session started",
+          "session_ended": "Session ended",
+          "permission_granted": "Permission granted",
+          "permission_revoked": "Permission revoked",
+          "screen_share_started": "Screen sharing started",
+          "screen_share_stopped": "Screen sharing stopped",
+          "recording_started": "Recording started",
+          "recording_saved": "Recording saved",
+          "co_control_navigate": "Co-control navigation",
+          "co_control_highlight": "Element highlighted",
+          "co_control_scroll": "Page scrolled",
+          "file_shared": "File shared"
+        }
+      },
+      "errors": {
+        "loadMeta": "Could not load session data",
+        "signal": "Could not establish the session connection",
+        "shareNotAllowed": "Screen sharing permission must be enabled first.",
+        "startShare": "Could not start screen sharing",
+        "noStream": "There is no stream to record.",
+        "recordingNotAllowed": "Recording is not allowed by the company.",
+        "saveRecording": "Could not save the recording",
+        "coControlNotAllowed": "Co-control is not allowed by the company.",
+        "updatePermission": "Could not update the permission",
+        "sendMessage": "Could not send the message",
+        "uploadFile": "Could not upload the file",
+        "endSession": "Could not end the session",
+        "loadSession": "Could not load the session",
+        "action": "Could not complete the operation",
+        "loadConversation": "Could not load the conversation"
+      },
+      "panel": {
+        "title": "Live session",
+        "agentHint": "Ask the company for a live session. Don't start before their explicit approval.",
+        "modeLabel": "Session type",
+        "requestButton": "Request a session from the company",
+        "noSessionCompany": "There is no live session right now.",
+        "requestedCompany": "The KOB team requested a live session ({mode}). Approval is valid until {time}.",
+        "approve": "Approve",
+        "reject": "Reject",
+        "requestedAgent": "Waiting for the company to approve the session…",
+        "approvedCompany": "The company approved the session ({mode}).",
+        "approvedAgent": "The KOB team will start the session now.",
+        "startSession": "Start session"
+      }
+    },
+    "conversation": {
+      "title": "Conversation",
+      "messageCount": "{n} messages",
+      "internalNote": "Internal note",
+      "placeholder": "Type your message...",
+      "send": "Send",
+      "empty": "No messages yet.",
+      "timeline": "Timeline",
+      "timelineEmpty": "No events.",
+      "senders": {
+        "company": "Company",
+        "agent": "KOB Team",
+        "system": "System",
+        "ai": "KOB Assistant"
+      },
+      "events": {
+        "ticketCreated": "Ticket created",
+        "assigned": "Support agent assigned",
+        "statusChanged": "Status changed from {from} to {to}"
+      },
+      "error": "Could not load the conversation",
+      "sendError": "Could not send the message"
+    },
+    "queue": {
+      "eyebrow": "KOB Support Center",
+      "title": "Agent Support Console",
+      "subtitle": "Claim tickets, follow conversations, and start live sessions from one workspace.",
+      "liveUpdates": "Live updates",
+      "searchPlaceholder": "Search by ticket number or company...",
+      "tabs": {
+        "inbox": "Inbox",
+        "mine": "Mine",
+        "live": "Live",
+        "scheduled": "Scheduled",
+        "closed": "Closed",
+        "all": "All"
+      },
+      "stats": {
+        "inbox": "Awaiting claim",
+        "live": "Active sessions",
+        "scheduled": "Scheduled",
+        "critical": "Critical tickets"
+      },
+      "table": {
+        "caption": "Support tickets",
+        "ticket": "Ticket",
+        "company": "Company",
+        "status": "Status",
+        "priority": "Priority",
+        "sla": "SLA",
+        "updated": "Updated",
+        "actions": "Actions"
+      },
+      "sla": {
+        "ok": "On track",
+        "warning": "At risk",
+        "danger": "Breaching",
+        "done": "Closed"
+      },
+      "claim": "Claim",
+      "open": "Open ticket",
+      "emptyTitle": "No matching tickets",
+      "emptyDescription": "Try a different tab or search term.",
+      "loadError": "Couldn't load tickets",
+      "claimError": "Couldn't claim the ticket",
+      "claimed": "Ticket claimed",
+      "claimedDescription": "The ticket has been assigned to you."
+    },
+    "assist": {
+      "title": "KOB AI Copilot",
+      "subtitle": "AI-drafted suggestions require your review before use.",
+      "summarize": "Summarize",
+      "suggestReply": "Suggest reply",
+      "triage": "Triage",
+      "noSuggestions": "No suggestions yet.",
+      "useReply": "Use as reply",
+      "approveHint": "AI drafts are never sent automatically — review and approve before inserting.",
+      "insertedTitle": "Draft inserted",
+      "insertedDescription": "Review the message before sending it to the customer.",
+      "generateError": "Couldn't generate a suggestion",
+      "notesTitle": "Internal notes",
+      "notePlaceholder": "Internal note for the KOB team...",
+      "saveNote": "Save note",
+      "notesEmpty": "No notes yet.",
+      "noteSaved": "Note saved",
+      "noteError": "Couldn't save the note"
+    }
   },
   "states": {
     "loading": "Loading…",
