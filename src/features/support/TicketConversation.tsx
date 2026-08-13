@@ -152,7 +152,7 @@ export function TicketConversation({ ticketId, side }: Props) {
             {!messages.length && <EmptyState title={t("support.conversation.empty")} />}
             <div ref={endRef} />
           </div>
-          {error && <Alert tone="error">{error}</Alert>}
+          {error && <Alert tone="danger">{error}</Alert>}
           <form className="kob-flex kob-flex-col kob-gap-2" onSubmit={submit}>
             <Textarea
               rows={2}

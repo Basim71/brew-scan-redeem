@@ -89,7 +89,7 @@ export function SessionPanel({ ticketId, organizationId, side }: Props) {
     <Card>
       <CardHeader title={t("support.session.panel.title")} icon={<MonitorPlay size={18} />} />
       <CardBody className="kob-flex kob-flex-col kob-gap-4">
-        {error && <Alert tone="error">{error}</Alert>}
+        {error && <Alert tone="danger">{error}</Alert>}
 
         {!session && side === "agent" && (
           <>

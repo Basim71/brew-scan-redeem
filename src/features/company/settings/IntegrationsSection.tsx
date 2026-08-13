@@ -63,18 +63,18 @@ export function IntegrationsSection({ settings, isAr, canEdit, commit }: Section
   };
 
   return (
-    <div className="cs-stack">
+    <div className="flex flex-col gap-4">
       {GROUPS.map((group) => (
         <Card
           key={group.key}
           title={isAr ? group.ar : group.en}
           description={isAr ? group.descAr : group.descEn}
         >
-          <div className="cs-provider-grid">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {INTEGRATIONS.filter((i) => i.group === group.key).map((item) => {
               const connected = Boolean(current[item.key]);
               return (
-                <article key={item.key} className="cs-provider" data-on={connected ? "true" : "false"}>
+                <article key={item.key} className="flex flex-col gap-2 rounded-xl border border-border bg-card p-3" data-on={connected ? "true" : "false"}>
                   <header>
                     <item.icon className="h-4 w-4" />
                     <b>{isAr ? item.ar : item.en}</b>
@@ -110,7 +110,7 @@ export function IntegrationsSection({ settings, isAr, canEdit, commit }: Section
           />
         </Row>
         <Row label={isAr ? "مستند الربط" : "Integration docs"}>
-          <span className="cs-inline-note">
+          <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <Link2 className="h-3.5 w-3.5" />
             {isAr ? "تُدار نقاط النهاية من فريق KOB." : "Endpoints are provisioned by the KOB team."}
           </span>

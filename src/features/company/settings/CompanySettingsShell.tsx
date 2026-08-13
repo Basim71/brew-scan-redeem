@@ -294,8 +294,8 @@ export function CompanySettingsShell() {
   if (!organizationId) return null;
 
   return (
-    <PageContainer className="cs-shell" size="xl">
-      <div dir={isAr ? "rtl" : "ltr"} className="cs-page-stack">
+    <PageContainer className="" size="xl">
+      <div dir={isAr ? "rtl" : "ltr"} className="flex flex-col gap-5">
       <PageHeader
         eyebrow={isAr ? "لوحة الشركة" : "Company"}
         title={isAr ? "مركز إدارة الشركة" : "Company Administration"}
@@ -315,8 +315,8 @@ export function CompanySettingsShell() {
         </WarningCard>
       ) : null}
 
-      <div className="cs-layout">
-        <nav className="cs-nav" aria-label={isAr ? "أقسام الإعدادات" : "Settings sections"}>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[260px_1fr] lg:items-start">
+        <nav className="flex flex-col gap-3" aria-label={isAr ? "أقسام الإعدادات" : "Settings sections"}>
           <SearchInput
             value={navQuery}
             onValueChange={setNavQuery}
@@ -326,14 +326,14 @@ export function CompanySettingsShell() {
             const items = navItems.filter((item) => item.group === group.key);
             if (!items.length) return null;
             return (
-              <div key={group.key} className="cs-nav-group">
-                <span className="cs-nav-group-title">{isAr ? group.ar : group.en}</span>
+              <div key={group.key} className="flex flex-col gap-1">
+                <span className="px-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{isAr ? group.ar : group.en}</span>
                 {items.map((s) => (
                   <Button
                     key={s.key}
                     type="button"
                     variant="ghost"
-                    className="cs-nav-item"
+                    className="justify-start"
                     data-active={s.key === section ? "true" : undefined}
                     leadingIcon={<s.icon className="h-4 w-4" />}
                     onClick={() => setSection(s.key)}
@@ -345,14 +345,14 @@ export function CompanySettingsShell() {
             );
           })}
           {navItems.length === 0 ? (
-            <p className="cs-nav-empty">{isAr ? "لا نتائج مطابقة." : "No matching sections."}</p>
+            <p className="px-2 py-4 text-center text-sm text-muted-foreground">{isAr ? "لا نتائج مطابقة." : "No matching sections."}</p>
           ) : null}
         </nav>
 
-        <div className="cs-content">
+        <div className="min-w-0">
           {activeSection ? (
-            <div className="cs-module-hero">
-              <span className="cs-module-icon">
+            <div className="flex items-start gap-3 rounded-xl border border-border bg-card p-4">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-accent">
                 <activeSection.icon className="h-5 w-5" />
               </span>
               <div>
@@ -431,7 +431,7 @@ function SectionBody(props: BodyProps) {
 function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfile }: BodyProps) {
   const d = canEdit ? undefined : true;
   return (
-    <div className="cs-stack">
+    <div className="flex flex-col gap-4">
       <Card
         title={isAr ? "هوية الشركة" : "Company identity"}
         description={isAr ? "تظهر هذه البيانات في كل الواجهات والفواتير." : "Used across every screen and invoice."}
@@ -580,7 +580,7 @@ function BusinessSection({ settings, isAr, canEdit, commit }: BodyProps) {
   };
 
   return (
-    <div className="cs-stack">
+    <div className="flex flex-col gap-4">
       <Card
         title={isAr ? "قنوات البيع" : "Sales channels"}
         description={isAr ? "تحدد أين يمكن بيع الاشتراكات فعليًا." : "Controls where subscriptions can actually be sold."}
@@ -608,7 +608,7 @@ function BusinessSection({ settings, isAr, canEdit, commit }: BodyProps) {
         title={isAr ? "وسائل الدفع" : "Payment methods"}
         description={isAr ? "الكاشير وصفحة الدفع يعرضان الوسائل المفعّلة فقط." : "Cashier and checkout only show enabled methods."}
       >
-        <div className="cs-chips">
+        <div className="flex flex-wrap gap-2 py-2">
           {PAYMENT_METHODS.map((m) => (
             <CheckChip
               key={m.value}
@@ -664,7 +664,7 @@ function BusinessSection({ settings, isAr, canEdit, commit }: BodyProps) {
 function MembershipSection({ settings, isAr, canEdit, commit }: BodyProps) {
   const d = canEdit ? undefined : true;
   return (
-    <div className="cs-stack">
+    <div className="flex flex-col gap-4">
       <Card title={isAr ? "تفعيل الاشتراك" : "Subscription activation"}>
         <Row label={isAr ? "التفعيل الافتراضي" : "Default activation"}>
           <Segmented
@@ -698,7 +698,7 @@ function MembershipSection({ settings, isAr, canEdit, commit }: BodyProps) {
 function OrderingSection({ settings, isAr, canEdit, commit }: BodyProps) {
   const d = canEdit ? undefined : true;
   return (
-    <div className="cs-stack">
+    <div className="flex flex-col gap-4">
       <Card title={isAr ? "قواعد الطلبات" : "Ordering rules"}>
         <Row label={isAr ? "مدة تحضير الطلب (دقيقة)" : "Order preparation time (minutes)"}>
           <NumberInput isAr={isAr} disabled={d} value={settings.order_prep_minutes} min={0} max={240} onCommit={(v) => commit({ order_prep_minutes: v }, "ordering")} />
@@ -802,7 +802,7 @@ function SecuritySection({ settings, isAr, canEdit, commit }: BodyProps) {
   };
 
   return (
-    <div className="cs-stack">
+    <div className="flex flex-col gap-4">
       <Card title={isAr ? "الجلسات وكلمات المرور" : "Sessions & passwords"}>
         <Row label={isAr ? "انتهاء الجلسة (دقيقة)" : "Session timeout (minutes)"}>
           <NumberInput isAr={isAr} disabled={d} value={settings.session_timeout_minutes} min={15} max={10080} onCommit={(v) => commit({ session_timeout_minutes: v }, "security")} />

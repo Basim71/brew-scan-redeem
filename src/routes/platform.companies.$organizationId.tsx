@@ -89,7 +89,7 @@ function CompanyDetails() {
               </div>
             </header>
 
-            <section className="cs-stats">
+            <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <article><Building2 /><div><b>{counts.branches}</b><span>الفروع</span></div></article>
               <article><ShieldCheck /><div><b>{counts.members}</b><span>الأعضاء</span></div></article>
               <article><div><b>{counts.activeSubscriptions}</b><span>اشتراكات نشطة</span></div></article>

@@ -42,7 +42,7 @@ export function AuditLogSection({ organizationId, isAr, isOwner }: SectionProps)
 
   if (!isOwner)
     return (
-      <div className="cs-stack">
+      <div className="flex flex-col gap-4">
         <Card title={isAr ? "سجل التغييرات" : "Audit log"}>
           <EmptyState
             title={isAr ? "غير متاح" : "Not available"}
@@ -60,7 +60,7 @@ export function AuditLogSection({ organizationId, isAr, isOwner }: SectionProps)
       key: "timestamp",
       header: isAr ? "التاريخ" : "Timestamp",
       render: (row) => (
-        <button type="button" className="cs-ghost-btn" onClick={() => setSelected(row)}>
+        <button type="button" className="text-sm font-medium text-accent underline-offset-2 hover:underline" onClick={() => setSelected(row)}>
           {formatDate(row.created_at)}
         </button>
       ),
@@ -91,7 +91,7 @@ export function AuditLogSection({ organizationId, isAr, isOwner }: SectionProps)
   ];
 
   return (
-    <div className="cs-stack">
+    <div className="flex flex-col gap-4">
       <Card title={isAr ? "لوحة السجل" : "Audit overview"}>
         <StatGrid>
           <StatCard label={isAr ? "تغييرات مسجّلة" : "Recorded changes"} value={(audit.data ?? []).length} />
@@ -105,7 +105,7 @@ export function AuditLogSection({ organizationId, isAr, isOwner }: SectionProps)
       </Card>
 
       <Card title={isAr ? "الخط الزمني" : "Timeline"}>
-        <div className="cs-toolbar">
+        <div className="flex flex-wrap items-center gap-2">
           <SearchInput
             value={search}
             onValueChange={setSearch}
@@ -139,7 +139,7 @@ export function AuditLogSection({ organizationId, isAr, isOwner }: SectionProps)
         description={selected ? formatDate(selected.created_at) : undefined}
       >
         {selected ? (
-          <dl className="cs-drawer-dl">
+          <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-sm">
             <dt>{isAr ? "القسم" : "Section"}</dt>
             <dd>{selected.section}</dd>
             <dt>{isAr ? "التاريخ" : "When"}</dt>

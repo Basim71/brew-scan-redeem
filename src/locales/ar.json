@@ -342,7 +342,9 @@
         "revokeAll": "سحب كل الصلاحيات",
         "coControl": "تحكّم مشترك داخل KOB",
         "screenShare": "مشاركة الشاشة",
-        "recording": "تسجيل الجلسة"
+        "recording": "تسجيل الجلسة",
+        "voice": "الصوت",
+        "files": "الملفات"
       },
       "chat": {
         "title": "محادثة الجلسة",
@@ -489,6 +491,12 @@
       "notesEmpty": "لا توجد ملاحظات.",
       "noteSaved": "تم حفظ الملاحظة",
       "noteError": "تعذر حفظ الملاحظة"
+    },
+    "permissions": {
+      "allowView": "مشاهدة الشاشة",
+      "allowRemoteControl": "تحكّم مشترك",
+      "allowVoice": "المحادثة الصوتية",
+      "allowRecording": "تسجيل الجلسة"
     }
   },
   "states": {

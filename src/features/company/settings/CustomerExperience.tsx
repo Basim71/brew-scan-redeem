@@ -51,7 +51,7 @@ export function CustomerExperienceSection({ settings, isAr, canEdit, commit }: S
     ((previewLang === "ar" ? settings[ar] : settings[en]) as string | null) ?? "";
 
   return (
-    <div className="cs-stack">
+    <div className="flex flex-col gap-4">
       <Card
         title={isAr ? "رحلة العميل" : "Customer journey"}
         description={
@@ -60,7 +60,7 @@ export function CustomerExperienceSection({ settings, isAr, canEdit, commit }: S
             : "Pick a step to edit its copy and watch the phone preview update instantly."
         }
       >
-        <div className="cs-journey">
+        <div className="flex flex-wrap gap-2">
           {STEPS.map((s, index) => (
             <button
               key={s.key}
@@ -74,17 +74,17 @@ export function CustomerExperienceSection({ settings, isAr, canEdit, commit }: S
           ))}
         </div>
 
-        <div className="cs-xp">
-          <div className="cs-xp-editor">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_300px] lg:items-start">
+          <div className="flex flex-col gap-3 min-w-0">
             {fields.length === 0 ? (
-              <div className="cs-empty">
+              <div className="rounded-lg border border-dashed border-border bg-muted/40 p-4 text-sm text-muted-foreground">
                 {isAr
                   ? "هذه الخطوة لا تحتوي على نصوص قابلة للتعديل — يتحكم بها النظام."
                   : "This step has no editable copy — it is system generated."}
               </div>
             ) : (
               fields.map(([arKey, enKey, arLabel, enLabel]) => (
-                <div key={String(arKey)} className="cs-bilingual">
+                <div key={String(arKey)} className="flex flex-col gap-2 rounded-xl border border-border p-3">
                   <Row label={`${isAr ? arLabel : enLabel} — ${isAr ? "عربي" : "Arabic"}`}>
                     <TextInput
                       isAr={isAr}
@@ -110,8 +110,8 @@ export function CustomerExperienceSection({ settings, isAr, canEdit, commit }: S
             )}
           </div>
 
-          <aside className="cs-phone-wrap">
-            <div className="cs-phone-toolbar">
+          <aside className="flex flex-col gap-2">
+            <div className="flex items-center justify-between gap-2 text-muted-foreground">
               <Smartphone className="h-3.5 w-3.5" />
               <Segmented
                 value={previewLang}
@@ -122,9 +122,9 @@ export function CustomerExperienceSection({ settings, isAr, canEdit, commit }: S
                 ]}
               />
             </div>
-            <div className="cs-phone" dir={previewLang === "ar" ? "rtl" : "ltr"}>
-              <div className="cs-phone-notch" />
-              <div className="cs-phone-screen">
+            <div className="relative mx-auto flex h-[520px] w-[260px] flex-col rounded-[2.25rem] border-4 border-foreground/80 bg-foreground p-2 shadow-lg" dir={previewLang === "ar" ? "rtl" : "ltr"}>
+              <div className="mx-auto mb-1 h-4 w-24 rounded-full bg-foreground" />
+              <div className="flex-1 overflow-hidden rounded-[1.75rem] bg-background p-4">
                 <PreviewScreen
                   step={step}
                   lang={previewLang}
@@ -154,36 +154,36 @@ function PreviewScreen({
   const ar = lang === "ar";
   if (step === "language")
     return (
-      <div className="cs-pv">
+      <div className="flex flex-col gap-3 text-center text-foreground">
         <h4>{ar ? "اختر اللغة" : "Choose language"}</h4>
-        <button className="cs-pv-btn">العربية</button>
-        <button className="cs-pv-btn ghost">English</button>
+        <button className="rounded-[var(--kob-radius-button)] bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">العربية</button>
+        <button className="rounded-[var(--kob-radius-button)] border border-border px-4 py-2 text-sm font-semibold text-foreground">English</button>
       </div>
     );
   if (step === "phone")
     return (
-      <div className="cs-pv">
+      <div className="flex flex-col gap-3 text-center text-foreground">
         <h4>{ar ? "رقم الجوال" : "Mobile number"}</h4>
-        <div className="cs-pv-field">05XXXXXXXX</div>
-        <button className="cs-pv-btn">{ar ? "متابعة" : "Continue"}</button>
+        <div className="rounded-[var(--kob-radius-input)] border border-border bg-muted px-3 py-2 text-sm">05XXXXXXXX</div>
+        <button className="rounded-[var(--kob-radius-button)] bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">{ar ? "متابعة" : "Continue"}</button>
         <small>{ar ? "سيتم إرسال رمز تحقق" : "A verification code will be sent"}</small>
       </div>
     );
   if (step === "welcome")
     return (
-      <div className="cs-pv">
+      <div className="flex flex-col gap-3 text-center text-foreground">
         <h4>{pick("welcome_message_ar", "welcome_message_en") || (ar ? "أهلًا بك" : "Welcome")}</h4>
         <p>
           {pick("welcome_subtitle_ar", "welcome_subtitle_en") ||
             (ar ? "قهوتك اليومية جاهزة" : "Your daily coffee is ready")}
         </p>
-        <button className="cs-pv-btn">{ar ? "ابدأ" : "Start"}</button>
+        <button className="rounded-[var(--kob-radius-button)] bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">{ar ? "ابدأ" : "Start"}</button>
       </div>
     );
   if (step === "subscription")
     return (
-      <div className="cs-pv">
-        <div className="cs-pv-card">
+      <div className="flex flex-col gap-3 text-center text-foreground">
+        <div className="flex flex-col gap-1 rounded-xl border border-border bg-card p-3 text-start">
           <b>{ar ? "الاشتراك الشهري" : "Monthly plan"}</b>
           <span>{ar ? "٢٢ يومًا متبقيًا" : "22 days remaining"}</span>
         </div>
@@ -199,9 +199,9 @@ function PreviewScreen({
     );
   if (step === "drinks")
     return (
-      <div className="cs-pv">
+      <div className="flex flex-col gap-3 text-center text-foreground">
         <h4>{ar ? "اختر مشروب اليوم" : "Pick today's drink"}</h4>
-        <div className="cs-pv-grid">
+        <div className="grid grid-cols-2 gap-2 text-sm">
           <span>{ar ? "لاتيه" : "Latte"}</span>
           <span>{ar ? "أمريكانو" : "Americano"}</span>
           <span>{ar ? "كابتشينو" : "Cappuccino"}</span>
@@ -209,13 +209,13 @@ function PreviewScreen({
         </div>
         <p className="muted">{pick("loyalty_message_ar", "loyalty_message_en") || (ar ? "كل كوب يقرّبك من مكافأة" : "Every cup earns you rewards")}</p>
         {settings.customer_comments_enabled ? (
-          <div className="cs-pv-field">{ar ? "ملاحظات للباريستا" : "Note for the barista"}</div>
+          <div className="rounded-[var(--kob-radius-input)] border border-border bg-muted px-3 py-2 text-sm">{ar ? "ملاحظات للباريستا" : "Note for the barista"}</div>
         ) : null}
       </div>
     );
   return (
-    <div className="cs-pv">
-      <div className="cs-pv-tick">✓</div>
+    <div className="flex flex-col gap-3 text-center text-foreground">
+      <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-kob-success text-lg text-white">✓</div>
       <h4>
         {pick("redeem_success_message_ar", "redeem_success_message_en") || (ar ? "تم إرسال طلبك" : "Order sent")}
       </h4>

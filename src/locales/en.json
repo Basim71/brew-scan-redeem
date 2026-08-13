@@ -342,7 +342,9 @@
         "revokeAll": "Revoke all permissions",
         "coControl": "Co-control inside KOB",
         "screenShare": "Screen sharing",
-        "recording": "Session recording"
+        "recording": "Session recording",
+        "voice": "Voice",
+        "files": "Files"
       },
       "chat": {
         "title": "Session chat",
@@ -489,6 +491,12 @@
       "notesEmpty": "No notes yet.",
       "noteSaved": "Note saved",
       "noteError": "Couldn't save the note"
+    },
+    "permissions": {
+      "allowView": "Screen view",
+      "allowRemoteControl": "Shared control",
+      "allowVoice": "Voice call",
+      "allowRecording": "Session recording"
     }
   },
   "states": {

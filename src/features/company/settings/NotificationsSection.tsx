@@ -63,7 +63,7 @@ export function NotificationsSection({ settings, isAr, canEdit, commit }: Sectio
   };
 
   return (
-    <div className="cs-stack">
+    <div className="flex flex-col gap-4">
       <Card
         title={isAr ? "قنوات التواصل" : "Communication providers"}
         description={
@@ -72,12 +72,12 @@ export function NotificationsSection({ settings, isAr, canEdit, commit }: Sectio
             : "Enable a channel and store its account reference. No secret keys are kept here."
         }
       >
-        <div className="cs-provider-grid">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {PROVIDERS.map((p) => {
             const on = settings[p.channel] as boolean;
             const connected = Boolean(providers[p.key]?.connected);
             return (
-              <article key={p.key} className="cs-provider" data-on={on ? "true" : "false"}>
+              <article key={p.key} className="flex flex-col gap-2 rounded-xl border border-border bg-card p-3" data-on={on ? "true" : "false"}>
                 <header>
                   <p.icon className="h-4 w-4" />
                   <b>{isAr ? p.ar : p.en}</b>
