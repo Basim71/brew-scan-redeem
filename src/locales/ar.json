@@ -477,8 +477,8 @@
       "context_title": "تفاصيل التذكرة",
       "context_empty": "لا توجد تفاصيل إضافية مسجّلة.",
       "rating_title": "قيّم الدعم",
-      "rating_submitted": "قيّمت هذا الدعم {{rating}} من ٥.",
-      "star_label": "{{value}} نجوم",
+      "rating_submitted": "قيّمت هذا الدعم {rating} من ٥.",
+      "star_label": "{value} نجوم",
       "rating_comment_placeholder": "أضف تعليقًا (اختياري)",
       "rating_submit": "إرسال التقييم"
     },

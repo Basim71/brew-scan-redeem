@@ -477,8 +477,8 @@
       "context_title": "Ticket context",
       "context_empty": "No additional context recorded.",
       "rating_title": "Rate the support",
-      "rating_submitted": "You rated this support {{rating}} out of 5.",
-      "star_label": "{{value}} stars",
+      "rating_submitted": "You rated this support {rating} out of 5.",
+      "star_label": "{value} stars",
       "rating_comment_placeholder": "Add a comment (optional)",
       "rating_submit": "Submit rating"
     },
