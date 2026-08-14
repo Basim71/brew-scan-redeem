@@ -15351,3 +15351,134 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
 }
 
 .kob-scan-actions { margin-top: 18px; display: flex; flex-direction: column; gap: 10px; }
+
+/* ===== Luxury membership card (scan) ===== */
+.kob-mcard {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  padding: 20px;
+  color: var(--kob-cream, #F2E6C9);
+  background:
+    radial-gradient(120% 140% at 100% 0%, color-mix(in oklab, var(--kob-gold) 26%, transparent), transparent 60%),
+    linear-gradient(160deg, #3A241A 0%, #2B1A12 55%, #1E120C 100%);
+  border: 1px solid color-mix(in oklab, var(--kob-gold) 45%, transparent);
+  box-shadow:
+    0 18px 38px -18px rgba(43, 26, 18, 0.55),
+    inset 0 1px 0 color-mix(in oklab, var(--kob-gold) 35%, transparent);
+}
+.kob-mcard-sheen {
+  position: absolute;
+  inset: -40% -20% auto -20%;
+  height: 140%;
+  background: linear-gradient(100deg, transparent 40%, rgba(255, 255, 255, 0.09) 50%, transparent 60%);
+  pointer-events: none;
+}
+.kob-mcard-head {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.kob-mcard-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--kob-gold) 70%, #fff);
+}
+.kob-mcard-plan {
+  margin-top: 4px;
+  font-family: var(--kob-font-display);
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #fff;
+}
+.kob-mcard-seal {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #2B1A12;
+  background: linear-gradient(145deg, #F3DF9A, var(--kob-gold, #D4AF37) 60%, #A9822A);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+.kob-mcard-holder {
+  position: relative;
+  margin-top: 2px;
+  font-size: 0.85rem;
+  color: color-mix(in oklab, #fff 72%, transparent);
+}
+.kob-mcard-chip {
+  position: relative;
+  display: flex;
+  gap: 3px;
+  width: 40px;
+  height: 28px;
+  margin: 16px 0;
+  padding: 5px;
+  border-radius: 7px;
+  background: linear-gradient(145deg, #E8CE86, #B4912F);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+.kob-mcard-chip span {
+  flex: 1;
+  border-radius: 2px;
+  background: color-mix(in oklab, #2B1A12 35%, transparent);
+}
+.kob-mcard-counter {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.kob-mcard-days {
+  font-family: var(--kob-font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+}
+.kob-mcard-days small {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: color-mix(in oklab, var(--kob-gold) 75%, #fff);
+}
+.kob-mcard-track {
+  position: relative;
+  height: 8px;
+  margin-top: 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+.kob-mcard-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #A9822A, var(--kob-gold, #D4AF37), #F3DF9A);
+  box-shadow: 0 0 12px color-mix(in oklab, var(--kob-gold) 55%, transparent);
+  transition: width 400ms var(--kob-ease, ease);
+}
+.kob-mcard-foot {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px dashed color-mix(in oklab, var(--kob-gold) 30%, transparent);
+}
+.kob-mcard-foot strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+}
