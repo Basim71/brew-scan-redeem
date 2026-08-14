@@ -253,6 +253,23 @@ function ScanPage() {
         )
       : 0;
 
+  const daysUsed = subscription
+    ? Math.min(
+        totalDays,
+        Math.max(0, elapsedDays),
+      )
+    : 0;
+
+  const usedPct =
+    totalDays > 0
+      ? Math.min(
+          100,
+          Math.round(
+            (daysUsed / totalDays) * 100,
+          ),
+        )
+      : 0;
+
   const canOrder =
     Boolean(subscription) &&
     subscription?.status ===
@@ -1189,25 +1206,52 @@ function ScanPage() {
                 label={t("back")}
               />
 
-              <div className="kob-scan-well">
-                <div className="kob-scan-plan-label">{t("planLabel")}</div>
-                <div className="kob-scan-plan-name">{subscription.plan?.name ?? "—"}</div>
+              <div className="kob-mcard">
+                <div className="kob-mcard-sheen" aria-hidden="true" />
 
-                {customer?.name && <div className="kob-scan-plan-customer">{customer.name}</div>}
-
-                <div className="kob-scan-divider" />
-
-                <div className="kob-scan-row">
-                  <span>{t("branchLabel")}</span>
-                  <strong>{branchLabel}</strong>
+                <div className="kob-mcard-head">
+                  <div>
+                    <div className="kob-mcard-label">{t("planLabel")}</div>
+                    <div className="kob-mcard-plan">{subscription.plan?.name ?? "—"}</div>
+                  </div>
+                  <div className="kob-mcard-seal" aria-hidden="true">
+                    KOB
+                  </div>
                 </div>
 
-                <div className="kob-scan-row">
-                  <span>{t("remainingLabel")}</span>
-                  <span className="kob-scan-days">
-                    {fmtNum(daysLeft)}
+                {customer?.name && <div className="kob-mcard-holder">{customer.name}</div>}
+
+                <div className="kob-mcard-chip" aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                </div>
+
+                <div className="kob-mcard-counter">
+                  <span className="kob-mcard-label">
+                    {lang === "ar" ? "الأيام المستخدمة" : "Days used"}
+                  </span>
+                  <span className="kob-mcard-days">
+                    {fmtNum(daysUsed)}
                     <small> / {fmtNum(totalDays)}</small>
                   </span>
+                </div>
+
+                <div className="kob-mcard-track" role="presentation">
+                  <div className="kob-mcard-fill" style={{ width: `${usedPct}%` }} />
+                </div>
+
+                <div className="kob-mcard-foot">
+                  <div>
+                    <div className="kob-mcard-label">{t("branchLabel")}</div>
+                    <strong>{branchLabel}</strong>
+                  </div>
+                  <div className="text-end">
+                    <div className="kob-mcard-label">{t("remainingLabel")}</div>
+                    <strong>
+                      {fmtNum(daysLeft)} {lang === "ar" ? "يوم" : "days"}
+                    </strong>
+                  </div>
                 </div>
               </div>
             </section>
