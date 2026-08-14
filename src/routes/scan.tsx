@@ -11,6 +11,7 @@ import {
 import {
   ArrowLeft,
   Check,
+  ChevronRight,
   Clock,
   Coffee,
   UserPlus,
@@ -903,85 +904,58 @@ function ScanPage() {
   }
 
   return (
-    <main
-      dir={dir}
-      className="flex min-h-dvh flex-col items-center overflow-x-hidden px-4 py-8"
-    >
-      <div className="w-full max-w-md">
-        <div className="mb-6 flex items-center justify-between">
-          <Link
-            to="/"
-            className="flex items-center gap-2 text-cream-dim transition hover:text-caramel-bright"
-          >
+    <main dir={dir} className="kob-scan">
+      <div className="kob-scan-shell">
+        <div className="kob-scan-topbar">
+          <Link to="/" className="kob-scan-brand">
             {branding?.logo_url ? (
-              <img
-                src={branding.logo_url}
-                alt={brandName}
-                className="h-9 w-9 rounded-xl object-cover shadow-sm"
-                loading="lazy"
-              />
+              <img src={branding.logo_url} alt={brandName} loading="lazy" />
             ) : (
-              <Coffee className="h-5 w-5" />
+              <span className="kob-scan-brand-fallback" aria-hidden>
+                <Coffee className="h-4 w-4" />
+              </span>
             )}
-
-            <span className="font-display text-xl font-bold tracking-wider gold-text">
-              {brandName}
-            </span>
+            <span className="kob-scan-brand-name">{brandName}</span>
           </Link>
 
           <LanguageSwitcher />
         </div>
 
         {step === "branch" && (
-          <section className="panel-warm p-7">
-            <h1 className="mb-1 font-display text-2xl font-bold text-cream">
-              {t("pickBranch")}
-            </h1>
+          <section className="kob-scan-card">
+            <h1 className="kob-scan-title">{t("pickBranch")}</h1>
+            <p className="kob-scan-sub">{t("scanHint")}</p>
 
-            <p className="mb-5 text-sm text-cream-dim">
-              {t("scanHint")}
-            </p>
+            <div className="kob-scan-body">
+              {branches.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className="kob-scan-branch"
+                  onClick={() => {
+                    setBranch(item);
+                    setError(null);
+                    setStep("language");
+                  }}
+                >
+                  <span>{lang === "ar" ? item.name_ar : item.name_en}</span>
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              ))}
 
-            <div className="space-y-2">
-              {branches.map(
-                (item) => (
-                  <Button
-                    key={item.id}
-                    variant="secondary"
-                    block
-                    className="justify-start text-start font-semibold"
-                    onClick={() => {
-                      setBranch(item);
-                      setError(null);
-                      setStep("language");
-                    }}
-                  >
-                    {lang === "ar" ? item.name_ar : item.name_en}
-                  </Button>
-                ),
-              )}
-
-              {branches.length ===
-                0 && (
-                <div className="engraved p-4 text-center text-sm text-cream-dim">
-                  {lang === "ar"
-                    ? "لا توجد فروع متاحة."
-                    : "No branches are available."}
+              {branches.length === 0 && (
+                <div className="kob-scan-well text-center text-sm">
+                  {lang === "ar" ? "لا توجد فروع متاحة." : "No branches are available."}
                 </div>
               )}
-            </div>
 
-            {error && (
-              <div className="mt-4">
-                <Alert tone="danger">{error}</Alert>
-              </div>
-            )}
+              {error && <Alert tone="danger">{error}</Alert>}
+            </div>
           </section>
         )}
 
-        {step === "language" &&
-          branch && (
-          <section className="panel-warm p-7">
+        {step === "language" && branch && (
+          <section className="kob-scan-card" data-center="true">
             <BackButton
               onClick={() => {
                 setError(null);
@@ -990,19 +964,14 @@ function ScanPage() {
               label={t("back")}
             />
 
-            <BranchBadge
-              label={branchLabel}
-            />
+            <BranchBadge label={branchLabel} />
 
-            <h1 className="mb-6 text-center font-display text-2xl font-bold text-cream">
-              {t("pickLang")}
-            </h1>
+            <h1 className="kob-scan-title">{t("pickLang")}</h1>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="kob-scan-body kob-scan-lang-grid">
               <Button
                 size="lg"
                 loading={busy}
-                className="py-5 font-display text-xl"
                 onClick={() => {
                   void chooseLanguage("en");
                 }}
@@ -1013,7 +982,6 @@ function ScanPage() {
               <Button
                 size="lg"
                 loading={busy}
-                className="py-5 font-display text-xl"
                 onClick={() => {
                   void chooseLanguage("ar");
                 }}
@@ -1024,14 +992,9 @@ function ScanPage() {
           </section>
         )}
 
-        {step === "showcase" &&
-          branch && (
+        {step === "showcase" && branch && (
           <section className="kob-voyager-page">
-            <DrinkSlider
-              drinks={drinks}
-              language={lang}
-              mode="showcase"
-            />
+            <DrinkSlider drinks={drinks} language={lang} mode="showcase" />
 
             {error && (
               <div className="mx-auto mt-4 w-full max-w-sm">
@@ -1064,50 +1027,37 @@ function ScanPage() {
                   setStep("phone");
                 }}
               >
-                {lang === "ar"
-                  ? "لدي اشتراك بالفعل"
-                  : "I already have a subscription"}
+                {lang === "ar" ? "لدي اشتراك بالفعل" : "I already have a subscription"}
               </Button>
             </div>
           </section>
         )}
 
-        {step === "register" &&
-          branch && (
-          <section className="panel-warm p-7">
+        {step === "register" && branch && (
+          <section className="kob-scan-card">
             <BackButton
               onClick={() => {
                 setError(null);
                 setInfo(null);
-                setStep(
-                  "showcase",
-                );
+                setStep("showcase");
               }}
               label={t("back")}
             />
 
-            <BranchBadge
-              label={branchLabel}
-            />
+            <BranchBadge label={branchLabel} />
 
-            <h1 className="mb-1 text-center font-display text-2xl font-bold text-cream">
-              {lang === "ar"
-                ? "طلب تسجيل جديد"
-                : "New Registration"}
-            </h1>
+            <div className="text-center">
+              <h1 className="kob-scan-title">
+                {lang === "ar" ? "طلب تسجيل جديد" : "New Registration"}
+              </h1>
+              <p className="kob-scan-sub">
+                {lang === "ar"
+                  ? "أدخل بياناتك وسيصل طلب التسجيل إلى كاشير الفرع."
+                  : "Enter your details and the request will be sent to the branch cashier."}
+              </p>
+            </div>
 
-            <p className="mb-5 text-center text-sm leading-6 text-cream-dim">
-              {lang === "ar"
-                ? "أدخل بياناتك وسيصل طلب التسجيل إلى كاشير الفرع."
-                : "Enter your details and the request will be sent to the branch cashier."}
-            </p>
-
-            <form
-              onSubmit={
-                submitRegistration
-              }
-              className="space-y-4"
-            >
+            <form onSubmit={submitRegistration} className="kob-scan-body">
               <KobInput
                 label={lang === "ar" ? "الاسم الأول" : "First name"}
                 type="text"
@@ -1147,88 +1097,72 @@ function ScanPage() {
                 loading={busy}
                 leadingIcon={<UserPlus className="h-4 w-4" />}
               >
-                {lang === "ar"
-                  ? "إرسال طلب التسجيل"
-                  : "Send Registration Request"}
+                {lang === "ar" ? "إرسال طلب التسجيل" : "Send Registration Request"}
               </Button>
             </form>
           </section>
         )}
 
-        {step ===
-          "registration-sent" && (
-          <section className="panel-warm p-8 text-center">
-            <div className="engraved mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full">
-              <Clock className="h-9 w-9 animate-pulse text-caramel-bright" />
+        {step === "registration-sent" && (
+          <section className="kob-scan-card" data-center="true">
+            <div className="kob-scan-icon-badge">
+              <Clock className="h-8 w-8 animate-pulse" />
             </div>
 
-            <h1 className="font-display text-2xl font-bold text-cream">
-              {lang === "ar"
-                ? "تم إرسال طلب التسجيل"
-                : "Registration Sent"}
+            <h1 className="kob-scan-title">
+              {lang === "ar" ? "تم إرسال طلب التسجيل" : "Registration Sent"}
             </h1>
 
-            <p className="mt-3 text-sm leading-7 text-cream-dim">
+            <p className="kob-scan-sub">
               {lang === "ar"
                 ? "وصلت بياناتك إلى الكاشير. بعد تفعيل الاشتراك امسح الكود مرة أخرى وأدخل رقم جوالك."
                 : "Your details were sent to the cashier. Once your subscription is activated, scan the QR code again and enter your phone number."}
             </p>
 
-            <Button
-              variant="ghost"
-              className="mt-6"
-              onClick={() => {
-                setError(null);
-                setInfo(null);
-                setStep("phone");
-              }}
-            >
-              {lang === "ar"
-                ? "فحص حالة الاشتراك"
-                : "Check Subscription Status"}
-            </Button>
+            <div className="kob-scan-actions">
+              <Button
+                variant="secondary"
+                block
+                onClick={() => {
+                  setError(null);
+                  setInfo(null);
+                  setStep("phone");
+                }}
+              >
+                {lang === "ar" ? "فحص حالة الاشتراك" : "Check Subscription Status"}
+              </Button>
+            </div>
           </section>
         )}
 
-        {step === "phone" &&
-          branch && (
-          <section className="panel-warm p-7">
+        {step === "phone" && branch && (
+          <section className="kob-scan-card">
             <BackButton
               onClick={() => {
                 setError(null);
                 setInfo(null);
-
-                setStep(
-                  deviceKnown
-                    ? "language"
-                    : "showcase",
-                );
+                setStep(deviceKnown ? "language" : "showcase");
               }}
               label={t("back")}
             />
 
-            <BranchBadge
-              label={branchLabel}
-            />
+            <BranchBadge label={branchLabel} />
 
-            <h1 className="mb-1 text-center font-display text-2xl font-bold text-cream">
-              {t("enterPhone")}
-            </h1>
-
-            <p className="mb-5 text-center text-sm text-cream-dim">
-              {lang === "ar"
-                ? "أدخل رقم الجوال المرتبط باشتراكك."
-                : "Enter the phone number connected to your subscription."}
-            </p>
+            <div className="text-center">
+              <h1 className="kob-scan-title">{t("enterPhone")}</h1>
+              <p className="kob-scan-sub">
+                {lang === "ar"
+                  ? "أدخل رقم الجوال المرتبط باشتراكك."
+                  : "Enter the phone number connected to your subscription."}
+              </p>
+            </div>
 
             <form
-              onSubmit={(
-                event,
-              ) => {
+              onSubmit={(event) => {
                 event.preventDefault();
                 void lookup();
               }}
-              className="space-y-4"
+              className="kob-scan-body"
             >
               <KobPhoneInput value={phone} onValueChange={setPhone} />
 
@@ -1243,11 +1177,9 @@ function ScanPage() {
           </section>
         )}
 
-        {step === "menu" &&
-          subscription &&
-          branch && (
-          <div className="space-y-4">
-            <section className="panel-warm p-6">
+        {step === "menu" && subscription && branch && (
+          <div className="flex flex-col gap-4">
+            <section className="kob-scan-card">
               <BackButton
                 onClick={() => {
                   setError(null);
@@ -1257,55 +1189,24 @@ function ScanPage() {
                 label={t("back")}
               />
 
-              <div className="engraved p-4">
-                <div className="mb-1 text-[10px] uppercase tracking-[0.25em] text-cream-dim">
-                  {t("planLabel")}
+              <div className="kob-scan-well">
+                <div className="kob-scan-plan-label">{t("planLabel")}</div>
+                <div className="kob-scan-plan-name">{subscription.plan?.name ?? "—"}</div>
+
+                {customer?.name && <div className="kob-scan-plan-customer">{customer.name}</div>}
+
+                <div className="kob-scan-divider" />
+
+                <div className="kob-scan-row">
+                  <span>{t("branchLabel")}</span>
+                  <strong>{branchLabel}</strong>
                 </div>
 
-                <div className="font-display text-2xl font-bold text-cream">
-                  {subscription.plan
-                    ?.name ?? "—"}
-                </div>
-
-                {customer?.name && (
-                  <div className="mt-1 text-sm text-cream-dim">
-                    {customer.name}
-                  </div>
-                )}
-
-                <div className="hairline-divider my-3" />
-
-                <div className="flex justify-between gap-4 text-sm">
-                  <span className="text-cream-dim">
-                    {t(
-                      "branchLabel",
-                    )}
-                  </span>
-
-                  <span className="text-end text-cream">
-                    {branchLabel}
-                  </span>
-                </div>
-
-                <div className="mt-3 flex items-baseline justify-between">
-                  <span className="text-sm text-cream-dim">
-                    {t(
-                      "remainingLabel",
-                    )}
-                  </span>
-
-                  <span className="font-display text-3xl font-bold gold-text">
-                    {fmtNum(
-                      daysLeft,
-                    )}
-
-                    <span className="font-sans text-sm text-cream-dim">
-                      {" "}
-                      /{" "}
-                      {fmtNum(
-                        totalDays,
-                      )}
-                    </span>
+                <div className="kob-scan-row">
+                  <span>{t("remainingLabel")}</span>
+                  <span className="kob-scan-days">
+                    {fmtNum(daysLeft)}
+                    <small> / {fmtNum(totalDays)}</small>
                   </span>
                 </div>
               </div>
@@ -1317,16 +1218,12 @@ function ScanPage() {
                 language={lang}
                 mode="order"
                 busy={busy}
-                canOrder={
-                  canOrder
-                }
-                onOrder={
-                  sendOrder
-                }
+                canOrder={canOrder}
+                onOrder={sendOrder}
               />
 
               {!canOrder && (
-                <div className="engraved mx-auto mt-4 max-w-sm p-3 text-center text-sm text-cream-dim">
+                <div className="kob-scan-note">
                   {usedToday > 0
                     ? lang === "ar"
                       ? "تم استخدام طلب اليوم بالفعل."
@@ -1335,9 +1232,7 @@ function ScanPage() {
                       ? lang === "ar"
                         ? "انتهت مدة الاشتراك."
                         : "The subscription has expired."
-                      : t(
-                          "empty_days",
-                        )}
+                      : t("empty_days")}
                 </div>
               )}
 
@@ -1351,70 +1246,51 @@ function ScanPage() {
         )}
 
         {step === "waiting" && (
-          <section className="panel-warm p-8 text-center">
-            {orderStatus ===
-              "pending" && (
+          <section className="kob-scan-card" data-center="true">
+            {orderStatus === "pending" && (
               <>
-                <div className="engraved mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full">
-                  <Clock className="h-9 w-9 animate-pulse text-caramel-bright" />
+                <div className="kob-scan-icon-badge">
+                  <Clock className="h-8 w-8 animate-pulse" />
                 </div>
 
-                <h1 className="mb-2 font-display text-2xl font-bold text-cream">
-                  {t("waiting")}
-                </h1>
+                <h1 className="kob-scan-title">{t("waiting")}</h1>
+                <p className="kob-scan-sub">{t("waitingHint")}</p>
+              </>
+            )}
 
-                <p className="text-sm leading-6 text-cream-dim">
-                  {t(
-                    "waitingHint",
-                  )}
+            {orderStatus === "approved" && (
+              <>
+                <div className="kob-scan-icon-badge" data-tone="ok">
+                  <Check className="h-9 w-9" />
+                </div>
+
+                <h1 className="kob-scan-title">{t("approvedMsg")}</h1>
+                <p className="kob-scan-sub">
+                  {lang === "ar" ? "يتم الآن تجهيز قهوتك." : "Your coffee is now being prepared."}
                 </p>
               </>
             )}
 
-            {orderStatus ===
-              "approved" && (
+            {orderStatus === "rejected" && (
               <>
-                <div className="engraved mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full">
-                  <Check className="h-10 w-10 text-leaf" />
+                <div className="kob-scan-icon-badge" data-tone="error">
+                  <XCircle className="h-9 w-9" />
                 </div>
 
-                <h1 className="mb-2 font-display text-2xl font-bold text-cream">
-                  {t(
-                    "approvedMsg",
-                  )}
-                </h1>
-
-                <p className="text-sm text-cream-dim">
-                  {lang === "ar"
-                    ? "يتم الآن تجهيز قهوتك."
-                    : "Your coffee is now being prepared."}
-                </p>
-              </>
-            )}
-
-            {orderStatus ===
-              "rejected" && (
-              <>
-                <div className="engraved mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full">
-                  <XCircle className="h-10 w-10 text-[oklch(0.7_0.18_32)]" />
-                </div>
-
-                <h1 className="mb-2 font-display text-2xl font-bold text-cream">
-                  {t(
-                    "rejectedMsg",
-                  )}
-                </h1>
+                <h1 className="kob-scan-title">{t("rejectedMsg")}</h1>
               </>
             )}
 
             {orderStatus !== "pending" && (
-              <Button variant="ghost" size="sm" className="mt-6" onClick={resetOrderScreen}>
-                {orderStatus === "approved"
-                  ? lang === "ar"
-                    ? "العودة للاشتراك"
-                    : "Back to Subscription"
-                  : t("newOrder")}
-              </Button>
+              <div className="kob-scan-actions">
+                <Button variant="secondary" block onClick={resetOrderScreen}>
+                  {orderStatus === "approved"
+                    ? lang === "ar"
+                      ? "العودة للاشتراك"
+                      : "Back to Subscription"
+                    : t("newOrder")}
+                </Button>
+              </div>
             )}
           </section>
         )}
@@ -1423,30 +1299,16 @@ function ScanPage() {
   );
 }
 
-function BranchBadge({
-  label,
-}: {
-  label: string;
-}) {
-  return (
-    <div className="engraved mb-5 px-3 py-2 text-center text-xs uppercase tracking-widest text-cream-dim">
-      {label}
-    </div>
-  );
+function BranchBadge({ label }: { label: string }) {
+  return <span className="kob-scan-eyebrow">{label}</span>;
 }
 
-function BackButton({
-  onClick,
-  label,
-}: {
-  onClick: () => void;
-  label: string;
-}) {
+function BackButton({ onClick, label }: { onClick: () => void; label: string }) {
   return (
     <Button
       variant="ghost"
       size="sm"
-      className="mb-4 -ms-2"
+      className="mb-3 -ms-2"
       leadingIcon={<ArrowLeft className="h-3.5 w-3.5" />}
       onClick={onClick}
     >
