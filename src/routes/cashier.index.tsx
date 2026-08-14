@@ -6,13 +6,13 @@ import {
   Coffee,
   Inbox,
   Phone,
-  RefreshCw,
   Search,
   Tag,
   User,
   UserPlus,
   X,
 } from "lucide-react";
+
 
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
@@ -28,13 +28,13 @@ import {
   EmptyState,
   Field,
   LoadingState,
-  PageHeader,
   PhoneInput,
   Select,
   StatCard,
   StatGrid,
   Tabs,
 } from "@/components/kob";
+
 
 export const Route = createFileRoute("/cashier/")({
   component: CashierQueuePage,
@@ -363,23 +363,7 @@ function CashierQueuePage() {
 
   return (
     <div className="kob-queue-page">
-      <PageHeader
-        eyebrow={t("cashier.eyebrow")}
-        title={t("cashier.title")}
-        description={t("cashier.description")}
-        action={
-          <Button
-            variant="ghost"
-            onClick={() => {
-              void loadQueue();
-            }}
-            loading={loading}
-            leadingIcon={<RefreshCw className="h-4 w-4" />}
-          >
-            {t("common.actions.refresh")}
-          </Button>
-        }
-      />
+
 
       <StatGrid>
         <StatCard
