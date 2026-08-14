@@ -253,6 +253,23 @@ function ScanPage() {
         )
       : 0;
 
+  const daysUsed = subscription
+    ? Math.min(
+        totalDays,
+        Math.max(0, elapsedDays),
+      )
+    : 0;
+
+  const usedPct =
+    totalDays > 0
+      ? Math.min(
+          100,
+          Math.round(
+            (daysUsed / totalDays) * 100,
+          ),
+        )
+      : 0;
+
   const canOrder =
     Boolean(subscription) &&
     subscription?.status ===
