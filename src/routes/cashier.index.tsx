@@ -6,13 +6,13 @@ import {
   Coffee,
   Inbox,
   Phone,
-  RefreshCw,
   Search,
   Tag,
   User,
   UserPlus,
   X,
 } from "lucide-react";
+
 
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
