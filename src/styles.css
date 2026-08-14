@@ -15142,3 +15142,212 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
     flex-direction: column-reverse;
   }
 }
+
+/* ============================================================
+   SCAN PAGE — KOB premium light redesign (presentation only)
+   ============================================================ */
+.kob-scan {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-x: hidden;
+  padding: 24px 16px 48px;
+  background:
+    radial-gradient(120% 70% at 50% -10%, color-mix(in oklab, var(--kob-gold) 16%, transparent), transparent 60%),
+    radial-gradient(90% 60% at 100% 100%, color-mix(in oklab, var(--kob-champagne) 60%, transparent), transparent 65%),
+    var(--kob-bg);
+}
+
+.kob-scan-shell {
+  width: 100%;
+  max-width: 30rem;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.kob-scan-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.kob-scan-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px 6px 6px;
+  border-radius: var(--kob-radius-pill);
+  background: #fff;
+  border: 1px solid color-mix(in oklab, var(--kob-primary-dark) 10%, transparent);
+  box-shadow: var(--kob-shadow-sm);
+  color: var(--kob-primary-dark);
+  text-decoration: none;
+  transition: box-shadow var(--kob-duration) var(--kob-ease), transform var(--kob-duration) var(--kob-ease);
+}
+.kob-scan-brand:hover { box-shadow: var(--kob-shadow-md); transform: translateY(-1px); }
+.kob-scan-brand img,
+.kob-scan-brand .kob-scan-brand-fallback {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--kob-radius-pill);
+  object-fit: cover;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(160deg, var(--kob-primary-dark), var(--kob-secondary));
+  color: var(--kob-champagne);
+}
+.kob-scan-brand-name {
+  font-family: var(--kob-font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+}
+
+.kob-scan-card {
+  position: relative;
+  border-radius: var(--kob-radius-card);
+  background: linear-gradient(180deg, #ffffff, color-mix(in oklab, var(--kob-champagne) 22%, #ffffff));
+  border: 1px solid color-mix(in oklab, var(--kob-primary-dark) 9%, transparent);
+  box-shadow: var(--kob-shadow-lg), inset 0 1px 0 #fff;
+  padding: 26px 22px;
+}
+.kob-scan-card::after {
+  content: "";
+  position: absolute;
+  inset-inline: 22px;
+  top: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--kob-gold), transparent);
+  opacity: 0.7;
+}
+.kob-scan-card[data-center="true"] { text-align: center; }
+
+.kob-scan-title {
+  font-family: var(--kob-font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--kob-primary-dark);
+  line-height: var(--kob-leading-tight);
+  margin: 0;
+}
+.kob-scan-sub {
+  margin: 6px 0 0;
+  font-size: 0.875rem;
+  line-height: var(--kob-leading-relaxed);
+  color: color-mix(in oklab, var(--kob-primary-dark) 62%, #ffffff);
+}
+.kob-scan-body { margin-top: 20px; display: flex; flex-direction: column; gap: 12px; }
+
+.kob-scan-eyebrow {
+  display: block;
+  margin-bottom: 14px;
+  text-align: center;
+  font-size: 0.66rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--kob-bronze);
+}
+
+.kob-scan-well {
+  border-radius: var(--kob-radius-lg);
+  background: color-mix(in oklab, var(--kob-champagne) 42%, #ffffff);
+  border: 1px solid color-mix(in oklab, var(--kob-primary-dark) 8%, transparent);
+  box-shadow: inset 0 2px 6px color-mix(in oklab, var(--kob-primary-dark) 10%, transparent);
+  padding: 16px;
+}
+
+.kob-scan-branch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 15px 18px;
+  border-radius: var(--kob-radius-lg);
+  background: #fff;
+  border: 1px solid color-mix(in oklab, var(--kob-primary-dark) 10%, transparent);
+  box-shadow: var(--kob-shadow-sm);
+  font-family: var(--kob-font-display);
+  font-weight: 600;
+  color: var(--kob-primary-dark);
+  cursor: pointer;
+  transition: all var(--kob-duration) var(--kob-ease);
+}
+.kob-scan-branch:hover {
+  border-color: color-mix(in oklab, var(--kob-gold) 60%, transparent);
+  box-shadow: var(--kob-shadow-md);
+  transform: translateY(-1px);
+}
+.kob-scan-branch svg { color: var(--kob-gold); flex: none; }
+[dir="rtl"] .kob-scan-branch svg { transform: scaleX(-1); }
+
+.kob-scan-lang-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.kob-scan-icon-badge {
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 18px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--kob-radius-pill);
+  background: color-mix(in oklab, var(--kob-champagne) 55%, #ffffff);
+  border: 1px solid color-mix(in oklab, var(--kob-primary-dark) 8%, transparent);
+  box-shadow: inset 0 3px 8px color-mix(in oklab, var(--kob-primary-dark) 12%, transparent);
+  color: var(--kob-gold-muted);
+}
+.kob-scan-icon-badge[data-tone="ok"] { color: var(--kob-ok); }
+.kob-scan-icon-badge[data-tone="error"] { color: var(--kob-danger); }
+
+.kob-scan-plan-label {
+  font-size: 0.63rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--kob-bronze);
+}
+.kob-scan-plan-name {
+  font-family: var(--kob-font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--kob-primary-dark);
+}
+.kob-scan-plan-customer { font-size: 0.85rem; color: color-mix(in oklab, var(--kob-primary-dark) 60%, #fff); }
+.kob-scan-divider {
+  height: 1px;
+  margin: 14px 0;
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--kob-primary-dark) 16%, transparent), transparent);
+}
+.kob-scan-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 0.875rem;
+  color: color-mix(in oklab, var(--kob-primary-dark) 62%, #fff);
+}
+.kob-scan-row + .kob-scan-row { margin-top: 10px; }
+.kob-scan-row strong { color: var(--kob-primary-dark); font-weight: 600; text-align: end; }
+.kob-scan-days {
+  font-family: var(--kob-font-display);
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--kob-primary-dark);
+}
+.kob-scan-days small { font-size: 0.85rem; font-weight: 500; color: var(--kob-bronze); }
+
+.kob-scan-note {
+  margin: 16px auto 0;
+  max-width: 24rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: color-mix(in oklab, var(--kob-primary-dark) 60%, #fff);
+  border-radius: var(--kob-radius-lg);
+  background: color-mix(in oklab, var(--kob-champagne) 40%, #ffffff);
+  border: 1px solid color-mix(in oklab, var(--kob-primary-dark) 8%, transparent);
+  padding: 12px 14px;
+}
+
+.kob-scan-actions { margin-top: 18px; display: flex; flex-direction: column; gap: 10px; }
