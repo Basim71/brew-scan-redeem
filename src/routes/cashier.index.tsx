@@ -363,23 +363,7 @@ function CashierQueuePage() {
 
   return (
     <div className="kob-queue-page">
-      <PageHeader
-        eyebrow={t("cashier.eyebrow")}
-        title={t("cashier.title")}
-        description={t("cashier.description")}
-        action={
-          <Button
-            variant="ghost"
-            onClick={() => {
-              void loadQueue();
-            }}
-            loading={loading}
-            leadingIcon={<RefreshCw className="h-4 w-4" />}
-          >
-            {t("common.actions.refresh")}
-          </Button>
-        }
-      />
+
 
       <StatGrid>
         <StatCard
