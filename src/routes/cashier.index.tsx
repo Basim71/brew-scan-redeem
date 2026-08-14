@@ -28,13 +28,13 @@ import {
   EmptyState,
   Field,
   LoadingState,
-  PageHeader,
   PhoneInput,
   Select,
   StatCard,
   StatGrid,
   Tabs,
 } from "@/components/kob";
+
 
 export const Route = createFileRoute("/cashier/")({
   component: CashierQueuePage,
