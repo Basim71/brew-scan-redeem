@@ -23,9 +23,9 @@ import { DrinkSlider } from "@/features/drinks/DrinkSlider";
 import type { Drink, DrinkOrderCustomization } from "@/features/drinks/types";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  LanguageSwitcher,
   useI18n,
 } from "@/lib/i18n";
+
 
 export const Route = createFileRoute("/scan")({
   head: () => ({
