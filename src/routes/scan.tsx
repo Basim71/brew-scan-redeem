@@ -47,7 +47,7 @@ export const Route = createFileRoute("/scan")({
 type Step =
   | "branch"
   | "language"
-  | "showcase"
+  | "plans"
   | "register"
   | "registration-sent"
   | "phone"
@@ -64,6 +64,17 @@ type Plan = {
   id: string;
   name: string;
   duration_days: number;
+};
+
+type PublicPlan = {
+  id: string;
+  name_ar: string | null;
+  name_en: string | null;
+  description_ar: string | null;
+  description_en: string | null;
+  duration_days: number;
+  price: number;
+  currency: string | null;
 };
 
 type Subscription = {
@@ -123,13 +134,19 @@ function ScanPage() {
   } = useI18n();
 
   const [step, setStep] =
-    useState<Step>("branch");
+    useState<Step>("language");
 
   const [branches, setBranches] =
     useState<Branch[]>([]);
 
   const [branch, setBranch] =
     useState<Branch | null>(null);
+
+  const [plans, setPlans] =
+    useState<PublicPlan[]>([]);
+
+  const [selectedPlanId, setSelectedPlanId] =
+    useState<string | null>(null);
 
   const [drinks, setDrinks] =
     useState<Drink[]>([]);
