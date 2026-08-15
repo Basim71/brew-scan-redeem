@@ -946,7 +946,7 @@ function ScanPage() {
                   onClick={() => {
                     setBranch(item);
                     setError(null);
-                    setStep("language");
+                    void continueWithBranch(item);
                   }}
                 >
                   <span>{lang === "ar" ? item.name_ar : item.name_en}</span>
@@ -965,17 +965,20 @@ function ScanPage() {
           </section>
         )}
 
-        {step === "language" && branch && (
+        {step === "language" && (
           <section className="kob-scan-card" data-center="true">
-            <BackButton
-              onClick={() => {
-                setError(null);
-                setStep("branch");
-              }}
-              label={t("back")}
-            />
+            <div className="kob-scan-brandmark">
+              {branding?.logo_url ? (
+                <img src={branding.logo_url} alt={brandName} />
+              ) : (
+                <span className="kob-scan-brand-fallback" aria-hidden>
+                  <Coffee className="h-6 w-6" />
+                </span>
+              )}
+              <span className="kob-scan-brandmark-name">{brandName}</span>
+            </div>
 
-            <BranchBadge label={branchLabel} />
+            {branch && <BranchBadge label={branchLabel} />}
 
             <h1 className="kob-scan-title">{t("pickLang")}</h1>
 
@@ -1003,43 +1006,62 @@ function ScanPage() {
           </section>
         )}
 
-        {step === "showcase" && branch && (
-          <section className="kob-voyager-page">
-            <DrinkSlider drinks={drinks} language={lang} mode="showcase" />
+        {step === "plans" && (
+          <section className="kob-scan-card">
+            <BranchBadge label={branchLabel} />
 
-            {error && (
-              <div className="mx-auto mt-4 w-full max-w-sm">
-                <Alert tone="danger">{error}</Alert>
-              </div>
-            )}
+            <div className="text-center">
+              <h1 className="kob-scan-title">
+                {lang === "ar" ? "اختر الباقة" : "Choose your plan"}
+              </h1>
+              <p className="kob-scan-sub">
+                {lang === "ar"
+                  ? "اختر الباقة المناسبة وسيقوم الكاشير بتفعيلها لك."
+                  : "Pick the plan you want and the cashier will activate it for you."}
+              </p>
+            </div>
 
-            <div className="kob-voyager-page-actions">
-              <Button
-                block
-                size="lg"
-                leadingIcon={<UserPlus className="h-5 w-5" />}
-                className="kob-voyager-register-button"
-                onClick={() => {
-                  setError(null);
-                  setInfo(null);
-                  setStep("register");
-                }}
-              >
-                {lang === "ar" ? "تسجيل" : "Register"}
-              </Button>
+            <div className="kob-scan-body">
+              {plans.map((plan) => {
+                const planName =
+                  (lang === "ar" ? plan.name_ar || plan.name_en : plan.name_en || plan.name_ar) ??
+                  "—";
+                const planDesc =
+                  lang === "ar"
+                    ? plan.description_ar || plan.description_en
+                    : plan.description_en || plan.description_ar;
 
-              <Button
-                block
-                variant="ghost"
-                className="kob-voyager-existing-button"
-                onClick={() => {
-                  setError(null);
-                  setInfo(null);
-                  setStep("phone");
-                }}
-              >
-                {lang === "ar" ? "لدي اشتراك بالفعل" : "I already have a subscription"}
-              </Button>
+                return (
+                  <button
+                    key={plan.id}
+                    type="button"
+                    className="kob-scan-branch"
+                    data-selected={plan.id === selectedPlanId || undefined}
+                    onClick={() => {
+                      setSelectedPlanId(plan.id);
+                      setStep("registration-sent");
+                    }}
+                  >
+                    <span className="flex flex-col items-start gap-1 text-start">
+                      <strong>{planName}</strong>
+                      <small>
+                        {fmtNum(plan.duration_days)} {lang === "ar" ? "يوم" : "days"} ·{" "}
+                        {fmtNum(plan.price)} {plan.currency ?? "SAR"}
+                      </small>
+                      {planDesc && <small>{planDesc}</small>}
+                    </span>
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                );
+              })}
+
+              {plans.length === 0 && (
+                <div className="kob-scan-well text-center text-sm">
+                  {lang === "ar" ? "لا توجد باقات متاحة حاليًا." : "No plans are available yet."}
+                </div>
+              )}
+
+              {error && <Alert tone="danger">{error}</Alert>}
             </div>
           </section>
         )}
