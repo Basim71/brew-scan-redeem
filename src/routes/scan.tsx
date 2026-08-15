@@ -1,7 +1,7 @@
 import {
   createFileRoute,
-  Link,
 } from "@tanstack/react-router";
+
 import {
   useEffect,
   useMemo,
@@ -23,9 +23,9 @@ import { DrinkSlider } from "@/features/drinks/DrinkSlider";
 import type { Drink, DrinkOrderCustomization } from "@/features/drinks/types";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  LanguageSwitcher,
   useI18n,
 } from "@/lib/i18n";
+
 
 export const Route = createFileRoute("/scan")({
   head: () => ({
@@ -944,22 +944,8 @@ function ScanPage() {
   return (
     <main dir={dir} className="kob-scan">
       <div className="kob-scan-shell">
-        <div className="kob-scan-topbar">
-          <Link to="/" className="kob-scan-brand">
-            {branding?.logo_url ? (
-              <img src={branding.logo_url} alt={brandName} loading="lazy" />
-            ) : (
-              <span className="kob-scan-brand-fallback" aria-hidden>
-                <Coffee className="h-4 w-4" />
-              </span>
-            )}
-            <span className="kob-scan-brand-name">{brandName}</span>
-          </Link>
-
-          <LanguageSwitcher />
-        </div>
-
         {step === "branch" && (
+
           <section className="kob-scan-card">
             <h1 className="kob-scan-title">{t("pickBranch")}</h1>
             <p className="kob-scan-sub">{t("scanHint")}</p>
