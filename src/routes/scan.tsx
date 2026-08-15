@@ -172,7 +172,7 @@ function ScanPage() {
   const [deviceToken, setDeviceToken] =
     useState("");
 
-  const [deviceKnown, setDeviceKnown] =
+  const [, setDeviceKnown] =
     useState(false);
 
   const [busy, setBusy] =
@@ -1147,6 +1147,8 @@ function ScanPage() {
                 value={phone}
                 onValueChange={setPhone}
               />
+
+              {info && <Alert tone="info">{info}</Alert>}
 
               {error && <Alert tone="danger">{error}</Alert>}
 
