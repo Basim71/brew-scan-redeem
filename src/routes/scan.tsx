@@ -1072,7 +1072,7 @@ function ScanPage() {
               onClick={() => {
                 setError(null);
                 setInfo(null);
-                setStep("showcase");
+                setStep("phone");
               }}
               label={t("back")}
             />
@@ -1174,7 +1174,7 @@ function ScanPage() {
               onClick={() => {
                 setError(null);
                 setInfo(null);
-                setStep(deviceKnown ? "language" : "showcase");
+                setStep(branches.length > 1 ? "branch" : "language");
               }}
               label={t("back")}
             />
