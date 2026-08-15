@@ -520,70 +520,47 @@ function ScanPage() {
     setError(null);
     setInfo(null);
 
-    if (
-      !branch ||
-      !deviceToken
-    ) {
-      setStep(
-        "showcase",
-      );
+    const resolvedBranch =
+      branch ??
+      (branches.length === 1
+        ? branches[0]
+        : null);
 
+    if (!resolvedBranch) {
+      setStep("branch");
       return;
     }
 
-    setBusy(true);
-
-    const {
-      data,
-      error: stateError,
-    } = await supabase.rpc(
-      "scan_device_state",
-      {
-        _device_token:
-          deviceToken,
-
-        _branch_id:
-          branch.id,
-      },
-    );
-
-    setBusy(false);
-
-    if (stateError) {
-      console.error(
-        "scan_device_state:",
-        stateError,
-      );
-
-      setStep(
-        "showcase",
-      );
-
-      return;
+    if (!branch) {
+      setBranch(resolvedBranch);
     }
 
-    const state =
-      data as
-        | DeviceState
-        | null;
+    await continueWithBranch(resolvedBranch);
+  }
 
-    const known =
-      Boolean(
-        state?.known,
-      );
+  async function continueWithBranch(target: Branch) {
+    setError(null);
+    setInfo(null);
 
-    setDeviceKnown(
-      known,
-    );
+    if (deviceToken) {
+      setBusy(true);
 
-    if (known) {
-      setStep("phone");
-      return;
+      const { data, error: stateError } = await supabase.rpc("scan_device_state", {
+        _device_token: deviceToken,
+        _branch_id: target.id,
+      });
+
+      setBusy(false);
+
+      if (stateError) {
+        console.error("scan_device_state:", stateError);
+      } else {
+        const state = data as DeviceState | null;
+        setDeviceKnown(Boolean(state?.known));
+      }
     }
 
-    setStep(
-      "showcase",
-    );
+    setStep("phone");
   }
 
   async function submitRegistration(
