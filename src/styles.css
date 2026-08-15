@@ -15252,6 +15252,45 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
   color: var(--kob-bronze);
 }
 
+.kob-scan-brandmark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.kob-scan-brandmark img,
+.kob-scan-brandmark .kob-scan-brand-fallback {
+  width: 84px;
+  height: 84px;
+  border-radius: 24px;
+  object-fit: contain;
+  display: grid;
+  place-items: center;
+  padding: 10px;
+  background: color-mix(in oklab, var(--kob-champagne) 40%, #ffffff);
+  border: 1px solid color-mix(in oklab, var(--kob-gold) 34%, transparent);
+  box-shadow:
+    0 12px 26px color-mix(in oklab, var(--kob-primary-dark) 14%, transparent),
+    inset 0 1px 0 #ffffff;
+  color: var(--kob-bronze);
+}
+.kob-scan-brandmark-name {
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  color: var(--kob-primary-dark);
+}
+
+.kob-scan-branch[data-selected] {
+  border-color: color-mix(in oklab, var(--kob-gold) 58%, transparent);
+  background: color-mix(in oklab, var(--kob-champagne) 55%, #ffffff);
+}
+.kob-scan-branch small {
+  font-size: 0.75rem;
+  color: color-mix(in oklab, var(--kob-primary-dark) 60%, #ffffff);
+}
+
 .kob-scan-well {
   border-radius: var(--kob-radius-lg);
   background: color-mix(in oklab, var(--kob-champagne) 42%, #ffffff);
