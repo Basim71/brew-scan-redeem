@@ -663,7 +663,31 @@ function ScanPage() {
     setDeviceKnown(true);
 
     setStep(
-      "registration-sent",
+      "plans",
+    );
+
+    void loadPlans();
+  }
+
+  async function loadPlans() {
+    const { data, error: plansError } = await supabase
+      .from("plans")
+      .select(
+        "id,name_ar,name_en,description_ar,description_en,duration_days,price,currency,is_active,is_hidden,display_order",
+      )
+      .eq("is_active", true)
+      .order("display_order", { ascending: true });
+
+    if (plansError) {
+      console.error("Failed to load plans:", plansError);
+      setPlans([]);
+      return;
+    }
+
+    setPlans(
+      ((data ?? []) as (PublicPlan & { is_hidden?: boolean })[]).filter(
+        (plan) => !plan.is_hidden,
+      ),
     );
   }
 
