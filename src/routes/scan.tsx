@@ -836,11 +836,14 @@ function ScanPage() {
       return;
     }
 
-    setError(
+    setPhone(normalizedPhone);
+    setError(null);
+    setInfo(
       lang === "ar"
-        ? "لا يوجد اشتراك نشط لهذا الرقم."
-        : "No active subscription was found for this number.",
+        ? "لا يوجد اشتراك لهذا الرقم، أكمل التسجيل."
+        : "No subscription for this number — complete your registration.",
     );
+    setStep("register");
   }
 
   async function sendOrder(
