@@ -944,22 +944,8 @@ function ScanPage() {
   return (
     <main dir={dir} className="kob-scan">
       <div className="kob-scan-shell">
-        <div className="kob-scan-topbar">
-          <Link to="/" className="kob-scan-brand">
-            {branding?.logo_url ? (
-              <img src={branding.logo_url} alt={brandName} loading="lazy" />
-            ) : (
-              <span className="kob-scan-brand-fallback" aria-hidden>
-                <Coffee className="h-4 w-4" />
-              </span>
-            )}
-            <span className="kob-scan-brand-name">{brandName}</span>
-          </Link>
-
-          <LanguageSwitcher />
-        </div>
-
         {step === "branch" && (
+
           <section className="kob-scan-card">
             <h1 className="kob-scan-title">{t("pickBranch")}</h1>
             <p className="kob-scan-sub">{t("scanHint")}</p>
