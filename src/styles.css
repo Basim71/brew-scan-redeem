@@ -13752,6 +13752,8 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
 
 .kob-table tbody tr:hover { background: color-mix(in oklab, var(--kob-gold) 8%, transparent); }
 
+.kob-table tbody tr[data-clickable="true"] { cursor: pointer; }
+
 .kob-table [data-align="center"] { text-align: center; }
 
 .kob-table [data-align="end"] { text-align: end; }
