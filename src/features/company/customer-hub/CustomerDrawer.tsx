@@ -58,7 +58,7 @@ export function CustomerDrawer({ aggregate, onClose }: Props) {
       open={!!a}
       onClose={onClose}
       width="md"
-      position="island"
+      position="center"
       title={
         a ? (
           <div className="hub-drawer-identity">
