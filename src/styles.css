@@ -14693,6 +14693,13 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
   .kob-modal,
   .ds-modal { inline-size: 100%; max-inline-size: 100%; }
   .kob-drawer { inline-size: 100%; }
+  .kob-drawer-backdrop[data-position="island"] .kob-drawer {
+    inset-inline: 0;
+    inset-block-start: 82px;
+    inset-block-end: 0;
+    max-inline-size: 100%;
+    border-radius: 0;
+  }
   .kob-pagination { justify-content: center; }
 }
 
