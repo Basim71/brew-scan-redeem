@@ -14398,14 +14398,6 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
 
 .kob-drawer[data-width="lg"] { inline-size: min(100%, 44rem); }
 
-.kob-drawer-backdrop[data-position="island"] {
-  inset: 0 0 0 auto;
-  padding: 0;
-  background: none;
-  backdrop-filter: none;
-  pointer-events: none;
-}
-
 .kob-drawer-backdrop[data-position="island"] .kob-drawer {
   position: fixed;
   inset-block-start: 96px;
@@ -14416,7 +14408,6 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
   block-size: auto;
   border-radius: var(--kob-radius-xl);
   border: 1px solid var(--kob-color-border-subtle);
-  pointer-events: auto;
   box-shadow: var(--kob-shadow-modal);
   animation: kob-drawer-in var(--kob-duration) var(--kob-ease) both;
 }
