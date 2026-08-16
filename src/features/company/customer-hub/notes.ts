@@ -27,4 +27,3 @@ export function setNote(customerId: string, value: string) {
   write(map);
 }
 
-const VIEW_KEY = "kob.customerHub.view";
