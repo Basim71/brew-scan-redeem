@@ -27,12 +27,3 @@ export function setNote(customerId: string, value: string) {
   write(map);
 }
 
-const VIEW_KEY = "kob.customerHub.view";
-export function getSavedView(): "table" | "grid" {
-  if (typeof window === "undefined") return "table";
-  return (window.localStorage.getItem(VIEW_KEY) as "table" | "grid") || "table";
-}
-export function saveView(v: "table" | "grid") {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(VIEW_KEY, v);
-}
