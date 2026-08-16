@@ -233,10 +233,11 @@ export function SideDrawer({
   const titleId = useId();
   if (!open || typeof document === "undefined") return null;
   return createPortal(
-    <div className="kob-drawer-backdrop" dir={dir} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+    <div className="kob-drawer-backdrop" data-position={position} dir={dir} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <aside
         ref={panelRef}
         className="kob-drawer"
+        data-position={position}
         data-width={width}
         role="dialog"
         aria-modal="true"
