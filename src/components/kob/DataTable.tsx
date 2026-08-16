@@ -20,6 +20,7 @@ export function DataTable<T>({
   emptyTitle,
   emptyDescription,
   emptyAction,
+  onRowClick,
 }: {
   columns: Column<T>[];
   rows: T[];
@@ -29,6 +30,7 @@ export function DataTable<T>({
   emptyTitle?: string;
   emptyDescription?: string;
   emptyAction?: ReactNode;
+  onRowClick?: (row: T, index: number) => void;
 }) {
   if (loading) return <SkeletonTable columns={columns.length} />;
   if (!rows.length) {
