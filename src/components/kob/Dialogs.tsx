@@ -217,7 +217,7 @@ export function FullScreenDialog({ open, onClose, title, description, children, 
   );
 }
 
-/** Side drawer (detail panels). Slides from the inline-end edge in both directions. */
+/** Side drawer (detail panels). Slides from the inline-end edge or appears centered. */
 export function SideDrawer({
   open,
   onClose,
@@ -227,7 +227,7 @@ export function SideDrawer({
   footer,
   width = "md",
   position = "default",
-}: BaseDialog & { footer?: ReactNode; width?: "sm" | "md" | "lg"; position?: "default" | "island" }) {
+}: BaseDialog & { footer?: ReactNode; width?: "sm" | "md" | "lg"; position?: "default" | "island" | "center" }) {
   const { t, dir } = useI18n();
   const panelRef = useDialogShell(open, onClose);
   const titleId = useId();
