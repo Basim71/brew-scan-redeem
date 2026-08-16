@@ -51,7 +51,11 @@ export function DataTable<T>({
         </thead>
         <tbody>
           {rows.map((row, i) => (
-            <tr key={rowKey(row, i)}>
+            <tr
+              key={rowKey(row, i)}
+              onClick={() => onRowClick?.(row, i)}
+              data-clickable={onRowClick ? "true" : undefined}
+            >
               {columns.map((c) => (
                 <td key={c.key} data-align={c.align ?? "start"} data-numeric={c.numeric || undefined}>
                   {c.render(row)}
