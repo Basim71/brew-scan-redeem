@@ -14721,6 +14721,14 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
     max-inline-size: 100%;
     border-radius: 0;
   }
+  .kob-drawer-backdrop[data-position="center"] {
+    padding: 0;
+  }
+  .kob-drawer-backdrop[data-position="center"] .kob-drawer {
+    max-inline-size: 100%;
+    max-block-size: 100dvh;
+    border-radius: 0;
+  }
   .kob-pagination { justify-content: center; }
 }
 
