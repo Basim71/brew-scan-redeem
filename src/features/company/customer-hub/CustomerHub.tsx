@@ -1,11 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Grid3x3, List, Users } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
 import {
-  Button,
   DataTable,
-  IconButton,
   NoResultsState,
   SearchInput,
   Select,
@@ -15,7 +12,6 @@ import {
 } from "@/components/kob";
 import { aggregateCustomers, type CustomerAggregate } from "./aggregate";
 import { loadCustomerHub, type HubBundle } from "./service";
-import { getSavedView, saveView } from "./notes";
 import { CustomerDrawer } from "./CustomerDrawer";
 
 type FilterKey = "all" | "active" | "expiring" | "expired";
