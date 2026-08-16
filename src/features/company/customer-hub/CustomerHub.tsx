@@ -51,7 +51,6 @@ export function CustomerHub() {
   const [planId, setPlanId] = useState<string>("all");
   const [drinkId, setDrinkId] = useState<string>("all");
   const [sort, setSort] = useState<SortKey>("newest");
-  const [view, setView] = useState<"table" | "grid">(getSavedView());
 
   const timerRef = useRef<number | null>(null);
 
@@ -79,8 +78,6 @@ export function CustomerHub() {
       if (timerRef.current) window.clearInterval(timerRef.current);
     };
   }, []);
-
-  useEffect(() => saveView(view), [view]);
 
   const aggregates = useMemo<CustomerAggregate[]>(() => (bundle ? aggregateCustomers(bundle) : []), [bundle]);
 
@@ -177,39 +174,10 @@ export function CustomerHub() {
       header: isAr ? "المشروب المفضل" : "Favorite Drink",
       render: (a) => (a.favoriteDrink ? (isAr ? a.favoriteDrink.name_ar : a.favoriteDrink.name_en) : "—"),
     },
-    {
-      key: "actions",
-      header: "",
-      align: "end",
-      render: (a) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            setSelectedId(a.customer.id);
-          }}
-        >
-          {isAr ? "عرض" : "View"}
-        </Button>
-      ),
-    },
   ];
 
   return (
     <div className="hub-page" dir={isAr ? "rtl" : "ltr"}>
-      <header className="hub-header">
-        <div>
-          <span className="hub-eyebrow">{isAr ? "الإدارة" : "Command"}</span>
-          <h1>{isAr ? "مركز العملاء" : "Customer Hub"}</h1>
-          <p>
-            {isAr
-              ? "ابحث عن العملاء واستعرض معلوماتهم من مكان واحد."
-              : "Search customers and review their information in one place."}
-          </p>
-        </div>
-      </header>
-
       {error && <StatusBadge tone="error">{error}</StatusBadge>}
 
       <section className="hub-toolbar">
@@ -258,24 +226,6 @@ export function CustomerHub() {
             <option value="orders">{isAr ? "الأكثر طلبًا" : "Most Orders"}</option>
             <option value="recent">{isAr ? "الأكثر نشاطًا" : "Recently Active"}</option>
           </Select>
-          <div className="hub-view-toggle" role="tablist">
-            <IconButton
-              label={isAr ? "جدول" : "Table"}
-              variant={view === "table" ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => setView("table")}
-            >
-              <List className="h-4 w-4" />
-            </IconButton>
-            <IconButton
-              label={isAr ? "شبكة" : "Grid"}
-              variant={view === "grid" ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => setView("grid")}
-            >
-              <Grid3x3 className="h-4 w-4" />
-            </IconButton>
-          </div>
         </div>
       </section>
 
@@ -293,31 +243,14 @@ export function CustomerHub() {
             title={isAr ? "لا توجد نتائج" : "No customers found"}
             description={isAr ? "لا توجد نتائج تطابق عوامل التصفية." : "No customers match your filters."}
           />
-        ) : view === "table" ? (
+        ) : (
           <DataTable
             columns={columns}
             rows={filteredSorted}
             rowKey={(a) => a.customer.id}
             caption={isAr ? "العملاء" : "Customers"}
+            onRowClick={(a) => setSelectedId(a.customer.id)}
           />
-        ) : (
-          <div className="hub-grid-view">
-            {filteredSorted.map((a) => (
-              <button key={a.customer.id} className="hub-card" onClick={() => setSelectedId(a.customer.id)}>
-                <div className="hub-card-top">
-                  <div className="hub-avatar">{a.customer.name.slice(0, 1)}</div>
-                  <div className="hub-card-name min-w-0">
-                    <strong className="block truncate">{a.customer.name}</strong>
-                    <small dir="ltr">{a.customer.phone}</small>
-                  </div>
-                </div>
-                <div className="hub-card-meta">
-                  <StatusBadge tone={STATUS_TONE[a.status]}>{statusLabel(a.status, isAr)}</StatusBadge>
-                  <small>{a.favoriteDrink ? (isAr ? a.favoriteDrink.name_ar : a.favoriteDrink.name_en) : "—"}</small>
-                </div>
-              </button>
-            ))}
-          </div>
         )}
       </section>
 
