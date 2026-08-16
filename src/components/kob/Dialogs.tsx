@@ -226,7 +226,8 @@ export function SideDrawer({
   children,
   footer,
   width = "md",
-}: BaseDialog & { footer?: ReactNode; width?: "sm" | "md" | "lg" }) {
+  position = "default",
+}: BaseDialog & { footer?: ReactNode; width?: "sm" | "md" | "lg"; position?: "default" | "island" }) {
   const { t, dir } = useI18n();
   const panelRef = useDialogShell(open, onClose);
   const titleId = useId();
