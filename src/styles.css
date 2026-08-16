@@ -14398,6 +14398,33 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
 
 .kob-drawer[data-width="lg"] { inline-size: min(100%, 44rem); }
 
+.kob-drawer-backdrop[data-position="island"] {
+  inset: 0 0 0 auto;
+  padding: 0;
+  background: none;
+  backdrop-filter: none;
+  pointer-events: none;
+}
+
+.kob-drawer-backdrop[data-position="island"] .kob-drawer {
+  position: fixed;
+  inset-block-start: 96px;
+  inset-block-end: 18px;
+  inset-inline-end: 18px;
+  inline-size: min(100%, 32rem);
+  max-inline-size: calc(100vw - 36px);
+  block-size: auto;
+  border-radius: var(--kob-radius-xl);
+  border: 1px solid var(--kob-color-border-subtle);
+  pointer-events: auto;
+  box-shadow: var(--kob-shadow-modal);
+  animation: kob-drawer-in var(--kob-duration) var(--kob-ease) both;
+}
+
+.kob-drawer-backdrop[data-position="island"] .kob-drawer[data-width="sm"] { inline-size: min(100%, 24rem); }
+
+.kob-drawer-backdrop[data-position="island"] .kob-drawer[data-width="lg"] { inline-size: min(100%, 44rem); }
+
 .kob-drawer-body { flex: 1 1 auto; overflow: auto; padding: var(--kob-space-5); display: flex; flex-direction: column; gap: var(--kob-space-4); }
 
 @keyframes kob-drawer-in {
