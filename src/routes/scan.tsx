@@ -172,6 +172,31 @@ function ScanPage() {
   const [lastName, setLastName] =
     useState("");
 
+  const [email, setEmail] =
+    useState("");
+
+  const [needsEmail, setNeedsEmail] =
+    useState(false);
+
+  const [otpCode, setOtpCode] =
+    useState("");
+
+  const [maskedEmail, setMaskedEmail] =
+    useState("");
+
+  const [sessionToken, setSessionToken] =
+    useState("");
+
+  const [pendingAction, setPendingAction] =
+    useState<"login" | "register">("login");
+
+  const [resendAt, setResendAt] =
+    useState(0);
+
+  const [now, setNow] =
+    useState(() => Date.now());
+
+
   const [subscription, setSubscription] =
     useState<Subscription | null>(null);
 
