@@ -1111,8 +1111,12 @@ function ScanPage() {
 
         _customer_note:
           customization.note || undefined,
+
+        _session_token:
+          sessionToken,
       },
     );
+
 
     setBusy(false);
 
