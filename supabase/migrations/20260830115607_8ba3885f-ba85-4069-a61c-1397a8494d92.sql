@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.scan_session_is_valid(text, text, uuid) FROM PUBLIC, anon, authenticated;
