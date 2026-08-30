@@ -1356,6 +1356,25 @@ function ScanPage() {
                 onValueChange={setPhone}
               />
 
+              <KobInput
+                label={lang === "ar" ? "البريد الإلكتروني" : "Email address"}
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                dir="ltr"
+                value={email}
+                required
+                hint={
+                  lang === "ar"
+                    ? "سنرسل رمز التحقق إلى هذا البريد في كل مرة تدخل برقم جوالك."
+                    : "We'll email a verification code to this address every time you sign in with your phone."
+                }
+                onChange={(event) => {
+                  setEmail(event.target.value);
+                }}
+              />
+
+
               {info && <Alert tone="info">{info}</Alert>}
 
               {error && <Alert tone="danger">{error}</Alert>}
