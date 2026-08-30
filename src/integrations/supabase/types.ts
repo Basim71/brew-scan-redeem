@@ -261,6 +261,78 @@ export type Database = {
           },
         ]
       }
+      customer_otp_codes: {
+        Row: {
+          attempts: number
+          branch_id: string | null
+          code_hash: string
+          consumed_at: string | null
+          created_at: string
+          customer_id: string | null
+          device_token: string | null
+          email: string
+          expires_at: string
+          id: string
+          phone: string
+        }
+        Insert: {
+          attempts?: number
+          branch_id?: string | null
+          code_hash: string
+          consumed_at?: string | null
+          created_at?: string
+          customer_id?: string | null
+          device_token?: string | null
+          email: string
+          expires_at: string
+          id?: string
+          phone: string
+        }
+        Update: {
+          attempts?: number
+          branch_id?: string | null
+          code_hash?: string
+          consumed_at?: string | null
+          created_at?: string
+          customer_id?: string | null
+          device_token?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          phone?: string
+        }
+        Relationships: []
+      }
+      customer_scan_sessions: {
+        Row: {
+          branch_id: string | null
+          created_at: string
+          customer_id: string | null
+          expires_at: string
+          id: string
+          phone: string
+          token_hash: string
+        }
+        Insert: {
+          branch_id?: string | null
+          created_at?: string
+          customer_id?: string | null
+          expires_at: string
+          id?: string
+          phone: string
+          token_hash: string
+        }
+        Update: {
+          branch_id?: string | null
+          created_at?: string
+          customer_id?: string | null
+          expires_at?: string
+          id?: string
+          phone?: string
+          token_hash?: string
+        }
+        Relationships: []
+      }
       customer_success_case_events: {
         Row: {
           actor_user_id: string | null
@@ -506,6 +578,7 @@ export type Database = {
       customers: {
         Row: {
           created_at: string
+          email: string | null
           id: string
           name: string
           organization_id: string
@@ -513,6 +586,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          email?: string | null
           id?: string
           name: string
           organization_id?: string
@@ -520,6 +594,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          email?: string | null
           id?: string
           name?: string
           organization_id?: string
@@ -1661,6 +1736,7 @@ export type Database = {
           branch_id: string
           created_at: string
           device_token: string
+          email: string | null
           first_name: string
           id: string
           last_name: string
@@ -1678,6 +1754,7 @@ export type Database = {
           branch_id: string
           created_at?: string
           device_token: string
+          email?: string | null
           first_name: string
           id?: string
           last_name: string
@@ -1695,6 +1772,7 @@ export type Database = {
           branch_id?: string
           created_at?: string
           device_token?: string
+          email?: string | null
           first_name?: string
           id?: string
           last_name?: string
@@ -2982,7 +3060,7 @@ export type Database = {
         Returns: Json
       }
       scan_lookup: {
-        Args: { _branch_id: string; _phone: string }
+        Args: { _branch_id: string; _phone: string; _session_token?: string }
         Returns: Json
       }
       scan_order_status: { Args: { _order_id: string }; Returns: string }
@@ -2990,6 +3068,7 @@ export type Database = {
         Args: {
           _branch_id: string
           _device_token: string
+          _email?: string
           _first_name: string
           _last_name: string
           _phone: string
@@ -3002,6 +3081,10 @@ export type Database = {
         Args: { _branch_id: string; _device_token: string; _phone: string }
         Returns: Json
       }
+      scan_session_is_valid: {
+        Args: { _branch_id: string; _phone: string; _session_token: string }
+        Returns: boolean
+      }
       scan_submit_order: {
         Args: {
           _branch_id: string
@@ -3009,6 +3092,7 @@ export type Database = {
           _drink_type_id: string
           _phone: string
           _selected_option_ids?: string[]
+          _session_token?: string
         }
         Returns: string
       }

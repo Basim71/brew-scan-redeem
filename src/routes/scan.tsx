@@ -14,17 +14,27 @@ import {
   ChevronRight,
   Clock,
   Coffee,
+  Mail,
+  ShieldCheck,
   UserPlus,
   XCircle,
 } from "lucide-react";
 
-import { Alert, Button, Input as KobInput, PhoneInput as KobPhoneInput } from "@/components/kob";
+import {
+  Alert,
+  Button,
+  Input as KobInput,
+  OtpInput as KobOtpInput,
+  PhoneInput as KobPhoneInput,
+} from "@/components/kob";
 import { DrinkSlider } from "@/features/drinks/DrinkSlider";
 import type { Drink, DrinkOrderCustomization } from "@/features/drinks/types";
 import { supabase } from "@/integrations/supabase/client";
+import { requestScanOtp, verifyScanOtp } from "@/lib/scan-otp.functions";
 import {
   useI18n,
 } from "@/lib/i18n";
+
 
 
 export const Route = createFileRoute("/scan")({
@@ -51,8 +61,10 @@ type Step =
   | "register"
   | "registration-sent"
   | "phone"
+  | "otp"
   | "menu"
   | "waiting";
+
 
 type Branch = {
   id: string;
@@ -159,6 +171,31 @@ function ScanPage() {
 
   const [lastName, setLastName] =
     useState("");
+
+  const [email, setEmail] =
+    useState("");
+
+  const [needsEmail, setNeedsEmail] =
+    useState(false);
+
+  const [otpCode, setOtpCode] =
+    useState("");
+
+  const [maskedEmail, setMaskedEmail] =
+    useState("");
+
+  const [sessionToken, setSessionToken] =
+    useState("");
+
+  const [pendingAction, setPendingAction] =
+    useState<"login" | "register">("login");
+
+  const [resendAt, setResendAt] =
+    useState(0);
+
+  const [now, setNow] =
+    useState(() => Date.now());
+
 
   const [subscription, setSubscription] =
     useState<Subscription | null>(null);
@@ -276,6 +313,24 @@ function ScanPage() {
         Math.max(0, elapsedDays),
       )
     : 0;
+
+  const resendSeconds = Math.max(
+    0,
+    Math.ceil((resendAt - now) / 1000),
+  );
+
+  useEffect(() => {
+    if (step !== "otp") {
+      return;
+    }
+    const id = window.setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+    return () => {
+      window.clearInterval(id);
+    };
+  }, [step]);
+
 
   const usedPct =
     totalDays > 0
@@ -563,7 +618,172 @@ function ScanPage() {
     setStep("phone");
   }
 
-  async function submitRegistration(
+  function isValidEmail(value: string) {
+    return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value.trim().toLowerCase());
+  }
+
+  /** Sends the verification code and moves to the code screen. */
+  async function startVerification(
+    action: "login" | "register",
+    emailOverride?: string,
+  ) {
+    if (!branch) {
+      return;
+    }
+
+    const normalizedPhone = normalizePhone(phone);
+
+    if (!isValidSaudiPhone(normalizedPhone)) {
+      setError(
+        lang === "ar"
+          ? "أدخل رقم جوال صحيح يبدأ بـ 05."
+          : "Enter a valid phone number starting with 05.",
+      );
+
+      return;
+    }
+
+    const candidateEmail = (emailOverride ?? email).trim().toLowerCase();
+
+    setBusy(true);
+    setError(null);
+    setInfo(null);
+
+    let result;
+    try {
+      result = await requestScanOtp({
+        data: {
+          phone: normalizedPhone,
+          branchId: branch.id,
+          email: candidateEmail || null,
+          deviceToken,
+          lang,
+        },
+      });
+    } catch (requestError) {
+      console.error("requestScanOtp:", requestError);
+      setBusy(false);
+      setError(
+        lang === "ar"
+          ? "تعذر إرسال رمز التحقق. حاول مرة أخرى."
+          : "Could not send the verification code. Please try again.",
+      );
+      return;
+    }
+
+    setBusy(false);
+    setPhone(normalizedPhone);
+
+    if (result.status === "sent") {
+      setMaskedEmail(result.maskedEmail);
+      setNeedsEmail(false);
+      setOtpCode("");
+      setPendingAction(action);
+      setResendAt(Date.now() + 60_000);
+      setStep("otp");
+      return;
+    }
+
+    if (result.status === "needs_email") {
+      setNeedsEmail(true);
+      setInfo(
+        lang === "ar"
+          ? "أضف بريدك الإلكتروني لمرة واحدة لإرسال رمز التحقق إليه."
+          : "Add your email once so we can send you the verification code.",
+      );
+      return;
+    }
+
+    if (result.status === "rate_limited") {
+      setError(
+        lang === "ar"
+          ? "تم إرسال عدة رموز. انتظر قليلًا ثم حاول مرة أخرى."
+          : "Too many codes were sent. Please wait a few minutes and try again.",
+      );
+      return;
+    }
+
+    if (result.status === "email_not_configured") {
+      setError(
+        lang === "ar"
+          ? "خدمة رمز التحقق غير متاحة حاليًا. يرجى التواصل مع الكاشير."
+          : "Verification is temporarily unavailable. Please ask the cashier for help.",
+      );
+      return;
+    }
+
+    // Not registered yet — continue to the registration form.
+    setNeedsEmail(false);
+    setInfo(
+      lang === "ar"
+        ? "لا يوجد اشتراك لهذا الرقم، أكمل التسجيل."
+        : "No subscription for this number — complete your registration.",
+    );
+    setStep("register");
+  }
+
+  /** Confirms the emailed code, then resumes the pending action. */
+  async function confirmOtp() {
+    if (!branch) {
+      return;
+    }
+
+    if (otpCode.replace(/\D/g, "").length !== 6) {
+      setError(
+        lang === "ar"
+          ? "أدخل الرمز المكوّن من 6 أرقام."
+          : "Enter the 6-digit code.",
+      );
+      return;
+    }
+
+    setBusy(true);
+    setError(null);
+    setInfo(null);
+
+    let result;
+    try {
+      result = await verifyScanOtp({
+        data: {
+          phone: normalizePhone(phone),
+          branchId: branch.id,
+          code: otpCode,
+        },
+      });
+    } catch (verifyError) {
+      console.error("verifyScanOtp:", verifyError);
+      setBusy(false);
+      setError(
+        lang === "ar"
+          ? "تعذر التحقق من الرمز. حاول مرة أخرى."
+          : "Could not verify the code. Please try again.",
+      );
+      return;
+    }
+
+    setBusy(false);
+
+    if (result.status !== "verified") {
+      setOtpCode("");
+      setError(
+        lang === "ar"
+          ? "الرمز غير صحيح أو منتهي الصلاحية."
+          : "The code is incorrect or has expired.",
+      );
+      return;
+    }
+
+    setSessionToken(result.token);
+
+    if (pendingAction === "register") {
+      await performRegistration(result.token);
+      return;
+    }
+
+    await lookup(result.token);
+  }
+
+  function submitRegistration(
     event:
       FormEvent<HTMLFormElement>,
   ) {
@@ -572,9 +792,6 @@ function ScanPage() {
     if (!branch) {
       return;
     }
-
-    const normalizedPhone =
-      normalizePhone(phone);
 
     if (
       firstName.trim().length <
@@ -591,19 +808,26 @@ function ScanPage() {
       return;
     }
 
-    if (
-      !isValidSaudiPhone(
-        normalizedPhone,
-      )
-    ) {
+    if (!isValidEmail(email)) {
       setError(
         lang === "ar"
-          ? "رقم الجوال يجب أن يبدأ بـ 05 ويتكون من 10 أرقام."
-          : "Phone number must start with 05 and contain 10 digits.",
+          ? "أدخل بريدًا إلكترونيًا صحيحًا لاستقبال رمز التحقق."
+          : "Enter a valid email address to receive the verification code.",
       );
 
       return;
     }
+
+    void startVerification("register");
+  }
+
+  /** Creates the registration request after the code was verified. */
+  async function performRegistration(token: string) {
+    if (!branch) {
+      return;
+    }
+
+    const normalizedPhone = normalizePhone(phone);
 
     setBusy(true);
     setError(null);
@@ -623,6 +847,9 @@ function ScanPage() {
 
         _phone:
           normalizedPhone,
+
+        _email:
+          email.trim().toLowerCase(),
 
         _branch_id:
           branch.id,
@@ -653,12 +880,16 @@ function ScanPage() {
         ),
       );
 
+      setStep("register");
+
       return;
     }
 
     setPhone(
       normalizedPhone,
     );
+
+    setSessionToken(token);
 
     setDeviceKnown(true);
 
@@ -668,6 +899,7 @@ function ScanPage() {
 
     void loadPlans();
   }
+
 
   async function loadPlans() {
     const { data, error: plansError } = await supabase
@@ -691,7 +923,7 @@ function ScanPage() {
     );
   }
 
-  async function lookup() {
+  async function lookup(token: string) {
     if (!branch) {
       return;
     }
@@ -728,8 +960,12 @@ function ScanPage() {
 
         _branch_id:
           branch.id,
+
+        _session_token:
+          token,
       },
     );
+
 
     const payload =
       data as
@@ -893,8 +1129,12 @@ function ScanPage() {
 
         _customer_note:
           customization.note || undefined,
+
+        _session_token:
+          sessionToken,
       },
     );
+
 
     setBusy(false);
 
@@ -1134,6 +1374,25 @@ function ScanPage() {
                 onValueChange={setPhone}
               />
 
+              <KobInput
+                label={lang === "ar" ? "البريد الإلكتروني" : "Email address"}
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                dir="ltr"
+                value={email}
+                required
+                hint={
+                  lang === "ar"
+                    ? "سنرسل رمز التحقق إلى هذا البريد في كل مرة تدخل برقم جوالك."
+                    : "We'll email a verification code to this address every time you sign in with your phone."
+                }
+                onChange={(event) => {
+                  setEmail(event.target.value);
+                }}
+              />
+
+
               {info && <Alert tone="info">{info}</Alert>}
 
               {error && <Alert tone="danger">{error}</Alert>}
@@ -1200,30 +1459,124 @@ function ScanPage() {
               <h1 className="kob-scan-title">{t("enterPhone")}</h1>
               <p className="kob-scan-sub">
                 {lang === "ar"
-                  ? "أدخل رقم الجوال المرتبط باشتراكك."
-                  : "Enter the phone number connected to your subscription."}
+                  ? "أدخل رقم الجوال المرتبط باشتراكك وسنرسل رمز تحقق إلى بريدك الإلكتروني."
+                  : "Enter the phone number linked to your subscription — we'll email you a verification code."}
               </p>
             </div>
 
             <form
               onSubmit={(event) => {
                 event.preventDefault();
-                void lookup();
+                void startVerification("login");
               }}
               className="kob-scan-body"
             >
               <KobPhoneInput value={phone} onValueChange={setPhone} />
+
+              {needsEmail && (
+                <KobInput
+                  label={lang === "ar" ? "البريد الإلكتروني" : "Email address"}
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  dir="ltr"
+                  value={email}
+                  required
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                  }}
+                />
+              )}
+
+              {error && <Alert tone="danger">{error}</Alert>}
+
+              {info && <Alert tone="info">{info}</Alert>}
+
+              <Button
+                type="submit"
+                block
+                size="lg"
+                loading={busy}
+                leadingIcon={<ShieldCheck className="h-4 w-4" />}
+              >
+                {lang === "ar" ? "إرسال رمز التحقق" : "Send Verification Code"}
+              </Button>
+            </form>
+          </section>
+        )}
+
+        {step === "otp" && branch && (
+          <section className="kob-scan-card">
+            <BackButton
+              onClick={() => {
+                setError(null);
+                setInfo(null);
+                setOtpCode("");
+                setStep(pendingAction === "register" ? "register" : "phone");
+              }}
+              label={t("back")}
+            />
+
+            <BranchBadge label={branchLabel} />
+
+            <div className="kob-scan-icon-badge">
+              <Mail className="h-7 w-7" />
+            </div>
+
+            <div className="text-center">
+              <h1 className="kob-scan-title">
+                {lang === "ar" ? "رمز التحقق" : "Verification Code"}
+              </h1>
+              <p className="kob-scan-sub" dir={dir}>
+                {lang === "ar"
+                  ? "أرسلنا رمزًا من 6 أرقام إلى "
+                  : "We sent a 6-digit code to "}
+                <span dir="ltr">{maskedEmail}</span>
+              </p>
+            </div>
+
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                void confirmOtp();
+              }}
+              className="kob-scan-body"
+            >
+              <KobOtpInput
+                label={lang === "ar" ? "أدخل الرمز" : "Enter the code"}
+                value={otpCode}
+                onValueChange={setOtpCode}
+              />
 
               {error && <Alert tone="danger">{error}</Alert>}
 
               {info && <Alert tone="info">{info}</Alert>}
 
               <Button type="submit" block size="lg" loading={busy}>
-                {t("lookup")}
+                {lang === "ar" ? "تأكيد" : "Verify"}
+              </Button>
+
+              <Button
+                type="button"
+                variant="secondary"
+                block
+                disabled={busy || resendSeconds > 0}
+                onClick={() => {
+                  void startVerification(pendingAction);
+                }}
+              >
+                {resendSeconds > 0
+                  ? lang === "ar"
+                    ? `إعادة الإرسال بعد ${fmtNum(resendSeconds)} ثانية`
+                    : `Resend in ${fmtNum(resendSeconds)}s`
+                  : lang === "ar"
+                    ? "إعادة إرسال الرمز"
+                    : "Resend code"}
               </Button>
             </form>
           </section>
         )}
+
 
         {step === "menu" && subscription && branch && (
           <div className="flex flex-col gap-4">
