@@ -1422,30 +1422,124 @@ function ScanPage() {
               <h1 className="kob-scan-title">{t("enterPhone")}</h1>
               <p className="kob-scan-sub">
                 {lang === "ar"
-                  ? "أدخل رقم الجوال المرتبط باشتراكك."
-                  : "Enter the phone number connected to your subscription."}
+                  ? "أدخل رقم الجوال المرتبط باشتراكك وسنرسل رمز تحقق إلى بريدك الإلكتروني."
+                  : "Enter the phone number linked to your subscription — we'll email you a verification code."}
               </p>
             </div>
 
             <form
               onSubmit={(event) => {
                 event.preventDefault();
-                void lookup();
+                void startVerification("login");
               }}
               className="kob-scan-body"
             >
               <KobPhoneInput value={phone} onValueChange={setPhone} />
+
+              {needsEmail && (
+                <KobInput
+                  label={lang === "ar" ? "البريد الإلكتروني" : "Email address"}
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  dir="ltr"
+                  value={email}
+                  required
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                  }}
+                />
+              )}
+
+              {error && <Alert tone="danger">{error}</Alert>}
+
+              {info && <Alert tone="info">{info}</Alert>}
+
+              <Button
+                type="submit"
+                block
+                size="lg"
+                loading={busy}
+                leadingIcon={<ShieldCheck className="h-4 w-4" />}
+              >
+                {lang === "ar" ? "إرسال رمز التحقق" : "Send Verification Code"}
+              </Button>
+            </form>
+          </section>
+        )}
+
+        {step === "otp" && branch && (
+          <section className="kob-scan-card">
+            <BackButton
+              onClick={() => {
+                setError(null);
+                setInfo(null);
+                setOtpCode("");
+                setStep(pendingAction === "register" ? "register" : "phone");
+              }}
+              label={t("back")}
+            />
+
+            <BranchBadge label={branchLabel} />
+
+            <div className="kob-scan-icon-badge">
+              <Mail className="h-7 w-7" />
+            </div>
+
+            <div className="text-center">
+              <h1 className="kob-scan-title">
+                {lang === "ar" ? "رمز التحقق" : "Verification Code"}
+              </h1>
+              <p className="kob-scan-sub" dir={dir}>
+                {lang === "ar"
+                  ? "أرسلنا رمزًا من 6 أرقام إلى "
+                  : "We sent a 6-digit code to "}
+                <span dir="ltr">{maskedEmail}</span>
+              </p>
+            </div>
+
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                void confirmOtp();
+              }}
+              className="kob-scan-body"
+            >
+              <KobOtpInput
+                label={lang === "ar" ? "أدخل الرمز" : "Enter the code"}
+                value={otpCode}
+                onValueChange={setOtpCode}
+              />
 
               {error && <Alert tone="danger">{error}</Alert>}
 
               {info && <Alert tone="info">{info}</Alert>}
 
               <Button type="submit" block size="lg" loading={busy}>
-                {t("lookup")}
+                {lang === "ar" ? "تأكيد" : "Verify"}
+              </Button>
+
+              <Button
+                type="button"
+                variant="secondary"
+                block
+                disabled={busy || resendSeconds > 0}
+                onClick={() => {
+                  void startVerification(pendingAction);
+                }}
+              >
+                {resendSeconds > 0
+                  ? lang === "ar"
+                    ? `إعادة الإرسال بعد ${fmtNum(resendSeconds)} ثانية`
+                    : `Resend in ${fmtNum(resendSeconds)}s`
+                  : lang === "ar"
+                    ? "إعادة إرسال الرمز"
+                    : "Resend code"}
               </Button>
             </form>
           </section>
         )}
+
 
         {step === "menu" && subscription && branch && (
           <div className="flex flex-col gap-4">
