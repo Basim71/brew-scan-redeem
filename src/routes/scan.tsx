@@ -600,7 +600,172 @@ function ScanPage() {
     setStep("phone");
   }
 
-  async function submitRegistration(
+  function isValidEmail(value: string) {
+    return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value.trim().toLowerCase());
+  }
+
+  /** Sends the verification code and moves to the code screen. */
+  async function startVerification(
+    action: "login" | "register",
+    emailOverride?: string,
+  ) {
+    if (!branch) {
+      return;
+    }
+
+    const normalizedPhone = normalizePhone(phone);
+
+    if (!isValidSaudiPhone(normalizedPhone)) {
+      setError(
+        lang === "ar"
+          ? "أدخل رقم جوال صحيح يبدأ بـ 05."
+          : "Enter a valid phone number starting with 05.",
+      );
+
+      return;
+    }
+
+    const candidateEmail = (emailOverride ?? email).trim().toLowerCase();
+
+    setBusy(true);
+    setError(null);
+    setInfo(null);
+
+    let result;
+    try {
+      result = await requestScanOtp({
+        data: {
+          phone: normalizedPhone,
+          branchId: branch.id,
+          email: candidateEmail || null,
+          deviceToken,
+          lang,
+        },
+      });
+    } catch (requestError) {
+      console.error("requestScanOtp:", requestError);
+      setBusy(false);
+      setError(
+        lang === "ar"
+          ? "تعذر إرسال رمز التحقق. حاول مرة أخرى."
+          : "Could not send the verification code. Please try again.",
+      );
+      return;
+    }
+
+    setBusy(false);
+    setPhone(normalizedPhone);
+
+    if (result.status === "sent") {
+      setMaskedEmail(result.maskedEmail);
+      setNeedsEmail(false);
+      setOtpCode("");
+      setPendingAction(action);
+      setResendAt(Date.now() + 60_000);
+      setStep("otp");
+      return;
+    }
+
+    if (result.status === "needs_email") {
+      setNeedsEmail(true);
+      setInfo(
+        lang === "ar"
+          ? "أضف بريدك الإلكتروني لمرة واحدة لإرسال رمز التحقق إليه."
+          : "Add your email once so we can send you the verification code.",
+      );
+      return;
+    }
+
+    if (result.status === "rate_limited") {
+      setError(
+        lang === "ar"
+          ? "تم إرسال عدة رموز. انتظر قليلًا ثم حاول مرة أخرى."
+          : "Too many codes were sent. Please wait a few minutes and try again.",
+      );
+      return;
+    }
+
+    if (result.status === "email_not_configured") {
+      setError(
+        lang === "ar"
+          ? "خدمة رمز التحقق غير متاحة حاليًا. يرجى التواصل مع الكاشير."
+          : "Verification is temporarily unavailable. Please ask the cashier for help.",
+      );
+      return;
+    }
+
+    // Not registered yet — continue to the registration form.
+    setNeedsEmail(false);
+    setInfo(
+      lang === "ar"
+        ? "لا يوجد اشتراك لهذا الرقم، أكمل التسجيل."
+        : "No subscription for this number — complete your registration.",
+    );
+    setStep("register");
+  }
+
+  /** Confirms the emailed code, then resumes the pending action. */
+  async function confirmOtp() {
+    if (!branch) {
+      return;
+    }
+
+    if (otpCode.replace(/\D/g, "").length !== 6) {
+      setError(
+        lang === "ar"
+          ? "أدخل الرمز المكوّن من 6 أرقام."
+          : "Enter the 6-digit code.",
+      );
+      return;
+    }
+
+    setBusy(true);
+    setError(null);
+    setInfo(null);
+
+    let result;
+    try {
+      result = await verifyScanOtp({
+        data: {
+          phone: normalizePhone(phone),
+          branchId: branch.id,
+          code: otpCode,
+        },
+      });
+    } catch (verifyError) {
+      console.error("verifyScanOtp:", verifyError);
+      setBusy(false);
+      setError(
+        lang === "ar"
+          ? "تعذر التحقق من الرمز. حاول مرة أخرى."
+          : "Could not verify the code. Please try again.",
+      );
+      return;
+    }
+
+    setBusy(false);
+
+    if (result.status !== "verified") {
+      setOtpCode("");
+      setError(
+        lang === "ar"
+          ? "الرمز غير صحيح أو منتهي الصلاحية."
+          : "The code is incorrect or has expired.",
+      );
+      return;
+    }
+
+    setSessionToken(result.token);
+
+    if (pendingAction === "register") {
+      await performRegistration(result.token);
+      return;
+    }
+
+    await lookup(result.token);
+  }
+
+  function submitRegistration(
     event:
       FormEvent<HTMLFormElement>,
   ) {
@@ -609,9 +774,6 @@ function ScanPage() {
     if (!branch) {
       return;
     }
-
-    const normalizedPhone =
-      normalizePhone(phone);
 
     if (
       firstName.trim().length <
@@ -628,19 +790,26 @@ function ScanPage() {
       return;
     }
 
-    if (
-      !isValidSaudiPhone(
-        normalizedPhone,
-      )
-    ) {
+    if (!isValidEmail(email)) {
       setError(
         lang === "ar"
-          ? "رقم الجوال يجب أن يبدأ بـ 05 ويتكون من 10 أرقام."
-          : "Phone number must start with 05 and contain 10 digits.",
+          ? "أدخل بريدًا إلكترونيًا صحيحًا لاستقبال رمز التحقق."
+          : "Enter a valid email address to receive the verification code.",
       );
 
       return;
     }
+
+    void startVerification("register");
+  }
+
+  /** Creates the registration request after the code was verified. */
+  async function performRegistration(token: string) {
+    if (!branch) {
+      return;
+    }
+
+    const normalizedPhone = normalizePhone(phone);
 
     setBusy(true);
     setError(null);
@@ -660,6 +829,9 @@ function ScanPage() {
 
         _phone:
           normalizedPhone,
+
+        _email:
+          email.trim().toLowerCase(),
 
         _branch_id:
           branch.id,
@@ -690,12 +862,16 @@ function ScanPage() {
         ),
       );
 
+      setStep("register");
+
       return;
     }
 
     setPhone(
       normalizedPhone,
     );
+
+    setSessionToken(token);
 
     setDeviceKnown(true);
 
@@ -705,6 +881,7 @@ function ScanPage() {
 
     void loadPlans();
   }
+
 
   async function loadPlans() {
     const { data, error: plansError } = await supabase
