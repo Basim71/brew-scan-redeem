@@ -61,8 +61,10 @@ type Step =
   | "register"
   | "registration-sent"
   | "phone"
+  | "otp"
   | "menu"
   | "waiting";
+
 
 type Branch = {
   id: string;
