@@ -905,7 +905,7 @@ function ScanPage() {
     );
   }
 
-  async function lookup() {
+  async function lookup(token: string) {
     if (!branch) {
       return;
     }
@@ -942,8 +942,12 @@ function ScanPage() {
 
         _branch_id:
           branch.id,
+
+        _session_token:
+          token,
       },
     );
+
 
     const payload =
       data as
