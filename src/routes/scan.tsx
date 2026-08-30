@@ -14,17 +14,27 @@ import {
   ChevronRight,
   Clock,
   Coffee,
+  Mail,
+  ShieldCheck,
   UserPlus,
   XCircle,
 } from "lucide-react";
 
-import { Alert, Button, Input as KobInput, PhoneInput as KobPhoneInput } from "@/components/kob";
+import {
+  Alert,
+  Button,
+  Input as KobInput,
+  OtpInput as KobOtpInput,
+  PhoneInput as KobPhoneInput,
+} from "@/components/kob";
 import { DrinkSlider } from "@/features/drinks/DrinkSlider";
 import type { Drink, DrinkOrderCustomization } from "@/features/drinks/types";
 import { supabase } from "@/integrations/supabase/client";
+import { requestScanOtp, verifyScanOtp } from "@/lib/scan-otp.functions";
 import {
   useI18n,
 } from "@/lib/i18n";
+
 
 
 export const Route = createFileRoute("/scan")({
