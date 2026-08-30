@@ -314,6 +314,24 @@ function ScanPage() {
       )
     : 0;
 
+  const resendSeconds = Math.max(
+    0,
+    Math.ceil((resendAt - now) / 1000),
+  );
+
+  useEffect(() => {
+    if (step !== "otp") {
+      return;
+    }
+    const id = window.setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+    return () => {
+      window.clearInterval(id);
+    };
+  }, [step]);
+
+
   const usedPct =
     totalDays > 0
       ? Math.min(
