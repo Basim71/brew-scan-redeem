@@ -1215,44 +1215,45 @@ function ScanPage() {
         )}
 
         {step === "language" && (
-          <section className="kob-scan-card" data-center="true">
-            <div className="kob-scan-brandmark">
+          <>
+            <div className="kob-scan-logo-float">
               {branding?.logo_url ? (
-                <img src={branding.logo_url} alt={brandName} />
+                <img src={branding.logo_url} alt="" />
               ) : (
-                <span className="kob-scan-brand-fallback" aria-hidden>
-                  <Coffee className="h-6 w-6" />
+                <span className="kob-scan-logo-fallback" aria-hidden>
+                  <Coffee className="h-8 w-8" />
                 </span>
               )}
-              <span className="kob-scan-brandmark-name">{brandName}</span>
             </div>
 
-            {branch && <BranchBadge label={branchLabel} />}
+            <section className="kob-scan-card" data-center="true">
+              {branch && <BranchBadge label={branchLabel} />}
 
-            <h1 className="kob-scan-title">{t("pickLang")}</h1>
+              <h1 className="kob-scan-title">{t("pickLang")}</h1>
 
-            <div className="kob-scan-body kob-scan-lang-grid">
-              <Button
-                size="lg"
-                loading={busy}
-                onClick={() => {
-                  void chooseLanguage("en");
-                }}
-              >
-                English
-              </Button>
+              <div className="kob-scan-body kob-scan-lang-grid">
+                <Button
+                  size="lg"
+                  loading={busy}
+                  onClick={() => {
+                    void chooseLanguage("en");
+                  }}
+                >
+                  English
+                </Button>
 
-              <Button
-                size="lg"
-                loading={busy}
-                onClick={() => {
-                  void chooseLanguage("ar");
-                }}
-              >
-                العربية
-              </Button>
-            </div>
-          </section>
+                <Button
+                  size="lg"
+                  loading={busy}
+                  onClick={() => {
+                    void chooseLanguage("ar");
+                  }}
+                >
+                  العربية
+                </Button>
+              </div>
+            </section>
+          </>
         )}
 
         {step === "plans" && (
