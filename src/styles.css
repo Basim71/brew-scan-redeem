@@ -15346,6 +15346,23 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
   color: var(--kob-primary-dark);
 }
 
+.kob-scan-logo-float {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 22px;
+}
+.kob-scan-logo-float img,
+.kob-scan-logo-float .kob-scan-logo-fallback {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  display: grid;
+  place-items: center;
+  color: var(--kob-gold);
+  filter: drop-shadow(0 10px 24px color-mix(in oklab, var(--kob-primary-dark) 16%, transparent));
+}
+
+
 .kob-scan-branch[data-selected] {
   border-color: color-mix(in oklab, var(--kob-gold) 58%, transparent);
   background: color-mix(in oklab, var(--kob-champagne) 55%, #ffffff);
