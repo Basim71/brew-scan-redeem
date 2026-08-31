@@ -235,11 +235,7 @@ function ScanPage() {
     } | null>(null);
 
   useEffect(() => {
-    const branchId = branch?.id;
-    if (!branchId) {
-      setBranding(null);
-      return;
-    }
+    const branchId = branch?.id ?? null;
     let cancelled = false;
     void supabase
       .rpc("scan_branding" as never, {
@@ -1182,7 +1178,7 @@ function ScanPage() {
   }
 
   return (
-    <main dir={dir} className="kob-scan">
+    <main dir={dir} className="kob-scan" data-center-page={step === "language" ? "true" : "false"}>
       <div className="kob-scan-shell">
         {step === "branch" && (
 
