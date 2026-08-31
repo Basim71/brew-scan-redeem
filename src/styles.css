@@ -15226,9 +15226,12 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
 .kob-scan-topbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 12px;
+  padding-top: 8px;
+  padding-bottom: 8px;
 }
+
 
 .kob-scan-brand {
   display: inline-flex;
