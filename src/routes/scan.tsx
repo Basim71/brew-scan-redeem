@@ -235,11 +235,7 @@ function ScanPage() {
     } | null>(null);
 
   useEffect(() => {
-    const branchId = branch?.id;
-    if (!branchId) {
-      setBranding(null);
-      return;
-    }
+    const branchId = branch?.id ?? null;
     let cancelled = false;
     void supabase
       .rpc("scan_branding" as never, {
