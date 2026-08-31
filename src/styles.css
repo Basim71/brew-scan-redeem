@@ -15286,12 +15286,23 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
 .kob-scan-card[data-center="true"] { text-align: center; }
 
 .kob-scan[data-center-page="true"] {
-  justify-content: center;
   padding-block: 32px;
 }
 .kob-scan[data-center-page="true"] .kob-scan-shell {
-  margin-block: auto;
+  min-height: calc(100dvh - 64px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
 }
+.kob-scan[data-center-page="true"] .kob-scan-topbar {
+  align-self: center;
+}
+.kob-scan[data-center-page="true"] .kob-scan-card {
+  margin-block: auto;
+  width: 100%;
+}
+
 
 .kob-scan-title {
   font-family: var(--kob-font-display);
