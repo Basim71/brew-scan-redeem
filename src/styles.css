@@ -15362,19 +15362,20 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
 
 .kob-scan-topbar-logo,
 .kob-scan-topbar-logo-fallback {
-  width: 64px;
-  height: 64px;
+  width: 110px;
+  height: 110px;
   object-fit: contain;
   display: grid;
   place-items: center;
   color: var(--kob-gold);
-  filter: drop-shadow(0 8px 18px color-mix(in oklab, var(--kob-primary-dark) 16%, transparent));
+  filter: drop-shadow(0 10px 24px color-mix(in oklab, var(--kob-primary-dark) 18%, transparent));
 }
 .kob-scan-topbar-logo-fallback {
   border-radius: var(--kob-radius-pill);
   background: linear-gradient(160deg, var(--kob-primary-dark), var(--kob-secondary));
   color: var(--kob-champagne);
 }
+
 
 
 
