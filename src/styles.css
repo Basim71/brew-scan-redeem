@@ -15349,19 +15349,20 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
 .kob-scan-logo-float {
   display: flex;
   justify-content: center;
-  margin-top: -16px;
-  margin-bottom: 28px;
+  margin-top: 8px;
+  margin-bottom: 34px;
 }
 .kob-scan-logo-float img,
 .kob-scan-logo-float .kob-scan-logo-fallback {
-  width: 148px;
-  height: 148px;
+  width: 180px;
+  height: 180px;
   object-fit: contain;
   display: grid;
   place-items: center;
   color: var(--kob-gold);
-  filter: drop-shadow(0 14px 32px color-mix(in oklab, var(--kob-primary-dark) 18%, transparent));
+  filter: drop-shadow(0 16px 40px color-mix(in oklab, var(--kob-primary-dark) 20%, transparent));
 }
+
 
 
 
