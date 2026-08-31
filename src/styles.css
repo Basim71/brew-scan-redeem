@@ -15354,8 +15354,9 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
 }
 .kob-scan-logo-float img,
 .kob-scan-logo-float .kob-scan-logo-fallback {
-  width: 220px;
-  height: 220px;
+  width: 280px;
+  height: 280px;
+
   object-fit: contain;
   display: grid;
   place-items: center;
