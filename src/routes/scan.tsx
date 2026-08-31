@@ -1178,7 +1178,7 @@ function ScanPage() {
   }
 
   return (
-    <main dir={dir} className="kob-scan">
+    <main dir={dir} className="kob-scan" data-center-page={step === "language" ? "true" : "false"}>
       <div className="kob-scan-shell">
         {step === "branch" && (
 

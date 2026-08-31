@@ -15282,6 +15282,14 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
 }
 .kob-scan-card[data-center="true"] { text-align: center; }
 
+.kob-scan[data-center-page="true"] {
+  justify-content: center;
+  padding-block: 32px;
+}
+.kob-scan[data-center-page="true"] .kob-scan-shell {
+  margin-block: auto;
+}
+
 .kob-scan-title {
   font-family: var(--kob-font-display);
   font-size: 1.5rem;
