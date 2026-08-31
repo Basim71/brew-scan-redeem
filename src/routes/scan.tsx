@@ -1180,6 +1180,16 @@ function ScanPage() {
   return (
     <main dir={dir} className="kob-scan" data-center-page={step === "language" ? "true" : "false"}>
       <div className="kob-scan-shell">
+        <div className="kob-scan-topbar">
+          {branding?.logo_url ? (
+            <img src={branding.logo_url} alt="" className="kob-scan-topbar-logo" />
+          ) : (
+            <span className="kob-scan-topbar-logo-fallback" aria-hidden>
+              <Coffee className="h-6 w-6" />
+            </span>
+          )}
+        </div>
+
         {step === "branch" && (
 
           <section className="kob-scan-card">
@@ -1216,17 +1226,8 @@ function ScanPage() {
 
         {step === "language" && (
           <>
-            <div className="kob-scan-logo-float">
-              {branding?.logo_url ? (
-                <img src={branding.logo_url} alt="" />
-              ) : (
-                <span className="kob-scan-logo-fallback" aria-hidden>
-                  <Coffee className="h-8 w-8" />
-                </span>
-              )}
-            </div>
-
             <section className="kob-scan-card" data-center="true">
+
               {branch && <BranchBadge label={branchLabel} />}
 
               <h1 className="kob-scan-title">{t("pickLang")}</h1>
