@@ -119,10 +119,11 @@ function PromotionsPage() {
   async function save() {
     if (!editing || !orgId) return;
     const draft = editing.draft;
-    if (!draft.title_ar.trim() || !draft.title_en.trim()) {
-      kobToast.error(isAr ? "أدخل العنوان بالعربية والإنجليزية." : "Enter both Arabic and English titles.");
+    if (!draft.image_url?.trim()) {
+      kobToast.error(isAr ? "أضف صورة الدعاية." : "Add the promotion image.");
       return;
     }
+
     setSaving(true);
     try {
       const payload: PromotionInput = {
