@@ -13,7 +13,6 @@ import {
   Modal,
   PageHeader,
   Select,
-  Textarea,
   Toggle,
   kobToast,
 } from "@/components/kob";
@@ -29,6 +28,7 @@ import {
   type PromotionRow,
   type ScanBranchOption,
 } from "@/services/company/promotions.service";
+import { LogoUploader } from "@/features/company/settings/LogoUploader";
 
 export const Route = createFileRoute("/admin/promotions")({
   head: () => ({
@@ -119,10 +119,11 @@ function PromotionsPage() {
   async function save() {
     if (!editing || !orgId) return;
     const draft = editing.draft;
-    if (!draft.title_ar.trim() || !draft.title_en.trim()) {
-      kobToast.error(isAr ? "أدخل العنوان بالعربية والإنجليزية." : "Enter both Arabic and English titles.");
+    if (!draft.image_url?.trim()) {
+      kobToast.error(isAr ? "أضف صورة الدعاية." : "Add the promotion image.");
       return;
     }
+
     setSaving(true);
     try {
       const payload: PromotionInput = {
@@ -214,12 +215,11 @@ function PromotionsPage() {
                 <img src={row.image_url} alt="" className="kob-promo-admin-image" loading="lazy" />
               ) : null}
               <div className="kob-promo-admin-head">
-                <h3>{isAr ? row.title_ar : row.title_en}</h3>
+                <h3>{row.title_ar || row.title_en || (isAr ? "دعاية" : "Promotion")}</h3>
                 <Badge tone={row.is_active ? "success" : "neutral"}>
                   {row.is_active ? (isAr ? "منشورة" : "Live") : isAr ? "موقوفة" : "Paused"}
                 </Badge>
               </div>
-              <p className="kob-promo-admin-body">{isAr ? row.body_ar : row.body_en}</p>
               <p className="kob-promo-admin-meta">{branchName(row.branch_id)}</p>
               <div className="kob-promo-admin-actions">
                 <Toggle
@@ -274,35 +274,23 @@ function PromotionsPage() {
       >
         {editing && (
           <div className="kob-stack">
+            <LogoUploader
+              isAr={isAr}
+              folder="promotions"
+              label={isAr ? "صورة الدعاية" : "Promotion image"}
+              value={editing.draft.image_url || null}
+              onChange={(url) => patch({ image_url: url ?? "" })}
+            />
             <Input
-              label={isAr ? "العنوان (عربي)" : "Title (Arabic)"}
+              label={isAr ? "اسم داخلي (للإدارة فقط)" : "Internal name (admin only)"}
               value={editing.draft.title_ar}
-              onChange={(e) => patch({ title_ar: e.target.value })}
+              onChange={(e) => patch({ title_ar: e.target.value, title_en: e.target.value })}
             />
             <Input
-              label={isAr ? "العنوان (إنجليزي)" : "Title (English)"}
-              value={editing.draft.title_en}
+              label={isAr ? "رابط عند الضغط (اختياري)" : "Link on tap (optional)"}
               dir="ltr"
-              onChange={(e) => patch({ title_en: e.target.value })}
-            />
-            <Textarea
-              label={isAr ? "النص (عربي)" : "Body (Arabic)"}
-              rows={2}
-              value={editing.draft.body_ar ?? ""}
-              onChange={(e) => patch({ body_ar: e.target.value })}
-            />
-            <Textarea
-              label={isAr ? "النص (إنجليزي)" : "Body (English)"}
-              rows={2}
-              dir="ltr"
-              value={editing.draft.body_en ?? ""}
-              onChange={(e) => patch({ body_en: e.target.value })}
-            />
-            <Input
-              label={isAr ? "رابط الصورة" : "Image URL"}
-              dir="ltr"
-              value={editing.draft.image_url ?? ""}
-              onChange={(e) => patch({ image_url: e.target.value })}
+              value={editing.draft.cta_url ?? ""}
+              onChange={(e) => patch({ cta_url: e.target.value })}
             />
             <Select
               label={isAr ? "الفرع" : "Branch"}
@@ -341,6 +329,7 @@ function PromotionsPage() {
             />
           </div>
         )}
+
       </Modal>
 
       <ConfirmDialog

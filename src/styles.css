@@ -15629,7 +15629,7 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
   color: #fff;
 }
 
-/* ── Scan promotions (company ads) ─────────────────────────────── */
+/* ── Scan promotions (image-only company ads) ──────────────────── */
 .kob-scan-promos {
   display: grid;
   gap: 12px;
@@ -15638,41 +15638,19 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
   margin-inline: auto;
 }
 .kob-scan-promo {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  padding: 12px;
-  border-radius: 18px;
-  background: var(--kob-surface-raised, rgba(255, 255, 255, 0.06));
+  display: block;
+  overflow: hidden;
+  border-radius: 20px;
   border: 1px solid var(--kob-border, rgba(255, 255, 255, 0.08));
-  box-shadow: var(--kob-shadow-raised, 0 10px 26px rgba(0, 0, 0, 0.28));
-  text-align: start;
+  box-shadow: var(--kob-shadow-raised, 0 12px 28px rgba(0, 0, 0, 0.28));
+  background: var(--kob-surface-raised, rgba(255, 255, 255, 0.05));
 }
 .kob-scan-promo img {
-  width: 76px;
-  height: 76px;
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 220px;
   object-fit: cover;
-  border-radius: 14px;
-  flex: 0 0 auto;
-}
-.kob-scan-promo-copy h2 {
-  font-size: 0.98rem;
-  font-weight: 700;
-  margin: 0 0 2px;
-  color: var(--kob-text, inherit);
-}
-.kob-scan-promo-copy p {
-  margin: 0;
-  font-size: 0.84rem;
-  color: var(--kob-text-muted, inherit);
-}
-.kob-scan-promo-copy a {
-  display: inline-block;
-  margin-top: 6px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--kob-accent, currentColor);
-  text-decoration: none;
 }
 
 /* Promotions admin */
