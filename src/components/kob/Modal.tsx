@@ -24,9 +24,18 @@ export function Modal({ open, onClose, title, description, size = "md", footer, 
   const titleId = useId();
   const descriptionId = useId();
 
+  // Keep the latest close handler without re-running the open/close effect
+  // on every parent render (inline onClose props change each render, which
+  // would otherwise steal focus back to the panel on every keystroke).
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
   useEffect(() => {
     if (!open) return;
     lastFocused.current = document.activeElement as HTMLElement | null;
+    const close = onCloseRef.current;
     const focusables = () =>
       Array.from(
         panelRef.current?.querySelectorAll<HTMLElement>(
@@ -35,7 +44,7 @@ export function Modal({ open, onClose, title, description, size = "md", footer, 
       ).filter((element) => element.offsetParent !== null || element === document.activeElement);
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        onClose();
+        close();
         return;
       }
       if (e.key !== "Tab") return;
@@ -62,7 +71,7 @@ export function Modal({ open, onClose, title, description, size = "md", footer, 
       document.body.style.overflow = prev;
       lastFocused.current?.focus?.();
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open || typeof document === "undefined") return null;
 
