@@ -45,6 +45,7 @@ import { Route as AdminSupportTicketIdRouteImport } from './routes/admin.support
 import { Route as PlatformCompaniesOrganizationIdRouteImport } from './routes/platform.companies.$organizationId'
 import { Route as PlatformSupportIndexRouteImport } from './routes/platform.support.index'
 import { Route as PlatformSupportTicketIdRouteImport } from './routes/platform.support.$ticketId'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -227,6 +228,12 @@ const PlatformSupportTicketIdRoute = PlatformSupportTicketIdRouteImport.update({
   path: '/$ticketId',
   getParentRoute: () => PlatformSupportRoute,
 } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -265,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/platform/support/$ticketId': typeof PlatformSupportTicketIdRoute
   '/admin/support/': typeof AdminSupportIndexRoute
   '/platform/support/': typeof PlatformSupportIndexRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -298,6 +306,7 @@ export interface FileRoutesByTo {
   '/platform/support/$ticketId': typeof PlatformSupportTicketIdRoute
   '/admin/support': typeof AdminSupportIndexRoute
   '/platform/support': typeof PlatformSupportIndexRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -337,6 +346,7 @@ export interface FileRoutesById {
   '/platform/support/$ticketId': typeof PlatformSupportTicketIdRoute
   '/admin/support/': typeof AdminSupportIndexRoute
   '/platform/support/': typeof PlatformSupportIndexRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -377,6 +387,7 @@ export interface FileRouteTypes {
     | '/platform/support/$ticketId'
     | '/admin/support/'
     | '/platform/support/'
+    | '/lovable/email/transactional/preview'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -410,6 +421,7 @@ export interface FileRouteTypes {
     | '/platform/support/$ticketId'
     | '/admin/support'
     | '/platform/support'
+    | '/lovable/email/transactional/preview'
   id:
     | '__root__'
     | '/'
@@ -448,6 +460,7 @@ export interface FileRouteTypes {
     | '/platform/support/$ticketId'
     | '/admin/support/'
     | '/platform/support/'
+    | '/lovable/email/transactional/preview'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -458,6 +471,7 @@ export interface RootRouteChildren {
   PlatformRoute: typeof PlatformRouteWithChildren
   PlatformAuthRoute: typeof PlatformAuthRoute
   ScanRoute: typeof ScanRoute
+  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -714,6 +728,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlatformSupportTicketIdRouteImport
       parentRoute: typeof PlatformSupportRoute
     }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -839,6 +860,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlatformRoute: PlatformRouteWithChildren,
   PlatformAuthRoute: PlatformAuthRoute,
   ScanRoute: ScanRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
