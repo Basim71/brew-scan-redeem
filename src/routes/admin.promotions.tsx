@@ -345,7 +345,7 @@ function PromotionsPage() {
 
       <ConfirmDialog
         open={Boolean(pendingDelete)}
-        onClose={() => setPendingDelete(null)}
+        onCancel={() => setPendingDelete(null)}
         onConfirm={() => void confirmDelete()}
         title={isAr ? "حذف الدعاية" : "Delete promotion"}
         description={isAr ? "لن تظهر هذه الدعاية للعملاء بعد الحذف." : "This promotion will no longer be shown."}

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   BarChart3,
   Layers3,
+  Megaphone,
   Coffee,
   Headphones,
   LayoutDashboard,
@@ -34,6 +35,7 @@ const PRIMARY: Array<{
   { to: "/admin/customers", labelAr: "العملاء", labelEn: "Customers", icon: Users },
   { to: "/admin/drinks", labelAr: "المشروبات", labelEn: "Drinks", icon: Coffee },
   { to: "/admin/plans", labelAr: "الاشتراكات", labelEn: "Subscriptions", icon: Layers3 },
+  { to: "/admin/promotions", labelAr: "الدعايات", labelEn: "Promotions", icon: Megaphone },
   { to: "/admin/reports", labelAr: "تحليلات الأعمال", labelEn: "Business Analytics", icon: BarChart3 },
 ];
 
