@@ -25,6 +25,7 @@ import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminDrinksRouteImport } from './routes/admin.drinks'
 import { Route as AdminFinancialReportsRouteImport } from './routes/admin.financial-reports'
 import { Route as AdminPlansRouteImport } from './routes/admin.plans'
+import { Route as AdminPromotionsRouteImport } from './routes/admin.promotions'
 import { Route as AdminReportsRouteImport } from './routes/admin.reports'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
@@ -123,6 +124,11 @@ const AdminFinancialReportsRoute = AdminFinancialReportsRouteImport.update({
 const AdminPlansRoute = AdminPlansRouteImport.update({
   id: '/plans',
   path: '/plans',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPromotionsRoute = AdminPromotionsRouteImport.update({
+  id: '/promotions',
+  path: '/promotions',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminReportsRoute = AdminReportsRouteImport.update({
@@ -238,6 +244,7 @@ export interface FileRoutesByFullPath {
   '/admin/drinks': typeof AdminDrinksRoute
   '/admin/financial-reports': typeof AdminFinancialReportsRoute
   '/admin/plans': typeof AdminPlansRoute
+  '/admin/promotions': typeof AdminPromotionsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
@@ -272,6 +279,7 @@ export interface FileRoutesByTo {
   '/admin/drinks': typeof AdminDrinksRoute
   '/admin/financial-reports': typeof AdminFinancialReportsRoute
   '/admin/plans': typeof AdminPlansRoute
+  '/admin/promotions': typeof AdminPromotionsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
@@ -308,6 +316,7 @@ export interface FileRoutesById {
   '/admin/drinks': typeof AdminDrinksRoute
   '/admin/financial-reports': typeof AdminFinancialReportsRoute
   '/admin/plans': typeof AdminPlansRoute
+  '/admin/promotions': typeof AdminPromotionsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
@@ -347,6 +356,7 @@ export interface FileRouteTypes {
     | '/admin/drinks'
     | '/admin/financial-reports'
     | '/admin/plans'
+    | '/admin/promotions'
     | '/admin/reports'
     | '/admin/settings'
     | '/admin/subscriptions'
@@ -381,6 +391,7 @@ export interface FileRouteTypes {
     | '/admin/drinks'
     | '/admin/financial-reports'
     | '/admin/plans'
+    | '/admin/promotions'
     | '/admin/reports'
     | '/admin/settings'
     | '/admin/subscriptions'
@@ -416,6 +427,7 @@ export interface FileRouteTypes {
     | '/admin/drinks'
     | '/admin/financial-reports'
     | '/admin/plans'
+    | '/admin/promotions'
     | '/admin/reports'
     | '/admin/settings'
     | '/admin/subscriptions'
@@ -560,6 +572,13 @@ declare module '@tanstack/react-router' {
       path: '/plans'
       fullPath: '/admin/plans'
       preLoaderRoute: typeof AdminPlansRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/promotions': {
+      id: '/admin/promotions'
+      path: '/promotions'
+      fullPath: '/admin/promotions'
+      preLoaderRoute: typeof AdminPromotionsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/reports': {
@@ -721,6 +740,7 @@ interface AdminRouteChildren {
   AdminDrinksRoute: typeof AdminDrinksRoute
   AdminFinancialReportsRoute: typeof AdminFinancialReportsRoute
   AdminPlansRoute: typeof AdminPlansRoute
+  AdminPromotionsRoute: typeof AdminPromotionsRoute
   AdminReportsRoute: typeof AdminReportsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
@@ -737,6 +757,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminDrinksRoute: AdminDrinksRoute,
   AdminFinancialReportsRoute: AdminFinancialReportsRoute,
   AdminPlansRoute: AdminPlansRoute,
+  AdminPromotionsRoute: AdminPromotionsRoute,
   AdminReportsRoute: AdminReportsRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,

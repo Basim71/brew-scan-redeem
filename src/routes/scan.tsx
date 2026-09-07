@@ -265,6 +265,34 @@ function ScanPage() {
     };
   }, [branch?.id]);
 
+  const [promotions, setPromotions] = useState<
+    Array<{
+      id: string;
+      title_ar: string | null;
+      title_en: string | null;
+      body_ar: string | null;
+      body_en: string | null;
+      image_url: string | null;
+      cta_label_ar: string | null;
+      cta_label_en: string | null;
+      cta_url: string | null;
+    }>
+  >([]);
+
+  useEffect(() => {
+    const branchId = branch?.id ?? null;
+    let cancelled = false;
+    void supabase
+      .rpc("scan_promotions" as never, { _branch_id: branchId } as never)
+      .then(({ data }) => {
+        if (cancelled) return;
+        setPromotions(Array.isArray(data) ? (data as any[]) : []);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [branch?.id]);
+
   const brandName =
     (lang === "ar"
       ? branding?.name_ar || branding?.name_en
@@ -1189,6 +1217,32 @@ function ScanPage() {
             </span>
           )}
         </div>
+
+        {step !== "language" && promotions.length > 0 && (
+          <section className="kob-scan-promos" aria-label={lang === "ar" ? "عروض" : "Offers"}>
+            {promotions.map((promo) => {
+              const title = (lang === "ar" ? promo.title_ar : promo.title_en) || "";
+              const body = (lang === "ar" ? promo.body_ar : promo.body_en) || "";
+              const cta = (lang === "ar" ? promo.cta_label_ar : promo.cta_label_en) || "";
+              return (
+                <article key={promo.id} className="kob-scan-promo">
+                  {promo.image_url ? (
+                    <img src={promo.image_url} alt="" loading="lazy" />
+                  ) : null}
+                  <div className="kob-scan-promo-copy">
+                    <h2>{title}</h2>
+                    {body ? <p>{body}</p> : null}
+                    {promo.cta_url && cta ? (
+                      <a href={promo.cta_url} target="_blank" rel="noreferrer">
+                        {cta}
+                      </a>
+                    ) : null}
+                  </div>
+                </article>
+              );
+            })}
+          </section>
+        )}
 
         {step === "branch" && (
 
