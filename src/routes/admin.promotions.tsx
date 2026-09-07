@@ -13,7 +13,6 @@ import {
   Modal,
   PageHeader,
   Select,
-  Textarea,
   Toggle,
   kobToast,
 } from "@/components/kob";
@@ -29,6 +28,7 @@ import {
   type PromotionRow,
   type ScanBranchOption,
 } from "@/services/company/promotions.service";
+import { LogoUploader } from "@/features/company/settings/LogoUploader";
 
 export const Route = createFileRoute("/admin/promotions")({
   head: () => ({
@@ -215,12 +215,11 @@ function PromotionsPage() {
                 <img src={row.image_url} alt="" className="kob-promo-admin-image" loading="lazy" />
               ) : null}
               <div className="kob-promo-admin-head">
-                <h3>{isAr ? row.title_ar : row.title_en}</h3>
+                <h3>{row.title_ar || row.title_en || (isAr ? "دعاية" : "Promotion")}</h3>
                 <Badge tone={row.is_active ? "success" : "neutral"}>
                   {row.is_active ? (isAr ? "منشورة" : "Live") : isAr ? "موقوفة" : "Paused"}
                 </Badge>
               </div>
-              <p className="kob-promo-admin-body">{isAr ? row.body_ar : row.body_en}</p>
               <p className="kob-promo-admin-meta">{branchName(row.branch_id)}</p>
               <div className="kob-promo-admin-actions">
                 <Toggle
