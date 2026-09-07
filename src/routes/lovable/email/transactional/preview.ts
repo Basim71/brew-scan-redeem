@@ -9,7 +9,8 @@ import { TEMPLATES } from '@/lib/email-templates/registry'
 export const Route = createFileRoute("/lovable/email/transactional/preview")({
   server: {
     handlers: {
-      POST: async ({ request }) => {
+      POST: async ({ request }: { request: Request }) => {
+
         const apiKey = process.env['LOVABLE_API_KEY']
         if (!apiKey) {
           return Response.json(
