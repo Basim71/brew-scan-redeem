@@ -274,35 +274,23 @@ function PromotionsPage() {
       >
         {editing && (
           <div className="kob-stack">
+            <LogoUploader
+              isAr={isAr}
+              folder="promotions"
+              label={isAr ? "صورة الدعاية" : "Promotion image"}
+              value={editing.draft.image_url || null}
+              onChange={(url) => patch({ image_url: url ?? "" })}
+            />
             <Input
-              label={isAr ? "العنوان (عربي)" : "Title (Arabic)"}
+              label={isAr ? "اسم داخلي (للإدارة فقط)" : "Internal name (admin only)"}
               value={editing.draft.title_ar}
-              onChange={(e) => patch({ title_ar: e.target.value })}
+              onChange={(e) => patch({ title_ar: e.target.value, title_en: e.target.value })}
             />
             <Input
-              label={isAr ? "العنوان (إنجليزي)" : "Title (English)"}
-              value={editing.draft.title_en}
+              label={isAr ? "رابط عند الضغط (اختياري)" : "Link on tap (optional)"}
               dir="ltr"
-              onChange={(e) => patch({ title_en: e.target.value })}
-            />
-            <Textarea
-              label={isAr ? "النص (عربي)" : "Body (Arabic)"}
-              rows={2}
-              value={editing.draft.body_ar ?? ""}
-              onChange={(e) => patch({ body_ar: e.target.value })}
-            />
-            <Textarea
-              label={isAr ? "النص (إنجليزي)" : "Body (English)"}
-              rows={2}
-              dir="ltr"
-              value={editing.draft.body_en ?? ""}
-              onChange={(e) => patch({ body_en: e.target.value })}
-            />
-            <Input
-              label={isAr ? "رابط الصورة" : "Image URL"}
-              dir="ltr"
-              value={editing.draft.image_url ?? ""}
-              onChange={(e) => patch({ image_url: e.target.value })}
+              value={editing.draft.cta_url ?? ""}
+              onChange={(e) => patch({ cta_url: e.target.value })}
             />
             <Select
               label={isAr ? "الفرع" : "Branch"}
@@ -341,6 +329,7 @@ function PromotionsPage() {
             />
           </div>
         )}
+
       </Modal>
 
       <ConfirmDialog
