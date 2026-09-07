@@ -1218,31 +1218,6 @@ function ScanPage() {
           )}
         </div>
 
-        {step !== "language" && promotions.length > 0 && (
-          <section className="kob-scan-promos" aria-label={lang === "ar" ? "عروض" : "Offers"}>
-            {promotions.map((promo) => {
-              const title = (lang === "ar" ? promo.title_ar : promo.title_en) || "";
-              const body = (lang === "ar" ? promo.body_ar : promo.body_en) || "";
-              const cta = (lang === "ar" ? promo.cta_label_ar : promo.cta_label_en) || "";
-              return (
-                <article key={promo.id} className="kob-scan-promo">
-                  {promo.image_url ? (
-                    <img src={promo.image_url} alt="" loading="lazy" />
-                  ) : null}
-                  <div className="kob-scan-promo-copy">
-                    <h2>{title}</h2>
-                    {body ? <p>{body}</p> : null}
-                    {promo.cta_url && cta ? (
-                      <a href={promo.cta_url} target="_blank" rel="noreferrer">
-                        {cta}
-                      </a>
-                    ) : null}
-                  </div>
-                </article>
-              );
-            })}
-          </section>
-        )}
 
         {step === "branch" && (
 
