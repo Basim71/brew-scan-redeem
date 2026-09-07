@@ -1667,7 +1667,36 @@ function ScanPage() {
               </div>
             </section>
 
+            {promotions.some((p) => p.image_url) && (
+              <section className="kob-scan-promos" aria-label={lang === "ar" ? "عروض" : "Offers"}>
+                {promotions
+                  .filter((promo) => Boolean(promo.image_url))
+                  .map((promo) => {
+                    const alt = (lang === "ar" ? promo.title_ar : promo.title_en) || "";
+                    const image = (
+                      <img src={promo.image_url as string} alt={alt} loading="lazy" />
+                    );
+                    return promo.cta_url ? (
+                      <a
+                        key={promo.id}
+                        className="kob-scan-promo"
+                        href={promo.cta_url}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {image}
+                      </a>
+                    ) : (
+                      <div key={promo.id} className="kob-scan-promo">
+                        {image}
+                      </div>
+                    );
+                  })}
+              </section>
+            )}
+
             <section className="kob-order-slider-section">
+
               <DrinkSlider
                 drinks={drinks}
                 language={lang}
