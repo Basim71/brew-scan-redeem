@@ -16,6 +16,24 @@ export function UnifiedLoginForm({ onSubmit, busy, error }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [appleBusy, setAppleBusy] = useState(false);
+  const [appleError, setAppleError] = useState<string | null>(null);
+
+  async function handleAppleSignIn() {
+    if (busy || appleBusy) return;
+    setAppleBusy(true);
+    setAppleError(null);
+    const result = await lovable.auth.signInWithOAuth("apple", {
+      redirect_uri: window.location.origin + "/auth",
+    });
+    if (result.error) {
+      setAppleError(lang === "ar" ? "تعذر تسجيل الدخول عبر Apple." : "Apple sign-in failed.");
+      setAppleBusy(false);
+      return;
+    }
+    if (result.redirected) return; // Browser is navigating to Apple
+    setAppleBusy(false); // Session set — the page's session-restore effect will route the user
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
