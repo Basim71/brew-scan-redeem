@@ -1,6 +1,7 @@
 import { Eye, EyeOff, Loader2, LockKeyhole, Mail } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
+import { lovable } from "@/integrations/lovable/index";
 import { LanguageSwitcher, useI18n } from "@/lib/i18n";
 import kobLogo from "@/assets/kob-logo.png.asset.json";
 
