@@ -51,6 +51,8 @@ export function UnifiedLoginForm({ onSubmit, busy, error }: Props) {
     show: lang === "ar" ? "إظهار كلمة المرور" : "Show password",
     hide: lang === "ar" ? "إخفاء كلمة المرور" : "Hide password",
     submit: lang === "ar" ? "تسجيل الدخول" : "Sign in",
+    or: lang === "ar" ? "أو" : "or",
+    apple: lang === "ar" ? "المتابعة عبر Apple" : "Continue with Apple",
   };
 
   return (
