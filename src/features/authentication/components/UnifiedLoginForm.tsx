@@ -130,6 +130,35 @@ export function UnifiedLoginForm({ onSubmit, busy, error }: Props) {
           <button type="submit" disabled={busy} className="kob-auth-submit" aria-label={labels.submit}>
             {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <LockKeyhole className="h-5 w-5" />}
           </button>
+
+          <div className="kob-auth-divider" aria-hidden="true" style={{ marginTop: 18 }}>
+            <span />
+            <em>{labels.or}</em>
+            <span />
+          </div>
+
+          {appleError ? (
+            <div className="kob-auth-error" role="alert">
+              {appleError}
+            </div>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={() => void handleAppleSignIn()}
+            disabled={busy || appleBusy}
+            className="kob-auth-apple"
+            aria-label={labels.apple}
+          >
+            {appleBusy ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+                <path d="M17.05 20.28c-.98.95-2.05.86-3.08.41-1.09-.47-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.41C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8.98-.2 1.92-.86 3.24-.77 1.58.13 2.77.75 3.55 1.9-3.27 1.96-2.5 6.27.53 7.5-.6 1.57-1.38 3.12-2.4 3.54ZM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25Z" />
+              </svg>
+            )}
+            <span>{labels.apple}</span>
+          </button>
         </form>
       </section>
     </main>
