@@ -274,6 +274,7 @@ export type Database = {
           expires_at: string
           id: string
           phone: string
+          verified_at: string | null
         }
         Insert: {
           attempts?: number
@@ -287,6 +288,7 @@ export type Database = {
           expires_at: string
           id?: string
           phone: string
+          verified_at?: string | null
         }
         Update: {
           attempts?: number
@@ -300,6 +302,7 @@ export type Database = {
           expires_at?: string
           id?: string
           phone?: string
+          verified_at?: string | null
         }
         Relationships: []
       }
@@ -1744,6 +1747,7 @@ export type Database = {
           phone: string
           preferred_language: string
           rejected_at: string | null
+          requested_plan_id: string | null
           status: Database["public"]["Enums"]["registration_status"]
           updated_at: string
           user_agent: string | null
@@ -1762,6 +1766,7 @@ export type Database = {
           phone: string
           preferred_language?: string
           rejected_at?: string | null
+          requested_plan_id?: string | null
           status?: Database["public"]["Enums"]["registration_status"]
           updated_at?: string
           user_agent?: string | null
@@ -1780,6 +1785,7 @@ export type Database = {
           phone?: string
           preferred_language?: string
           rejected_at?: string | null
+          requested_plan_id?: string | null
           status?: Database["public"]["Enums"]["registration_status"]
           updated_at?: string
           user_agent?: string | null
@@ -1797,6 +1803,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registration_requests_requested_plan_id_fkey"
+            columns: ["requested_plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
             referencedColumns: ["id"]
           },
         ]
@@ -3055,6 +3068,41 @@ export type Database = {
       }
       current_user_branch: { Args: never; Returns: string }
       current_user_organization_ids: { Args: never; Returns: string[] }
+      customer_app_create_otp:
+        | {
+            Args: { _phone: string }
+            Returns: {
+              expires_at: string
+              otp_code: string
+              otp_id: string
+            }[]
+          }
+        | {
+            Args: { _device_token?: string; _phone: string }
+            Returns: {
+              otp_code: string
+              otp_expires_at: string
+              otp_id: string
+            }[]
+          }
+      customer_app_dev_login: { Args: { _phone: string }; Returns: Json }
+      customer_app_profile: {
+        Args: { _phone: string; _session_token: string }
+        Returns: Json
+      }
+      customer_app_session_is_valid: {
+        Args: { _phone: string; _session_token: string }
+        Returns: boolean
+      }
+      customer_app_verify_otp: {
+        Args: {
+          _code: string
+          _device_token?: string
+          _otp_id: string
+          _phone: string
+        }
+        Returns: Json
+      }
       default_organization_id: { Args: never; Returns: string }
       delete_branch_safe: {
         Args: { _branch_id: string; _force?: boolean }
