@@ -3050,10 +3050,12 @@ export type Database = {
       }
     }
     Functions: {
+      can_access_org: { Args: { _org: string }; Returns: boolean }
       can_create_customer_success_case: {
         Args: { target_member_id: string; target_organization_id: string }
         Returns: boolean
       }
+      can_manage_org: { Args: { _org: string }; Returns: boolean }
       can_manage_support_for_organization: {
         Args: { target_organization_id: string }
         Returns: boolean
