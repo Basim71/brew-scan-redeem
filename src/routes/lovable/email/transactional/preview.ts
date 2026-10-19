@@ -8,7 +8,6 @@ import { TEMPLATES } from '@/lib/email-templates/registry'
 
 export const Route = createFileRoute("/lovable/email/transactional/preview")({
   // `server.handlers` is supported at runtime but not yet in the router types.
-  // @ts-expect-error -- server route handler typing not exposed in this version
   server: {
     handlers: {
       POST: async ({ request }: { request: Request }) => {
