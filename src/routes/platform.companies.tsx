@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Building2, Search, ShieldCheck, ShieldOff } from "lucide-react";
+import { Plus, Search, ShieldCheck, ShieldOff } from "lucide-react";
 import { PlatformGate } from "@/features/platform/PlatformGate";
+import { CreateCompanyModal } from "@/features/platform/CreateCompanyModal";
 import { ROLE_MATRIX } from "@/features/platform/access";
 import { listCompanies, type CompanyRow } from "@/services/platform/companies.service";
 
@@ -14,6 +15,9 @@ function Companies() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [creating, setCreating] = useState(false);
+  const [tick, setTick] = useState(0);
+
   useEffect(() => {
     let alive = true;
     listCompanies()
@@ -21,7 +25,7 @@ function Companies() {
       .catch((e) => { if (alive) setError(e instanceof Error ? e.message : "خطأ"); })
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
-  }, []);
+  }, [tick]);
 
   const filtered = useMemo(() => rows.filter((x) => {
     const matches = !q || `${x.name_ar ?? ""} ${x.name_en ?? ""} ${x.organization_code}`.toLowerCase().includes(q.toLowerCase());
@@ -38,8 +42,11 @@ function Companies() {
             <h1>الشركات</h1>
             <p>إدارة جميع الشركات المشتركة في منصة KOB.</p>
           </div>
-          <Building2 />
+          <button type="button" className="platform-primary-button" onClick={() => setCreating(true)}>
+            <Plus /> إضافة شركة جديدة
+          </button>
         </header>
+        <CreateCompanyModal open={creating} onClose={() => setCreating(false)} onCreated={() => setTick((t) => t + 1)} />
         <div className="platform-toolbar">
           <label><Search /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="ابحث بالاسم أو كود الشركة" /></label>
           <div className="support-tabs">
