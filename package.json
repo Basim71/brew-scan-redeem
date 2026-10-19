@@ -52,10 +52,10 @@
     "vite": "^8.0.16"
   },
   "overrides": {
-    "@tanstack/react-router": "1.170.18"
+    "@tanstack/react-router": "1.170.41"
   },
   "resolutions": {
-    "@tanstack/react-router": "1.170.18"
+    "@tanstack/react-router": "1.170.41"
   },
   "pnpm": {
     "overrides": {
