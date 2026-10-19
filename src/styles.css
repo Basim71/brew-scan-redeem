@@ -15744,3 +15744,13 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
   display: flex;
   gap: 6px;
 }
+
+/* Platform — create company */
+.platform-create-form h3 { margin: 4px 0 10px; font-size: 14px; color: var(--kob-text-muted, inherit); }
+.platform-create-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+.platform-create-grid label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.platform-create-grid label.wide { grid-column: 1 / -1; }
+.platform-create-grid input { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--kob-border, currentColor); background: var(--kob-surface, transparent); color: inherit; font: inherit; }
+.platform-create-actions { display: flex; gap: 10px; margin-top: 12px; }
+.platform-create-result pre { white-space: pre-wrap; direction: rtl; padding: 14px; border-radius: 12px; background: var(--kob-surface-sunken, rgba(0,0,0,.04)); font: inherit; line-height: 1.8; }
+@media (max-width: 640px) { .platform-create-grid { grid-template-columns: 1fr; } }
