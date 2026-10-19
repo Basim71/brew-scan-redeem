@@ -3068,6 +3068,10 @@ export type Database = {
       }
       current_user_branch: { Args: never; Returns: string }
       current_user_organization_ids: { Args: never; Returns: string[] }
+      customer_app_branch_plans: {
+        Args: { _branch_id: string; _phone: string; _session_token: string }
+        Returns: Json
+      }
       customer_app_create_otp:
         | {
             Args: { _phone: string }
@@ -3086,13 +3090,49 @@ export type Database = {
             }[]
           }
       customer_app_dev_login: { Args: { _phone: string }; Returns: Json }
+      customer_app_dev_register: {
+        Args: {
+          _email: string
+          _first_name: string
+          _last_name: string
+          _phone: string
+        }
+        Returns: Json
+      }
+      customer_app_order_menu: {
+        Args: {
+          _phone: string
+          _session_token: string
+          _subscription_id: string
+        }
+        Returns: Json
+      }
       customer_app_profile: {
         Args: { _phone: string; _session_token: string }
+        Returns: Json
+      }
+      customer_app_request_subscription: {
+        Args: {
+          _branch_id: string
+          _device_token?: string
+          _phone: string
+          _plan_id: string
+          _preferred_language?: string
+          _session_token: string
+        }
+        Returns: Json
+      }
+      customer_app_scan_branch: {
+        Args: { _phone: string; _qr_token: string; _session_token: string }
         Returns: Json
       }
       customer_app_session_is_valid: {
         Args: { _phone: string; _session_token: string }
         Returns: boolean
+      }
+      customer_app_subscriptions: {
+        Args: { _phone: string; _session_token: string }
+        Returns: Json
       }
       customer_app_verify_otp: {
         Args: {
