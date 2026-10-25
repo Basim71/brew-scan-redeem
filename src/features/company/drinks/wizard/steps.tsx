@@ -308,7 +308,7 @@ export function OptionsStep({ draft, patch }: StepProps) {
                 className="ds-group-name"
                 dir="rtl"
                 value={group.name_ar}
-                placeholder="اسم المجموعة"
+                placeholder={t("drinks.groupNameAr")}
                 onChange={(e) => updateGroup(index, { name_ar: e.target.value })}
               />
               <div className="ds-group-actions">
