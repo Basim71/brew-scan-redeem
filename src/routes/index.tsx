@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 
 import { LanguageSwitcher, useI18n } from "@/lib/i18n";
+import arLocale from "@/locales/ar.json";
+import enLocale from "@/locales/en.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -37,78 +39,7 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const COPY = {
-  ar: {
-    tag: "اشتراكات القهوة الذكية",
-    login: "دخول المقاهي",
-    eyebrow: "منصة اشتراكات للمقاهي",
-    title: "قهوة عملائك اليومية… باشتراك واحد فاخر",
-    lead: "KOB يحوّل زبائن مقهاك إلى مشتركين دائمين: دخل مقدّم، ولاء يومي، وإدارة كاملة للفروع والكاشير من مكان واحد.",
-    ctaPrimary: "انضم كمقهى شريك",
-    ctaSecondary: "دخول لوحة الإدارة",
-    stats: [
-      ["30", "يوم في كل باقة"],
-      ["1", "ضغطة لاعتماد الطلب"],
-      ["100%", "عزل بيانات كل مقهى"],
-    ],
-    howTitle: "كيف يعمل KOB؟",
-    how: [
-      ["أنشئ باقتك واطبع الكود", "حدّد المشروبات والأيام والسعر، وكل فرع له كود QR خاص."],
-      ["العميل يمسح ويشترك", "يدخل رقم جواله، يتحقق برمز، ويختار باقته في ثوانٍ."],
-      ["الكاشير يعتمد بضغطة", "يصل الطلب مباشرة للكاشير، وعند الاعتماد يُحتسب اليوم."],
-    ],
-    featTitle: "كل ما يحتاجه مقهاك",
-    feats: [
-      ["دخل مقدّم", "تحصيل قيمة الاشتراك مسبقاً وتدفق نقدي ثابت."],
-      ["ولاء يومي", "العميل يرجع لك كل يوم بدل المنافسين."],
-      ["إدارة الفروع", "فروع وموظفون وصلاحيات منفصلة لكل فرع."],
-      ["تقارير وتحليلات", "استهلاك، إيرادات، وأداء الباقات لحظياً."],
-      ["إعلانات في صفحة المسح", "اعرض عروضك لعملائك عند كل طلب."],
-      ["أمان وتحقق", "رمز تحقق للعميل، وبيانات كل مقهى معزولة تماماً."],
-    ],
-    cardLabel: "عضوية بريميوم",
-    cardDays: "الأيام المستخدمة",
-    cardToday: "قهوة اليوم: لاتيه",
-    finalTitle: "جاهز تطلق اشتراكات مقهاك؟",
-    finalLead: "سجّل مقهاك اليوم وابدأ باستقبال المشتركين خلال دقائق.",
-    footer: "جميع الحقوق محفوظة",
-  },
-  en: {
-    tag: "Smart coffee subscriptions",
-    login: "Café login",
-    eyebrow: "Subscription platform for cafés",
-    title: "Your customers' daily coffee… in one premium subscription",
-    lead: "KOB turns walk-ins into loyal members: prepaid revenue, daily loyalty, and full control of branches and cashiers from one place.",
-    ctaPrimary: "Become a partner café",
-    ctaSecondary: "Open dashboard",
-    stats: [
-      ["30", "days in every plan"],
-      ["1", "tap to approve an order"],
-      ["100%", "data isolation per café"],
-    ],
-    howTitle: "How KOB works",
-    how: [
-      ["Create a plan, print the code", "Set drinks, days and price. Every branch gets its own QR code."],
-      ["Customer scans & subscribes", "Phone number, a verification code, and a plan — in seconds."],
-      ["Cashier approves in one tap", "The order reaches the counter instantly; approval marks the day."],
-    ],
-    featTitle: "Everything your café needs",
-    feats: [
-      ["Prepaid revenue", "Collect subscriptions upfront for steady cash flow."],
-      ["Daily loyalty", "Customers come back to you every single day."],
-      ["Branch management", "Separate branches, staff and permissions."],
-      ["Reports & analytics", "Usage, revenue and plan performance in real time."],
-      ["Ads on the scan page", "Show your promotions with every order."],
-      ["Secure & verified", "Customer OTP and fully isolated data per café."],
-    ],
-    cardLabel: "Premium membership",
-    cardDays: "Days used",
-    cardToday: "Today: Latte",
-    finalTitle: "Ready to launch your café subscriptions?",
-    finalLead: "Register your café today and start welcoming members in minutes.",
-    footer: "All rights reserved",
-  },
-} as const;
+const COPY = { ar: arLocale.home, en: enLocale.home };
 
 const HOW_ICONS = [QrCode, Smartphone, CheckCircle2];
 const FEAT_ICONS = [Wallet, Users, Building2, BarChart3, Megaphone, ShieldCheck];

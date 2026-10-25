@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Check, Copy, GripVertical, Plus, Trash2, X } from "lucide-react";
 
 import { Button, FileUpload, Input } from "@/components/kob";
+import { useI18n } from "@/lib/i18n";
 import { ALLERGEN_CARDS, DRINK_CATEGORIES, GROUP_TEMPLATES, newKey } from "../constants";
 import type { DrinkDraft, GroupDraft, IntensityLevel, TemperatureMode } from "../types";
 import { LivePreview } from "./LivePreview";
@@ -37,46 +38,42 @@ function Pills<T extends string>({
   );
 }
 
-const INTENSITY: Array<{ key: IntensityLevel; label: string }> = [
-  { key: "none", label: "None" },
-  { key: "low", label: "Low" },
-  { key: "medium", label: "Medium" },
-  { key: "high", label: "High" },
-];
+const INTENSITY_KEYS: IntensityLevel[] = ["none", "low", "medium", "high"];
 
 export function IdentityStep({ draft, patch }: StepProps) {
+  const { t, lang } = useI18n();
   return (
     <div className="ds-step">
       <div className="ds-grid-2">
         <Input
-          label="English name"
+          label={t("drinks.englishName")}
           value={draft.name_en}
           onChange={(e) => patch({ name_en: e.target.value })}
-          placeholder="Enter English name"
+          placeholder={t("drinks.englishNamePh")}
         />
         <Input
-          label="الاسم بالعربية"
+          label={t("drinks.arabicName")}
           dir="rtl"
           value={draft.name_ar}
           onChange={(e) => patch({ name_ar: e.target.value })}
-          placeholder="أدخل الاسم بالعربية"
+          placeholder={t("drinks.arabicNamePh")}
         />
       </div>
       <div className="ds-field">
-        <span>Category</span>
+        <span>{t("drinks.category")}</span>
         <Pills
           value={draft.category}
-          options={DRINK_CATEGORIES.map((category) => ({ key: category.key as string, label: category.label }))}
+          options={DRINK_CATEGORIES.map((category) => ({ key: category.key as string, label: t(`drinks.cat.${category.key}`) }))}
           onChange={(category) => patch({ category })}
         />
       </div>
       <div className="ds-field">
-        <span>Status</span>
+        <span>{t("drinks.status")}</span>
         <Pills
           value={draft.is_active ? "active" : "inactive"}
           options={[
-            { key: "active", label: "Active" },
-            { key: "inactive", label: "Inactive" },
+            { key: "active", label: t("drinks.active") },
+            { key: "inactive", label: t("drinks.inactive") },
           ]}
           onChange={(value) => patch({ is_active: value === "active" })}
         />
@@ -91,16 +88,17 @@ export function VisualStep({
   onPickFile,
   uploading,
 }: StepProps & { onPickFile: (file: File) => void; uploading: boolean }) {
+  const { t, lang } = useI18n();
   return (
     <div className="ds-step">
       <FileUpload accept="image/*" busy={uploading} onFiles={(files) => files[0] && onPickFile(files[0])}>
-        {uploading ? "Uploading image…" : "Drag & drop or choose an image (PNG, JPG or WEBP up to 5 MB)"}
+        {uploading ? t("drinks.uploading") : t("drinks.dropHint")}
       </FileUpload>
 
       {draft.image_url && (
         <div className="ds-image-tools">
           <label className="ds-field">
-            <span>Crop / zoom</span>
+            <span>{t("drinks.zoom")}</span>
             <input
               type="range"
               min={1}
@@ -111,7 +109,7 @@ export function VisualStep({
             />
           </label>
           <label className="ds-field">
-            <span>Reposition horizontally</span>
+            <span>{t("drinks.posX")}</span>
             <input
               type="range"
               min={0}
@@ -121,7 +119,7 @@ export function VisualStep({
             />
           </label>
           <label className="ds-field">
-            <span>Reposition vertically</span>
+            <span>{t("drinks.posY")}</span>
             <input
               type="range"
               min={0}
@@ -132,10 +130,10 @@ export function VisualStep({
           </label>
           <div className="ds-inline-actions">
             <FileUpload accept="image/*" onFiles={(files) => files[0] && onPickFile(files[0])}>
-              Replace image
+              {t("drinks.replaceImage")}
             </FileUpload>
             <Button variant="danger" onClick={() => patch({ image_url: null, image_path: null })}>
-              Remove image
+              {t("drinks.removeImage")}
             </Button>
           </div>
         </div>
@@ -149,63 +147,65 @@ export function VisualStep({
 }
 
 export function NutritionStep({ draft, patch }: StepProps) {
+  const { t, lang } = useI18n();
   return (
     <div className="ds-step">
       <div className="ds-grid-2">
         <Input
-          label="Calories (kcal)"
+          label={t("drinks.caloriesKcal")}
           inputMode="numeric"
           value={draft.calories}
           onChange={(e) => patch({ calories: e.target.value.replace(/\D/g, "").slice(0, 4) })}
           placeholder="120"
         />
         <div className="ds-field">
-          <span>Serving size</span>
+          <span>{t("drinks.servingSize")}</span>
           <Pills
             value={draft.serving_size}
             options={[
-              { key: "small", label: "Small" },
-              { key: "medium", label: "Medium" },
-              { key: "large", label: "Large" },
+              { key: "small", label: t("drinks.small") },
+              { key: "medium", label: t("drinks.medium") },
+              { key: "large", label: t("drinks.large") },
             ]}
             onChange={(serving_size) => patch({ serving_size })}
           />
         </div>
       </div>
       <div className="ds-field">
-        <span>Served</span>
+        <span>{t("drinks.served")}</span>
         <Pills<TemperatureMode>
           value={draft.temperature}
           options={[
-            { key: "hot", label: "Hot" },
-            { key: "cold", label: "Cold" },
-            { key: "both", label: "Both" },
+            { key: "hot", label: t("drinks.hot") },
+            { key: "cold", label: t("drinks.cold") },
+            { key: "both", label: t("drinks.both") },
           ]}
           onChange={(temperature) => patch({ temperature })}
         />
       </div>
       <div className="ds-grid-2">
         <div className="ds-field">
-          <span>Caffeine level</span>
+          <span>{t("drinks.caffeine")}</span>
           <Pills<IntensityLevel>
             value={draft.caffeine}
-            options={INTENSITY}
+            options={INTENSITY_KEYS.map((key) => ({ key, label: t(`drinks.level.${key}`) }))}
             onChange={(caffeine) => patch({ caffeine })}
           />
         </div>
         <div className="ds-field">
-          <span>Sugar level</span>
-          <Pills<IntensityLevel> value={draft.sugar} options={INTENSITY} onChange={(sugar) => patch({ sugar })} />
+          <span>{t("drinks.sugar")}</span>
+          <Pills<IntensityLevel> value={draft.sugar} options={INTENSITY_KEYS.map((key) => ({ key, label: t(`drinks.level.${key}`) }))} onChange={(sugar) => patch({ sugar })} />
         </div>
       </div>
       <p className="ds-hint">
-        Serving, temperature, caffeine and sugar guide your team — only calories are stored on the drink record.
+        {t("drinks.nutritionHint")}
       </p>
     </div>
   );
 }
 
 export function AllergensStep({ draft, patch }: StepProps) {
+  const { t, lang } = useI18n();
   const none = draft.allergens.length === 0;
   function toggle(key: string) {
     patch({
@@ -224,8 +224,7 @@ export function AllergensStep({ draft, patch }: StepProps) {
           onClick={() => patch({ allergens: [] })}
         >
           <span className="ds-allergen-icon">🚫</span>
-          <strong>No Allergens</strong>
-          <small dir="rtl">بدون مسببات حساسية</small>
+          <strong>{t("drinks.noAllergens")}</strong>
           {none && <Check className="ds-allergen-check h-4 w-4" />}
         </button>
         {ALLERGEN_CARDS.map((card) => {
@@ -239,8 +238,7 @@ export function AllergensStep({ draft, patch }: StepProps) {
               onClick={() => toggle(card.key)}
             >
               <span className="ds-allergen-icon">{card.icon}</span>
-              <strong>{card.en}</strong>
-              <small dir="rtl">{card.ar}</small>
+              <strong>{lang === "ar" ? card.ar : card.en}</strong>
               {active && <Check className="ds-allergen-check h-4 w-4" />}
             </button>
           );
@@ -251,6 +249,7 @@ export function AllergensStep({ draft, patch }: StepProps) {
 }
 
 export function OptionsStep({ draft, patch }: StepProps) {
+  const { t, lang } = useI18n();
   const [dragIndex, setDragIndex] = useState<number | null>(null);
 
   function setGroups(groups: GroupDraft[]) {
@@ -278,8 +277,7 @@ export function OptionsStep({ draft, patch }: StepProps) {
             onClick={() => setGroups([...draft.groups, template.build()])}
           >
             <span>{template.icon}</span>
-            <strong>{template.label_en}</strong>
-            <small dir="rtl">{template.label_ar}</small>
+            <strong>{lang === "ar" ? template.label_ar : template.label_en}</strong>
           </button>
         ))}
       </div>
@@ -303,20 +301,20 @@ export function OptionsStep({ draft, patch }: StepProps) {
               <input
                 className="ds-group-name"
                 value={group.name_en}
-                placeholder="Group name (EN)"
+                placeholder={t("drinks.groupNameEn")}
                 onChange={(e) => updateGroup(index, { name_en: e.target.value })}
               />
               <input
                 className="ds-group-name"
                 dir="rtl"
                 value={group.name_ar}
-                placeholder="اسم المجموعة"
+                placeholder={t("drinks.groupNameAr")}
                 onChange={(e) => updateGroup(index, { name_ar: e.target.value })}
               />
               <div className="ds-group-actions">
                 <button
                   type="button"
-                  title="Duplicate"
+                  title={t("drinks.duplicate")}
                   onClick={() =>
                     setGroups([
                       ...draft.groups.slice(0, index + 1),
@@ -333,7 +331,7 @@ export function OptionsStep({ draft, patch }: StepProps) {
                 </button>
                 <button
                   type="button"
-                  title="Delete"
+                  title={t("drinks.delete")}
                   className="ds-text-danger"
                   onClick={() => setGroups(draft.groups.filter((_, i) => i !== index))}
                 >
@@ -346,24 +344,24 @@ export function OptionsStep({ draft, patch }: StepProps) {
               <Pills
                 value={group.selection_type}
                 options={[
-                  { key: "single", label: "Single select" },
-                  { key: "multiple", label: "Multi select" },
+                  { key: "single", label: t("drinks.single") },
+                  { key: "multiple", label: t("drinks.multiple") },
                 ]}
                 onChange={(selection_type) => updateGroup(index, { selection_type })}
               />
               <Pills
                 value={group.is_required ? "required" : "optional"}
                 options={[
-                  { key: "required", label: "Required" },
-                  { key: "optional", label: "Optional" },
+                  { key: "required", label: t("drinks.required") },
+                  { key: "optional", label: t("drinks.optional") },
                 ]}
                 onChange={(value) => updateGroup(index, { is_required: value === "required" })}
               />
               <Pills
                 value={group.is_enabled ? "enabled" : "disabled"}
                 options={[
-                  { key: "enabled", label: "Enabled" },
-                  { key: "disabled", label: "Disabled" },
+                  { key: "enabled", label: t("drinks.enabledL") },
+                  { key: "disabled", label: t("drinks.disabledL") },
                 ]}
                 onChange={(value) => updateGroup(index, { is_enabled: value === "enabled" })}
               />
@@ -374,7 +372,7 @@ export function OptionsStep({ draft, patch }: StepProps) {
                 <div key={option.key} className="ds-option-row">
                   <input
                     value={option.name_en}
-                    placeholder="Option (EN)"
+                    placeholder={t("drinks.optionEn")}
                     onChange={(e) =>
                       updateGroup(index, {
                         options: group.options.map((item, i) =>
@@ -386,7 +384,7 @@ export function OptionsStep({ draft, patch }: StepProps) {
                   <input
                     dir="rtl"
                     value={option.name_ar}
-                    placeholder="الخيار"
+                    placeholder={t("drinks.optionAr")}
                     onChange={(e) =>
                       updateGroup(index, {
                         options: group.options.map((item, i) =>
@@ -399,7 +397,7 @@ export function OptionsStep({ draft, patch }: StepProps) {
                     type="button"
                     className="ds-default-toggle"
                     data-active={option.is_default ? "true" : "false"}
-                    title="Default option"
+                    title={t("drinks.defaultOption")}
                     onClick={() =>
                       updateGroup(index, {
                         options: group.options.map((item, i) => ({
@@ -414,12 +412,12 @@ export function OptionsStep({ draft, patch }: StepProps) {
                       })
                     }
                   >
-                    Default
+                    {t("drinks.default")}
                   </button>
                   <button
                     type="button"
                     className="ds-icon-danger"
-                    title="Remove option"
+                    title={t("drinks.removeOption")}
                     onClick={() => updateGroup(index, { options: group.options.filter((_, i) => i !== optionIndex) })}
                   >
                     <X className="h-4 w-4" />
@@ -439,7 +437,7 @@ export function OptionsStep({ draft, patch }: StepProps) {
                 }
               >
                 <Plus className="h-4 w-4" />
-                Add option
+                {t("drinks.addOption")}
               </button>
             </div>
           </div>
@@ -450,13 +448,14 @@ export function OptionsStep({ draft, patch }: StepProps) {
 }
 
 export function PreviewStep({ draft }: { draft: DrinkDraft }) {
+  const { t, lang } = useI18n();
   const checklist = [
-    { label: "English name", ok: Boolean(draft.name_en.trim()) },
-    { label: "Arabic name", ok: Boolean(draft.name_ar.trim()) },
-    { label: "Image", ok: Boolean(draft.image_url) },
-    { label: "Calories", ok: Boolean(draft.calories) },
-    { label: "Allergens", ok: draft.allergens.length > 0 },
-    { label: "Options", ok: draft.groups.some((group) => group.is_enabled && group.options.length > 0) },
+    { label: t("drinks.englishName"), ok: Boolean(draft.name_en.trim()) },
+    { label: t("drinks.arabicName"), ok: Boolean(draft.name_ar.trim()) },
+    { label: t("drinks.image"), ok: Boolean(draft.image_url) },
+    { label: t("drinks.calories"), ok: Boolean(draft.calories) },
+    { label: t("drinks.allergens"), ok: draft.allergens.length > 0 },
+    { label: t("drinks.options"), ok: draft.groups.some((group) => group.is_enabled && group.options.length > 0) },
   ];
   return (
     <div className="ds-step">

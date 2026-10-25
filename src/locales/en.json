@@ -1009,5 +1009,234 @@
       "couponWrongBranch": "This coupon belongs to another branch.",
       "registrationProcessed": "This registration request has already been processed."
     }
+  },
+  "home": {
+    "tag": "Smart coffee subscriptions",
+    "login": "Café login",
+    "eyebrow": "Subscription platform for cafés",
+    "title": "Your customers' daily coffee… in one premium subscription",
+    "lead": "KOB turns walk-ins into loyal members: prepaid revenue, daily loyalty, and full control of branches and cashiers from one place.",
+    "ctaPrimary": "Become a partner café",
+    "ctaSecondary": "Open dashboard",
+    "stats": [
+      [
+        "30",
+        "days in every plan"
+      ],
+      [
+        "1",
+        "tap to approve an order"
+      ],
+      [
+        "100%",
+        "data isolation per café"
+      ]
+    ],
+    "howTitle": "How KOB works",
+    "how": [
+      [
+        "Create a plan, print the code",
+        "Set drinks, days and price. Every branch gets its own QR code."
+      ],
+      [
+        "Customer scans & subscribes",
+        "Phone number, a verification code, and a plan — in seconds."
+      ],
+      [
+        "Cashier approves in one tap",
+        "The order reaches the counter instantly; approval marks the day."
+      ]
+    ],
+    "featTitle": "Everything your café needs",
+    "feats": [
+      [
+        "Prepaid revenue",
+        "Collect subscriptions upfront for steady cash flow."
+      ],
+      [
+        "Daily loyalty",
+        "Customers come back to you every single day."
+      ],
+      [
+        "Branch management",
+        "Separate branches, staff and permissions."
+      ],
+      [
+        "Reports & analytics",
+        "Usage, revenue and plan performance in real time."
+      ],
+      [
+        "Ads on the scan page",
+        "Show your promotions with every order."
+      ],
+      [
+        "Secure & verified",
+        "Customer OTP and fully isolated data per café."
+      ]
+    ],
+    "cardLabel": "Premium membership",
+    "cardDays": "Days used",
+    "cardToday": "Today: Latte",
+    "finalTitle": "Ready to launch your café subscriptions?",
+    "finalLead": "Register your café today and start welcoming members in minutes.",
+    "footer": "All rights reserved"
+  },
+  "drinks": {
+    "kicker": "Menu",
+    "title": "Drink Studio",
+    "subtitle": "Craft every drink customers can order — identity, imagery, nutrition and options.",
+    "search": "Search drinks...",
+    "category": "Category",
+    "status": "Status",
+    "sort": "Sort",
+    "allCategories": "All categories",
+    "allStatuses": "All statuses",
+    "active": "Active",
+    "inactive": "Inactive",
+    "newest": "Newest first",
+    "nameAZ": "Name A–Z",
+    "calories": "Calories",
+    "gridView": "Grid view",
+    "listView": "List view",
+    "add": "Add",
+    "noResults": "No drinks match these filters yet.",
+    "empty": "No drinks yet — start by adding one.",
+    "loadFailed": "Unable to load drinks.",
+    "disabled": "Drink disabled.",
+    "enabled": "Drink enabled.",
+    "updateFailed": "Update failed.",
+    "duplicated": "Drink duplicated.",
+    "duplicateFailed": "Duplicate failed.",
+    "deleted": "Drink deleted.",
+    "deleteFailed": "Delete failed.",
+    "customerPreview": "Customer preview",
+    "deleteTitle": "Delete {name}?",
+    "thisDrink": "this drink",
+    "deleteBody": "This removes the drink and its option groups permanently.",
+    "deleteConfirm": "Delete drink",
+    "updatedToday": "Updated today",
+    "updatedYesterday": "Updated yesterday",
+    "updatedDays": "Updated {n} days ago",
+    "editName": "Edit {name}",
+    "edit": "Edit",
+    "preview": "Preview",
+    "moreActions": "More actions",
+    "more": "More",
+    "disable": "Disable",
+    "enable": "Enable",
+    "duplicate": "Duplicate",
+    "delete": "Delete",
+    "kcal": "kcal",
+    "optionGroups": "{n} option groups",
+    "noAllergens": "No allergens",
+    "step": {
+      "identity": "Identity",
+      "visual": "Visual",
+      "nutrition": "Nutrition",
+      "allergens": "Allergens",
+      "options": "Options"
+    },
+    "meta": {
+      "identity": {
+        "title": "Drink identity",
+        "desc": "Add the names, category and availability status."
+      },
+      "visual": {
+        "title": "Drink visual",
+        "desc": "Upload and position the image customers will see."
+      },
+      "nutrition": {
+        "title": "Nutrition",
+        "desc": "Set calories, serving information and drink characteristics."
+      },
+      "allergens": {
+        "title": "Allergens",
+        "desc": "Select every allergen that applies to this drink."
+      },
+      "options": {
+        "title": "Drink options",
+        "desc": "Configure milk, sugar, shots, syrups and other choices."
+      }
+    },
+    "err": {
+      "image": "Use an image smaller than 5 MB.",
+      "upload": "Image upload failed.",
+      "names": "Arabic and English names are required.",
+      "save": "Unable to save drink."
+    },
+    "published": "Drink published.",
+    "draftSaved": "Draft saved.",
+    "editing": "Editing {name}",
+    "drink": "drink",
+    "newDrink": "New drink",
+    "lastUpdated": "Last updated {time}",
+    "buildHint": "Build the drink customers will see.",
+    "daysAgo": "{n} days ago",
+    "hoursAgo": "{n} hours ago",
+    "justNow": "just now",
+    "prevStep": "Previous step",
+    "nextStep": "Next step",
+    "saveDraft": "Save Draft",
+    "publish": "Publish Drink",
+    "livePreview": "Live preview",
+    "level": {
+      "none": "None",
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "englishName": "English name",
+    "englishNamePh": "Enter English name",
+    "arabicName": "Arabic name",
+    "arabicNamePh": "Enter Arabic name",
+    "uploading": "Uploading image…",
+    "dropHint": "Drag & drop or choose an image (PNG, JPG or WEBP up to 5 MB)",
+    "zoom": "Crop / zoom",
+    "posX": "Reposition horizontally",
+    "posY": "Reposition vertically",
+    "replaceImage": "Replace image",
+    "removeImage": "Remove image",
+    "caloriesKcal": "Calories (kcal)",
+    "servingSize": "Serving size",
+    "small": "Small",
+    "medium": "Medium",
+    "large": "Large",
+    "served": "Served",
+    "hot": "Hot",
+    "cold": "Cold",
+    "both": "Both",
+    "hotCold": "Hot / Cold",
+    "caffeine": "Caffeine level",
+    "sugar": "Sugar level",
+    "nutritionHint": "Serving, temperature, caffeine and sugar guide your team — only calories are stored on the drink record.",
+    "groupNameEn": "Group name (EN)",
+    "groupNameAr": "Group name (AR)",
+    "single": "Single select",
+    "multiple": "Multi select",
+    "required": "Required",
+    "optional": "Optional",
+    "enabledL": "Enabled",
+    "disabledL": "Disabled",
+    "optionEn": "Option (EN)",
+    "optionAr": "Option (AR)",
+    "defaultOption": "Default option",
+    "default": "Default",
+    "removeOption": "Remove option",
+    "addOption": "Add option",
+    "image": "Image",
+    "allergens": "Allergens",
+    "options": "Options",
+    "optionsCount": "{n} options",
+    "drinkName": "Drink name",
+    "orderPreview": "Order preview",
+    "untitledGroup": "Untitled group",
+    "option": "Option",
+    "cat": {
+      "espresso": "Espresso",
+      "brewed": "Brewed Coffee",
+      "iced": "Iced & Cold Brew",
+      "tea": "Tea & Infusions",
+      "other": "Other"
+    }
   }
 }
