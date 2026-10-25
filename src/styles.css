@@ -15756,7 +15756,7 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
 @media (max-width: 640px) { .platform-create-grid { grid-template-columns: 1fr; } }
 
 /* ===== KOB Home landing (kh-) ===== */
-.kh-page{min-height:100vh;color:var(--kob-cream,#f3e6d3);background:radial-gradient(1200px 700px at 70% 10%,color-mix(in oklab,var(--kob-gold) 18%,transparent),transparent 60%),linear-gradient(180deg,var(--kob-espresso-soft),var(--kob-espresso));overflow-x:hidden}
+.kh-page{min-height:100vh;color:var(--kob-soft-cream);background:radial-gradient(1200px 700px at 70% 10%,color-mix(in oklab,var(--kob-gold) 18%,transparent),transparent 60%),linear-gradient(180deg,var(--kob-espresso-soft),var(--kob-espresso));overflow-x:hidden}
 .kh-header{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:16px clamp(16px,4vw,56px);background:color-mix(in oklab,var(--kob-espresso) 80%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid color-mix(in oklab,var(--kob-gold) 18%,transparent)}
 .kh-brand{display:flex;align-items:center;gap:12px}
 .kh-brand strong{display:block;font-size:20px;letter-spacing:.2em;color:var(--kob-gold-bright)}
@@ -15768,7 +15768,7 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
 .kh-btn-lg{padding:12px 26px;font-size:15px}
 .kh-hero{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center;max-width:1200px;margin:0 auto;padding:clamp(48px,8vw,110px) clamp(16px,4vw,56px)}
 .kh-eyebrow{display:inline-block;padding:6px 14px;border-radius:999px;font-size:12px;letter-spacing:.08em;color:var(--kob-gold-bright);border:1px solid color-mix(in oklab,var(--kob-gold) 35%,transparent);background:color-mix(in oklab,var(--kob-gold) 10%,transparent)}
-.kh-hero h1{margin:20px 0 16px;font-size:clamp(32px,4.6vw,56px);line-height:1.15;font-weight:800;background:linear-gradient(180deg,var(--kob-cream,#f7ecdc),var(--kob-gold-bright));-webkit-background-clip:text;background-clip:text;color:transparent}
+.kh-hero h1{margin:20px 0 16px;font-size:clamp(32px,4.6vw,56px);line-height:1.15;font-weight:800;background:linear-gradient(180deg,var(--kob-soft-cream),var(--kob-gold-bright));-webkit-background-clip:text;background-clip:text;color:transparent}
 .kh-hero p{font-size:17px;line-height:1.8;opacity:.8;max-width:560px}
 .kh-cta-row{display:flex;flex-wrap:wrap;gap:14px;margin-top:30px}
 .kh-center{justify-content:center}
@@ -15777,7 +15777,7 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
 .kh-stat span{font-size:13px;opacity:.65}
 .kh-hero-visual{position:relative;display:grid;place-items:center;min-height:360px;perspective:1200px}
 .kh-glow{position:absolute;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,color-mix(in oklab,var(--kob-gold) 40%,transparent),transparent 65%);filter:blur(20px)}
-.kh-card{position:relative;width:min(400px,90%);aspect-ratio:1.6;border-radius:24px;padding:26px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;transform:rotateY(-12deg) rotateX(8deg);color:var(--kob-cream,#f3e6d3);background:linear-gradient(135deg,color-mix(in oklab,var(--kob-gold) 30%,var(--kob-espresso-soft)),var(--kob-espresso) 70%);border:1px solid color-mix(in oklab,var(--kob-gold-bright) 40%,transparent);box-shadow:0 40px 80px -30px color-mix(in oklab,var(--kob-espresso) 95%,transparent),inset 0 1px 0 color-mix(in oklab,var(--kob-gold-bright) 45%,transparent);animation:kh-float 6s ease-in-out infinite}
+.kh-card{position:relative;width:min(400px,90%);aspect-ratio:1.6;border-radius:24px;padding:26px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;transform:rotateY(-12deg) rotateX(8deg);color:var(--kob-soft-cream);background:linear-gradient(135deg,color-mix(in oklab,var(--kob-gold) 30%,var(--kob-espresso-soft)),var(--kob-espresso) 70%);border:1px solid color-mix(in oklab,var(--kob-gold-bright) 40%,transparent);box-shadow:0 40px 80px -30px color-mix(in oklab,var(--kob-espresso) 95%,transparent),inset 0 1px 0 color-mix(in oklab,var(--kob-gold-bright) 45%,transparent);animation:kh-float 6s ease-in-out infinite}
 .kh-card-shine{position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,color-mix(in oklab,var(--kob-gold-bright) 22%,transparent) 45%,transparent 60%)}
 .kh-card-top{display:flex;justify-content:space-between;color:var(--kob-gold-bright)}
 .kh-card-top strong{display:block;font-size:24px;letter-spacing:.25em}
