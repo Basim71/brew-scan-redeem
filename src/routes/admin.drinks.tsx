@@ -14,6 +14,7 @@ import {
   Select,
   SkeletonCard,
 } from "@/components/kob";
+import { useI18n } from "@/lib/i18n";
 import { DrinkTile } from "@/features/company/drinks/DrinkTile";
 import { DRINK_CATEGORIES } from "@/features/company/drinks/constants";
 import {
@@ -48,6 +49,7 @@ export const Route = createFileRoute("/admin/drinks")({
 });
 
 function DrinkStudioPage() {
+  const { t, lang } = useI18n();
   const [drinks, setDrinks] = useState<DrinkRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -65,7 +67,7 @@ function DrinkStudioPage() {
     try {
       setDrinks(await listStudioDrinks());
     } catch (error) {
-      kobToast.error(error instanceof Error ? error.message : "Unable to load drinks.");
+      kobToast.error(error instanceof Error ? error.message : t("drinks.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -95,20 +97,20 @@ function DrinkStudioPage() {
   async function toggle(drink: DrinkRecord) {
     try {
       await setDrinkActive(drink.id, !drink.is_active);
-      kobToast.success(drink.is_active ? "Drink disabled." : "Drink enabled.");
+      kobToast.success(drink.is_active ? t("drinks.disabled") : t("drinks.enabled"));
       await load();
     } catch (error) {
-      kobToast.error(error instanceof Error ? error.message : "Update failed.");
+      kobToast.error(error instanceof Error ? error.message : t("drinks.updateFailed"));
     }
   }
 
   async function duplicate(drink: DrinkRecord) {
     try {
       await duplicateDrink(drink);
-      kobToast.success("Drink duplicated.");
+      kobToast.success(t("drinks.duplicated"));
       await load();
     } catch (error) {
-      kobToast.error(error instanceof Error ? error.message : "Duplicate failed.");
+      kobToast.error(error instanceof Error ? error.message : t("drinks.duplicateFailed"));
     }
   }
 
@@ -117,11 +119,11 @@ function DrinkStudioPage() {
     setDeleting(true);
     try {
       await deleteDrink(pendingDelete);
-      kobToast.success("Drink deleted.");
+      kobToast.success(t("drinks.deleted"));
       setPendingDelete(null);
       await load();
     } catch (error) {
-      kobToast.error(error instanceof Error ? error.message : "Delete failed.");
+      kobToast.error(error instanceof Error ? error.message : t("drinks.deleteFailed"));
     } finally {
       setDeleting(false);
     }
@@ -131,42 +133,42 @@ function DrinkStudioPage() {
     <div className="company-page ds-page">
       <header className="company-page-header">
         <div>
-          <span className="company-kicker">Menu</span>
-          <h1>Drink Studio</h1>
-          <p>Craft every drink customers can order — identity, imagery, nutrition and options.</p>
+          <span className="company-kicker">{t("drinks.kicker")}</span>
+          <h1>{t("drinks.title")}</h1>
+          <p>{t("drinks.subtitle")}</p>
         </div>
       </header>
 
       <div className="ds-toolbar">
-        <SearchInput value={search} onValueChange={setSearch} placeholder="Search drinks..." className="ds-search" />
-        <Select aria-label="Category" value={category} onChange={(e) => setCategory(e.target.value)}>
-          <option value="all">All categories</option>
+        <SearchInput value={search} onValueChange={setSearch} placeholder={t("drinks.search")} className="ds-search" />
+        <Select aria-label={t("drinks.category")} value={category} onChange={(e) => setCategory(e.target.value)}>
+          <option value="all">{t("drinks.allCategories")}</option>
           {DRINK_CATEGORIES.map((item) => (
             <option key={item.key} value={item.key}>
-              {item.label}
+              {t(`drinks.cat.${item.key}`)}
             </option>
           ))}
         </Select>
-        <Select aria-label="Status" value={status} onChange={(e) => setStatus(e.target.value as DrinkStatusFilter)}>
-          <option value="all">All statuses</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
+        <Select aria-label={t("drinks.status")} value={status} onChange={(e) => setStatus(e.target.value as DrinkStatusFilter)}>
+          <option value="all">{t("drinks.allStatuses")}</option>
+          <option value="active">{t("drinks.active")}</option>
+          <option value="inactive">{t("drinks.inactive")}</option>
         </Select>
-        <Select aria-label="Sort" value={sort} onChange={(e) => setSort(e.target.value as DrinkSortKey)}>
-          <option value="recent">Newest first</option>
-          <option value="name">Name A–Z</option>
-          <option value="calories">Calories</option>
+        <Select aria-label={t("drinks.sort")} value={sort} onChange={(e) => setSort(e.target.value as DrinkSortKey)}>
+          <option value="recent">{t("drinks.newest")}</option>
+          <option value="name">{t("drinks.nameAZ")}</option>
+          <option value="calories">{t("drinks.calories")}</option>
         </Select>
         <div className="ds-view-toggle">
           <IconButton
-            label="Grid view"
+            label={t("drinks.gridView")}
             variant={view === "grid" ? "secondary" : "ghost"}
             onClick={() => setView("grid")}
           >
             <LayoutGrid className="h-4 w-4" />
           </IconButton>
           <IconButton
-            label="List view"
+            label={t("drinks.listView")}
             variant={view === "list" ? "secondary" : "ghost"}
             onClick={() => setView("list")}
           >
@@ -174,7 +176,7 @@ function DrinkStudioPage() {
           </IconButton>
         </div>
         <Button variant="gold" leadingIcon={<Plus className="h-4 w-4" />} onClick={() => setWizard({ updatedAt: null })}>
-          Add
+          {t("drinks.add")}
         </Button>
       </div>
 
@@ -186,9 +188,9 @@ function DrinkStudioPage() {
         </div>
       ) : visible.length === 0 ? (
         hasFilters ? (
-          <NoResultsState description="No drinks match these filters yet." />
+          <NoResultsState description={t("drinks.noResults")} />
         ) : (
-          <EmptyState icon={<Coffee className="h-6 w-6" />} description="No drinks yet — start by adding one." />
+          <EmptyState icon={<Coffee className="h-6 w-6" />} description={t("drinks.empty")} />
         )
       ) : (
         <div className="ds-tile-grid" data-view={view}>
@@ -220,15 +222,15 @@ function DrinkStudioPage() {
         />
       )}
 
-      <Modal open={Boolean(preview)} onClose={() => setPreview(null)} title="Customer preview" size="md">
+      <Modal open={Boolean(preview)} onClose={() => setPreview(null)} title={t("drinks.customerPreview")} size="md">
         {preview && <LivePreview draft={preview} />}
       </Modal>
 
       <ConfirmDialog
         open={Boolean(pendingDelete)}
-        title={`Delete ${pendingDelete?.name_en ?? "this drink"}?`}
-        description="This removes the drink and its option groups permanently."
-        confirmLabel="Delete drink"
+        title={t("drinks.deleteTitle", { name: (lang === "ar" ? pendingDelete?.name_ar : pendingDelete?.name_en) ?? t("drinks.thisDrink") })}
+        description={t("drinks.deleteBody")}
+        confirmLabel={t("drinks.deleteConfirm")}
         tone="danger"
         busy={deleting}
         onConfirm={() => void confirmDelete()}

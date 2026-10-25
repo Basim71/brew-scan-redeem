@@ -1,8 +1,12 @@
 import { Coffee, Flame } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 import { ALLERGEN_CARDS } from "../constants";
 import type { DrinkDraft } from "../types";
 
 export function LivePreview({ draft, compact = false }: { draft: DrinkDraft; compact?: boolean }) {
+  const { t, lang } = useI18n();
+  const name = lang === "ar" ? draft.name_ar || draft.name_en : draft.name_en || draft.name_ar;
+  const altName = lang === "ar" ? draft.name_en : draft.name_ar;
   const groups = draft.groups.filter((group) => group.is_enabled);
   return (
     <div className="ds-preview" data-compact={compact ? "true" : "false"}>
@@ -11,7 +15,7 @@ export function LivePreview({ draft, compact = false }: { draft: DrinkDraft; com
           {draft.image_url ? (
             <img
               src={draft.image_url}
-              alt={draft.name_en || "Drink preview"}
+              alt={name || t("drinks.preview")}
               style={{
                 objectPosition: `${draft.image_offset.x}% ${draft.image_offset.y}%`,
                 transform: `scale(${draft.image_zoom})`,
@@ -23,21 +27,21 @@ export function LivePreview({ draft, compact = false }: { draft: DrinkDraft; com
             </div>
           )}
           <span className="ds-preview-status" data-active={draft.is_active ? "true" : "false"}>
-            {draft.is_active ? "Active" : "Inactive"}
+            {draft.is_active ? t("drinks.active") : t("drinks.inactive")}
           </span>
         </div>
         <div className="ds-preview-body">
-          <h4>{draft.name_en || "Drink name"}</h4>
-          <p dir="rtl">{draft.name_ar || "اسم المشروب"}</p>
+          <h4>{name || t("drinks.drinkName")}</h4>
+          {altName && <p dir={lang === "ar" ? "ltr" : "rtl"}>{altName}</p>}
           <div className="ds-preview-meta">
             {draft.calories && (
               <span>
                 <Flame className="h-3.5 w-3.5" />
-                {draft.calories} kcal
+                {draft.calories} {t("drinks.kcal")}
               </span>
             )}
-            <span>{draft.temperature === "both" ? "Hot / Cold" : draft.temperature === "hot" ? "Hot" : "Cold"}</span>
-            <span>{groups.length} options</span>
+            <span>{draft.temperature === "both" ? t("drinks.hotCold") : draft.temperature === "hot" ? t("drinks.hot") : t("drinks.cold")}</span>
+            <span>{t("drinks.optionsCount", { n: groups.length })}</span>
           </div>
           {draft.allergens.length > 0 && (
             <div className="ds-preview-allergens">
@@ -45,7 +49,7 @@ export function LivePreview({ draft, compact = false }: { draft: DrinkDraft; com
                 const item = ALLERGEN_CARDS.find((card) => card.key === key);
                 return (
                   <span key={key}>
-                    {item?.icon ?? "⚠️"} {item?.en ?? key}
+                    {item?.icon ?? "⚠️"} {(lang === "ar" ? item?.ar : item?.en) ?? key}
                   </span>
                 );
               })}
@@ -56,11 +60,11 @@ export function LivePreview({ draft, compact = false }: { draft: DrinkDraft; com
 
       {!compact && groups.length > 0 && (
         <div className="ds-preview-options">
-          <span className="ds-preview-options-title">Order preview</span>
+          <span className="ds-preview-options-title">{t("drinks.orderPreview")}</span>
           {groups.map((group) => (
             <div key={group.key} className="ds-preview-group">
               <strong>
-                {group.name_en || "Untitled group"}
+                {(lang === "ar" ? group.name_ar || group.name_en : group.name_en || group.name_ar) || t("drinks.untitledGroup")}
                 {group.is_required ? " *" : ""}
               </strong>
               <div>
@@ -68,7 +72,7 @@ export function LivePreview({ draft, compact = false }: { draft: DrinkDraft; com
                   .filter((option) => option.is_active)
                   .map((option) => (
                     <span key={option.key} data-default={option.is_default ? "true" : "false"}>
-                      {option.name_en || "Option"}
+                      {(lang === "ar" ? option.name_ar || option.name_en : option.name_en || option.name_ar) || t("drinks.option")}
                     </span>
                   ))}
               </div>
