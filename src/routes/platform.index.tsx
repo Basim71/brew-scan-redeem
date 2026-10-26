@@ -121,7 +121,7 @@ function PlatformDashboard() {
           <small>إجمالي الشركات</small>
           <strong>{v(metrics.totalCompanies)}</strong>
           <span>
-            {v(metrics.activeCompanies)} نشطة · {v(metrics.suspendedCompanies)} موقوفة
+            <bdi>نشطة: {v(metrics.activeCompanies)}</bdi> · <bdi>موقوفة: {v(metrics.suspendedCompanies)}</bdi>
           </span>
         </Link>
       </section>
