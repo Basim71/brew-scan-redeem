@@ -115,3 +115,66 @@ export const createCompanyWithManager = createServerFn({ method: "POST" })
       password: createdUser ? password : null,
     };
   });
+
+async function assertPlatformAdmin(supabase: any) {
+  const { data: allowed } = await supabase.rpc("is_platform_user", {
+    required_roles: ["platform_owner", "platform_admin"],
+  });
+  if (!allowed) throw new Error("forbidden");
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin as any;
+}
+
+function uuid(v: unknown): string {
+  const s = typeof v === "string" ? v : "";
+  if (!/^[0-9a-f-]{36}$/i.test(s)) throw new Error("invalid_id");
+  return s;
+}
+
+export const updateCompany = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: Record<string, unknown>) => {
+    const email = str(i.email, "email", 160, false).toLowerCase();
+    if (email && !EMAIL_RE.test(email)) throw new Error("invalid_email");
+    return {
+      id: uuid(i.id),
+      nameAr: str(i.nameAr, "name_ar", 120),
+      nameEn: str(i.nameEn, "name_en", 120, false) || null,
+      email: email || null,
+      phone: str(i.phone, "phone", 20, false) || null,
+    };
+  })
+  .handler(async ({ data, context }) => {
+    const admin = await assertPlatformAdmin(context.supabase);
+    const { error } = await admin.from("organizations")
+      .update({ name_ar: data.nameAr, name_en: data.nameEn, email: data.email, phone: data.phone })
+      .eq("id", data.id).eq("organization_type", "company");
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const setCompanyStatusFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: Record<string, unknown>) => ({
+    id: uuid(i.id),
+    status: i.status === "suspended" ? "suspended" : "active",
+  }))
+  .handler(async ({ data, context }) => {
+    const admin = await assertPlatformAdmin(context.supabase);
+    const { error } = await admin.from("organizations").update({ status: data.status })
+      .eq("id", data.id).eq("organization_type", "company");
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const deleteCompany = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: Record<string, unknown>) => ({ id: uuid(i.id) }))
+  .handler(async ({ data, context }) => {
+    const admin = await assertPlatformAdmin(context.supabase);
+    const { data: org } = await admin.from("organizations").select("id,organization_type,slug").eq("id", data.id).maybeSingle();
+    if (!org || org.organization_type !== "company" || org.slug === "kob-default") throw new Error("cannot_delete");
+    const { error } = await admin.from("organizations").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
