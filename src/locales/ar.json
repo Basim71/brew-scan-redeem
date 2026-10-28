@@ -1238,5 +1238,57 @@
       "tea": "شاي ومنقوعات",
       "other": "أخرى"
     }
+  },
+  "platform": {
+    "nav": {
+      "home": "الرئيسية",
+      "companies": "الشركات",
+      "support": "الدعم الفني",
+      "team": "فريق المنصة",
+      "training": "التدريب",
+      "announcements": "الإعلانات",
+      "audit": "سجل التدقيق",
+      "settings": "إعدادات المنصة",
+      "central": "الإدارة المركزية",
+      "role_platform_owner": "مالك المنصة",
+      "role_platform_admin": "مدير المنصة",
+      "role_platform_support": "الدعم الفني",
+      "role_platform_trainer": "التدريب"
+    },
+    "dashboard": {
+      "meta_title": "لوحة قيادة KOB Platform",
+      "meta_desc": "نظرة مركزية على شركات KOB والدعم والتشغيل اليومي.",
+      "morning": "صباح الخير",
+      "evening": "مساء الخير",
+      "eyebrow": "KOB Platform · مركز القيادة",
+      "lead": "كل ما يحدث في منظومة KOB من الشركات والدعم والتشغيل في مكان واحد.",
+      "add_company": "إضافة شركة",
+      "support_center": "مركز الدعم",
+      "total_companies": "إجمالي الشركات",
+      "active": "نشطة: {n}",
+      "suspended": "موقوفة: {n}",
+      "load_error": "تعذر تحميل بعض المؤشرات: {e}",
+      "unexpected": "حدث خطأ غير متوقع.",
+      "companies": "الشركات",
+      "view_all": "عرض الكل",
+      "active_companies": "الشركات النشطة",
+      "new_month": "جديدة هذا الشهر",
+      "suspended_companies": "شركات موقوفة",
+      "ops": "التشغيل والدعم",
+      "open_cases": "حالات دعم مفتوحة",
+      "awaiting": "بانتظار الموافقة",
+      "live_sessions": "جلسات مباشرة",
+      "upcoming_training": "تدريب قادم",
+      "team": "فريق المنصة",
+      "activity": "آخر الأحداث",
+      "no_activity": "لا يوجد نشاط حديث.",
+      "health": "صحة النظام",
+      "checking": "قيد الفحص…",
+      "db_ok": "قاعدة البيانات متصلة",
+      "db_fail": "تعذر الاتصال",
+      "db_hint": "يتم الفحص عند كل تحميل للصفحة",
+      "sessions_count": "{n} جلسة دعم مباشرة",
+      "sessions_hint": "جلسات فيديو أو صوت جارية الآن"
+    }
   }
 }

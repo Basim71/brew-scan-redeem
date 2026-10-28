@@ -1238,5 +1238,57 @@
       "tea": "Tea & Infusions",
       "other": "Other"
     }
+  },
+  "platform": {
+    "nav": {
+      "home": "Home",
+      "companies": "Companies",
+      "support": "Support",
+      "team": "Platform Team",
+      "training": "Training",
+      "announcements": "Announcements",
+      "audit": "Audit Log",
+      "settings": "Platform Settings",
+      "central": "Central Administration",
+      "role_platform_owner": "Platform Owner",
+      "role_platform_admin": "Platform Admin",
+      "role_platform_support": "Support",
+      "role_platform_trainer": "Training"
+    },
+    "dashboard": {
+      "meta_title": "KOB Platform Command Center",
+      "meta_desc": "A central view of KOB companies, support and daily operations.",
+      "morning": "Good morning",
+      "evening": "Good evening",
+      "eyebrow": "KOB Platform · Command Center",
+      "lead": "Everything happening across KOB — companies, support and operations — in one place.",
+      "add_company": "Add company",
+      "support_center": "Support center",
+      "total_companies": "Total companies",
+      "active": "Active: {n}",
+      "suspended": "Suspended: {n}",
+      "load_error": "Some metrics failed to load: {e}",
+      "unexpected": "An unexpected error occurred.",
+      "companies": "Companies",
+      "view_all": "View all",
+      "active_companies": "Active companies",
+      "new_month": "New this month",
+      "suspended_companies": "Suspended companies",
+      "ops": "Operations & Support",
+      "open_cases": "Open support cases",
+      "awaiting": "Awaiting approval",
+      "live_sessions": "Live sessions",
+      "upcoming_training": "Upcoming training",
+      "team": "Platform team",
+      "activity": "Recent activity",
+      "no_activity": "No recent activity.",
+      "health": "System health",
+      "checking": "Checking…",
+      "db_ok": "Database connected",
+      "db_fail": "Connection failed",
+      "db_hint": "Checked on every page load",
+      "sessions_count": "{n} live support sessions",
+      "sessions_hint": "Video or voice sessions in progress"
+    }
   }
 }

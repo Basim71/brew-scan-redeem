@@ -45,11 +45,12 @@ type Kpi = { label: string; value: number; icon: LucideIcon; to?: string; tone?:
 
 function greeting() {
   const h = new Date().getHours();
-  return h < 12 ? "صباح الخير" : "مساء الخير";
+  return h < 12 ? "morning" : "evening";
 }
 
 function PlatformDashboard() {
-  const { fmtNum } = useI18n();
+  const { fmtNum, t, lang } = useI18n();
+  const tr = (k: string, vars?: Record<string, string | number>) => t(`platform.dashboard.${k}` as never, vars);
   const { profile } = usePlatform();
   const [metrics, setMetrics] = useState<PlatformMetrics>(EMPTY_PLATFORM_METRICS);
   const [loading, setLoading] = useState(true);
@@ -72,7 +73,7 @@ function PlatformDashboard() {
         setActivity(a);
         setDbOk(ok);
       } catch (error) {
-        if (active) setLoadError(error instanceof Error ? error.message : "حدث خطأ غير متوقع.");
+        if (active) setLoadError(error instanceof Error ? error.message : tr("unexpected"));
       } finally {
         if (active) setLoading(false);
       }
@@ -83,16 +84,16 @@ function PlatformDashboard() {
   }, []);
 
   const companies: Kpi[] = [
-    { label: "الشركات النشطة", value: metrics.activeCompanies, icon: ShieldCheck, to: "/platform/companies" },
-    { label: "جديدة هذا الشهر", value: metrics.newCompaniesThisMonth, icon: Sparkles, to: "/platform/companies" },
-    { label: "شركات موقوفة", value: metrics.suspendedCompanies, icon: CircleAlert, to: "/platform/companies", tone: "warn" },
+    { label: tr("active_companies"), value: metrics.activeCompanies, icon: ShieldCheck, to: "/platform/companies" },
+    { label: tr("new_month"), value: metrics.newCompaniesThisMonth, icon: Sparkles, to: "/platform/companies" },
+    { label: tr("suspended_companies"), value: metrics.suspendedCompanies, icon: CircleAlert, to: "/platform/companies", tone: "warn" },
   ];
   const ops: Kpi[] = [
-    { label: "حالات دعم مفتوحة", value: metrics.openCases, icon: Headphones, to: "/platform/support" },
-    { label: "بانتظار الموافقة", value: metrics.awaitingApproval, icon: UserRoundCheck, to: "/platform/support" },
-    { label: "جلسات مباشرة", value: metrics.activeSessions, icon: Radio, to: "/platform/support" },
-    { label: "تدريب قادم", value: metrics.upcomingTraining, icon: GraduationCap, to: "/platform/training" },
-    { label: "فريق المنصة", value: metrics.activeStaff, icon: UsersRound, to: "/platform/users" },
+    { label: tr("open_cases"), value: metrics.openCases, icon: Headphones, to: "/platform/support" },
+    { label: tr("awaiting"), value: metrics.awaitingApproval, icon: UserRoundCheck, to: "/platform/support" },
+    { label: tr("live_sessions"), value: metrics.activeSessions, icon: Radio, to: "/platform/support" },
+    { label: tr("upcoming_training"), value: metrics.upcomingTraining, icon: GraduationCap, to: "/platform/training" },
+    { label: tr("team"), value: metrics.activeStaff, icon: UsersRound, to: "/platform/users" },
   ];
   const v = (n: number) => (loading ? "—" : fmtNum(n));
   const name = profile?.fullName?.split(" ")[0] || "";
@@ -101,38 +102,38 @@ function PlatformDashboard() {
     <div className="pd-page">
       <section className="pd-hero">
         <div className="pd-hero-copy">
-          <span className="pd-eyebrow">KOB Platform · مركز القيادة</span>
+          <span className="pd-eyebrow">{tr("eyebrow")}</span>
           <h1>
-            {greeting()}
-            {name ? `، ${name}` : ""}
+            {tr(greeting())}
+            {name ? `${lang === "ar" ? "،" : ","} ${name}` : ""}
           </h1>
-          <p>كل ما يحدث في منظومة KOB من الشركات والدعم والتشغيل في مكان واحد.</p>
+          <p>{tr("lead")}</p>
           <div className="pd-hero-actions">
             <Link to="/platform/companies" className="pd-btn pd-btn-gold">
-              <Plus /> إضافة شركة
+              <Plus /> {tr("add_company")}
             </Link>
             <Link to="/platform/support" className="pd-btn pd-btn-ghost">
-              <Headphones /> مركز الدعم
+              <Headphones /> {tr("support_center")}
             </Link>
           </div>
         </div>
         <Link to="/platform/companies" className="pd-hero-stat">
           <Building2 />
-          <small>إجمالي الشركات</small>
+          <small>{tr("total_companies")}</small>
           <strong>{v(metrics.totalCompanies)}</strong>
           <span>
-            <bdi>نشطة: {v(metrics.activeCompanies)}</bdi> · <bdi>موقوفة: {v(metrics.suspendedCompanies)}</bdi>
+            <bdi>{tr("active", { n: v(metrics.activeCompanies) })}</bdi> · <bdi>{tr("suspended", { n: v(metrics.suspendedCompanies) })}</bdi>
           </span>
         </Link>
       </section>
 
-      {loadError ? <div className="pd-alert">تعذر تحميل بعض المؤشرات: {loadError}</div> : null}
+      {loadError ? <div className="pd-alert">{tr("load_error", { e: loadError })}</div> : null}
 
       <section className="pd-section">
         <header className="pd-section-head">
-          <h2>الشركات</h2>
+          <h2>{tr("companies")}</h2>
           <Link to="/platform/companies">
-            عرض الكل <ArrowUpLeft />
+            {tr("view_all")} <ArrowUpLeft style={lang === "en" ? { transform: "scaleX(-1)" } : undefined} />
           </Link>
         </header>
         <div className="pd-kpis pd-kpis-3">
@@ -144,7 +145,7 @@ function PlatformDashboard() {
 
       <section className="pd-section">
         <header className="pd-section-head">
-          <h2>التشغيل والدعم</h2>
+          <h2>{tr("ops")}</h2>
         </header>
         <div className="pd-kpis pd-kpis-5">
           {ops.map((k) => (
@@ -156,17 +157,17 @@ function PlatformDashboard() {
       <section className="pd-split">
         <article className="pd-panel">
           <header className="pd-section-head">
-            <h2>آخر الأحداث</h2>
+            <h2>{tr("activity")}</h2>
           </header>
           {activity.length === 0 ? (
-            <p className="pd-empty">لا يوجد نشاط حديث.</p>
+            <p className="pd-empty">{tr("no_activity")}</p>
           ) : (
             <ul className="pd-activity">
               {activity.slice(0, 8).map((row) => (
                 <li key={row.id}>
                   <i aria-hidden="true" />
                   <span>{row.action}</span>
-                  <time>{new Date(row.created_at).toLocaleString("ar-SA", { dateStyle: "short", timeStyle: "short" })}</time>
+                  <time>{new Date(row.created_at).toLocaleString(lang === "ar" ? "ar-SA" : "en-US", { dateStyle: "short", timeStyle: "short" })}</time>
                 </li>
               ))}
             </ul>
@@ -174,21 +175,21 @@ function PlatformDashboard() {
         </article>
         <article className="pd-panel pd-health" data-ok={dbOk === false ? "false" : "true"}>
           <header className="pd-section-head">
-            <h2>صحة النظام</h2>
+            <h2>{tr("health")}</h2>
           </header>
           <div className="pd-health-row">
             <Database />
             <div>
-              <strong>{dbOk === null ? "قيد الفحص…" : dbOk ? "قاعدة البيانات متصلة" : "تعذر الاتصال"}</strong>
-              <small>يتم الفحص عند كل تحميل للصفحة</small>
+              <strong>{dbOk === null ? tr("checking") : dbOk ? tr("db_ok") : tr("db_fail")}</strong>
+              <small>{tr("db_hint")}</small>
             </div>
             <span className="pd-dot" />
           </div>
           <div className="pd-health-row">
             <Radio />
             <div>
-              <strong>{v(metrics.activeSessions)} جلسة دعم مباشرة</strong>
-              <small>جلسات فيديو أو صوت جارية الآن</small>
+              <strong>{tr("sessions_count", { n: v(metrics.activeSessions) })}</strong>
+              <small>{tr("sessions_hint")}</small>
             </div>
           </div>
         </article>
