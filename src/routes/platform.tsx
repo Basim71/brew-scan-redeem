@@ -5,7 +5,6 @@ import {
   GraduationCap,
   Headphones,
   LayoutDashboard,
-  MoreHorizontal,
   ScrollText,
   Settings,
   UsersRound,
@@ -18,49 +17,45 @@ import { PlatformGate } from "@/features/platform/PlatformGate";
 import { usePlatform } from "@/providers/PlatformProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { canAccess } from "@/features/platform/access";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/platform")({ component: PlatformLayout });
 
 const PRIMARY = [
-  { to: "/platform", label: "الرئيسية", icon: LayoutDashboard, exact: true },
-  { to: "/platform/companies", label: "الشركات", icon: Building2 },
-  { to: "/platform/support", label: "الدعم الفني", icon: Headphones },
-  { to: "/platform/users", label: "فريق المنصة", icon: UsersRound },
+  { to: "/platform", label: "nav.home", icon: LayoutDashboard, exact: true },
+  { to: "/platform/companies", label: "nav.companies", icon: Building2 },
+  { to: "/platform/support", label: "nav.support", icon: Headphones },
+  { to: "/platform/users", label: "nav.team", icon: UsersRound },
 ] as const;
 
 const MORE = [
-  { to: "/platform/training", label: "التدريب", icon: GraduationCap },
-  { to: "/platform/announcements", label: "الإعلانات", icon: Bell },
-  { to: "/platform/audit", label: "سجل التدقيق", icon: ScrollText },
+  { to: "/platform/training", label: "nav.training", icon: GraduationCap },
+  { to: "/platform/announcements", label: "nav.announcements", icon: Bell },
+  { to: "/platform/audit", label: "nav.audit", icon: ScrollText },
 ] as const;
 
-const ACCOUNT = [{ to: "/platform/settings", label: "إعدادات المنصة", icon: Settings }] as const;
-
-const ROLE_LABELS: Record<string, string> = {
-  platform_owner: "مالك المنصة",
-  platform_admin: "مدير المنصة",
-  platform_support: "الدعم الفني",
-  platform_trainer: "التدريب",
-};
+const ACCOUNT = [{ to: "/platform/settings", label: "nav.settings", icon: Settings }] as const;
 
 function PlatformLayout() {
   const navigate = useNavigate();
   const { profile } = usePlatform();
   const role = profile?.role;
+  const { t } = useI18n();
+  const tr = (k: string) => t(`platform.${k}` as never);
 
   const items = useMemo<FloatingIslandItem[]>(() => {
     const primary: FloatingIslandItem[] = PRIMARY.filter((i) => canAccess(i.to, role)).map((i) => ({
       kind: "link",
       ...i,
+      label: tr(i.label),
     }));
-    const more = MORE.filter((i) => canAccess(i.to, role)).map((i) => ({ kind: "link" as const, ...i }));
-    if (more.length) primary.push({ kind: "group", label: "المزيد", icon: MoreHorizontal, children: more });
+    for (const i of MORE) if (canAccess(i.to, role)) primary.push({ kind: "link", ...i, label: tr(i.label) });
     return primary;
-  }, [role]);
+  }, [role, t]);
 
   const accountLinks = useMemo<FloatingIslandLink[]>(
-    () => ACCOUNT.filter((i) => canAccess(i.to, role)).map((i) => ({ kind: "link" as const, ...i })),
-    [role],
+    () => ACCOUNT.filter((i) => canAccess(i.to, role)).map((i) => ({ kind: "link" as const, ...i, label: tr(i.label) })),
+    [role, t],
   );
 
   async function handleSignOut() {
@@ -68,7 +63,7 @@ function PlatformLayout() {
     navigate({ to: "/auth", replace: true });
   }
 
-  const subtitle = profile ? ROLE_LABELS[profile.role] ?? "الإدارة المركزية" : "الإدارة المركزية";
+  const subtitle = profile ? tr(`nav.role_${profile.role}`) : tr("nav.central");
 
   return (
     <PlatformGate>
