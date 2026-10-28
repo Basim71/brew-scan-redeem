@@ -5,11 +5,14 @@ import { PlatformGate } from "@/features/platform/PlatformGate";
 import { CreateCompanyModal } from "@/features/platform/CreateCompanyModal";
 import { CompanyDetailsModal } from "@/features/platform/CompanyDetailsModal";
 import { ROLE_MATRIX } from "@/features/platform/access";
+import { useI18n } from "@/lib/i18n";
 import { listCompanies, type CompanyRow } from "@/services/platform/companies.service";
 
 export const Route = createFileRoute("/platform/companies")({ component: Companies });
 
 function Companies() {
+  const { t, lang } = useI18n();
+  const tr = (k: string) => t("platform.companies." + k);
   const [rows, setRows] = useState<CompanyRow[]>([]);
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<"all" | "active" | "suspended">("all");
@@ -24,7 +27,7 @@ function Companies() {
     let alive = true;
     listCompanies()
       .then((r) => { if (alive) setRows(r); })
-      .catch((e) => { if (alive) setError(e instanceof Error ? e.message : "خطأ"); })
+      .catch((e) => { if (alive) setError(e instanceof Error ? e.message : tr("error")); })
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, [tick]);
@@ -37,25 +40,25 @@ function Companies() {
 
   return (
     <PlatformGate allow={ROLE_MATRIX["/platform/companies"]}>
-      <div className="platform-page" dir="rtl">
+      <div className="platform-page" dir={lang === "ar" ? "rtl" : "ltr"}>
         <header className="platform-page-header">
           <div>
-            <span>Organizations</span>
-            <h1>الشركات</h1>
-            <p>إدارة جميع الشركات المشتركة في منصة KOB.</p>
+            <span>{tr("eyebrow")}</span>
+            <h1>{tr("title")}</h1>
+            <p>{tr("lead")}</p>
           </div>
           <button type="button" className="platform-primary-button" onClick={() => setCreating(true)}>
-            <Plus /> إضافة شركة جديدة
+            <Plus /> {tr("add")}
           </button>
         </header>
         <CompanyDetailsModal companyId={openId} onClose={() => setOpenId(null)} onChanged={() => setTick((t) => t + 1)} />
         <CreateCompanyModal open={creating} onClose={() => setCreating(false)} onCreated={() => setTick((t) => t + 1)} />
         <div className="platform-toolbar">
-          <label><Search /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="ابحث بالاسم أو كود الشركة" /></label>
+          <label><Search /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder={tr("search")} /></label>
           <div className="support-tabs">
             {(["all", "active", "suspended"] as const).map((s) => (
               <button key={s} className={status === s ? "active" : ""} onClick={() => setStatus(s)}>
-                {s === "all" ? "الكل" : s === "active" ? "نشطة" : "موقوفة"}
+                {tr(s)}
               </button>
             ))}
           </div>
@@ -63,21 +66,21 @@ function Companies() {
         {error && <div className="platform-auth-error">{error}</div>}
         <div className="platform-table-wrap">
           <table className="platform-table">
-            <thead><tr><th>الشركة</th><th>الكود</th><th>الحالة</th><th>تاريخ الإنشاء</th></tr></thead>
+            <thead><tr><th>{tr("col_company")}</th><th>{tr("col_code")}</th><th>{tr("col_status")}</th><th>{tr("col_created")}</th></tr></thead>
             <tbody>
-              {loading && <tr><td colSpan={4}>جارٍ التحميل…</td></tr>}
-              {!loading && !filtered.length && <tr><td colSpan={4}>لا توجد شركات مطابقة.</td></tr>}
+              {loading && <tr><td colSpan={4}>{tr("loading")}</td></tr>}
+              {!loading && !filtered.length && <tr><td colSpan={4}>{tr("empty")}</td></tr>}
               {filtered.map((c) => (
                 <tr key={c.id} className="pc-row" onClick={() => setOpenId(c.id)}>
-                  <td><button type="button" className="pc-name" onClick={(e) => { e.stopPropagation(); setOpenId(c.id); }}><strong>{c.name_ar || c.name_en}</strong></button><small>{c.name_ar && c.name_en ? c.name_en : ""}</small></td>
+                  <td><button type="button" className="pc-name" onClick={(e) => { e.stopPropagation(); setOpenId(c.id); }}><strong>{(lang === "ar" ? c.name_ar || c.name_en : c.name_en || c.name_ar)}</strong></button><small>{c.name_ar && c.name_en ? (lang === "ar" ? c.name_en : c.name_ar) : ""}</small></td>
                   <td><code>{c.organization_code}</code></td>
                   <td>
                     <span className={`platform-status ${c.status}`}>
                       {c.status === "active" ? <ShieldCheck /> : <ShieldOff />}
-                      {c.status === "active" ? "نشطة" : "موقوفة"}
+                      {tr(c.status === "active" ? "active" : "suspended")}
                     </span>
                   </td>
-                  <td>{new Date(c.created_at).toLocaleDateString("ar-SA")}</td>
+                  <td>{new Date(c.created_at).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US")}</td>
                 </tr>
               ))}
             </tbody>
