@@ -15893,3 +15893,34 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
   .pd-hero { grid-template-columns: 1fr; padding: 28px 22px; }
   .pd-kpis-3, .pd-kpis-5 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* Platform company details modal */
+.pc-row { cursor: pointer; }
+.pc-row:hover td { background: color-mix(in oklch, var(--kob-gold, #c9a227) 8%, transparent); }
+.pc-name { background: none; border: 0; padding: 0; cursor: pointer; color: inherit; font: inherit; text-align: start; }
+.pc-name:hover strong { color: var(--kob-bronze); text-decoration: underline; }
+.pc-body { display: grid; gap: 18px; }
+.pc-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.pc-head small { opacity: .7; }
+.pc-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.pc-stats > div { display: grid; justify-items: center; gap: 4px; padding: 14px 8px; border-radius: 14px;
+  background: linear-gradient(180deg, color-mix(in oklch, var(--kob-gold, #c9a227) 12%, transparent), transparent);
+  border: 1px solid color-mix(in oklch, var(--kob-gold, #c9a227) 30%, transparent); }
+.pc-stats svg { width: 18px; height: 18px; color: var(--kob-bronze); }
+.pc-stats b { font-size: 1.4rem; }
+.pc-stats span { font-size: .78rem; opacity: .75; }
+.pc-dl { display: grid; grid-template-columns: max-content 1fr; gap: 8px 18px; margin: 0; }
+.pc-dl dt { opacity: .65; }
+.pc-dl dd { margin: 0; font-weight: 600; }
+.pc-form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pc-list h4 { margin: 0 0 8px; font-size: .9rem; color: var(--kob-bronze); }
+.pc-list > div { display: flex; justify-content: space-between; align-items: center; padding: 8px 0;
+  border-bottom: 1px dashed color-mix(in oklch, currentColor 15%, transparent); }
+.pc-list strong small { display: block; font-weight: 400; opacity: .65; font-size: .78rem; }
+.pc-list p { opacity: .6; margin: 0; }
+.pc-actions { display: flex; gap: 10px; width: 100%; align-items: center; flex-wrap: wrap; }
+.pc-actions svg { width: 16px; height: 16px; }
+.pc-danger { display: grid; gap: 10px; padding: 14px; border-radius: 14px;
+  border: 1px solid var(--destructive, #b3261e); background: color-mix(in oklch, var(--destructive, #b3261e) 8%, transparent); }
+.pc-danger input { padding: 8px 12px; border-radius: 10px; border: 1px solid currentColor; background: transparent; color: inherit; }
+@media (max-width: 640px) { .pc-stats { grid-template-columns: repeat(2, 1fr); } .pc-form { grid-template-columns: 1fr; } }
