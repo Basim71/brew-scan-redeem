@@ -15924,3 +15924,23 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
   border: 1px solid var(--destructive, #b3261e); background: color-mix(in oklch, var(--destructive, #b3261e) 8%, transparent); }
 .pc-danger input { padding: 8px 12px; border-radius: 10px; border: 1px solid currentColor; background: transparent; color: inherit; }
 @media (max-width: 640px) { .pc-stats { grid-template-columns: repeat(2, 1fr); } .pc-form { grid-template-columns: 1fr; } }
+
+/* ===== Platform companies — espresso & gold ===== */
+.platform-shell .platform-toolbar label { background: var(--platform-surface-solid); border: 1px solid var(--platform-border); border-radius: 14px; box-shadow: inset 0 1px 2px color-mix(in oklab, var(--kob-primary-dark) 12%, transparent); }
+.platform-shell .platform-toolbar svg { color: var(--kob-bronze); }
+.platform-shell .support-tabs button.active { background: linear-gradient(160deg, var(--kob-secondary), var(--kob-primary-dark)); color: var(--kob-gold-bright); border-color: color-mix(in oklab, var(--kob-gold) 50%, transparent); }
+.platform-shell .platform-primary-button { background: linear-gradient(160deg, var(--kob-gold-bright), var(--kob-bronze)); color: var(--kob-primary-dark); border: 1px solid color-mix(in oklab, var(--kob-gold) 60%, transparent); box-shadow: inset 0 1px 0 color-mix(in oklab, var(--kob-champagne) 70%, transparent), 0 8px 22px -10px var(--kob-bronze); }
+.platform-shell .platform-table-wrap { border-radius: 22px; border: 1px solid var(--platform-border); background: linear-gradient(160deg, var(--platform-surface-solid), color-mix(in oklab, var(--kob-champagne) 30%, var(--platform-surface-solid))); box-shadow: var(--platform-shadow); overflow: hidden; }
+.platform-shell .platform-table th { background: linear-gradient(160deg, var(--kob-secondary), var(--kob-primary-dark)); color: var(--kob-champagne); letter-spacing: .02em; }
+.platform-shell .platform-table td { border-bottom: 1px solid color-mix(in oklab, var(--kob-bronze) 18%, transparent); }
+.platform-shell .pc-row { cursor: pointer; transition: background .15s ease; }
+.platform-shell .pc-row:hover td { background: color-mix(in oklab, var(--kob-gold) 10%, transparent); }
+.platform-shell .pc-name strong { color: var(--kob-primary-dark); }
+.platform-shell .pc-row:hover .pc-name strong { color: var(--kob-bronze); }
+.platform-shell .platform-table code, .pc-danger code { background: color-mix(in oklab, var(--kob-gold) 16%, transparent); color: var(--kob-bronze); border: 1px solid color-mix(in oklab, var(--kob-gold) 35%, transparent); }
+.platform-shell .platform-status.active { background: color-mix(in oklab, var(--kob-gold) 18%, transparent); color: var(--kob-bronze); border: 1px solid color-mix(in oklab, var(--kob-gold) 40%, transparent); }
+.platform-shell .platform-status:not(.active) { background: color-mix(in oklab, var(--kob-danger) 12%, transparent); color: var(--kob-danger); border: 1px solid color-mix(in oklab, var(--kob-danger) 30%, transparent); }
+.pc-stats > div { background: linear-gradient(160deg, var(--kob-secondary), var(--kob-primary-dark)); color: var(--kob-champagne); border: 1px solid color-mix(in oklab, var(--kob-gold) 35%, transparent); border-radius: 16px; box-shadow: inset 0 1px 0 color-mix(in oklab, var(--kob-champagne) 20%, transparent); }
+.pc-stats > div svg { color: var(--kob-gold-bright); }
+.pc-stats > div b { color: var(--kob-gold-bright); }
+.pc-list > div { border-radius: 12px; border: 1px solid color-mix(in oklab, var(--kob-bronze) 22%, transparent); }

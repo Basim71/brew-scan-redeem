@@ -5,11 +5,15 @@ import {
   getCompany, getCompanyCounts, listCompanyBranches, listCompanyMembers,
   type CompanyMember, type CompanyRow,
 } from "@/services/platform/companies.service";
+import { useI18n } from "@/lib/i18n";
 import { deleteCompany, setCompanyStatusFn, updateCompany } from "@/lib/platform-companies.functions";
 
 type Props = { companyId: string | null; onClose: () => void; onChanged: () => void };
 
 export function CompanyDetailsModal({ companyId, onClose, onChanged }: Props) {
+  const { t, lang } = useI18n();
+  const tr = (k: string, v?: Record<string, string | number>) => t("platform.companies." + k, v);
+  const roleLabel = (r: string) => { const k = "platform.companies.role_" + r; const x = t(k); return x === k ? r : x; };
   const [company, setCompany] = useState<CompanyRow | null>(null);
   const [counts, setCounts] = useState({ members: 0, branches: 0, activeSubscriptions: 0, openCases: 0 });
   const [members, setMembers] = useState<CompanyMember[]>([]);
@@ -25,7 +29,7 @@ export function CompanyDetailsModal({ companyId, onClose, onChanged }: Props) {
       const [c, ct, m, b] = await Promise.all([getCompany(id), getCompanyCounts(id), listCompanyMembers(id), listCompanyBranches(id)]);
       setCompany(c); setCounts(ct); setMembers(m); setBranches(b);
       if (c) setForm({ nameAr: c.name_ar ?? "", nameEn: c.name_en ?? "", email: c.email ?? "", phone: c.phone ?? "" });
-    } catch (e) { setError(e instanceof Error ? e.message : "تعذر التحميل"); }
+    } catch (e) { setError(e instanceof Error ? e.message : tr("load_failed")); }
   }
 
   useEffect(() => {
@@ -39,12 +43,12 @@ export function CompanyDetailsModal({ companyId, onClose, onChanged }: Props) {
       await fn(); onChanged();
       if (close) onClose(); else if (companyId) await load(companyId);
       setEditing(false);
-    } catch (e) { setError(e instanceof Error ? e.message : "فشلت العملية"); }
+    } catch (e) { setError(e instanceof Error ? e.message : tr("op_failed")); }
     finally { setBusy(null); }
   }
 
   const active = company?.status === "active";
-  const name = company?.name_ar || company?.name_en || "";
+  const name = (lang === "ar" ? company?.name_ar || company?.name_en : company?.name_en || company?.name_ar) || "";
 
   return (
     <Modal
@@ -57,76 +61,76 @@ export function CompanyDetailsModal({ companyId, onClose, onChanged }: Props) {
         <div className="pc-actions">
           {editing ? (
             <>
-              <Button variant="ghost" onClick={() => setEditing(false)}>إلغاء</Button>
-              <Button variant="gold" loading={busy === "save"} onClick={() => run("save", () => updateCompany({ data: { id: company.id, ...form } }))}>حفظ التعديلات</Button>
+              <Button variant="ghost" onClick={() => setEditing(false)}>{tr("cancel")}</Button>
+              <Button variant="gold" loading={busy === "save"} onClick={() => run("save", () => updateCompany({ data: { id: company.id, ...form } }))}>{tr("save")}</Button>
             </>
           ) : (
             <>
-              <Button variant="danger" onClick={() => setConfirmDelete(confirmDelete ? "" : " ")}><Trash2 /> حذف</Button>
+              <Button variant="danger" onClick={() => setConfirmDelete(confirmDelete ? "" : " ")}><Trash2 /> {tr("delete")}</Button>
               <span style={{ flex: 1 }} />
               <Button variant="secondary" loading={busy === "status"}
-                onClick={() => { if (confirm(active ? "تأكيد إيقاف الشركة؟" : "تأكيد تنشيط الشركة؟")) void run("status", () => setCompanyStatusFn({ data: { id: company.id, status: active ? "suspended" : "active" } })); }}>
-                {active ? <><ShieldOff /> إيقاف التنشيط</> : <><ShieldCheck /> تنشيط</>}
+                onClick={() => { if (confirm(tr(active ? "confirm_suspend" : "confirm_activate"))) void run("status", () => setCompanyStatusFn({ data: { id: company.id, status: active ? "suspended" : "active" } })); }}>
+                {active ? <><ShieldOff /> {tr("suspend")}</> : <><ShieldCheck /> {tr("activate")}</>}
               </Button>
-              <Button variant="gold" onClick={() => setEditing(true)}><Pencil /> تعديل البيانات</Button>
+              <Button variant="gold" onClick={() => setEditing(true)}><Pencil /> {tr("edit")}</Button>
             </>
           )}
         </div>
       )}
     >
       {error && <div className="platform-auth-error">{error}</div>}
-      {!company ? <div className="platform-empty">جارٍ التحميل…</div> : (
+      {!company ? <div className="platform-empty">{tr("loading")}</div> : (
         <div className="pc-body">
           <div className="pc-head">
             <span className={`platform-status ${company.status}`}>
-              {active ? <ShieldCheck /> : <ShieldOff />}{active ? "نشطة" : "موقوفة"}
+              {active ? <ShieldCheck /> : <ShieldOff />}{tr(active ? "active" : "suspended")}
             </span>
-            <small>منذ {new Date(company.created_at).toLocaleDateString("ar-SA")}</small>
+            <small>{tr("since", { date: new Date(company.created_at).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US") })}</small>
           </div>
 
           <div className="pc-stats">
-            <div><Building2 /><b>{counts.branches}</b><span>الفروع</span></div>
-            <div><Users /><b>{counts.members}</b><span>الموظفون</span></div>
-            <div><CreditCard /><b>{counts.activeSubscriptions}</b><span>اشتراكات نشطة</span></div>
-            <div><LifeBuoy /><b>{counts.openCases}</b><span>تذاكر مفتوحة</span></div>
+            <div><Building2 /><b>{counts.branches}</b><span>{tr("branches")}</span></div>
+            <div><Users /><b>{counts.members}</b><span>{tr("members")}</span></div>
+            <div><CreditCard /><b>{counts.activeSubscriptions}</b><span>{tr("subs")}</span></div>
+            <div><LifeBuoy /><b>{counts.openCases}</b><span>{tr("tickets")}</span></div>
           </div>
 
           {editing ? (
             <div className="pc-form">
-              <Input label="الاسم (عربي)" required value={form.nameAr} onChange={(e) => setForm({ ...form, nameAr: e.target.value })} />
-              <Input label="الاسم (English)" value={form.nameEn} onChange={(e) => setForm({ ...form, nameEn: e.target.value })} />
-              <Input label="البريد" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-              <Input label="الهاتف" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              <Input label={tr("name_ar")} required value={form.nameAr} onChange={(e) => setForm({ ...form, nameAr: e.target.value })} />
+              <Input label={tr("name_en")} value={form.nameEn} onChange={(e) => setForm({ ...form, nameEn: e.target.value })} />
+              <Input label={tr("email")} type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              <Input label={tr("phone")} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
             </div>
           ) : (
             <dl className="pc-dl">
-              <dt>الاسم (عربي)</dt><dd>{company.name_ar || "—"}</dd>
-              <dt>الاسم (English)</dt><dd>{company.name_en || "—"}</dd>
-              <dt>البريد</dt><dd>{company.email || "—"}</dd>
-              <dt>الهاتف</dt><dd dir="ltr">{company.phone || "—"}</dd>
+              <dt>{tr("name_ar")}</dt><dd>{company.name_ar || "—"}</dd>
+              <dt>{tr("name_en")}</dt><dd>{company.name_en || "—"}</dd>
+              <dt>{tr("email")}</dt><dd>{company.email || "—"}</dd>
+              <dt>{tr("phone")}</dt><dd dir="ltr">{company.phone || "—"}</dd>
             </dl>
           )}
 
           <section className="pc-list">
-            <h4>الفروع</h4>
-            {!branches.length ? <p>لا توجد فروع.</p> : branches.map((b) => (
-              <div key={b.id}><strong>{b.name_ar || b.name_en}</strong><span>{b.is_active ? "نشط" : "معطل"}</span></div>
+            <h4>{tr("branches")}</h4>
+            {!branches.length ? <p>{tr("no_branches")}</p> : branches.map((b) => (
+              <div key={b.id}><strong>{b.name_ar || b.name_en}</strong><span>{tr(b.is_active ? "branch_on" : "branch_off")}</span></div>
             ))}
           </section>
           <section className="pc-list">
-            <h4>الإدارة والموظفون</h4>
-            {!members.length ? <p>لا يوجد موظفون.</p> : members.map((m) => (
-              <div key={m.id}><strong>{m.profile?.full_name || "—"}<small>{m.profile?.email}</small></strong><span>{m.role}</span></div>
+            <h4>{tr("staff_title")}</h4>
+            {!members.length ? <p>{tr("no_members")}</p> : members.map((m) => (
+              <div key={m.id}><strong>{m.profile?.full_name || "—"}<small>{m.profile?.email}</small></strong><span>{roleLabel(m.role)}</span></div>
             ))}
           </section>
 
           {confirmDelete && (
             <div className="pc-danger">
-              <p>سيتم حذف الشركة وكل فروعها واشتراكاتها وعملائها نهائياً. اكتب كود الشركة <code>{company.organization_code}</code> للتأكيد.</p>
+              <p>{tr("delete_warn")} <code>{company.organization_code}</code></p>
               <input value={confirmDelete.trim()} onChange={(e) => setConfirmDelete(e.target.value || " ")} dir="ltr" />
               <Button variant="danger" loading={busy === "delete"} disabled={confirmDelete.trim().toUpperCase() !== company.organization_code.toUpperCase()}
                 onClick={() => run("delete", () => deleteCompany({ data: { id: company.id } }), true)}>
-                <Trash2 /> حذف نهائي
+                <Trash2 /> {tr("delete_final")}
               </Button>
             </div>
           )}

@@ -44,13 +44,21 @@ export type CompanyMember = {
 };
 
 export async function listCompanyMembers(organizationId: string): Promise<CompanyMember[]> {
-  const { data, error } = await (supabase as any)
+  const s = supabase as any;
+  const { data, error } = await s
     .from("organization_members")
-    .select("id,user_id,role,status,branch_id,created_at, profile:profiles(full_name,email)")
+    .select("id,user_id,role,status,branch_id,created_at")
     .eq("organization_id", organizationId)
     .order("created_at");
   if (error) throw error;
-  return (data ?? []) as CompanyMember[];
+  const rows = (data ?? []) as Omit<CompanyMember, "profile">[];
+  const ids = rows.map((r) => r.user_id).filter(Boolean);
+  let map = new Map<string, { full_name: string | null; email: string | null }>();
+  if (ids.length) {
+    const { data: profs } = await s.from("profiles").select("id,full_name,email").in("id", ids);
+    for (const p of profs ?? []) map.set(p.id, { full_name: p.full_name ?? null, email: p.email ?? null });
+  }
+  return rows.map((r) => ({ ...r, profile: map.get(r.user_id) ?? null }));
 }
 
 export async function listCompanyBranches(organizationId: string) {
