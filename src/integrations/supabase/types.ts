@@ -580,6 +580,7 @@ export type Database = {
       }
       customers: {
         Row: {
+          auth_user_id: string | null
           created_at: string
           email: string | null
           id: string
@@ -588,6 +589,7 @@ export type Database = {
           phone: string
         }
         Insert: {
+          auth_user_id?: string | null
           created_at?: string
           email?: string | null
           id?: string
@@ -596,6 +598,7 @@ export type Database = {
           phone: string
         }
         Update: {
+          auth_user_id?: string | null
           created_at?: string
           email?: string | null
           id?: string
@@ -3101,6 +3104,7 @@ export type Database = {
         }
         Returns: Json
       }
+      customer_app_me: { Args: never; Returns: Json }
       customer_app_order_menu: {
         Args: {
           _phone: string
