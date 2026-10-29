@@ -795,6 +795,40 @@
       "allowRemoteControl": "Shared control",
       "allowVoice": "Voice call",
       "allowRecording": "Session recording"
+    },
+    "labels": {
+      "status": {
+        "new": "New",
+        "waiting": "Awaiting pickup",
+        "accepted": "Accepted",
+        "assigned": "Assigned",
+        "waiting_company": "Awaiting company",
+        "scheduled": "Scheduled",
+        "live": "Live session",
+        "resolved": "Resolved",
+        "closed": "Closed",
+        "cancelled": "Cancelled",
+        "rejected": "Rejected"
+      },
+      "priority": {
+        "critical": "Critical",
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "category": {
+        "technical": "Technical issue",
+        "subscription": "Subscriptions",
+        "payment": "Payments",
+        "qr": "QR code",
+        "pos": "Point of sale",
+        "employee": "Employees",
+        "feature_request": "Feature request",
+        "training": "Training",
+        "billing": "Billing",
+        "branch_setup": "Branch setup",
+        "other": "Other"
+      }
     }
   },
   "states": {

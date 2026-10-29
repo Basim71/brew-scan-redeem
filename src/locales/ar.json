@@ -795,6 +795,40 @@
       "allowRemoteControl": "تحكّم مشترك",
       "allowVoice": "المحادثة الصوتية",
       "allowRecording": "تسجيل الجلسة"
+    },
+    "labels": {
+      "status": {
+        "new": "جديدة",
+        "waiting": "بانتظار الاستلام",
+        "accepted": "تم الاستلام",
+        "assigned": "تم التعيين",
+        "waiting_company": "بانتظار الشركة",
+        "scheduled": "مجدولة",
+        "live": "جلسة مباشرة",
+        "resolved": "تم الحل",
+        "closed": "مغلقة",
+        "cancelled": "ملغاة",
+        "rejected": "مرفوضة"
+      },
+      "priority": {
+        "critical": "حرجة",
+        "high": "مرتفعة",
+        "medium": "متوسطة",
+        "low": "منخفضة"
+      },
+      "category": {
+        "technical": "مشكلة تقنية",
+        "subscription": "الاشتراكات",
+        "payment": "المدفوعات",
+        "qr": "رمز QR",
+        "pos": "نقاط البيع",
+        "employee": "الموظفون",
+        "feature_request": "طلب ميزة",
+        "training": "تدريب",
+        "billing": "الفوترة",
+        "branch_setup": "إعداد فرع",
+        "other": "أخرى"
+      }
     }
   },
   "states": {

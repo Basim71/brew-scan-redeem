@@ -1,3 +1,19 @@
+
+import arLocale from "@/locales/ar.json";
+import enLocale from "@/locales/en.json";
+
+/* Labels follow the active UI language (set on <html lang>). */
+function localized(group: "status" | "priority" | "category"): any {
+  const pick = () => {
+    const isAr = typeof document !== "undefined" && document.documentElement.lang === "ar";
+    return ((isAr ? arLocale : enLocale) as any).support.labels[group] as Record<string, string>;
+  };
+  return new Proxy({}, {
+    get: (_t, k) => pick()[k as string],
+    ownKeys: () => Reflect.ownKeys(pick()),
+    getOwnPropertyDescriptor: (_t, k) => ({ enumerable: true, configurable: true, value: pick()[k as string] }),
+  });
+}
 export type TicketStatus =
   | "new"
   | "waiting"
@@ -80,40 +96,11 @@ export type TicketEvent = {
   createdAt: string;
 };
 
-export const statusLabels: Record<TicketStatus, string> = {
-  new: "جديدة",
-  waiting: "بانتظار الاستلام",
-  accepted: "تم الاستلام",
-  assigned: "تم التعيين",
-  waiting_company: "بانتظار الشركة",
-  scheduled: "مجدولة",
-  live: "جلسة مباشرة",
-  resolved: "تم الحل",
-  closed: "مغلقة",
-  cancelled: "ملغاة",
-  rejected: "مرفوضة",
-};
+export const statusLabels: Record<TicketStatus, string> = localized("status");
 
-export const priorityLabels: Record<TicketPriority, string> = {
-  critical: "حرجة",
-  high: "مرتفعة",
-  medium: "متوسطة",
-  low: "منخفضة",
-};
+export const priorityLabels: Record<TicketPriority, string> = localized("priority");
 
-export const categoryLabels: Record<TicketCategory, string> = {
-  technical: "مشكلة تقنية",
-  subscription: "الاشتراكات",
-  payment: "المدفوعات",
-  qr: "رمز QR",
-  pos: "نقاط البيع",
-  employee: "الموظفون",
-  feature_request: "طلب ميزة",
-  training: "تدريب",
-  billing: "الفوترة",
-  branch_setup: "إعداد فرع",
-  other: "أخرى",
-};
+export const categoryLabels: Record<TicketCategory, string> = localized("category");
 
 export const OPEN_STATUSES: TicketStatus[] = [
   "new",
