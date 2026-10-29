@@ -1,6 +1,5 @@
 import { Eye, EyeOff, Loader2, LockKeyhole, Mail } from "lucide-react";
 import { useState, type FormEvent } from "react";
-import "@lovable.dev/cloud-auth-js/styles.css";
 
 import { lovable } from "@/integrations/lovable/index";
 import { LanguageSwitcher, useI18n } from "@/lib/i18n";
@@ -19,8 +18,6 @@ export function UnifiedLoginForm({ onSubmit, busy, error }: Props) {
   const [showPassword, setShowPassword] = useState(false);
   const [appleBusy, setAppleBusy] = useState(false);
   const [appleError, setAppleError] = useState<string | null>(null);
-  const [lovableBusy, setLovableBusy] = useState(false);
-  const [lovableError, setLovableError] = useState<string | null>(null);
 
   async function handleAppleSignIn() {
     if (busy || appleBusy) return;
@@ -38,23 +35,6 @@ export function UnifiedLoginForm({ onSubmit, busy, error }: Props) {
     setAppleBusy(false); // Session set — the page's session-restore effect will route the user
   }
 
-  async function handleLovableSignIn() {
-    if (busy || lovableBusy) return;
-    setLovableBusy(true);
-    setLovableError(null);
-    const result = await lovable.auth.signInWithOAuth("lovable", {
-      redirect_uri: window.location.origin + "/auth",
-    });
-    if (result.error) {
-      setLovableError(
-        lang === "ar" ? "تعذر تسجيل الدخول عبر Lovable." : "Lovable sign-in failed.",
-      );
-      setLovableBusy(false);
-      return;
-    }
-    if (result.redirected) return; // Browser is navigating to Lovable
-    setLovableBusy(false); // Session set — the page's session-restore effect will route the user
-  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -74,7 +54,6 @@ export function UnifiedLoginForm({ onSubmit, busy, error }: Props) {
     submit: lang === "ar" ? "تسجيل الدخول" : "Sign in",
     or: lang === "ar" ? "أو" : "or",
     apple: lang === "ar" ? "المتابعة عبر Apple" : "Continue with Apple",
-    lovable: lang === "ar" ? "تسجيل الدخول عبر Lovable" : "Sign in with Lovable",
   };
 
   return (
@@ -180,26 +159,6 @@ export function UnifiedLoginForm({ onSubmit, busy, error }: Props) {
               </svg>
             )}
             <span>{labels.apple}</span>
-          </button>
-
-          {lovableError ? (
-            <div className="kob-auth-error" role="alert">
-              {lovableError}
-            </div>
-          ) : null}
-
-          <button
-            type="button"
-            onClick={() => void handleLovableSignIn()}
-            disabled={busy || lovableBusy}
-            className="lovable-auth-button lovable-auth-button--dark lovable-auth-button--full-width kob-auth-lovable"
-            aria-label={labels.lovable}
-          >
-            {lovableBusy ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <span>{labels.lovable}</span>
-            )}
           </button>
         </form>
       </section>
