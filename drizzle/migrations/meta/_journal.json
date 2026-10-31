@@ -22,6 +22,13 @@
       "when": 1793271371768,
       "tag": "0002_customer_app_auth_overloads",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793475449615,
+      "tag": "0003_drop_legacy_customer_app_functions",
+      "breakpoints": true
     }
   ]
 }
