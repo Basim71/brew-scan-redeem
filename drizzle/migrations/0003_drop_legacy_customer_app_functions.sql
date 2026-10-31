@@ -1,0 +1,12 @@
+DROP FUNCTION public.customer_app_dev_login(text);
+DROP FUNCTION public.customer_app_dev_register(text,text,text,text);
+DROP FUNCTION public.customer_app_profile(text,text);
+DROP FUNCTION public.customer_app_subscriptions(text,text);
+DROP FUNCTION public.customer_app_order_menu(text,text,uuid);
+DROP FUNCTION public.customer_app_scan_branch(text,text,text);
+DROP FUNCTION public.customer_app_branch_plans(text,text,uuid);
+DROP FUNCTION public.customer_app_request_subscription(text,text,uuid,uuid,text,text);
+DROP FUNCTION public.customer_app_session_is_valid(text,text);
+DROP FUNCTION public.customer_app_create_otp(text);
+DROP FUNCTION public.customer_app_create_otp(text,text);
+DROP FUNCTION public.customer_app_verify_otp(uuid,text,text,text);

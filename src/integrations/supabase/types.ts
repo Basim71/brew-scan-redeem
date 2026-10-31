@@ -3074,100 +3074,28 @@ export type Database = {
       current_user_branch: { Args: never; Returns: string }
       current_user_organization_ids: { Args: never; Returns: string[] }
       customer_app_auth_phone: { Args: never; Returns: string }
-      customer_app_branch_plans:
-        | { Args: { _branch_id: string }; Returns: Json }
-        | {
-            Args: { _branch_id: string; _phone: string; _session_token: string }
-            Returns: Json
-          }
-      customer_app_create_otp:
-        | {
-            Args: { _phone: string }
-            Returns: {
-              expires_at: string
-              otp_code: string
-              otp_id: string
-            }[]
-          }
-        | {
-            Args: { _device_token?: string; _phone: string }
-            Returns: {
-              otp_code: string
-              otp_expires_at: string
-              otp_id: string
-            }[]
-          }
-      customer_app_dev_login: { Args: { _phone: string }; Returns: Json }
-      customer_app_dev_register: {
-        Args: {
-          _email: string
-          _first_name: string
-          _last_name: string
-          _phone: string
-        }
+      customer_app_branch_plans: { Args: { _branch_id: string }; Returns: Json }
+      customer_app_me: { Args: never; Returns: Json }
+      customer_app_order_menu: {
+        Args: { _subscription_id: string }
         Returns: Json
       }
-      customer_app_me: { Args: never; Returns: Json }
-      customer_app_order_menu:
-        | {
-            Args: {
-              _phone: string
-              _session_token: string
-              _subscription_id: string
-            }
-            Returns: Json
-          }
-        | { Args: { _subscription_id: string }; Returns: Json }
-      customer_app_profile:
-        | { Args: never; Returns: Json }
-        | { Args: { _phone: string; _session_token: string }; Returns: Json }
+      customer_app_profile: { Args: never; Returns: Json }
       customer_app_register: {
         Args: { _email: string; _first_name: string; _last_name: string }
         Returns: Json
       }
-      customer_app_request_subscription:
-        | {
-            Args: {
-              _branch_id: string
-              _device_token?: string
-              _plan_id: string
-              _preferred_language?: string
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              _branch_id: string
-              _device_token?: string
-              _phone: string
-              _plan_id: string
-              _preferred_language?: string
-              _session_token: string
-            }
-            Returns: Json
-          }
-      customer_app_scan_branch:
-        | { Args: { _qr_token: string }; Returns: Json }
-        | {
-            Args: { _phone: string; _qr_token: string; _session_token: string }
-            Returns: Json
-          }
-      customer_app_session_is_valid: {
-        Args: { _phone: string; _session_token: string }
-        Returns: boolean
-      }
-      customer_app_subscriptions:
-        | { Args: never; Returns: Json }
-        | { Args: { _phone: string; _session_token: string }; Returns: Json }
-      customer_app_verify_otp: {
+      customer_app_request_subscription: {
         Args: {
-          _code: string
+          _branch_id: string
           _device_token?: string
-          _otp_id: string
-          _phone: string
+          _plan_id: string
+          _preferred_language?: string
         }
         Returns: Json
       }
+      customer_app_scan_branch: { Args: { _qr_token: string }; Returns: Json }
+      customer_app_subscriptions: { Args: never; Returns: Json }
       default_organization_id: { Args: never; Returns: string }
       delete_branch_safe: {
         Args: { _branch_id: string; _force?: boolean }
