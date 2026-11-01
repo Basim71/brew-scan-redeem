@@ -659,3 +659,48 @@ function BranchCard({
     </article>
   );
 }
+
+function UnifiedQr({ token, branchCount }: { token: string; branchCount: number }) {
+  const { t } = useI18n();
+  const wrap = useRef<HTMLDivElement>(null);
+  const [copied, setCopied] = useState(false);
+  const link = qrUrl(token);
+  const download = () => {
+    const canvas = wrap.current?.querySelector("canvas");
+    if (!canvas) return;
+    const a = document.createElement("a");
+    a.href = canvas.toDataURL("image/png");
+    a.download = "kob-unified-qr.png";
+    a.click();
+  };
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      /* clipboard unavailable */
+    }
+  };
+  return (
+    <div className="mt-3 flex flex-col items-center gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-start">
+      <div ref={wrap} className="rounded-lg bg-background p-2">
+        <QRCodeCanvas value={link} size={160} includeMargin />
+      </div>
+      <div className="flex flex-1 flex-col gap-2">
+        <b>{t("settings.branches.unifiedQrTitle")}</b>
+        <small className="text-muted-foreground">
+          {t("settings.branches.unifiedQrHint", { count: branchCount })}
+        </small>
+        <div className="flex flex-wrap gap-2">
+          <Button leadingIcon={<QrCode className="h-4 w-4" />} onClick={download}>
+            {t("settings.branches.unifiedQrDownload")}
+          </Button>
+          <Button variant="secondary" leadingIcon={<Copy className="h-4 w-4" />} onClick={copy}>
+            {copied ? t("settings.branches.unifiedQrCopied") : t("settings.branches.unifiedQrCopy")}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
