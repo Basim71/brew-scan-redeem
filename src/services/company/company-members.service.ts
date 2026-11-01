@@ -21,20 +21,27 @@ export type CompanyMemberRow = {
 
 const SELECT = `
   id,user_id,role,status,branch_id,job_title,phone,permissions,last_login_at,invited_at,created_at,updated_at,
-  profile:profiles(full_name,email),
   branch:branches(id,name_ar,name_en)
 `;
 
 export async function listCompanyMembers(
   organizationId: string,
 ): Promise<CompanyMemberRow[]> {
-  const { data, error } = await (supabase as any)
+  const s = supabase as any;
+  const { data, error } = await s
     .from("organization_members")
     .select(SELECT)
     .eq("organization_id", organizationId)
     .order("created_at");
   if (error) throw error;
-  return (data ?? []) as CompanyMemberRow[];
+  const rows = (data ?? []) as any[];
+  const ids = rows.map((r) => r.user_id).filter(Boolean);
+  const map = new Map<string, { full_name: string | null; email: string | null }>();
+  if (ids.length) {
+    const { data: profs } = await s.from("profiles").select("id,full_name,email").in("id", ids);
+    for (const p of profs ?? []) map.set(p.id, { full_name: p.full_name ?? null, email: p.email ?? null });
+  }
+  return rows.map((r) => ({ ...r, profile: map.get(r.user_id) ?? null })) as CompanyMemberRow[];
 }
 
 /** Change a member's role. Blocked from demoting the last owner. */
