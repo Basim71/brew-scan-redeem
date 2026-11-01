@@ -3117,6 +3117,16 @@ export type Database = {
         Returns: Json
       }
       customer_app_scan_branch: { Args: { _qr_token: string }; Returns: Json }
+      customer_app_submit_order: {
+        Args: {
+          _branch_id: string
+          _customer_note?: string
+          _drink_type_id: string
+          _selected_option_ids?: string[]
+          _subscription_id: string
+        }
+        Returns: string
+      }
       customer_app_subscriptions: { Args: never; Returns: Json }
       default_organization_id: { Args: never; Returns: string }
       delete_branch_safe: {
