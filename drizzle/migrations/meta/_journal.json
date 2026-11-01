@@ -36,6 +36,13 @@
       "when": 1793533882341,
       "tag": "0004_unified_company_qr",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793542671477,
+      "tag": "0005_member_branch_fallback",
+      "breakpoints": true
     }
   ]
 }
