@@ -125,17 +125,28 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 
     const mapped = mapVerificationRow(row);
 
-    const { data: legacyRole } = await db
-      .from("user_roles")
+    const uid = (await supabase.auth.getUser()).data.user?.id;
+    const { data: memberRow } = await db
+      .from("organization_members")
       .select("branch_id")
-      .eq("user_id", (await supabase.auth.getUser()).data.user?.id)
+      .eq("user_id", uid)
       .eq("organization_id", mapped.organization.id)
       .maybeSingle();
+    let resolvedBranch: string | null = memberRow?.branch_id ?? null;
+    if (!resolvedBranch) {
+      const { data: legacyRole } = await db
+        .from("user_roles")
+        .select("branch_id")
+        .eq("user_id", uid)
+        .eq("organization_id", mapped.organization.id)
+        .maybeSingle();
+      resolvedBranch = legacyRole?.branch_id ?? null;
+    }
 
     storeOrganization(mapped.organization);
     setOrganization(mapped.organization);
     setMembership(mapped.membership);
-    setBranchId(legacyRole?.branch_id ?? null);
+    setBranchId(resolvedBranch);
     setError(null);
 
     return mapped.membership;
