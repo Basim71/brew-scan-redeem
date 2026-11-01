@@ -1047,6 +1047,21 @@
       "couponNotAvailable": "الكوبون غير متاح أو تم استخدامه.",
       "couponWrongBranch": "الكوبون غير مخصص لهذا الفرع.",
       "registrationProcessed": "تمت معالجة طلب التسجيل مسبقًا."
+    },
+    "selectPlanFirst": "اختر الباقة أولاً",
+    "selectPaymentFirst": "اختر طريقة الدفع أولاً",
+    "requestedPlan": "الباقة المختارة",
+    "duration": "المدة",
+    "price": "السعر",
+    "selectPlan": "اختر الباقة",
+    "paymentMethod": "طريقة الدفع",
+    "confirmPaymentActivate": "تأكيد الدفع وتفعيل الاشتراك",
+    "payment": {
+      "cash": "كاش",
+      "mada": "مدى",
+      "visa": "فيزا",
+      "mastercard": "ماستركارد",
+      "apple_pay": "Apple Pay"
     }
   },
   "home": {

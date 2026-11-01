@@ -16007,3 +16007,21 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
 .kob-row-actions{display:flex;gap:.4rem;justify-content:flex-end}
 .platform-shell .kob-toolbar{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;padding:.85rem 1rem;border-radius:16px;background:linear-gradient(180deg,oklch(0.99 0.008 80),oklch(0.96 0.015 75));border:1px solid oklch(0.87 0.03 70);box-shadow:0 10px 24px -18px oklch(0.3 0.04 50/.5)}
 .platform-shell .kob-stat-card,.platform-shell .kob-card{border-color:oklch(0.86 0.035 70)}
+
+/* Cashier payment method picker */
+.kob-pay-group { display: flex; flex-direction: column; gap: 0.5rem; }
+.kob-pay-options { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.kob-pay-option {
+  padding: 0.55rem 1rem; border-radius: 0.75rem; font-weight: 600; font-size: 0.875rem;
+  color: var(--kob-text, currentColor);
+  background: linear-gradient(180deg, hsl(25 30% 18%), hsl(25 30% 12%));
+  border: 1px solid hsl(35 40% 30% / 0.6);
+  box-shadow: inset 0 1px 0 hsl(40 60% 70% / 0.08), 0 2px 6px hsl(0 0% 0% / 0.35);
+  transition: all 0.15s ease;
+}
+.kob-pay-option[data-selected] {
+  background: linear-gradient(180deg, hsl(38 65% 58%), hsl(32 60% 42%));
+  color: hsl(25 40% 10%); border-color: hsl(40 70% 65%);
+  box-shadow: 0 0 14px hsl(38 70% 55% / 0.35), inset 0 1px 0 hsl(45 80% 80% / 0.5);
+}
+.kob-pay-option:disabled { opacity: 0.5; }

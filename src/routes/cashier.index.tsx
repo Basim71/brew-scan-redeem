@@ -72,6 +72,7 @@ type RegistrationRequest = {
   preferred_language: string;
   status: "pending" | "approved" | "rejected";
   created_at: string;
+  requested_plan_id: string | null;
 };
 
 type CouponRow = {
@@ -82,7 +83,19 @@ type CouponRow = {
   status: string;
 };
 
-type PlanRow = { id: string; name: string; duration_days: number };
+type PlanRow = {
+  id: string;
+  name: string;
+  name_ar: string | null;
+  name_en: string | null;
+  duration_days: number;
+  price: number;
+  currency: string | null;
+  max_drinks_per_day: number | null;
+};
+
+const PAYMENT_METHODS = ["cash", "mada", "visa", "mastercard", "apple_pay"] as const;
+type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
 type QueueItem =
   | { kind: "order"; id: string; createdAt: string; data: OrderRow }
@@ -113,6 +126,7 @@ function CashierQueuePage() {
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [selectedCoupons, setSelectedCoupons] = useState<Record<string, string>>({});
+  const [selectedPayments, setSelectedPayments] = useState<Record<string, PaymentMethod>>({});
   const [selectedStartDates, setSelectedStartDates] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -148,7 +162,7 @@ function CashierQueuePage() {
         .limit(100),
       supabase
         .from("registration_requests")
-        .select("id, first_name, last_name, phone, branch_id, preferred_language, status, created_at")
+        .select("id, first_name, last_name, phone, branch_id, preferred_language, status, created_at, requested_plan_id")
         .eq("branch_id", branchId)
         .eq("status", "pending")
         .order("created_at", { ascending: false })
@@ -159,7 +173,7 @@ function CashierQueuePage() {
         .eq("status", "available")
         .or(`branch_id.eq.${branchId},branch_id.is.null`)
         .order("created_at", { ascending: false }),
-      supabase.from("plans").select("id, name, duration_days").order("name"),
+      supabase.from("plans").select("id, name, name_ar, name_en, duration_days, price, currency, max_drinks_per_day").order("name"),
     ]);
 
     const firstError =
@@ -239,11 +253,16 @@ function CashierQueuePage() {
   }
 
   async function activateRegistration(request: RegistrationRequest) {
-    const couponId = selectedCoupons[request.id];
+    const planId = selectedCoupons[request.id] || request.requested_plan_id || "";
+    const payment = selectedPayments[request.id];
     const startDate = selectedStartDates[request.id] ?? todayLocalISO();
 
-    if (!couponId) {
-      setError(t("cashier.selectCouponFirst"));
+    if (!planId) {
+      setError(t("cashier.selectPlanFirst"));
+      return;
+    }
+    if (!payment) {
+      setError(t("cashier.selectPaymentFirst"));
       return;
     }
 
@@ -251,10 +270,11 @@ function CashierQueuePage() {
     setError(null);
     setSuccess(null);
 
-    const { error: rpcError } = await supabase.rpc("cashier_activate_registration", {
+    const { error: rpcError } = await supabase.rpc("cashier_activate_plan", {
       _request_id: request.id,
-      _coupon_id: couponId,
+      _plan_id: planId,
       _start_date: startDate,
+      _payment_method: payment,
     });
 
     setBusyId(null);
@@ -265,16 +285,6 @@ function CashierQueuePage() {
     }
 
     setRegistrations((current) => current.filter((r) => r.id !== request.id));
-    setSelectedCoupons((current) => {
-      const next = { ...current };
-      delete next[request.id];
-      return next;
-    });
-    setSelectedStartDates((current) => {
-      const next = { ...current };
-      delete next[request.id];
-      return next;
-    });
     setSuccess(t("cashier.registrationActivated"));
     await loadQueue();
   }
@@ -520,7 +530,11 @@ function CashierQueuePage() {
                     planMap={planMap}
                     branchId={branchId}
                     t={t}
-                    selectedCoupon={selectedCoupons[item.id] ?? ""}
+                    selectedCoupon={selectedCoupons[item.id] || item.data.requested_plan_id || ""}
+                    selectedPayment={selectedPayments[item.id] ?? null}
+                    onPaymentChange={(method) => {
+                      setSelectedPayments((current) => ({ ...current, [item.id]: method }));
+                    }}
                     selectedStartDate={selectedStartDates[item.id] ?? todayLocalISO()}
                     timeLabel={timeAgo(item.createdAt)}
                     onCouponChange={(couponId) => {
@@ -657,6 +671,8 @@ function RegistrationCard({
   branchId,
   t,
   selectedCoupon,
+  selectedPayment,
+  onPaymentChange,
   selectedStartDate,
   timeLabel,
   onCouponChange,
@@ -671,6 +687,8 @@ function RegistrationCard({
   branchId: string;
   t: Translate;
   selectedCoupon: string;
+  selectedPayment: PaymentMethod | null;
+  onPaymentChange: (method: PaymentMethod) => void;
   selectedStartDate: string;
   timeLabel: string;
   onCouponChange: (couponId: string) => void;
@@ -679,9 +697,12 @@ function RegistrationCard({
   onReject: () => void;
 }) {
   const fullName = `${request.first_name} ${request.last_name}`.trim();
-  const availableCoupons = coupons.filter(
-    (coupon) => !coupon.branch_id || coupon.branch_id === branchId,
-  );
+  void coupons;
+  void branchId;
+  const allPlans = Array.from(planMap.values());
+  const plan = selectedCoupon ? planMap.get(selectedCoupon) : undefined;
+  const isAr = typeof document !== "undefined" && document.documentElement.lang === "ar";
+  const planLabel = (p: PlanRow) => (isAr ? p.name_ar || p.name : p.name_en || p.name) || "—";
 
   return (
     <Card tone="raised" className="kob-queue-card" data-kind="registration">
@@ -707,26 +728,54 @@ function RegistrationCard({
         </div>
 
         <div className="kob-queue-form">
-          <Field label={t("cashier.couponAndPlan")}>
-            {() => (
-              <Select
-                value={selectedCoupon}
-                disabled={busy}
-                onChange={(event) => onCouponChange(event.target.value)}
-              >
-                <option value="">{t("cashier.selectCoupon")}</option>
-                {availableCoupons.map((coupon) => {
-                  const plan = planMap.get(coupon.plan_id);
-                  return (
-                    <option key={coupon.id} value={coupon.id}>
-                      {coupon.code} · {plan?.name ?? "—"} ·{" "}
-                      {t("cashier.daysCount", { count: plan?.duration_days ?? 0 })}
+          {plan ? (
+            <div className="kob-queue-details">
+              <DetailRow icon={<Tag className="h-4 w-4" />} label={t("cashier.requestedPlan")} value={planLabel(plan)} />
+              <DetailRow
+                icon={<Clock3 className="h-4 w-4" />}
+                label={t("cashier.duration")}
+                value={t("cashier.daysCount", { count: plan.duration_days })}
+              />
+              <DetailRow
+                icon={<Coffee className="h-4 w-4" />}
+                label={t("cashier.price")}
+                value={`${plan.price} ${plan.currency ?? "SAR"}`}
+              />
+            </div>
+          ) : (
+            <Field label={t("cashier.plan")}>
+              {() => (
+                <Select value={selectedCoupon} disabled={busy} onChange={(event) => onCouponChange(event.target.value)}>
+                  <option value="">{t("cashier.selectPlan")}</option>
+                  {allPlans.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {planLabel(p)} · {t("cashier.daysCount", { count: p.duration_days })}
                     </option>
-                  );
-                })}
-              </Select>
-            )}
-          </Field>
+                  ))}
+                </Select>
+              )}
+            </Field>
+          )}
+
+          <div className="kob-pay-group" role="radiogroup" aria-label={t("cashier.paymentMethod")}>
+            <span className="kob-queue-extras-title">{t("cashier.paymentMethod")}</span>
+            <div className="kob-pay-options">
+              {PAYMENT_METHODS.map((method) => (
+                <button
+                  key={method}
+                  type="button"
+                  role="radio"
+                  aria-checked={selectedPayment === method}
+                  className="kob-pay-option"
+                  data-selected={selectedPayment === method || undefined}
+                  disabled={busy}
+                  onClick={() => onPaymentChange(method)}
+                >
+                  {t(`cashier.payment.${method}`)}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <Field label={t("cashier.startDate")}>
             {() => (
@@ -739,9 +788,6 @@ function RegistrationCard({
           </Field>
         </div>
 
-        {availableCoupons.length === 0 ? (
-          <Alert tone="warning">{t("cashier.noCouponsForBranch")}</Alert>
-        ) : null}
 
         <div className="kob-queue-actions">
           <Button variant="danger" disabled={busy} onClick={onReject} leadingIcon={<X className="h-4 w-4" />}>
@@ -750,11 +796,11 @@ function RegistrationCard({
           <Button
             size="lg"
             loading={busy}
-            disabled={busy || !selectedCoupon}
+            disabled={busy || !selectedCoupon || !selectedPayment}
             onClick={onActivate}
             leadingIcon={!busy ? <Check className="h-5 w-5" /> : undefined}
           >
-            {t("cashier.activateSubscription")}
+            {t("cashier.confirmPaymentActivate")}
           </Button>
         </div>
       </CardBody>
@@ -794,6 +840,7 @@ function todayLocalISO() {
 }
 
 function translateActivationError(message: string, t: Translate) {
+  if (message.includes("invalid_payment_method")) return t("cashier.selectPaymentFirst");
   if (message.includes("coupon_not_available")) return t("cashier.errors.couponNotAvailable");
   if (message.includes("coupon_wrong_branch")) return t("cashier.errors.couponWrongBranch");
   if (message.includes("registration_already_processed"))
