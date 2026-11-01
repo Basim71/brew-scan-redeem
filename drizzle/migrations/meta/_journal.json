@@ -71,6 +71,13 @@
       "when": 1793550332856,
       "tag": "0009_customer_app_subscriptions_branch_hours",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793551012162,
+      "tag": "0010_customer_app_subscriptions_branch_hours_apply",
+      "breakpoints": true
     }
   ]
 }
