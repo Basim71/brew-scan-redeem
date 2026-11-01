@@ -237,6 +237,9 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
             ]}
           />
         </Row>
+        {settings.branch_qr_mode === "single" && settings.unified_qr_token ? (
+          <UnifiedQr token={settings.unified_qr_token} branchCount={(branches.data ?? []).filter((b) => b.is_active).length} />
+        ) : null}
       </Card>
 
       <Card
