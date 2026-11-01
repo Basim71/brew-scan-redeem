@@ -160,6 +160,9 @@ function ScanPage() {
   const [selectedPlanId, setSelectedPlanId] =
     useState<string | null>(null);
 
+  const [requestId, setRequestId] =
+    useState<string | null>(null);
+
   const [drinks, setDrinks] =
     useState<Drink[]>([]);
 
@@ -880,6 +883,7 @@ function ScanPage() {
     setInfo(null);
 
     const {
+      data: registrationId,
       error:
         registrationError,
     } = await supabase.rpc(
@@ -937,6 +941,8 @@ function ScanPage() {
 
     setSessionToken(token);
 
+    setRequestId((registrationId as string | null) ?? null);
+
     setDeviceKnown(true);
 
     setStep(
@@ -946,6 +952,27 @@ function ScanPage() {
     void loadPlans();
   }
 
+
+  async function choosePlan(planId: string) {
+    setSelectedPlanId(planId);
+    if (requestId && sessionToken) {
+      setBusy(true);
+      setError(null);
+      const { error: planError } = await supabase.rpc("scan_set_request_plan", {
+        _request_id: requestId,
+        _plan_id: planId,
+        _phone: normalizePhone(phone),
+        _session_token: sessionToken,
+      });
+      setBusy(false);
+      if (planError) {
+        console.error("scan_set_request_plan:", planError);
+        setError(lang === "ar" ? "تعذر حفظ الباقة، حاول مرة أخرى." : "Could not save the plan, please try again.");
+        return;
+      }
+    }
+    setStep("registration-sent");
+  }
 
   async function loadPlans() {
     const { data, error: plansError } = await supabase
@@ -1339,9 +1366,9 @@ function ScanPage() {
                     type="button"
                     className="kob-scan-branch"
                     data-selected={plan.id === selectedPlanId || undefined}
+                    disabled={busy}
                     onClick={() => {
-                      setSelectedPlanId(plan.id);
-                      setStep("registration-sent");
+                      void choosePlan(plan.id);
                     }}
                   >
                     <span className="flex flex-col items-start gap-1 text-start">
