@@ -1,0 +1,54 @@
+CREATE OR REPLACE FUNCTION public.customer_app_subscriptions()
+ RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public'
+AS $function$
+DECLARE
+ v_phone text;
+ v_customer public.customers%ROWTYPE;
+ v_subscriptions jsonb;
+BEGIN
+ v_phone := public.customer_app_auth_phone();
+ if v_phone is null then raise exception 'not_authenticated'; end if;
+ SELECT * INTO v_customer FROM public.customers WHERE phone = v_phone ORDER BY created_at DESC LIMIT 1;
+ IF NOT FOUND THEN RAISE EXCEPTION 'customer_not_found'; END IF;
+
+ SELECT COALESCE(jsonb_agg(jsonb_build_object(
+   'id', s.id, 'status', s.status, 'start_date', s.start_date, 'end_date', s.end_date,
+   'bonus_days', COALESCE(s.bonus_days, 0),
+   'organization', jsonb_build_object(
+     'id', o.id, 'name_ar', o.name_ar, 'name_en', o.name_en, 'logo_url', o.logo_url,
+     'branch_qr_mode', x.qr_mode,
+     'branches', (
+       SELECT COALESCE(jsonb_agg(jsonb_build_object(
+         'id', cb.id, 'name_ar', cb.name_ar, 'name_en', cb.name_en,
+         'address_ar', cb.address_ar, 'address_en', cb.address_en,
+         'maps_url', cb.maps_url, 'phone', cb.phone) ORDER BY cb.name_ar), '[]'::jsonb)
+       FROM public.branches cb
+       WHERE cb.organization_id = s.organization_id AND cb.is_active = true
+         AND NOT EXISTS (SELECT 1 FROM public.plan_allowed_branches e
+                         WHERE e.plan_id = p.id AND e.branch_id = cb.id AND e.mode = 'exclude')
+         AND CASE
+           WHEN x.has_include THEN EXISTS (SELECT 1 FROM public.plan_allowed_branches i
+                         WHERE i.plan_id = p.id AND i.branch_id = cb.id AND i.mode = 'include')
+           WHEN x.qr_mode = 'single' THEN true
+           ELSE cb.id = s.branch_id
+         END
+     )),
+   'branch', jsonb_build_object('id', b.id, 'name_ar', b.name_ar, 'name_en', b.name_en, 'branch_code', b.branch_code),
+   'plan', jsonb_build_object('id', p.id, 'name_ar', p.name_ar, 'name_en', p.name_en, 'duration_days', p.duration_days, 'max_drinks_per_day', p.max_drinks_per_day, 'color', p.color)
+ ) ORDER BY s.end_date ASC), '[]'::jsonb)
+ INTO v_subscriptions
+ FROM public.subscriptions s
+ JOIN public.organizations o ON o.id = s.organization_id
+ JOIN public.branches b ON b.id = s.branch_id
+ JOIN public.plans p ON p.id = s.plan_id
+ CROSS JOIN LATERAL (
+   SELECT COALESCE((SELECT os.branch_qr_mode FROM public.organization_settings os WHERE os.organization_id = s.organization_id LIMIT 1), 'per_branch') AS qr_mode,
+          EXISTS (SELECT 1 FROM public.plan_allowed_branches pi WHERE pi.plan_id = p.id AND pi.mode = 'include') AS has_include
+ ) x
+ WHERE s.customer_id = v_customer.id AND s.status = 'active' AND s.end_date >= CURRENT_DATE;
+
+ RETURN jsonb_build_object('success', true, 'customer_id', v_customer.id, 'subscriptions', v_subscriptions);
+END;
+$function$;
+REVOKE ALL ON FUNCTION public.customer_app_subscriptions() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.customer_app_subscriptions() TO authenticated;
