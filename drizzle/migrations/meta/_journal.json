@@ -43,6 +43,13 @@
       "when": 1793542671477,
       "tag": "0005_member_branch_fallback",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793542686686,
+      "tag": "0006_has_role_cashier_only",
+      "breakpoints": true
     }
   ]
 }
