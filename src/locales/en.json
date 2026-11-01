@@ -1047,6 +1047,21 @@
       "couponNotAvailable": "The coupon is unavailable or has already been used.",
       "couponWrongBranch": "This coupon belongs to another branch.",
       "registrationProcessed": "This registration request has already been processed."
+    },
+    "selectPlanFirst": "Select a plan first",
+    "selectPaymentFirst": "Select a payment method first",
+    "requestedPlan": "Selected plan",
+    "duration": "Duration",
+    "price": "Price",
+    "selectPlan": "Select plan",
+    "paymentMethod": "Payment method",
+    "confirmPaymentActivate": "Confirm payment & activate",
+    "payment": {
+      "cash": "Cash",
+      "mada": "Mada",
+      "visa": "Visa",
+      "mastercard": "Mastercard",
+      "apple_pay": "Apple Pay"
     }
   },
   "home": {
