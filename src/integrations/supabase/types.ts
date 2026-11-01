@@ -1979,6 +1979,7 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          amount_paid: number | null
           bonus_days: number
           branch_id: string
           coupon_id: string
@@ -1987,11 +1988,13 @@ export type Database = {
           end_date: string
           id: string
           organization_id: string
+          payment_method: string | null
           plan_id: string
           start_date: string
           status: Database["public"]["Enums"]["subscription_status"]
         }
         Insert: {
+          amount_paid?: number | null
           bonus_days?: number
           branch_id: string
           coupon_id: string
@@ -2000,11 +2003,13 @@ export type Database = {
           end_date: string
           id?: string
           organization_id?: string
+          payment_method?: string | null
           plan_id: string
           start_date?: string
           status?: Database["public"]["Enums"]["subscription_status"]
         }
         Update: {
+          amount_paid?: number | null
           bonus_days?: number
           branch_id?: string
           coupon_id?: string
@@ -2013,6 +2018,7 @@ export type Database = {
           end_date?: string
           id?: string
           organization_id?: string
+          payment_method?: string | null
           plan_id?: string
           start_date?: string
           status?: Database["public"]["Enums"]["subscription_status"]
@@ -3070,6 +3076,15 @@ export type Database = {
         Args: { target_organization_id: string }
         Returns: boolean
       }
+      cashier_activate_plan: {
+        Args: {
+          _payment_method: string
+          _plan_id: string
+          _request_id: string
+          _start_date: string
+        }
+        Returns: string
+      }
       cashier_activate_registration: {
         Args: { _coupon_id: string; _request_id: string; _start_date: string }
         Returns: string
@@ -3208,6 +3223,15 @@ export type Database = {
       scan_resolve_qr: { Args: { _token: string }; Returns: Json }
       scan_session_is_valid: {
         Args: { _branch_id: string; _phone: string; _session_token: string }
+        Returns: boolean
+      }
+      scan_set_request_plan: {
+        Args: {
+          _phone: string
+          _plan_id: string
+          _request_id: string
+          _session_token: string
+        }
         Returns: boolean
       }
       scan_submit_order: {
