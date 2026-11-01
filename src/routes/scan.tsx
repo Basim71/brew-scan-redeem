@@ -456,6 +456,28 @@ function ScanPage() {
   }, [orderId]);
 
   async function loadBranches() {
+    const qrToken = new URL(window.location.href).searchParams.get("b");
+    if (qrToken) {
+      setError(null);
+      const { data, error: qrError } = await supabase.rpc(
+        "scan_resolve_qr" as never,
+        { _token: qrToken } as never,
+      );
+      const resolved = data as unknown as { found?: boolean; branches?: Branch[] } | null;
+      if (qrError || !resolved?.found) {
+        setBranches([]);
+        setError(lang === "ar" ? "رمز QR غير صالح." : "Invalid QR code.");
+        return;
+      }
+      const list = resolved.branches ?? [];
+      setBranches(list);
+      if (list.length === 1) setBranch(list[0]);
+      return;
+    }
+    return loadBranchesLegacy();
+  }
+
+  async function loadBranchesLegacy() {
     setError(null);
 
     const {

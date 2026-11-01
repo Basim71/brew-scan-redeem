@@ -278,7 +278,12 @@
       "copyLink": "نسخ الرابط",
       "map": "الخريطة",
       "deleteBranch": "حذف الفرع",
-      "deleteThisBranch": "تأكيد حذف الفرع؟"
+      "deleteThisBranch": "تأكيد حذف الفرع؟",
+      "unifiedQrTitle": "الرمز الموحّد لجميع الفروع",
+      "unifiedQrHint": "رمز واحد يفتح {count} فرع، والعميل يستخدم اشتراكه في أي فرع منها.",
+      "unifiedQrDownload": "تحميل الرمز",
+      "unifiedQrCopy": "نسخ الرابط",
+      "unifiedQrCopied": "تم النسخ"
     },
     "customerExperience": {
       "customerJourney": "رحلة العميل",

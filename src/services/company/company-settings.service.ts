@@ -180,6 +180,7 @@ export type OrganizationSettingsRow = {
 
   default_branch_id: string | null;
   branch_qr_mode: "per_branch" | "single";
+  unified_qr_token: string;
 
   integrations: Record<string, unknown>;
   updated_at: string;

@@ -278,7 +278,12 @@
       "copyLink": "Copy link",
       "map": "Map",
       "deleteBranch": "Delete branch",
-      "deleteThisBranch": "Delete this branch?"
+      "deleteThisBranch": "Delete this branch?",
+      "unifiedQrTitle": "Unified code for all branches",
+      "unifiedQrHint": "One code opens {count} branches, and customers can use one subscription at any of them.",
+      "unifiedQrDownload": "Download code",
+      "unifiedQrCopy": "Copy link",
+      "unifiedQrCopied": "Copied"
     },
     "customerExperience": {
       "customerJourney": "Customer journey",

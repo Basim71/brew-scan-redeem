@@ -1123,6 +1123,7 @@ export type Database = {
           thank_you_message_en: string | null
           timezone: string
           two_factor_required: boolean
+          unified_qr_token: string
           updated_at: string
           welcome_message_ar: string | null
           welcome_message_en: string | null
@@ -1221,6 +1222,7 @@ export type Database = {
           thank_you_message_en?: string | null
           timezone?: string
           two_factor_required?: boolean
+          unified_qr_token?: string
           updated_at?: string
           welcome_message_ar?: string | null
           welcome_message_en?: string | null
@@ -1319,6 +1321,7 @@ export type Database = {
           thank_you_message_en?: string | null
           timezone?: string
           two_factor_required?: boolean
+          unified_qr_token?: string
           updated_at?: string
           welcome_message_ar?: string | null
           welcome_message_en?: string | null
@@ -3053,6 +3056,10 @@ export type Database = {
       }
     }
     Functions: {
+      branch_shares_subscription: {
+        Args: { _sub_branch: string; _target_branch: string }
+        Returns: boolean
+      }
       can_access_org: { Args: { _org: string }; Returns: boolean }
       can_create_customer_success_case: {
         Args: { target_member_id: string; target_organization_id: string }
@@ -3198,6 +3205,7 @@ export type Database = {
         Args: { _branch_id: string; _device_token: string; _phone: string }
         Returns: Json
       }
+      scan_resolve_qr: { Args: { _token: string }; Returns: Json }
       scan_session_is_valid: {
         Args: { _branch_id: string; _phone: string; _session_token: string }
         Returns: boolean

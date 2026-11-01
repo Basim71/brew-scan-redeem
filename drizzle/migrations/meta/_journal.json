@@ -29,6 +29,13 @@
       "when": 1793475449615,
       "tag": "0003_drop_legacy_customer_app_functions",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793533882341,
+      "tag": "0004_unified_company_qr",
+      "breakpoints": true
     }
   ]
 }
