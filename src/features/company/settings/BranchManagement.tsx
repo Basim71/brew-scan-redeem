@@ -367,7 +367,8 @@ export function BranchManagementSection({ settings, organizationId, isAr, canEdi
                       key={key}
                       type="button"
                       className="kob-chip"
-                      data-on={on ? "true" : "false"}
+                      data-active={on || undefined}
+                      aria-pressed={on}
                       onClick={() =>
                         setDraft({
                           ...draft,
@@ -577,7 +578,8 @@ function BranchCard({
                       key={key}
                       type="button"
                       className="kob-chip"
-                      data-on={on ? "true" : "false"}
+                      data-active={on || undefined}
+                      aria-pressed={on}
                       disabled={disabled}
                       onClick={() =>
                         onPatch({
