@@ -825,20 +825,20 @@ export type Database = {
           customer_id: string
           customer_note: string | null
           drink_type_id: string
+          fulfillment_stage: string | null
+          handover_at: string | null
+          handover_declined_at: string | null
           id: string
           order_date: string
           organization_id: string
+          picked_up_at: string | null
+          placed_via: string | null
+          ready_at: string | null
           rejected_at: string | null
           requested_at: string
           selected_options: Json
           status: Database["public"]["Enums"]["order_status"]
           subscription_id: string
-          fulfillment_stage: string | null
-          handover_at: string | null
-          handover_declined_at: string | null
-          picked_up_at: string | null
-          placed_via: string | null
-          ready_at: string | null
         }
         Insert: {
           approved_at?: string | null
@@ -848,20 +848,20 @@ export type Database = {
           customer_id: string
           customer_note?: string | null
           drink_type_id: string
+          fulfillment_stage?: string | null
+          handover_at?: string | null
+          handover_declined_at?: string | null
           id?: string
           order_date?: string
           organization_id?: string
+          picked_up_at?: string | null
+          placed_via?: string | null
+          ready_at?: string | null
           rejected_at?: string | null
           requested_at?: string
           selected_options?: Json
           status?: Database["public"]["Enums"]["order_status"]
           subscription_id: string
-          fulfillment_stage?: string | null
-          handover_at?: string | null
-          handover_declined_at?: string | null
-          picked_up_at?: string | null
-          placed_via?: string | null
-          ready_at?: string | null
         }
         Update: {
           approved_at?: string | null
@@ -871,20 +871,20 @@ export type Database = {
           customer_id?: string
           customer_note?: string | null
           drink_type_id?: string
+          fulfillment_stage?: string | null
+          handover_at?: string | null
+          handover_declined_at?: string | null
           id?: string
           order_date?: string
           organization_id?: string
+          picked_up_at?: string | null
+          placed_via?: string | null
+          ready_at?: string | null
           rejected_at?: string | null
           requested_at?: string
           selected_options?: Json
           status?: Database["public"]["Enums"]["order_status"]
           subscription_id?: string
-          fulfillment_stage?: string | null
-          handover_at?: string | null
-          handover_declined_at?: string | null
-          picked_up_at?: string | null
-          placed_via?: string | null
-          ready_at?: string | null
         }
         Relationships: [
           {
@@ -3107,24 +3107,29 @@ export type Database = {
         Args: { _coupon_id: string; _request_id: string; _start_date: string }
         Returns: string
       }
-      cashier_set_order_stage: {
-        Args: { _order_id: string; _stage: string }
-        Returns: string
-      }
       cashier_reject_registration: {
         Args: { _request_id: string }
         Returns: boolean
+      }
+      cashier_set_order_stage: {
+        Args: { _order_id: string; _stage: string }
+        Returns: string
       }
       current_user_branch: { Args: never; Returns: string }
       current_user_organization_ids: { Args: never; Returns: string[] }
       customer_app_auth_phone: { Args: never; Returns: string }
       customer_app_branch_plans: { Args: { _branch_id: string }; Returns: Json }
+      customer_app_confirm_pickup: {
+        Args: { _order_id: string; _received: boolean }
+        Returns: string
+      }
       customer_app_me: { Args: never; Returns: Json }
       customer_app_order_menu: {
         Args: { _subscription_id: string }
         Returns: Json
       }
       customer_app_profile: { Args: never; Returns: Json }
+      customer_app_recent_orders: { Args: never; Returns: Json }
       customer_app_register: {
         Args: { _email: string; _first_name: string; _last_name: string }
         Returns: Json
@@ -3149,11 +3154,6 @@ export type Database = {
         }
         Returns: string
       }
-      customer_app_confirm_pickup: {
-        Args: { _order_id: string; _received: boolean }
-        Returns: string
-      }
-      customer_app_recent_orders: { Args: never; Returns: Json }
       customer_app_subscriptions: { Args: never; Returns: Json }
       default_organization_id: { Args: never; Returns: string }
       delete_branch_safe: {
