@@ -1062,7 +1062,22 @@
       "visa": "Visa",
       "mastercard": "Mastercard",
       "apple_pay": "Apple Pay"
-    }
+    },
+    "inProgressTitle": "Orders in progress",
+    "inProgressDescription": "Approved app orders, until the customer confirms pickup.",
+    "stage": {
+      "preparing": "Preparing",
+      "ready": "Ready for pickup",
+      "handover": "Waiting for customer"
+    },
+    "markReady": "Ready for pickup",
+    "handOver": "Hand over",
+    "cancelHandover": "Cancel handover",
+    "awaitingCustomerConfirm": "The customer was asked to confirm pickup on their phone. Hand the drink over once they confirm.",
+    "handoverDeclined": "The customer said they didn't get this order. Check who you're handing it to.",
+    "orderReady": "Order marked ready for pickup.",
+    "handoverSent": "Pickup confirmation sent to the customer.",
+    "orderPickedUp": "The customer confirmed pickup."
   },
   "home": {
     "tag": "Smart coffee subscriptions",

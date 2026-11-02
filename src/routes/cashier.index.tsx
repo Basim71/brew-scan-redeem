@@ -1,13 +1,16 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  BellRing,
   Check,
   Clock3,
   Coffee,
   Inbox,
   Phone,
   Search,
+  ShieldAlert,
   Tag,
+  Undo2,
   User,
   UserPlus,
   X,
@@ -42,10 +45,14 @@ export const Route = createFileRoute("/cashier/")({
 
 type QueueFilter = "all" | "orders" | "registrations";
 
+type FulfillmentStage = "preparing" | "ready" | "handover" | "picked_up";
+
 type OrderRow = {
   id: string;
   status: "pending" | "approved" | "rejected";
   created_at: string;
+  fulfillment_stage?: FulfillmentStage | null;
+  handover_declined_at?: string | null;
   order_date?: string | null;
   selected_options: Array<{
     group_name_en: string;
@@ -119,6 +126,7 @@ function CashierQueuePage() {
   const { t, fmtNum, fmtDate, timeAgo, lang } = useI18n();
 
   const [orders, setOrders] = useState<OrderRow[]>([]);
+  const [inProgressOrders, setInProgressOrders] = useState<OrderRow[]>([]);
   const [registrations, setRegistrations] = useState<RegistrationRequest[]>([]);
   const [coupons, setCoupons] = useState<CouponRow[]>([]);
   const [plans, setPlans] = useState<PlanRow[]>([]);
@@ -147,7 +155,13 @@ function CashierQueuePage() {
     setLoading(true);
     setError(null);
 
-    const [ordersResult, registrationsResult, couponsResult, plansResult] = await Promise.all([
+    const orderColumns = `id, status, created_at, order_date, selected_options, customer_note,
+           fulfillment_stage, handover_declined_at,
+           drink:drink_types(name_en, name_ar),
+           customer:customers(name, phone),
+           subscription:subscriptions(id, end_date, plan:plans(name, duration_days))`;
+
+    const [ordersResult, registrationsResult, couponsResult, plansResult, inProgressResult] = await Promise.all([
       supabase
         .from("orders")
         .select(
@@ -174,13 +188,28 @@ function CashierQueuePage() {
         .or(`branch_id.eq.${branchId},branch_id.is.null`)
         .order("created_at", { ascending: false }),
       supabase.from("plans").select("id, name, name_ar, name_en, duration_days, price, currency, max_drinks_per_day").order("name"),
+      // App orders after approval, until the customer confirms pickup.
+      supabase
+        .from("orders")
+        .select(orderColumns)
+        .eq("branch_id", branchId)
+        .eq("status", "approved")
+        .in("fulfillment_stage", ["preparing", "ready", "handover"])
+        .gte("created_at", new Date(Date.now() - 18 * 60 * 60 * 1000).toISOString())
+        .order("created_at", { ascending: true })
+        .limit(100),
     ]);
 
     const firstError =
-      ordersResult.error ?? registrationsResult.error ?? couponsResult.error ?? plansResult.error;
+      ordersResult.error ??
+      registrationsResult.error ??
+      couponsResult.error ??
+      plansResult.error ??
+      inProgressResult.error;
     if (firstError) setError(firstError.message);
 
     setOrders((ordersResult.data ?? []) as unknown as OrderRow[]);
+    setInProgressOrders((inProgressResult.data ?? []) as unknown as OrderRow[]);
     setRegistrations((registrationsResult.data ?? []) as RegistrationRequest[]);
     setCoupons((couponsResult.data ?? []) as CouponRow[]);
     setPlans((plansResult.data ?? []) as PlanRow[]);
@@ -250,6 +279,44 @@ function CashierQueuePage() {
 
     setSuccess(t(status === "approved" ? "cashier.orderApproved" : "cashier.orderRejected"));
     setOrders((current) => current.filter((order) => order.id !== orderId));
+  }
+
+  async function setOrderStage(orderId: string, stage: "ready" | "handover") {
+    setBusyId(orderId);
+    setError(null);
+    setSuccess(null);
+
+    const { error: rpcError } = await supabase.rpc("cashier_set_order_stage", {
+      _order_id: orderId,
+      _stage: stage,
+    });
+
+    setBusyId(null);
+
+    if (rpcError) {
+      setError(rpcError.message);
+      await loadQueue();
+      return;
+    }
+
+    setSuccess(t(stage === "handover" ? "cashier.handoverSent" : "cashier.orderReady"));
+    await loadQueue();
+  }
+
+  async function cancelHandover(orderId: string) {
+    setBusyId(orderId);
+    setError(null);
+    setSuccess(null);
+
+    const { error: rpcError } = await supabase.rpc("cashier_set_order_stage", {
+      _order_id: orderId,
+      _stage: "ready",
+    });
+
+    setBusyId(null);
+
+    if (rpcError) setError(rpcError.message);
+    await loadQueue();
   }
 
   async function activateRegistration(request: RegistrationRequest) {
@@ -556,6 +623,39 @@ function CashierQueuePage() {
           )}
         </CardBody>
       </Card>
+
+      {inProgressOrders.length ? (
+        <Card tone="raised">
+          <CardHeader
+            title={t("cashier.inProgressTitle")}
+            description={t("cashier.inProgressDescription")}
+            icon={<Coffee className="h-4 w-4" />}
+          />
+          <CardBody>
+            <div className="kob-queue-grid">
+              {inProgressOrders.map((order) => (
+                <InProgressOrderCard
+                  key={`progress-${order.id}`}
+                  order={order}
+                  busy={busyId === order.id}
+                  isAr={lang === "ar"}
+                  t={t}
+                  timeLabel={timeAgo(order.created_at)}
+                  onReady={() => {
+                    void setOrderStage(order.id, "ready");
+                  }}
+                  onHandover={() => {
+                    void setOrderStage(order.id, "handover");
+                  }}
+                  onCancelHandover={() => {
+                    void cancelHandover(order.id);
+                  }}
+                />
+              ))}
+            </div>
+          </CardBody>
+        </Card>
+      ) : null}
     </div>
   );
 }
@@ -657,6 +757,124 @@ function CoffeeOrderCard({
           >
             {t("cashier.approveOrder")}
           </Button>
+        </div>
+      </CardBody>
+    </Card>
+  );
+}
+
+function InProgressOrderCard({
+  order,
+  busy,
+  isAr,
+  t,
+  timeLabel,
+  onReady,
+  onHandover,
+  onCancelHandover,
+}: {
+  order: OrderRow;
+  busy: boolean;
+  isAr: boolean;
+  t: Translate;
+  timeLabel: string;
+  onReady: () => void;
+  onHandover: () => void;
+  onCancelHandover: () => void;
+}) {
+  const drinkName = isAr ? order.drink?.name_ar : order.drink?.name_en;
+  const stage = order.fulfillment_stage ?? "preparing";
+
+  return (
+    <Card tone="raised" className="kob-queue-card" data-kind="order">
+      <CardBody>
+        <div className="kob-queue-card-top">
+          <Badge tone={stage === "preparing" ? "gold" : stage === "ready" ? "success" : "info"}>
+            <Coffee className="h-3.5 w-3.5" /> {t(`cashier.stage.${stage}`)}
+          </Badge>
+          <span className="kob-queue-time">{timeLabel}</span>
+        </div>
+
+        <div className="kob-queue-headline">
+          <span className="kob-queue-headline-icon" aria-hidden>
+            <Coffee className="h-7 w-7" />
+          </span>
+          <div className="kob-min-w-0">
+            <span className="kob-queue-headline-label">{t("cashier.drink")}</span>
+            <h3 className="kob-queue-headline-value">{drinkName ?? "—"}</h3>
+          </div>
+        </div>
+
+        <div className="kob-queue-details">
+          <DetailRow
+            icon={<User className="h-4 w-4" />}
+            label={t("cashier.customer")}
+            value={order.customer?.name || "—"}
+          />
+          <DetailRow
+            icon={<Phone className="h-4 w-4" />}
+            label={t("cashier.phone")}
+            value={order.customer?.phone || "—"}
+            mono
+          />
+        </div>
+
+        {order.selected_options?.length ? (
+          <div className="kob-queue-extras">
+            <div>
+              <span className="kob-queue-extras-title">{t("cashier.options")}</span>
+              <ul>
+                {order.selected_options.map((option, index) => (
+                  <li key={`${option.option_name_en}-${index}`}>
+                    <b>{isAr ? option.group_name_ar : option.group_name_en}:</b>{" "}
+                    {isAr ? option.option_name_ar : option.option_name_en}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        ) : null}
+
+        {stage === "ready" && order.handover_declined_at ? (
+          <Alert tone="warning">
+            <ShieldAlert className="h-4 w-4" /> {t("cashier.handoverDeclined")}
+          </Alert>
+        ) : null}
+
+        {stage === "handover" ? <Alert tone="info">{t("cashier.awaitingCustomerConfirm")}</Alert> : null}
+
+        <div className="kob-queue-actions">
+          {stage === "preparing" ? (
+            <Button
+              size="lg"
+              loading={busy}
+              disabled={busy}
+              onClick={onReady}
+              leadingIcon={!busy ? <Check className="h-5 w-5" /> : undefined}
+            >
+              {t("cashier.markReady")}
+            </Button>
+          ) : stage === "ready" ? (
+            <Button
+              size="lg"
+              loading={busy}
+              disabled={busy}
+              onClick={onHandover}
+              leadingIcon={!busy ? <BellRing className="h-5 w-5" /> : undefined}
+            >
+              {t("cashier.handOver")}
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              loading={busy}
+              disabled={busy}
+              onClick={onCancelHandover}
+              leadingIcon={!busy ? <Undo2 className="h-4 w-4" /> : undefined}
+            >
+              {t("cashier.cancelHandover")}
+            </Button>
+          )}
         </div>
       </CardBody>
     </Card>
