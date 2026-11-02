@@ -120,6 +120,13 @@
       "when": 1793630508380,
       "tag": "0016_daily_limit_per_plan",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1793633387210,
+      "tag": "0017_customer_app_subscriptions_used_today",
+      "breakpoints": true
     }
   ]
 }
