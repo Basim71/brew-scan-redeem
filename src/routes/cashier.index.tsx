@@ -255,6 +255,13 @@ function CashierQueuePage() {
     return merged;
   }, [filter, pendingOrders, pendingRegistrations]);
 
+  // Tells the customer's phone about the change. Fire and forget:
+  // the order already moved, a failed notification shouldn't show
+  // the cashier an error.
+  function notifyCustomer(orderId: string) {
+    void supabase.functions.invoke("order-push", { body: { order_id: orderId } }).catch(() => undefined);
+  }
+
   async function decideOrder(orderId: string, status: "approved" | "rejected") {
     setBusyId(orderId);
     setError(null);
@@ -273,10 +280,13 @@ function CashierQueuePage() {
     setBusyId(null);
 
     if (updateError) {
-      setError(updateError.message);
+      setError(
+        updateError.message.includes("daily_limit_reached") ? t("cashier.dailyLimitReached") : updateError.message,
+      );
       return;
     }
 
+    notifyCustomer(orderId);
     setSuccess(t(status === "approved" ? "cashier.orderApproved" : "cashier.orderRejected"));
     setOrders((current) => current.filter((order) => order.id !== orderId));
   }
@@ -299,6 +309,7 @@ function CashierQueuePage() {
       return;
     }
 
+    notifyCustomer(orderId);
     setSuccess(t(stage === "handover" ? "cashier.handoverSent" : "cashier.orderReady"));
     await loadQueue();
   }

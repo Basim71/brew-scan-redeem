@@ -1039,6 +1039,7 @@
     "activateSubscription": "Activate subscription",
     "orderApproved": "Order approved. Today has been marked as used.",
     "orderRejected": "Order rejected.",
+    "dailyLimitReached": "This customer has used all of today's cups on their plan.",
     "registrationActivated": "Subscription activated successfully.",
     "registrationRejected": "Registration request rejected.",
     "selectCouponFirst": "Select a coupon before activating the subscription.",

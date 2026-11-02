@@ -1039,6 +1039,7 @@
     "activateSubscription": "تفعيل الاشتراك",
     "orderApproved": "تم اعتماد الطلب واحتساب يوم اليوم.",
     "orderRejected": "تم رفض الطلب.",
+    "dailyLimitReached": "العميل استهلك كل أكواب اليوم في باقته.",
     "registrationActivated": "تم تفعيل الاشتراك بنجاح.",
     "registrationRejected": "تم رفض طلب التسجيل.",
     "selectCouponFirst": "اختر كوبونًا قبل تفعيل الاشتراك.",
