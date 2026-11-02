@@ -825,9 +825,15 @@ export type Database = {
           customer_id: string
           customer_note: string | null
           drink_type_id: string
+          fulfillment_stage: string | null
+          handover_at: string | null
+          handover_declined_at: string | null
           id: string
           order_date: string
           organization_id: string
+          picked_up_at: string | null
+          placed_via: string | null
+          ready_at: string | null
           rejected_at: string | null
           requested_at: string
           selected_options: Json
@@ -842,9 +848,15 @@ export type Database = {
           customer_id: string
           customer_note?: string | null
           drink_type_id: string
+          fulfillment_stage?: string | null
+          handover_at?: string | null
+          handover_declined_at?: string | null
           id?: string
           order_date?: string
           organization_id?: string
+          picked_up_at?: string | null
+          placed_via?: string | null
+          ready_at?: string | null
           rejected_at?: string | null
           requested_at?: string
           selected_options?: Json
@@ -859,9 +871,15 @@ export type Database = {
           customer_id?: string
           customer_note?: string | null
           drink_type_id?: string
+          fulfillment_stage?: string | null
+          handover_at?: string | null
+          handover_declined_at?: string | null
           id?: string
           order_date?: string
           organization_id?: string
+          picked_up_at?: string | null
+          placed_via?: string | null
+          ready_at?: string | null
           rejected_at?: string | null
           requested_at?: string
           selected_options?: Json
@@ -3093,16 +3111,25 @@ export type Database = {
         Args: { _request_id: string }
         Returns: boolean
       }
+      cashier_set_order_stage: {
+        Args: { _order_id: string; _stage: string }
+        Returns: string
+      }
       current_user_branch: { Args: never; Returns: string }
       current_user_organization_ids: { Args: never; Returns: string[] }
       customer_app_auth_phone: { Args: never; Returns: string }
       customer_app_branch_plans: { Args: { _branch_id: string }; Returns: Json }
+      customer_app_confirm_pickup: {
+        Args: { _order_id: string; _received: boolean }
+        Returns: string
+      }
       customer_app_me: { Args: never; Returns: Json }
       customer_app_order_menu: {
         Args: { _subscription_id: string }
         Returns: Json
       }
       customer_app_profile: { Args: never; Returns: Json }
+      customer_app_recent_orders: { Args: never; Returns: Json }
       customer_app_register: {
         Args: { _email: string; _first_name: string; _last_name: string }
         Returns: Json
