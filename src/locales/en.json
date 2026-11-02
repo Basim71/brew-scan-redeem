@@ -1006,7 +1006,7 @@
     "lookupTitle": "Customer lookup",
     "lookupDescription": "Search a customer by mobile number to review their subscription.",
     "customerPhone": "Mobile number",
-    "invalidPhone": "Enter a valid number starting with 05.",
+    "invalidPhone": "Enter a valid Saudi mobile number, like 05XXXXXXXX or +9665XXXXXXXX.",
     "noSubscriptionFound": "No active subscription found for this number at your branch.",
     "pendingRequests": "Pending requests",
     "requestsCount": "{count} request(s) in the queue",

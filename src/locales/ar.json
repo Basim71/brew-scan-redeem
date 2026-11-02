@@ -1006,7 +1006,7 @@
     "lookupTitle": "البحث عن عميل",
     "lookupDescription": "ابحث عن العميل برقم الجوال لمراجعة اشتراكه.",
     "customerPhone": "رقم الجوال",
-    "invalidPhone": "أدخل رقمًا صحيحًا يبدأ بـ 05.",
+    "invalidPhone": "أدخل رقم جوال سعودي صحيح، مثل 05XXXXXXXX أو +9665XXXXXXXX.",
     "noSubscriptionFound": "لا يوجد اشتراك نشط لهذا الرقم في فرعك.",
     "pendingRequests": "الطلبات المعلّقة",
     "requestsCount": "{count} طلب في القائمة",

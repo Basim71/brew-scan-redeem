@@ -124,8 +124,15 @@
     {
       "idx": 17,
       "version": "7",
+      "when": 1793631951804,
+      "tag": "0017_apply_pending_0015_0016",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
       "when": 1793633387210,
-      "tag": "0017_customer_app_subscriptions_used_today",
+      "tag": "0018_customer_app_subscriptions_used_today",
       "breakpoints": true
     }
   ]

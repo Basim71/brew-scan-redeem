@@ -306,6 +306,33 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_push_tokens: {
+        Row: {
+          created_at: string
+          environment: string
+          language: string
+          phone: string
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          environment?: string
+          language?: string
+          phone: string
+          token: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          environment?: string
+          language?: string
+          phone?: string
+          token?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       customer_scan_sessions: {
         Row: {
           branch_id: string | null
@@ -815,6 +842,38 @@ export type Database = {
           views?: number
         }
         Relationships: []
+      }
+      order_push_outbox: {
+        Row: {
+          created_at: string
+          event: string
+          id: number
+          order_id: string
+          sent_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          event: string
+          id?: never
+          order_id: string
+          sent_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          event?: string
+          id?: never
+          order_id?: string
+          sent_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_push_outbox_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       orders: {
         Row: {
@@ -3134,6 +3193,10 @@ export type Database = {
         Args: { _email: string; _first_name: string; _last_name: string }
         Returns: Json
       }
+      customer_app_register_push_token: {
+        Args: { _environment: string; _language: string; _token: string }
+        Returns: undefined
+      }
       customer_app_request_subscription: {
         Args: {
           _branch_id: string
@@ -3155,6 +3218,10 @@ export type Database = {
         Returns: string
       }
       customer_app_subscriptions: { Args: never; Returns: Json }
+      customer_app_unregister_push_token: {
+        Args: { _token: string }
+        Returns: undefined
+      }
       default_organization_id: { Args: never; Returns: string }
       delete_branch_safe: {
         Args: { _branch_id: string; _force?: boolean }
@@ -3217,6 +3284,8 @@ export type Database = {
       }
       next_customer_success_case_number: { Args: never; Returns: string }
       next_ticket_number: { Args: never; Returns: string }
+      order_push_claim: { Args: { _order_id: string }; Returns: Json }
+      order_push_drop_token: { Args: { _token: string }; Returns: undefined }
       platform_organization_id: { Args: never; Returns: string }
       resolve_login_organization: {
         Args: { login_identifier: string }

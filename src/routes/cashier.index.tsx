@@ -112,9 +112,8 @@ type LookupResult = {
   found?: boolean;
   customer?: { name?: string | null; phone?: string | null } | null;
   subscription?: {
-    plan_name?: string | null;
+    plan?: { name?: string | null } | null;
     end_date?: string | null;
-    remaining_days?: number | null;
     status?: string | null;
   } | null;
   used_today?: number | null;
@@ -391,9 +390,9 @@ function CashierQueuePage() {
 
   async function lookupCustomer() {
     if (!branchId) return;
-    const phone = searchPhone.trim();
+    const local = localSaudiPhone(searchPhone);
 
-    if (!/^05\d{8}$/.test(phone)) {
+    if (!local) {
       setSearchError(t("cashier.invalidPhone"));
       setSearchResult(null);
       return;
@@ -403,19 +402,26 @@ function CashierQueuePage() {
     setSearchError(null);
     setSearchResult(null);
 
-    const { data, error: lookupError } = await supabase.rpc("scan_lookup", {
-      _phone: phone,
-      _branch_id: branchId,
-    });
+    // Customers who signed up on the site are stored as 05XXXXXXXX,
+    // app customers as +9665XXXXXXXX: try each until one matches.
+    let payload: LookupResult | null = null;
+    for (const phone of [local, `+966${local.slice(1)}`, `966${local.slice(1)}`]) {
+      const { data, error: lookupError } = await supabase.rpc("scan_lookup", {
+        _phone: phone,
+        _branch_id: branchId,
+      });
 
-    setSearchBusy(false);
+      if (lookupError) {
+        setSearchBusy(false);
+        setSearchError(lookupError.message);
+        return;
+      }
 
-    if (lookupError) {
-      setSearchError(lookupError.message);
-      return;
+      payload = (data ?? null) as LookupResult | null;
+      if (payload?.found) break;
     }
 
-    const payload = (data ?? null) as LookupResult | null;
+    setSearchBusy(false);
 
     if (!payload?.found || !payload.subscription) {
       setSearchError(t("cashier.noSubscriptionFound"));
@@ -518,14 +524,14 @@ function CashierQueuePage() {
               <DetailRow
                 icon={<Tag className="h-4 w-4" />}
                 label={t("cashier.plan")}
-                value={searchResult.subscription.plan_name || "—"}
+                value={searchResult.subscription.plan?.name || "—"}
               />
               <DetailRow
                 icon={<Clock3 className="h-4 w-4" />}
                 label={t("cashier.remainingDays")}
                 value={
-                  searchResult.subscription.remaining_days != null
-                    ? fmtNum(searchResult.subscription.remaining_days)
+                  searchResult.subscription.end_date
+                    ? fmtNum(daysUntil(searchResult.subscription.end_date))
                     : "—"
                 }
               />
@@ -1061,6 +1067,22 @@ function DetailRow({
       </div>
     </div>
   );
+}
+
+/** 05XXXXXXXX from 05…, 5…, 966…, +966… or 00966…; null if it isn't a Saudi mobile. */
+function localSaudiPhone(raw: string) {
+  let digits = raw.replace(/\D/g, "");
+  if (digits.startsWith("00966")) digits = digits.slice(5);
+  else if (digits.startsWith("966")) digits = digits.slice(3);
+  if (digits.startsWith("5")) digits = `0${digits}`;
+  return /^05\d{8}$/.test(digits) ? digits : null;
+}
+
+/** Days from today to a "yyyy-MM-dd" end date, the end day included. */
+function daysUntil(endDate: string) {
+  const today = Date.parse(`${todayLocalISO()}T00:00:00Z`);
+  const end = Date.parse(`${endDate.slice(0, 10)}T00:00:00Z`);
+  return Number.isNaN(end) ? 0 : Math.max(Math.round((end - today) / 86_400_000) + 1, 0);
 }
 
 function todayLocalISO() {

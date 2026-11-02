@@ -90,14 +90,20 @@ export function PhoneInput({
           dir="ltr"
           inputMode="numeric"
           autoComplete="tel"
-          maxLength={10}
+          // 05XXXXXXXX, or with the country code (+9665XXXXXXXX).
+          maxLength={15}
           placeholder="05XXXXXXXX"
           aria-describedby={describedBy}
           aria-invalid={invalid || undefined}
           className="kob-input kob-input-numeric"
           value={value}
           required={required}
-          onChange={(e) => onValueChange(e.target.value.replace(/\D/g, "").slice(0, 10))}
+          onChange={(e) => {
+            // Arabic-Indic digits from an Arabic keyboard count too.
+            const raw = e.target.value.replace(/[\u0660-\u0669]/g, (d) => String(d.charCodeAt(0) - 0x0660));
+            const digits = raw.replace(/\D/g, "").slice(0, 14);
+            onValueChange(raw.trimStart().startsWith("+") ? `+${digits}` : digits);
+          }}
           {...rest}
         />
       )}
