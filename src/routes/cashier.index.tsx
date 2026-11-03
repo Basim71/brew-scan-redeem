@@ -219,11 +219,30 @@ function CashierQueuePage() {
     void loadQueue();
   }, [loadQueue]);
 
+  // Live: a new order, or the customer confirming pickup, shows at
+  // once. Bursts (one approval touches a row twice) reload once.
+  useEffect(() => {
+    if (!branchId) return;
+    let timer: number | undefined;
+    const channel = supabase
+      .channel(`cashier-orders-${branchId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders", filter: `branch_id=eq.${branchId}` }, () => {
+        window.clearTimeout(timer);
+        timer = window.setTimeout(() => void loadQueue(), 250);
+      })
+      .subscribe();
+    return () => {
+      window.clearTimeout(timer);
+      void supabase.removeChannel(channel);
+    };
+  }, [branchId, loadQueue]);
+
+  // Fallback in case the live connection drops.
   useEffect(() => {
     if (!branchId) return;
     const intervalId = window.setInterval(() => {
       void loadQueue();
-    }, 5000);
+    }, 15000);
     return () => window.clearInterval(intervalId);
   }, [branchId, loadQueue]);
 
