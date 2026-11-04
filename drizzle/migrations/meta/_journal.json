@@ -141,6 +141,13 @@
       "when": 1793776440331,
       "tag": "0019_scan_parity_with_app",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1793776457441,
+      "tag": "0020_scan_confirm_pickup_timestamps",
+      "breakpoints": true
     }
   ]
 }
