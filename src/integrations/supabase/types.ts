@@ -3299,15 +3299,22 @@ export type Database = {
         }[]
       }
       scan_branding: { Args: { _branch_id?: string }; Returns: Json }
+      scan_confirm_pickup: {
+        Args: { _order_id: string; _received: boolean }
+        Returns: string
+      }
       scan_device_state: {
         Args: { _branch_id: string; _device_token: string }
         Returns: Json
       }
+      scan_find_customer: { Args: { _phone: string }; Returns: string }
       scan_lookup: {
         Args: { _branch_id: string; _phone: string; _session_token?: string }
         Returns: Json
       }
+      scan_order_progress: { Args: { _order_id: string }; Returns: Json }
       scan_order_status: { Args: { _order_id: string }; Returns: string }
+      scan_phone_key: { Args: { _phone: string }; Returns: string }
       scan_promotions: { Args: { _branch_id?: string }; Returns: Json }
       scan_register_request: {
         Args: {
