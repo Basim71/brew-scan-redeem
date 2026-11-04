@@ -16025,3 +16025,14 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
   box-shadow: 0 0 14px hsl(38 70% 55% / 0.35), inset 0 1px 0 hsl(45 80% 80% / 0.5);
 }
 .kob-pay-option:disabled { opacity: 0.5; }
+
+/* Scan: today's cups + live order stages */
+.kob-mcard-today { display:flex; align-items:center; justify-content:space-between; gap:.75rem; margin-top:.5rem; }
+.kob-mcard-cups { display:inline-flex; align-items:center; gap:.3rem; color: var(--kob-gold, var(--primary)); }
+.kob-mcard-cups svg[data-used="true"] { opacity:.3; }
+.kob-mcard-cups small { margin-inline-start:.4rem; font-size:.75rem; opacity:.8; }
+.kob-scan-stages { display:flex; gap:.5rem; justify-content:center; margin:1.25rem 0 .5rem; padding:0; list-style:none; }
+.kob-scan-stages li { display:flex; flex-direction:column; align-items:center; gap:.35rem; flex:1; font-size:.8rem; opacity:.45; }
+.kob-scan-stages li span { width:2rem; height:2rem; border-radius:999px; display:grid; place-items:center; border:1px solid currentColor; font-weight:700; }
+.kob-scan-stages li[data-state="done"], .kob-scan-stages li[data-state="active"] { opacity:1; color: var(--kob-gold, var(--primary)); }
+.kob-scan-stages li[data-state="active"] span { box-shadow: 0 0 18px color-mix(in oklab, currentColor 45%, transparent); }
