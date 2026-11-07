@@ -204,17 +204,13 @@ export function OfflinePanel({ branchId }: { branchId: string }) {
               {drinks.length === 0 ? (
                 <Alert tone="warning">{t("cashier.offline.noDrinks")}</Alert>
               ) : (
-                <Field label={t("cashier.offline.drink")}>
-                  {(fp) => (
-                  <Select id={fp.id} value={drinkId} onChange={(e) => setDrinkId(e.target.value)}>
+                <Select label={t("cashier.offline.drink")} value={drinkId} onChange={(e) => setDrinkId(e.target.value)}>
                     {drinks.map((d) => (
                       <option key={d.id} value={d.id}>
                         {lang === "ar" ? d.name_ar : d.name_en}
                       </option>
                     ))}
                   </Select>
-                  )}
-                </Field>
               )}
               <div className="flex gap-2">
                 <Button onClick={serve} disabled={!drinkId}>{t("cashier.offline.serve")}</Button>
