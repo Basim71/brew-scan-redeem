@@ -37,6 +37,7 @@ import {
   StatGrid,
   Tabs,
 } from "@/components/kob";
+import { OfflinePanel } from "@/features/cashier/OfflinePanel";
 
 
 export const Route = createFileRoute("/cashier/")({
@@ -457,6 +458,7 @@ function CashierQueuePage() {
 
   return (
     <div className="kob-queue-page">
+      {branchId && <OfflinePanel branchId={branchId} />}
 
 
       <StatGrid>
