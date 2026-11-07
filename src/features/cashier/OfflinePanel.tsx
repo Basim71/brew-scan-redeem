@@ -175,8 +175,10 @@ export function OfflinePanel({ branchId }: { branchId: string }) {
 
           {!token ? (
             <Field label={t("cashier.offline.scanLabel")} hint={t("cashier.offline.scanHint")}>
+              {(fp) => (
               <div className="flex gap-2">
                 <input
+                  id={fp.id}
                   className="kob-input flex-1"
                   value={raw}
                   onChange={(e) => setRaw(e.target.value)}
@@ -188,6 +190,7 @@ export function OfflinePanel({ branchId }: { branchId: string }) {
                   {t("cashier.offline.read")}
                 </Button>
               </div>
+              )}
             </Field>
           ) : (
             <div className="grid gap-3">
@@ -202,13 +205,15 @@ export function OfflinePanel({ branchId }: { branchId: string }) {
                 <Alert tone="warning">{t("cashier.offline.noDrinks")}</Alert>
               ) : (
                 <Field label={t("cashier.offline.drink")}>
-                  <Select value={drinkId} onChange={(e) => setDrinkId(e.target.value)}>
+                  {(fp) => (
+                  <Select id={fp.id} value={drinkId} onChange={(e) => setDrinkId(e.target.value)}>
                     {drinks.map((d) => (
                       <option key={d.id} value={d.id}>
                         {lang === "ar" ? d.name_ar : d.name_en}
                       </option>
                     ))}
                   </Select>
+                  )}
                 </Field>
               )}
               <div className="flex gap-2">
