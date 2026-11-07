@@ -148,6 +148,13 @@
       "when": 1793776457441,
       "tag": "0020_scan_confirm_pickup_timestamps",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1794069005198,
+      "tag": "0021_offline_order_sync",
+      "breakpoints": true
     }
   ]
 }

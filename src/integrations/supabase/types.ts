@@ -888,6 +888,9 @@ export type Database = {
           handover_at: string | null
           handover_declined_at: string | null
           id: string
+          is_offline_order: boolean
+          offline_served_at: string | null
+          offline_sync_id: string | null
           order_date: string
           organization_id: string
           picked_up_at: string | null
@@ -911,6 +914,9 @@ export type Database = {
           handover_at?: string | null
           handover_declined_at?: string | null
           id?: string
+          is_offline_order?: boolean
+          offline_served_at?: string | null
+          offline_sync_id?: string | null
           order_date?: string
           organization_id?: string
           picked_up_at?: string | null
@@ -934,6 +940,9 @@ export type Database = {
           handover_at?: string | null
           handover_declined_at?: string | null
           id?: string
+          is_offline_order?: boolean
+          offline_served_at?: string | null
+          offline_sync_id?: string | null
           order_date?: string
           organization_id?: string
           picked_up_at?: string | null
@@ -3174,6 +3183,7 @@ export type Database = {
         Args: { _order_id: string; _stage: string }
         Returns: string
       }
+      cashier_sync_offline_orders: { Args: { _orders: Json }; Returns: Json }
       current_user_branch: { Args: never; Returns: string }
       current_user_organization_ids: { Args: never; Returns: string[] }
       customer_app_auth_phone: { Args: never; Returns: string }
