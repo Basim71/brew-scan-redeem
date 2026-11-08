@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { registerAppServiceWorker } from "../lib/register-sw";
 import { LanguageProvider } from "../lib/i18n";
 import { Toaster } from "sonner";
 import { OrganizationProvider } from "@/providers/OrganizationProvider";
@@ -84,6 +85,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "KOB — Premium Coffee Subscription Coupons" },
       { name: "description", content: "KOB is a premium coffee subscription and coupon system for specialty coffee shops. Scan, sip, repeat." },
       { name: "author", content: "KOB" },
+      { name: "theme-color", content: "#1a0f0a" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
       { property: "og:title", content: "KOB — Premium Coffee Subscription Coupons" },
       { property: "og:description", content: "KOB is a premium coffee subscription and coupon system for specialty coffee shops. Scan, sip, repeat." },
       { property: "og:type", content: "website" },
@@ -98,6 +101,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/icon-192.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
@@ -128,6 +133,9 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useEffect(() => {
+    registerAppServiceWorker();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
