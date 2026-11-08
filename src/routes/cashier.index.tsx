@@ -152,9 +152,15 @@ function CashierQueuePage() {
       return;
     }
 
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
+    try {
     const orderColumns = `id, status, created_at, order_date, selected_options, customer_note,
            fulfillment_stage, handover_declined_at,
            drink:drink_types(name_en, name_ar),
@@ -206,14 +212,22 @@ function CashierQueuePage() {
       couponsResult.error ??
       plansResult.error ??
       inProgressResult.error;
-    if (firstError) setError(firstError.message);
+    if (firstError) {
+      // Keep the last good data on screen when a refresh fails.
+      if (!/load failed|failed to fetch|network/i.test(firstError.message)) setError(firstError.message);
+      return;
+    }
 
     setOrders((ordersResult.data ?? []) as unknown as OrderRow[]);
     setInProgressOrders((inProgressResult.data ?? []) as unknown as OrderRow[]);
     setRegistrations((registrationsResult.data ?? []) as RegistrationRequest[]);
     setCoupons((couponsResult.data ?? []) as CouponRow[]);
     setPlans((plansResult.data ?? []) as PlanRow[]);
-    setLoading(false);
+    } catch {
+      // Network dropped mid-request: stay on the current screen silently.
+    } finally {
+      setLoading(false);
+    }
   }, [branchId]);
 
   useEffect(() => {
@@ -223,9 +237,14 @@ function CashierQueuePage() {
   useEffect(() => {
     if (!branchId) return;
     const intervalId = window.setInterval(() => {
-      void loadQueue();
+      if (navigator.onLine) void loadQueue().catch(() => undefined);
     }, 5000);
-    return () => window.clearInterval(intervalId);
+    const onOnline = () => void loadQueue().catch(() => undefined);
+    window.addEventListener("online", onOnline);
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener("online", onOnline);
+    };
   }, [branchId, loadQueue]);
 
   const pendingOrders = useMemo(() => orders.filter((o) => o.status === "pending"), [orders]);
