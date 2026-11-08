@@ -28,6 +28,7 @@ export function OfflinePanel({ branchId }: { branchId: string }) {
   const [queue, setQueue] = useState<QueuedOrder[]>([]);
   const [drinks, setDrinks] = useState<Drink[]>([]);
   const [raw, setRaw] = useState("");
+  const [cameraOpen, setCameraOpen] = useState(false);
   const [token, setToken] = useState<CustomerToken | null>(null);
   const [drinkId, setDrinkId] = useState("");
   const [error, setError] = useState<string | null>(null);
