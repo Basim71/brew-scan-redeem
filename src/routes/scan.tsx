@@ -126,7 +126,11 @@ type LookupPayload = {
   customer?: Customer | null;
   subscription?: Subscription | null;
   used_today?: number;
+  max_drinks_per_day?: number;
+  active_order?: { id: string; status: OrderStatus; stage: FulfillmentStage } | null;
 };
+
+type FulfillmentStage = "preparing" | "ready" | "handover" | "picked_up" | null;
 
 type OrderStatus =
   | "pending"
@@ -208,6 +212,12 @@ function ScanPage() {
 
   const [usedToday, setUsedToday] =
     useState(0);
+
+  const [maxPerDay, setMaxPerDay] =
+    useState(1);
+
+  const [stage, setStage] =
+    useState<FulfillmentStage>(null);
 
   const [deviceToken, setDeviceToken] =
     useState("");
@@ -373,7 +383,7 @@ function ScanPage() {
     Boolean(subscription) &&
     subscription?.status ===
       "active" &&
-    usedToday === 0 &&
+    usedToday < maxPerDay &&
     daysLeft > 0;
 
   useEffect(() => {
@@ -406,47 +416,17 @@ function ScanPage() {
     const intervalId =
       window.setInterval(
         async () => {
-          const {
-            data,
-            error:
-              statusError,
-          } =
-            await supabase.rpc(
-              "scan_order_status",
-              {
-                _order_id:
-                  orderId,
-              },
-            );
+          const { data, error: statusError } =
+            await supabase.rpc("scan_order_progress", { _order_id: orderId });
 
-          if (statusError) {
-            console.error(
-              "scan_order_status:",
-              statusError,
-            );
-
+          if (statusError || !data) {
+            if (statusError) console.error("scan_order_progress:", statusError);
             return;
           }
 
-          if (
-            data ===
-              "pending" ||
-            data ===
-              "approved" ||
-            data ===
-              "rejected"
-          ) {
-            setOrderStatus(
-              data,
-            );
-
-            if (
-              data ===
-              "approved"
-            ) {
-              setUsedToday(1);
-            }
-          }
+          const progress = data as { status: OrderStatus; stage: FulfillmentStage };
+          setOrderStatus(progress.status);
+          setStage(progress.stage ?? null);
         },
         2000,
       );
@@ -1068,6 +1048,19 @@ function ScanPage() {
           0,
       );
 
+      setMaxPerDay(
+        Math.max(1, payload.max_drinks_per_day ?? 1),
+      );
+
+      if (payload.active_order?.id) {
+        setOrderId(payload.active_order.id);
+        setOrderStatus(payload.active_order.status);
+        setStage(payload.active_order.stage ?? null);
+        setBusy(false);
+        setStep("waiting");
+        return;
+      }
+
       setBusy(false);
 
       setStep(
@@ -1235,6 +1228,9 @@ function ScanPage() {
       data as string,
     );
 
+    setUsedToday((n) => n + 1);
+    setStage(null);
+
     setOrderStatus(
       "pending",
     );
@@ -1244,7 +1240,25 @@ function ScanPage() {
     );
   }
 
+  async function confirmPickup(received: boolean) {
+    if (!orderId) return;
+    setBusy(true);
+    const { data, error: pickupError } = await supabase.rpc("scan_confirm_pickup", {
+      _order_id: orderId,
+      _received: received,
+    });
+    setBusy(false);
+    if (pickupError) {
+      console.error("scan_confirm_pickup:", pickupError);
+      setError(lang === "ar" ? "تعذر تأكيد الاستلام، حاول مرة أخرى." : "Couldn't confirm pickup, please try again.");
+      return;
+    }
+    setStage((data as FulfillmentStage) ?? null);
+  }
+
   function resetOrderScreen() {
+    if (orderStatus === "rejected") setUsedToday((n) => Math.max(0, n - 1));
+    setStage(null);
     setOrderId(null);
     setOrderStatus(
       "pending",
@@ -1697,6 +1711,20 @@ function ScanPage() {
                   </span>
                 </div>
 
+                <div className="kob-mcard-today">
+                  <span className="kob-mcard-label">
+                    {lang === "ar" ? "أكواب اليوم" : "Today's cups"}
+                  </span>
+                  <span className="kob-mcard-cups" aria-label={`${usedToday}/${maxPerDay}`}>
+                    {Array.from({ length: maxPerDay }, (_, i) => (
+                      <Coffee key={i} className="h-4 w-4" data-used={i < usedToday ? "true" : "false"} />
+                    ))}
+                    <small>
+                      {fmtNum(Math.max(0, maxPerDay - usedToday))} {lang === "ar" ? "متبقي" : "left"}
+                    </small>
+                  </span>
+                </div>
+
                 <div className="kob-mcard-track" role="presentation">
                   <div className="kob-mcard-fill" style={{ width: `${usedPct}%` }} />
                 </div>
@@ -1757,10 +1785,10 @@ function ScanPage() {
 
               {!canOrder && (
                 <div className="kob-scan-note">
-                  {usedToday > 0
+                  {usedToday >= maxPerDay
                     ? lang === "ar"
-                      ? "تم استخدام طلب اليوم بالفعل."
-                      : "Today's order has already been used."
+                      ? "استخدمت كل أكواب اليوم."
+                      : "You've used all of today's cups."
                     : daysLeft <= 0
                       ? lang === "ar"
                         ? "انتهت مدة الاشتراك."
@@ -1794,13 +1822,40 @@ function ScanPage() {
             {orderStatus === "approved" && (
               <>
                 <div className="kob-scan-icon-badge" data-tone="ok">
-                  <Check className="h-9 w-9" />
+                  {stage === "picked_up" ? <Check className="h-9 w-9" /> : <Coffee className="h-9 w-9" />}
                 </div>
 
-                <h1 className="kob-scan-title">{t("approvedMsg")}</h1>
+                <h1 className="kob-scan-title">
+                  {STAGE_COPY[stage ?? "preparing"][lang === "ar" ? "ar" : "en"].title}
+                </h1>
                 <p className="kob-scan-sub">
-                  {lang === "ar" ? "يتم الآن تجهيز قهوتك." : "Your coffee is now being prepared."}
+                  {STAGE_COPY[stage ?? "preparing"][lang === "ar" ? "ar" : "en"].hint}
                 </p>
+
+                <ol className="kob-scan-stages">
+                  {(["preparing", "ready", "picked_up"] as const).map((key, index) => {
+                    const current = stage === "handover" ? 1 : ["preparing", "ready", "picked_up"].indexOf(stage ?? "preparing");
+                    return (
+                      <li key={key} data-state={index < current ? "done" : index === current ? "active" : "todo"}>
+                        <span>{index + 1}</span>
+                        {STAGE_COPY[key][lang === "ar" ? "ar" : "en"].label}
+                      </li>
+                    );
+                  })}
+                </ol>
+
+                {stage === "handover" && (
+                  <div className="kob-scan-actions">
+                    <Button block disabled={busy} onClick={() => void confirmPickup(true)}>
+                      {lang === "ar" ? "نعم، استلمت قهوتي" : "Yes, I got my coffee"}
+                    </Button>
+                    <Button variant="secondary" block disabled={busy} onClick={() => void confirmPickup(false)}>
+                      {lang === "ar" ? "لم أستلمها" : "I didn't get it"}
+                    </Button>
+                  </div>
+                )}
+
+                {error && <Alert tone="danger">{error}</Alert>}
               </>
             )}
 
@@ -1814,7 +1869,7 @@ function ScanPage() {
               </>
             )}
 
-            {orderStatus !== "pending" && (
+            {(orderStatus === "rejected" || (orderStatus === "approved" && (stage === "picked_up" || stage === null))) && (
               <div className="kob-scan-actions">
                 <Button variant="secondary" block onClick={resetOrderScreen}>
                   {orderStatus === "approved"
@@ -1831,6 +1886,25 @@ function ScanPage() {
     </main>
   );
 }
+
+const STAGE_COPY = {
+  preparing: {
+    ar: { label: "التحضير", title: "قهوتك قيد التحضير", hint: "تم اعتماد طلبك ويجهزه الباريستا الآن." },
+    en: { label: "Preparing", title: "Your coffee is being prepared", hint: "Your order was approved and the barista is on it." },
+  },
+  ready: {
+    ar: { label: "جاهز", title: "قهوتك جاهزة", hint: "توجه إلى الكاشير لاستلام طلبك." },
+    en: { label: "Ready", title: "Your coffee is ready", hint: "Head to the counter to pick it up." },
+  },
+  handover: {
+    ar: { label: "التسليم", title: "هل استلمت قهوتك؟", hint: "أكّد الاستلام حتى لا يأخذها أحد غيرك." },
+    en: { label: "Handover", title: "Did you get your coffee?", hint: "Confirm so nobody else can take it." },
+  },
+  picked_up: {
+    ar: { label: "تم الاستلام", title: "بالعافية!", hint: "تم استلام طلبك. نتمنى لك يوماً جميلاً." },
+    en: { label: "Picked up", title: "Enjoy!", hint: "Your order was picked up. Have a great day." },
+  },
+} as const;
 
 function BranchBadge({ label }: { label: string }) {
   return <span className="kob-scan-eyebrow">{label}</span>;

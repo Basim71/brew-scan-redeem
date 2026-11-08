@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import { loadEnv } from "vite";
+import { VitePWA } from "vite-plugin-pwa";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -24,6 +25,38 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
+    plugins: [
+      VitePWA({
+        registerType: "autoUpdate",
+        injectRegister: null,
+        devOptions: { enabled: false },
+        manifest: false,
+        filename: "sw.js",
+        outDir: "dist/client",
+        workbox: {
+          navigateFallback: null,
+          globDirectory: "dist/client",
+          globPatterns: ["**/*.{js,css,woff2,png,svg,ico}"],
+          runtimeCaching: [
+            {
+              urlPattern: ({ request, url }) => request.mode === "navigate" && !url.pathname.startsWith("/~oauth"),
+              handler: "NetworkFirst",
+              options: { cacheName: "kob-pages", networkTimeoutSeconds: 4 },
+            },
+            {
+              urlPattern: ({ url, sameOrigin }) => sameOrigin && url.pathname.startsWith("/assets/"),
+              handler: "CacheFirst",
+              options: { cacheName: "kob-assets" },
+            },
+            {
+              urlPattern: ({ url }) => url.origin === "https://fonts.googleapis.com" || url.origin === "https://fonts.gstatic.com",
+              handler: "StaleWhileRevalidate",
+              options: { cacheName: "kob-fonts" },
+            },
+          ],
+        },
+      }),
+    ],
     resolve: {
       alias: {
         "entities/lib/decode.js": path.resolve(dirname, "node_modules/entities/lib/decode.js"),

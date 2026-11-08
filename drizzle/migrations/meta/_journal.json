@@ -138,8 +138,27 @@
     {
       "idx": 19,
       "version": "7",
+<<<<<<< HEAD
       "when": 1793645555910,
       "tag": "0019_orders_realtime",
+=======
+      "when": 1793776440331,
+      "tag": "0019_scan_parity_with_app",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1793776457441,
+      "tag": "0020_scan_confirm_pickup_timestamps",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1794069005198,
+      "tag": "0021_offline_order_sync",
+>>>>>>> 92fba05fe50d141ac99a48a842727158d5acf180
       "breakpoints": true
     }
   ]

@@ -888,6 +888,9 @@ export type Database = {
           handover_at: string | null
           handover_declined_at: string | null
           id: string
+          is_offline_order: boolean
+          offline_served_at: string | null
+          offline_sync_id: string | null
           order_date: string
           organization_id: string
           picked_up_at: string | null
@@ -911,6 +914,9 @@ export type Database = {
           handover_at?: string | null
           handover_declined_at?: string | null
           id?: string
+          is_offline_order?: boolean
+          offline_served_at?: string | null
+          offline_sync_id?: string | null
           order_date?: string
           organization_id?: string
           picked_up_at?: string | null
@@ -934,6 +940,9 @@ export type Database = {
           handover_at?: string | null
           handover_declined_at?: string | null
           id?: string
+          is_offline_order?: boolean
+          offline_served_at?: string | null
+          offline_sync_id?: string | null
           order_date?: string
           organization_id?: string
           picked_up_at?: string | null
@@ -3174,6 +3183,7 @@ export type Database = {
         Args: { _order_id: string; _stage: string }
         Returns: string
       }
+      cashier_sync_offline_orders: { Args: { _orders: Json }; Returns: Json }
       current_user_branch: { Args: never; Returns: string }
       current_user_organization_ids: { Args: never; Returns: string[] }
       customer_app_auth_phone: { Args: never; Returns: string }
@@ -3299,15 +3309,22 @@ export type Database = {
         }[]
       }
       scan_branding: { Args: { _branch_id?: string }; Returns: Json }
+      scan_confirm_pickup: {
+        Args: { _order_id: string; _received: boolean }
+        Returns: string
+      }
       scan_device_state: {
         Args: { _branch_id: string; _device_token: string }
         Returns: Json
       }
+      scan_find_customer: { Args: { _phone: string }; Returns: string }
       scan_lookup: {
         Args: { _branch_id: string; _phone: string; _session_token?: string }
         Returns: Json
       }
+      scan_order_progress: { Args: { _order_id: string }; Returns: Json }
       scan_order_status: { Args: { _order_id: string }; Returns: string }
+      scan_phone_key: { Args: { _phone: string }; Returns: string }
       scan_promotions: { Args: { _branch_id?: string }; Returns: Json }
       scan_register_request: {
         Args: {
