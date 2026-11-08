@@ -96,10 +96,10 @@ export function OfflinePanel({ branchId }: { branchId: string }) {
     return () => window.clearInterval(id);
   }, [online, sync]);
 
-  function readCode() {
+  function readCode(input?: string) {
     setError(null);
     setNotice(null);
-    const tok = parseToken(raw);
+    const tok = parseToken(typeof input === "string" ? input : raw);
     if (!tok) return setError(t("cashier.offline.invalid"));
     const usage = loadJson<Record<string, number>>(USAGE_KEY, {});
     const nonces = loadJson<string[]>(NONCE_KEY, []);
@@ -185,11 +185,40 @@ export function OfflinePanel({ branchId }: { branchId: string }) {
                   onKeyDown={(e) => e.key === "Enter" && readCode()}
                   dir="ltr"
                 />
-                <Button onClick={readCode} disabled={!raw.trim()}>
+                <Button onClick={() => readCode()} disabled={!raw.trim()}>
                   <ScanLine className="h-4 w-4" />
                   {t("cashier.offline.read")}
                 </Button>
+                <Button variant="secondary" onClick={() => setCameraOpen((v) => !v)}>
+                  <Camera className="h-4 w-4" />
+                  {t("cashier.offline.camera")}
+                </Button>
               </div>
+              )}
+            </Field>
+          ) : null}
+          {!token && cameraOpen && (
+            <CameraScanner
+              onResult={(text) => {
+                setCameraOpen(false);
+                setRaw(text);
+                readCode(text);
+              }}
+              onError={() => {
+                setCameraOpen(false);
+                setError(t("cashier.offline.cameraError"));
+              }}
+            />
+          )}
+          {!token ? null : (
+            <>
+            {null}
+            </>
+          )}
+          {!token ? (
+            <Field label="" hidden>
+              {() => (<span />
+              )}
               )}
             </Field>
           ) : (
