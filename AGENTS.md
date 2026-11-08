@@ -12,3 +12,4 @@
 ## Social sign-in
 
 All social providers sign in through the generated `lovable.auth.signInWithOAuth` module in `src/integrations/lovable/index.ts`, with a same-origin `redirect_uri` — never hand-roll OAuth or call the Supabase auth client directly for a provider. Why: provider enablement lives in backend config, and a client that bypasses the generated module drifts from it and fails with "Unsupported provider".
+- Offline mode uses vite-plugin-pwa (generateSW) registered only via src/lib/register-sw.ts; never in preview/dev — avoids stale caches in the editor.

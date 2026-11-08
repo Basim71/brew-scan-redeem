@@ -1089,6 +1089,8 @@
       "scanLabel": "Customer offline code",
       "scanHint": "Scan the customer code with a barcode reader or paste it here",
       "read": "Read code",
+      "camera": "Camera",
+      "cameraError": "Could not start the camera — allow camera access",
       "invalid": "Invalid code",
       "expired": "Code expired, ask the customer to refresh it",
       "otherDay": "Code is not for today",
