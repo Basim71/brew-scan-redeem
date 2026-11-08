@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { CloudOff, RefreshCw, ScanLine, Wifi } from "lucide-react";
+import { Camera, CloudOff, RefreshCw, ScanLine, Wifi } from "lucide-react";
+import { CameraScanner } from "./CameraScanner";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { Alert, Badge, Button, Card, CardBody, CardHeader, Field, Select } from "@/components/kob";
@@ -210,18 +211,7 @@ export function OfflinePanel({ branchId }: { branchId: string }) {
               }}
             />
           )}
-          {!token ? null : (
-            <>
-            {null}
-            </>
-          )}
-          {!token ? (
-            <Field label="" hidden>
-              {() => (<span />
-              )}
-              )}
-            </Field>
-          ) : (
+          {token && (
             <div className="grid gap-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <strong>{token.name}</strong>
