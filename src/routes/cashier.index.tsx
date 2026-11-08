@@ -256,11 +256,6 @@ function CashierQueuePage() {
   useEffect(() => {
     if (!branchId) return;
     const intervalId = window.setInterval(() => {
-<<<<<<< HEAD
-      void loadQueue();
-    }, 15000);
-    return () => window.clearInterval(intervalId);
-=======
       if (navigator.onLine) void loadQueue().catch(() => undefined);
     }, 5000);
     const onOnline = () => void loadQueue().catch(() => undefined);
@@ -269,7 +264,6 @@ function CashierQueuePage() {
       window.clearInterval(intervalId);
       window.removeEventListener("online", onOnline);
     };
->>>>>>> 92fba05fe50d141ac99a48a842727158d5acf180
   }, [branchId, loadQueue]);
 
   const pendingOrders = useMemo(() => orders.filter((o) => o.status === "pending"), [orders]);

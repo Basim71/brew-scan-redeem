@@ -138,10 +138,6 @@
     {
       "idx": 19,
       "version": "7",
-<<<<<<< HEAD
-      "when": 1793645555910,
-      "tag": "0019_orders_realtime",
-=======
       "when": 1793776440331,
       "tag": "0019_scan_parity_with_app",
       "breakpoints": true
@@ -158,7 +154,13 @@
       "version": "7",
       "when": 1794069005198,
       "tag": "0021_offline_order_sync",
->>>>>>> 92fba05fe50d141ac99a48a842727158d5acf180
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1794069006198,
+      "tag": "0022_orders_realtime",
       "breakpoints": true
     }
   ]
