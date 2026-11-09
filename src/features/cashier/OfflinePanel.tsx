@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Camera, CloudOff, RefreshCw, ScanLine, Wifi } from "lucide-react";
 import { CameraScanner } from "./CameraScanner";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,11 +7,13 @@ import { Alert, Badge, Button, Card, CardBody, CardHeader, Field, Select } from 
 import {
   type CustomerToken,
   type QueuedOrder,
+  type DeviceKey,
   checkToken,
   loadJson,
   parseToken,
   saveJson,
   todayRiyadh,
+  verifyTokenSignature,
 } from "./offline-queue";
 
 const QUEUE_KEY = "kob.offline.queue";
@@ -35,11 +37,18 @@ export function OfflinePanel({ branchId }: { branchId: string }) {
   const [notice, setNotice] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [rejected, setRejected] = useState<Rejected[]>([]);
+  const [verifying, setVerifying] = useState(false);
+  const [serving, setServing] = useState(false);
+  const syncBusy = useRef(false);
+  const serveBusy = useRef(false);
+  const readVersion = useRef(0);
+  const keysKey = `kob.offline.keys:${branchId}`;
+  const drinksKey = `${DRINKS_KEY}:${branchId}`;
 
   useEffect(() => {
     setOnline(navigator.onLine);
     setQueue(loadJson<QueuedOrder[]>(QUEUE_KEY, []));
-    setDrinks(loadJson<Drink[]>(DRINKS_KEY, []));
+    setDrinks(loadJson<Drink[]>(drinksKey, []));
     const on = () => setOnline(true);
     const off = () => setOnline(false);
     window.addEventListener("online", on);
@@ -48,32 +57,39 @@ export function OfflinePanel({ branchId }: { branchId: string }) {
       window.removeEventListener("online", on);
       window.removeEventListener("offline", off);
     };
-  }, []);
+  }, [drinksKey]);
 
   // Cache drinks while online so they are available offline.
   useEffect(() => {
     if (!online) return;
-    supabase
-      .from("drink_types")
-      .select("id, name_ar, name_en")
-      .eq("is_active", true)
-      .order("name_en")
-      .then(({ data }) => {
-        if (data) {
-          setDrinks(data);
-          saveJson(DRINKS_KEY, data);
-        }
-      });
-  }, [online]);
+    let cancelled = false;
+    async function refreshCache() {
+      try {
+        const { data: branch } = await supabase.from("branches").select("organization_id").eq("id", branchId).single();
+        if (!branch?.organization_id) return;
+        const [{ data: menu }, { data: keys, error: keyError }] = await Promise.all([
+          supabase.from("drink_types").select("id, name_ar, name_en").eq("is_active", true).eq("organization_id", branch.organization_id).order("name_en"),
+          supabase.rpc("cashier_get_active_device_keys"),
+        ]);
+        if (cancelled) return;
+        if (menu) { setDrinks(menu); saveJson(drinksKey, menu); }
+        if (!keyError && keys) saveJson(keysKey, keys);
+      } catch { /* Preserve the last cache during a connection outage. */ }
+    }
+    void refreshCache();
+    const interval = window.setInterval(() => void refreshCache(), 60000);
+    return () => { cancelled = true; window.clearInterval(interval); };
+  }, [online, branchId, drinksKey, keysKey]);
 
   const sync = useCallback(async (items: QueuedOrder[]) => {
-    if (!items.length || !navigator.onLine) return;
+    if (!items.length || !navigator.onLine || syncBusy.current) return;
+    syncBusy.current = true;
     setSyncing(true);
+    try {
     const { data, error: err } = await supabase.rpc("cashier_sync_offline_orders" as never, {
       _orders: items,
     } as never);
-    setSyncing(false);
-    if (err) return; // keep queue, retry later
+    if (err || !data) return; // keep queue, retry later
     const res = data as unknown as {
       synced: number;
       results: { offline_sync_id: string; result: string; reason?: string }[];
@@ -87,6 +103,8 @@ export function OfflinePanel({ branchId }: { branchId: string }) {
     setQueue(rest);
     if (rej.length) setRejected((p) => [...rej, ...p]);
     if (res.synced) setNotice(t("cashier.offline.syncResult", { n: res.synced }));
+    } catch { /* Keep queued orders when the network fails. */ }
+    finally { syncBusy.current = false; setSyncing(false); }
   }, [t]);
 
   // Auto-sync on reconnect and every 30s.
@@ -98,11 +116,18 @@ export function OfflinePanel({ branchId }: { branchId: string }) {
     return () => window.clearInterval(id);
   }, [online, sync]);
 
-  function readCode(input?: string) {
+  async function readCode(input?: string) {
+    const version = ++readVersion.current;
+    setToken(null);
     setError(null);
     setNotice(null);
     const tok = parseToken(typeof input === "string" ? input : raw);
     if (!tok) return setError(t("cashier.offline.invalid"));
+    setVerifying(true);
+    const signatureProblem = await verifyTokenSignature(tok, loadJson<DeviceKey[]>(keysKey, []));
+    if (version !== readVersion.current) return;
+    setVerifying(false);
+    if (signatureProblem) return setError(t(`cashier.offline.${signatureProblem}`));
     const usage = loadJson<Record<string, number>>(USAGE_KEY, {});
     const nonces = loadJson<string[]>(NONCE_KEY, []);
     const problem = checkToken(tok, {
@@ -117,7 +142,17 @@ export function OfflinePanel({ branchId }: { branchId: string }) {
   }
 
   async function serve() {
-    if (!token || !drinkId) return;
+    if (!token || !drinkId || serveBusy.current) return;
+    serveBusy.current = true;
+    setServing(true);
+    try {
+    const signatureProblem = await verifyTokenSignature(token, loadJson<DeviceKey[]>(keysKey, []));
+    const problem = signatureProblem ?? checkToken(token, {
+      now: Date.now(), today: todayRiyadh(),
+      localUsed: loadJson<Record<string, number>>(USAGE_KEY, {})[`${token.day}:${token.sid}`] ?? 0,
+      usedNonces: loadJson<string[]>(NONCE_KEY, []),
+    });
+    if (problem) { setToken(null); setError(t(`cashier.offline.${problem}`)); return; }
     const order: QueuedOrder = {
       offline_sync_id: crypto.randomUUID(),
       subscription_id: token.sid,
@@ -130,7 +165,7 @@ export function OfflinePanel({ branchId }: { branchId: string }) {
     };
     const usage = loadJson<Record<string, number>>(USAGE_KEY, {});
     const k = `${token.day}:${token.sid}`;
-    usage[k] = (usage[k] ?? 0) + 1;
+    usage[k] = Math.max(usage[k] ?? 0, token.used_today) + 1;
     saveJson(USAGE_KEY, usage);
     saveJson(NONCE_KEY, [token.nonce, ...loadJson<string[]>(NONCE_KEY, [])].slice(0, 500));
     const next = [...loadJson<QueuedOrder[]>(QUEUE_KEY, []), order];
@@ -140,6 +175,8 @@ export function OfflinePanel({ branchId }: { branchId: string }) {
     setRaw("");
     setNotice(navigator.onLine ? t("cashier.offline.servedOnline") : t("cashier.offline.servedQueued"));
     if (navigator.onLine) await sync(next);
+    } catch { setError(t("cashier.offline.storageError")); }
+    finally { serveBusy.current = false; setServing(false); }
   }
 
   const localUsed = token
@@ -187,7 +224,7 @@ export function OfflinePanel({ branchId }: { branchId: string }) {
                   onKeyDown={(e) => e.key === "Enter" && readCode()}
                   dir="ltr"
                 />
-                <Button onClick={() => readCode()} disabled={!raw.trim()}>
+                <Button onClick={() => void readCode()} disabled={!raw.trim() || verifying}>
                   <ScanLine className="h-4 w-4" />
                   {t("cashier.offline.read")}
                 </Button>
@@ -233,7 +270,7 @@ export function OfflinePanel({ branchId }: { branchId: string }) {
                   </Select>
               )}
               <div className="flex gap-2">
-                <Button onClick={serve} disabled={!drinkId}>{t("cashier.offline.serve")}</Button>
+                <Button onClick={serve} disabled={!drinkId || serving}>{t("cashier.offline.serve")}</Button>
                 <Button variant="ghost" onClick={() => setToken(null)}>{t("cashier.offline.cancel")}</Button>
               </div>
             </div>

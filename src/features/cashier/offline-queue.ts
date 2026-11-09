@@ -1,7 +1,8 @@
 export type CustomerToken = {
   v: number;
   sid: string;
-  cid?: string;
+  cid: string;
+  kid: string;
   name: string;
   plan: string;
   max: number;
@@ -9,7 +10,7 @@ export type CustomerToken = {
   day: string;
   nonce: string;
   exp: number; // unix seconds
-  sig?: string;
+  sig: string;
 };
 
 export type QueuedOrder = {
@@ -23,7 +24,46 @@ export type QueuedOrder = {
   customer_note: string | null;
 };
 
-export type TokenProblem = "invalid" | "expired" | "otherDay" | "limit" | "reused";
+export type DeviceKey = { customer_id: string; key_id: string; public_key: string };
+export type TokenProblem = "invalid" | "expired" | "otherDay" | "limit" | "reused" | "badSignature" | "unknownKey";
+
+const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+function validToken(o: CustomerToken): boolean {
+  return o?.v === 1 && [o.sid, o.cid, o.kid].every((id) => typeof id === "string" && uuid.test(id))
+    && typeof o.nonce === "string" && o.nonce.length > 0 && !o.nonce.includes("|")
+    && typeof o.sig === "string" && o.sig.length > 0
+    && typeof o.name === "string" && typeof o.plan === "string"
+    && Number.isSafeInteger(o.max) && o.max > 0
+    && Number.isSafeInteger(o.used_today) && o.used_today >= 0
+    && Number.isSafeInteger(o.exp) && o.exp > 0
+    && typeof o.day === "string" && /^\d{4}-\d{2}-\d{2}$/.test(o.day);
+}
+
+export function tokenMessage(tok: CustomerToken): string {
+  return ["KOB1", tok.sid, tok.cid, tok.kid, tok.max, tok.used_today, tok.day, tok.nonce, tok.exp].join("|");
+}
+
+export function base64ToBytes(value: string): Uint8Array<ArrayBuffer> {
+  return Uint8Array.from(atob(value), (c) => c.charCodeAt(0));
+}
+
+export async function verifyTokenSignature(tok: CustomerToken, keys: DeviceKey[]): Promise<TokenProblem | null> {
+  if (!validToken(tok)) return "invalid";
+  const entry = keys.find((key) => key.key_id === tok.kid && key.customer_id === tok.cid);
+  if (!entry) return "unknownKey";
+  try {
+    const sig = base64ToBytes(tok.sig);
+    if (sig.length !== 64) return "badSignature";
+    const key = await crypto.subtle.importKey("spki", base64ToBytes(entry.public_key),
+      { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"]);
+    const ok = await crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, key, sig,
+      new TextEncoder().encode(tokenMessage(tok)));
+    return ok ? null : "badSignature";
+  } catch {
+    return "badSignature";
+  }
+}
 
 export function parseToken(raw: string): CustomerToken | null {
   const text = raw.trim();
@@ -37,9 +77,7 @@ export function parseToken(raw: string): CustomerToken | null {
   for (const c of candidates) {
     try {
       const o = JSON.parse(c);
-      if (o && typeof o.sid === "string" && typeof o.nonce === "string" && typeof o.exp === "number") {
-        return { ...o, max: Number(o.max ?? 1), used_today: Number(o.used_today ?? 0) };
-      }
+      if (validToken(o)) return o;
     } catch {
       /* try next */
     }
@@ -51,7 +89,8 @@ export function checkToken(
   tok: CustomerToken,
   ctx: { now: number; today: string; localUsed: number; usedNonces: string[] },
 ): TokenProblem | null {
-  if (tok.exp * 1000 < ctx.now) return "expired";
+  if (!validToken(tok)) return "invalid";
+  if (tok.exp * 1000 <= ctx.now) return "expired";
   if (tok.day !== ctx.today) return "otherDay";
   if (ctx.usedNonces.includes(tok.nonce)) return "reused";
   if (Math.max(tok.used_today, ctx.localUsed) >= tok.max) return "limit";
