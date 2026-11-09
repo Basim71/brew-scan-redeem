@@ -3192,6 +3192,10 @@ export type Database = {
         Args: { _order_id: string; _received: boolean }
         Returns: string
       }
+      customer_app_is_own_customer: {
+        Args: { _customer_id: string }
+        Returns: boolean
+      }
       customer_app_me: { Args: never; Returns: Json }
       customer_app_order_menu: {
         Args: { _subscription_id: string }
