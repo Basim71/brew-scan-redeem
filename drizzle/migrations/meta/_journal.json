@@ -169,6 +169,13 @@
       "when": 1794202332947,
       "tag": "0023_orders_realtime",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1794202384779,
+      "tag": "0024_offline_device_keys_and_daily_limit",
+      "breakpoints": true
     }
   ]
 }
