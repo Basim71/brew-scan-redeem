@@ -203,6 +203,41 @@ export type Database = {
           },
         ]
       }
+      customer_device_keys: {
+        Row: {
+          created_at: string
+          customer_id: string
+          id: string
+          platform: string
+          public_key: string
+          revoked_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          id: string
+          platform: string
+          public_key: string
+          revoked_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          id?: string
+          platform?: string
+          public_key?: string
+          revoked_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_device_keys_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_devices: {
         Row: {
           branch_id: string
@@ -3175,6 +3210,14 @@ export type Database = {
         Args: { _coupon_id: string; _request_id: string; _start_date: string }
         Returns: string
       }
+      cashier_get_active_device_keys: {
+        Args: never
+        Returns: {
+          customer_id: string
+          key_id: string
+          public_key: string
+        }[]
+      }
       cashier_reject_registration: {
         Args: { _request_id: string }
         Returns: boolean
@@ -3191,6 +3234,10 @@ export type Database = {
       customer_app_confirm_pickup: {
         Args: { _order_id: string; _received: boolean }
         Returns: string
+      }
+      customer_app_is_own_customer: {
+        Args: { _customer_id: string }
+        Returns: boolean
       }
       customer_app_me: { Args: never; Returns: Json }
       customer_app_order_menu: {
@@ -3231,6 +3278,10 @@ export type Database = {
       customer_app_unregister_push_token: {
         Args: { _token: string }
         Returns: undefined
+      }
+      customer_register_device_key: {
+        Args: { _key_id: string; _platform: string; _public_key: string }
+        Returns: Json
       }
       default_organization_id: { Args: never; Returns: string }
       delete_branch_safe: {

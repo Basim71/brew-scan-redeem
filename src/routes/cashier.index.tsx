@@ -41,6 +41,14 @@ import { OfflinePanel } from "@/features/cashier/OfflinePanel";
 
 
 export const Route = createFileRoute("/cashier/")({
+  head: () => ({ meta: [
+    { title: "KOB | Cashier orders" },
+    { name: "description", content: "Manage KOB coffee orders and verify signed offline customer codes." },
+    { property: "og:title", content: "KOB | Cashier orders" },
+    { property: "og:description", content: "Manage coffee orders and signed offline redemptions with KOB." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: CashierQueuePage,
 });
 
