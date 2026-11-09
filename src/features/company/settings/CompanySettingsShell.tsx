@@ -16,9 +16,23 @@ import {
   WalletCards,
 } from "lucide-react";
 
-import { Button, ConfirmDialog, ErrorState, Input, LoadingState, PageContainer, PageHeader, Select, SearchInput, WarningCard } from "@/components/kob";
+import {
+  Button,
+  ConfirmDialog,
+  ErrorState,
+  Input,
+  LoadingState,
+  PageContainer,
+  PageHeader,
+  Select,
+  SearchInput,
+  WarningCard,
+} from "@/components/kob";
 import { useI18n } from "@/lib/i18n";
-import { useOrganization, type OrganizationRole } from "@/providers/OrganizationProvider";
+import {
+  useOrganization,
+  type OrganizationRole,
+} from "@/providers/OrganizationProvider";
 import {
   getOrganizationProfile,
   listSettingsAudit,
@@ -37,7 +51,15 @@ import {
 import { listBranches } from "@/services/company/branches.service";
 import { useCompanySettings } from "./useCompanySettings";
 import { LogoUploader } from "./LogoUploader";
-import { Card, CheckChip, Row, SaveIndicator, Segmented, Toggle, type SaveState } from "./parts";
+import {
+  Card,
+  CheckChip,
+  Row,
+  SaveIndicator,
+  Segmented,
+  Toggle,
+  type SaveState,
+} from "./parts";
 import { NumberInput, TextInput, translateError } from "./inputs";
 import { CustomerExperienceSection } from "./CustomerExperience";
 import { NotificationsSection } from "./NotificationsSection";
@@ -133,8 +155,10 @@ const SECTIONS: Array<{
     key: "security",
     ar: "مركز الأمان",
     en: "Security Center",
-    descAr: "الجلسات والأجهزة والتحقق بخطوتين وسياسات كلمات المرور وقيود الدخول.",
-    descEn: "Sessions, devices, MFA, password policies and access restrictions.",
+    descAr:
+      "الجلسات والأجهزة والتحقق بخطوتين وسياسات كلمات المرور وقيود الدخول.",
+    descEn:
+      "Sessions, devices, MFA, password policies and access restrictions.",
     group: "governance",
     icon: ShieldCheck,
     roles: ["owner", "admin"],
@@ -144,7 +168,8 @@ const SECTIONS: Array<{
     ar: "الموظفون",
     en: "Employees",
     descAr: "إضافة وتعديل الموظفين والأدوار والصلاحيات والفروع والنشاط.",
-    descEn: "Add and edit employees, roles, permissions, branches and activity.",
+    descEn:
+      "Add and edit employees, roles, permissions, branches and activity.",
     group: "people",
     icon: UserCog,
     roles: ["owner", "admin"],
@@ -163,8 +188,10 @@ const SECTIONS: Array<{
     key: "integrations",
     ar: "مركز التكاملات",
     en: "Integration Hub",
-    descAr: "بوابات الدفع وأنظمة نقاط البيع ومزودو الرسائل والفاتورة الإلكترونية.",
-    descEn: "Payment gateways, POS systems, messaging providers and e-invoicing.",
+    descAr:
+      "بوابات الدفع وأنظمة نقاط البيع ومزودو الرسائل والفاتورة الإلكترونية.",
+    descEn:
+      "Payment gateways, POS systems, messaging providers and e-invoicing.",
     group: "governance",
     icon: Plug,
     roles: ["owner", "admin"],
@@ -190,14 +217,15 @@ const GROUPS: Array<{ key: GroupKey; ar: string; en: string }> = [
   { key: "governance", ar: "الحماية والتكاملات", en: "Governance" },
 ];
 
-const PAYMENT_METHODS: Array<{ value: PaymentMethod; ar: string; en: string }> = [
-  { value: "cash", ar: "نقدي", en: "Cash" },
-  { value: "card", ar: "بطاقة", en: "Card" },
-  { value: "apple_pay", ar: "Apple Pay", en: "Apple Pay" },
-  { value: "stc_pay", ar: "STC Pay", en: "STC Pay" },
-  { value: "mada", ar: "مدى", en: "Mada" },
-  { value: "bank_transfer", ar: "تحويل بنكي", en: "Bank Transfer" },
-];
+const PAYMENT_METHODS: Array<{ value: PaymentMethod; ar: string; en: string }> =
+  [
+    { value: "cash", ar: "نقدي", en: "Cash" },
+    { value: "card", ar: "بطاقة", en: "Card" },
+    { value: "apple_pay", ar: "Apple Pay", en: "Apple Pay" },
+    { value: "stc_pay", ar: "STC Pay", en: "STC Pay" },
+    { value: "mada", ar: "مدى", en: "Mada" },
+    { value: "bank_transfer", ar: "تحويل بنكي", en: "Bank Transfer" },
+  ];
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const PHONE_RE = /^(05\d{8}|\+9665\d{8})$/;
@@ -210,7 +238,10 @@ export function CompanySettingsShell() {
   const queryClient = useQueryClient();
 
   const canEdit = role === "owner" || role === "admin";
-  const visible = useMemo(() => SECTIONS.filter((s) => (role ? s.roles.includes(role) : false)), [role]);
+  const visible = useMemo(
+    () => SECTIONS.filter((s) => (role ? s.roles.includes(role) : false)),
+    [role],
+  );
   const [section, setSection] = useState<SectionKey>("general");
   const [navQuery, setNavQuery] = useState("");
 
@@ -218,21 +249,28 @@ export function CompanySettingsShell() {
     const term = navQuery.trim().toLowerCase();
     if (!term) return visible;
     return visible.filter((item) =>
-      [item.ar, item.en, item.descAr, item.descEn].some((value) => value.toLowerCase().includes(term)),
+      [item.ar, item.en, item.descAr, item.descEn].some((value) =>
+        value.toLowerCase().includes(term),
+      ),
     );
   }, [navQuery, visible]);
 
-  const activeSection = useMemo(() => SECTIONS.find((item) => item.key === section) ?? null, [section]);
+  const activeSection = useMemo(
+    () => SECTIONS.find((item) => item.key === section) ?? null,
+    [section],
+  );
 
   useEffect(() => {
-    if (visible.length && !visible.some((s) => s.key === section)) setSection(visible[0]!.key);
+    if (visible.length && !visible.some((s) => s.key === section))
+      setSection(visible[0]!.key);
   }, [visible, section]);
 
   // Deep links from the Manage dropdown (/admin/settings#audit, #notifications, …)
   const routeHash = useRouterState({ select: (state) => state.location.hash });
   useEffect(() => {
     const key = (routeHash || "").replace("#", "");
-    if (key && SECTIONS.some((s) => s.key === key)) setSection(key as SectionKey);
+    if (key && SECTIONS.some((s) => s.key === key))
+      setSection(key as SectionKey);
   }, [routeHash]);
 
   const { settings, isLoading, error, save } = useCompanySettings();
@@ -276,11 +314,19 @@ export function CompanySettingsShell() {
       const previous = profile;
       setSaveState("saving");
       setSaveMessage(null);
-      queryClient.setQueryData(["company-profile", organizationId], { ...previous, ...patch });
+      queryClient.setQueryData(["company-profile", organizationId], {
+        ...previous,
+        ...patch,
+      });
       try {
-        const row = await updateOrganizationProfile(organizationId, patch as any);
+        const row = await updateOrganizationProfile(
+          organizationId,
+          patch as any,
+        );
         queryClient.setQueryData(["company-profile", organizationId], row);
-        void queryClient.invalidateQueries({ predicate: (q) => q.queryKey[0] !== "company-profile" });
+        void queryClient.invalidateQueries({
+          predicate: (q) => q.queryKey[0] !== "company-profile",
+        });
         flashSaved();
       } catch (err: any) {
         queryClient.setQueryData(["company-profile", organizationId], previous);
@@ -296,86 +342,95 @@ export function CompanySettingsShell() {
   return (
     <PageContainer className="" size="xl">
       <div dir={isAr ? "rtl" : "ltr"} className="flex flex-col gap-5">
-      <PageHeader
-        eyebrow={t("settings.shell.eyebrow")}
-        title={t("settings.shell.pageTitle")}
-        description={
-          t("settings.shell.pageDescription")
-        }
-        action={<SaveIndicator state={saveState} lang={isAr ? "ar" : "en"} message={saveMessage} />}
-      />
-
-      {!canEdit ? (
-        <WarningCard>
-          {t("settings.shell.readOnlyWarning")}
-        </WarningCard>
-      ) : null}
-
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[260px_1fr] lg:items-start">
-        <nav className="flex flex-col gap-3" aria-label={t("settings.shell.navLabel")}>
-          <SearchInput
-            value={navQuery}
-            onValueChange={setNavQuery}
-            placeholder={t("settings.shell.searchPlaceholder")}
-          />
-          {GROUPS.map((group) => {
-            const items = navItems.filter((item) => item.group === group.key);
-            if (!items.length) return null;
-            return (
-              <div key={group.key} className="flex flex-col gap-1">
-                <span className="px-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{isAr ? group.ar : group.en}</span>
-                {items.map((s) => (
-                  <Button
-                    key={s.key}
-                    type="button"
-                    variant="ghost"
-                    className="justify-start"
-                    data-active={s.key === section ? "true" : undefined}
-                    leadingIcon={<s.icon className="h-4 w-4" />}
-                    onClick={() => setSection(s.key)}
-                  >
-                    {isAr ? s.ar : s.en}
-                  </Button>
-                ))}
-              </div>
-            );
-          })}
-          {navItems.length === 0 ? (
-            <p className="px-2 py-4 text-center text-sm text-muted-foreground">{t("settings.shell.noMatchingSections")}</p>
-          ) : null}
-        </nav>
-
-        <div className="min-w-0">
-          {activeSection ? (
-            <div className="flex items-start gap-3 rounded-xl border border-border bg-card p-4">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-accent">
-                <activeSection.icon className="h-5 w-5" />
-              </span>
-              <div>
-                <h2>{isAr ? activeSection.ar : activeSection.en}</h2>
-                <p>{isAr ? activeSection.descAr : activeSection.descEn}</p>
-              </div>
-            </div>
-          ) : null}
-          {isLoading ? (
-            <LoadingState />
-          ) : error ? (
-            <ErrorState description={error.message} />
-          ) : settings ? (
-            <SectionBody
-              section={section}
-              settings={settings}
-              profile={profile}
-              organizationId={organizationId}
-              isAr={isAr}
-              canEdit={canEdit}
-              isOwner={role === "owner"}
-              commit={commit}
-              commitProfile={commitProfile}
+        <PageHeader
+          eyebrow={t("settings.shell.eyebrow")}
+          title={t("settings.shell.pageTitle")}
+          description={t("settings.shell.pageDescription")}
+          action={
+            <SaveIndicator
+              state={saveState}
+              lang={isAr ? "ar" : "en"}
+              message={saveMessage}
             />
-          ) : null}
+          }
+        />
+
+        {!canEdit ? (
+          <WarningCard>{t("settings.shell.readOnlyWarning")}</WarningCard>
+        ) : null}
+
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[260px_1fr] lg:items-start">
+          <nav
+            className="flex flex-col gap-3"
+            aria-label={t("settings.shell.navLabel")}
+          >
+            <SearchInput
+              value={navQuery}
+              onValueChange={setNavQuery}
+              placeholder={t("settings.shell.searchPlaceholder")}
+            />
+            {GROUPS.map((group) => {
+              const items = navItems.filter((item) => item.group === group.key);
+              if (!items.length) return null;
+              return (
+                <div key={group.key} className="flex flex-col gap-1">
+                  <span className="px-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {isAr ? group.ar : group.en}
+                  </span>
+                  {items.map((s) => (
+                    <Button
+                      key={s.key}
+                      type="button"
+                      variant="ghost"
+                      className="justify-start"
+                      data-active={s.key === section ? "true" : undefined}
+                      leadingIcon={<s.icon className="h-4 w-4" />}
+                      onClick={() => setSection(s.key)}
+                    >
+                      {isAr ? s.ar : s.en}
+                    </Button>
+                  ))}
+                </div>
+              );
+            })}
+            {navItems.length === 0 ? (
+              <p className="px-2 py-4 text-center text-sm text-muted-foreground">
+                {t("settings.shell.noMatchingSections")}
+              </p>
+            ) : null}
+          </nav>
+
+          <div className="min-w-0">
+            {activeSection ? (
+              <div className="flex items-start gap-3 rounded-xl border border-border bg-card p-4">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-accent">
+                  <activeSection.icon className="h-5 w-5" />
+                </span>
+                <div>
+                  <h2>{isAr ? activeSection.ar : activeSection.en}</h2>
+                  <p>{isAr ? activeSection.descAr : activeSection.descEn}</p>
+                </div>
+              </div>
+            ) : null}
+            {isLoading ? (
+              <LoadingState />
+            ) : error ? (
+              <ErrorState description={error.message} />
+            ) : settings ? (
+              <SectionBody
+                section={section}
+                settings={settings}
+                profile={profile}
+                organizationId={organizationId}
+                isAr={isAr}
+                canEdit={canEdit}
+                isOwner={role === "owner"}
+                commit={commit}
+                commitProfile={commitProfile}
+              />
+            ) : null}
+          </div>
         </div>
-      </div>
       </div>
     </PageContainer>
   );
@@ -424,7 +479,14 @@ function SectionBody(props: BodyProps) {
   }
 }
 
-function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfile }: BodyProps) {
+function GeneralSection({
+  settings,
+  profile,
+  isAr,
+  canEdit,
+  commit,
+  commitProfile,
+}: BodyProps) {
   const { t } = useI18n();
   const d = canEdit ? undefined : true;
   return (
@@ -433,7 +495,10 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
         title={t("settings.fields.companyIdentity")}
         description={t("settings.fields.companyIdentityDesc")}
       >
-        <Row label={t("settings.fields.companyLogo")} hint={t("settings.fields.directImageUrl")}>
+        <Row
+          label={t("settings.fields.companyLogo")}
+          hint={t("settings.fields.directImageUrl")}
+        >
           <LogoUploader
             isAr={isAr}
             disabled={d}
@@ -447,14 +512,24 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
             isAr={isAr}
             disabled={d}
             value={profile?.name_ar ?? ""}
-            validate={(v) => (v.trim().length < 2 ? (t("settings.fields.nameRequired")) : null)}
+            validate={(v) =>
+              v.trim().length < 2 ? t("settings.fields.nameRequired") : null
+            }
             onCommit={(v) => commitProfile({ name_ar: v.trim() })}
           />
         </Row>
         <Row label={t("settings.fields.companyNameEnglish")}>
-          <TextInput isAr={isAr} disabled={d} value={profile?.name_en ?? ""} onCommit={(v) => commitProfile({ name_en: v.trim() || null })} />
+          <TextInput
+            isAr={isAr}
+            disabled={d}
+            value={profile?.name_en ?? ""}
+            onCommit={(v) => commitProfile({ name_en: v.trim() || null })}
+          />
         </Row>
-        <Row label={t("settings.fields.companyCode")} hint={t("settings.fields.readOnly")}>
+        <Row
+          label={t("settings.fields.companyCode")}
+          hint={t("settings.fields.readOnly")}
+        >
           <Input value={profile?.organization_code ?? ""} readOnly disabled />
         </Row>
         <Row label={t("settings.fields.email")}>
@@ -462,7 +537,9 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
             isAr={isAr}
             disabled={d}
             value={profile?.email ?? ""}
-            validate={(v) => (v && !EMAIL_RE.test(v) ? (t("settings.fields.invalidEmail")) : null)}
+            validate={(v) =>
+              v && !EMAIL_RE.test(v) ? t("settings.fields.invalidEmail") : null
+            }
             onCommit={(v) => commitProfile({ email: v.trim() || null })}
           />
         </Row>
@@ -471,12 +548,21 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
             isAr={isAr}
             disabled={d}
             value={profile?.phone ?? ""}
-            validate={(v) => (v && !PHONE_RE.test(v.trim()) ? (t("settings.fields.invalidPhoneNumber")) : null)}
+            validate={(v) =>
+              v && !PHONE_RE.test(v.trim())
+                ? t("settings.fields.invalidPhoneNumber")
+                : null
+            }
             onCommit={(v) => commitProfile({ phone: v.trim() || null })}
           />
         </Row>
         <Row label={t("settings.fields.address")}>
-          <TextInput isAr={isAr} disabled={d} value={settings.address ?? ""} onCommit={(v) => commit({ address: v.trim() || null }, "general")} />
+          <TextInput
+            isAr={isAr}
+            disabled={d}
+            value={settings.address ?? ""}
+            onCommit={(v) => commit({ address: v.trim() || null }, "general")}
+          />
         </Row>
         <Row label={t("settings.fields.website")}>
           <TextInput
@@ -484,7 +570,11 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
             disabled={d}
             value={profile?.website ?? ""}
             placeholder="https://…"
-            validate={(v) => (v && !/^https?:\/\//.test(v) ? (t("settings.fields.invalidUrl")) : null)}
+            validate={(v) =>
+              v && !/^https?:\/\//.test(v)
+                ? t("settings.fields.invalidUrl")
+                : null
+            }
             onCommit={(v) => commitProfile({ website: v.trim() || null })}
           />
         </Row>
@@ -493,7 +583,9 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
             isAr={isAr}
             disabled={d}
             value={settings.commercial_registration ?? ""}
-            onCommit={(v) => commit({ commercial_registration: v.trim() || null }, "general")}
+            onCommit={(v) =>
+              commit({ commercial_registration: v.trim() || null }, "general")
+            }
           />
         </Row>
         <Row label={t("settings.fields.vatNumber")}>
@@ -501,15 +593,31 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
             isAr={isAr}
             disabled={d}
             value={settings.tax_number ?? ""}
-            onCommit={(v) => commit({ tax_number: v.trim() || null }, "general")}
+            onCommit={(v) =>
+              commit({ tax_number: v.trim() || null }, "general")
+            }
           />
         </Row>
       </Card>
 
-      <Card title={t("settings.fields.locale")} description={t("settings.fields.localeDesc")}>
+      <Card
+        title={t("settings.fields.locale")}
+        description={t("settings.fields.localeDesc")}
+      >
         <Row label={t("settings.fields.timeZone")}>
-          <Select disabled={d} value={settings.timezone} onChange={(e) => commit({ timezone: e.target.value }, "general")}>
-            {["Asia/Riyadh", "Asia/Dubai", "Asia/Kuwait", "Asia/Qatar", "Africa/Cairo", "UTC"].map((tz) => (
+          <Select
+            disabled={d}
+            value={settings.timezone}
+            onChange={(e) => commit({ timezone: e.target.value }, "general")}
+          >
+            {[
+              "Asia/Riyadh",
+              "Asia/Dubai",
+              "Asia/Kuwait",
+              "Asia/Qatar",
+              "Africa/Cairo",
+              "UTC",
+            ].map((tz) => (
               <option key={tz} value={tz}>
                 {tz}
               </option>
@@ -527,13 +635,22 @@ function GeneralSection({ settings, profile, isAr, canEdit, commit, commitProfil
             ]}
           />
         </Row>
-        <Row label={t("settings.fields.currency")} hint={t("settings.fields.threeLetterCode")}>
+        <Row
+          label={t("settings.fields.currency")}
+          hint={t("settings.fields.threeLetterCode")}
+        >
           <TextInput
             isAr={isAr}
             disabled={d}
             value={settings.currency}
-            validate={(v) => (!/^[A-Za-z]{3}$/.test(v.trim()) ? (t("settings.fields.invalidCurrencyCode")) : null)}
-            onCommit={(v) => commit({ currency: v.trim().toUpperCase() }, "general")}
+            validate={(v) =>
+              !/^[A-Za-z]{3}$/.test(v.trim())
+                ? t("settings.fields.invalidCurrencyCode")
+                : null
+            }
+            onCommit={(v) =>
+              commit({ currency: v.trim().toUpperCase() }, "general")
+            }
           />
         </Row>
         <Row label={t("settings.fields.dateFormat")}>
@@ -573,7 +690,8 @@ function BusinessSection({ settings, isAr, canEdit, commit }: BodyProps) {
       : settings.payment_methods.filter((m) => m !== method);
     if (next.length === 0) return;
     const patch: SettingsPatch = { payment_methods: next };
-    if (!next.includes(settings.default_payment_method)) patch.default_payment_method = next[0];
+    if (!next.includes(settings.default_payment_method))
+      patch.default_payment_method = next[0];
     void commit(patch, "business");
   };
 
@@ -596,7 +714,9 @@ function BusinessSection({ settings, isAr, canEdit, commit }: BodyProps) {
               label={label}
               disabled={d}
               checked={settings[key] as boolean}
-              onChange={(v) => commit({ [key]: v } as SettingsPatch, "business")}
+              onChange={(v) =>
+                commit({ [key]: v } as SettingsPatch, "business")
+              }
             />
           </Row>
         ))}
@@ -621,9 +741,16 @@ function BusinessSection({ settings, isAr, canEdit, commit }: BodyProps) {
           <Select
             disabled={d}
             value={settings.default_payment_method}
-            onChange={(e) => commit({ default_payment_method: e.target.value as PaymentMethod }, "business")}
+            onChange={(e) =>
+              commit(
+                { default_payment_method: e.target.value as PaymentMethod },
+                "business",
+              )
+            }
           >
-            {PAYMENT_METHODS.filter((m) => settings.payment_methods.includes(m.value)).map((m) => (
+            {PAYMENT_METHODS.filter((m) =>
+              settings.payment_methods.includes(m.value),
+            ).map((m) => (
               <option key={m.value} value={m.value}>
                 {isAr ? m.ar : m.en}
               </option>
@@ -632,9 +759,17 @@ function BusinessSection({ settings, isAr, canEdit, commit }: BodyProps) {
         </Row>
       </Card>
 
-      <Card title={t("settings.fields.tax")} description={t("settings.fields.taxDesc")}>
+      <Card
+        title={t("settings.fields.tax")}
+        description={t("settings.fields.taxDesc")}
+      >
         <Row label={t("settings.fields.taxEnabled")}>
-          <Toggle label="tax" disabled={d} checked={settings.tax_enabled} onChange={(v) => commit({ tax_enabled: v }, "business")} />
+          <Toggle
+            label="tax"
+            disabled={d}
+            checked={settings.tax_enabled}
+            onChange={(v) => commit({ tax_enabled: v }, "business")}
+          />
         </Row>
         <Row label={t("settings.fields.taxPercentage")}>
           <NumberInput
@@ -659,7 +794,12 @@ function BusinessSection({ settings, isAr, canEdit, commit }: BodyProps) {
   );
 }
 
-function MembershipSection({ settings, isAr, canEdit, commit }: BodyProps) {
+export function MembershipSection({
+  settings,
+  isAr,
+  canEdit,
+  commit,
+}: Omit<BodyProps, "section">) {
   const { t } = useI18n();
   const d = canEdit ? undefined : true;
   return (
@@ -671,37 +811,72 @@ function MembershipSection({ settings, isAr, canEdit, commit }: BodyProps) {
             value={settings.default_activation}
             onChange={(v) => commit({ default_activation: v }, "membership")}
             options={[
-              { value: "immediate" as const, label: t("settings.fields.immediately") },
+              {
+                value: "immediate" as const,
+                label: t("settings.fields.immediately"),
+              },
               { value: "manual" as const, label: t("settings.fields.manual") },
-              { value: "scheduled" as const, label: t("settings.fields.scheduled") },
+              {
+                value: "scheduled" as const,
+                label: t("settings.fields.scheduled"),
+              },
             ]}
           />
         </Row>
         <Row label={t("settings.fields.autoRenewal")}>
-          <Toggle label="auto renewal" disabled={d} checked={settings.auto_renewal} onChange={(v) => commit({ auto_renewal: v }, "membership")} />
+          <Toggle
+            label="auto renewal"
+            disabled={d}
+            checked={settings.auto_renewal}
+            onChange={(v) => commit({ auto_renewal: v }, "membership")}
+          />
         </Row>
         <Row
           label={t("settings.fields.defaultBonusDays")}
           hint={t("settings.fields.eachPlanCanOverride")}
         >
-          <NumberInput isAr={isAr} disabled={d} value={settings.default_bonus_days} min={0} max={365} onCommit={(v) => commit({ default_bonus_days: v }, "membership")} />
+          <NumberInput
+            isAr={isAr}
+            disabled={d}
+            value={settings.default_bonus_days}
+            min={0}
+            max={365}
+            onCommit={(v) => commit({ default_bonus_days: v }, "membership")}
+          />
         </Row>
         <Row label={t("settings.fields.oneDrinkPerDay")}>
-          <Toggle label="one per day" disabled={d} checked={settings.one_drink_per_day} onChange={(v) => commit({ one_drink_per_day: v }, "membership")} />
+          <Toggle
+            label="one per day"
+            disabled={d}
+            checked={settings.one_drink_per_day}
+            onChange={(v) => commit({ one_drink_per_day: v }, "membership")}
+          />
         </Row>
       </Card>
     </div>
   );
 }
 
-function OrderingSection({ settings, isAr, canEdit, commit }: BodyProps) {
+export function OrderingSection({
+  settings,
+  isAr,
+  canEdit,
+  commit,
+}: Omit<BodyProps, "section">) {
   const { t } = useI18n();
   const d = canEdit ? undefined : true;
   return (
     <div className="flex flex-col gap-4">
       <Card title={t("settings.fields.orderingRules")}>
         <Row label={t("settings.fields.orderPrepMinutes")}>
-          <NumberInput isAr={isAr} disabled={d} value={settings.order_prep_minutes} min={0} max={240} onCommit={(v) => commit({ order_prep_minutes: v }, "ordering")} />
+          <NumberInput
+            isAr={isAr}
+            disabled={d}
+            value={settings.order_prep_minutes}
+            min={0}
+            max={240}
+            onCommit={(v) => commit({ order_prep_minutes: v }, "ordering")}
+          />
         </Row>
         <Row label={t("settings.fields.orderNumberFormat")}>
           <Segmented
@@ -709,9 +884,15 @@ function OrderingSection({ settings, isAr, canEdit, commit }: BodyProps) {
             value={settings.order_number_format}
             onChange={(v) => commit({ order_number_format: v }, "ordering")}
             options={[
-              { value: "sequential" as const, label: t("settings.fields.sequential") },
+              {
+                value: "sequential" as const,
+                label: t("settings.fields.sequential"),
+              },
               { value: "daily" as const, label: t("settings.fields.daily") },
-              { value: "branch_prefixed" as const, label: t("settings.fields.branchPrefixed") },
+              {
+                value: "branch_prefixed" as const,
+                label: t("settings.fields.branchPrefixed"),
+              },
             ]}
           />
         </Row>
@@ -722,7 +903,10 @@ function OrderingSection({ settings, isAr, canEdit, commit }: BodyProps) {
             onChange={(v) => commit({ queue_behavior: v }, "ordering")}
             options={[
               { value: "fifo" as const, label: t("settings.fields.fifo") },
-              { value: "priority" as const, label: t("settings.fields.priority") },
+              {
+                value: "priority" as const,
+                label: t("settings.fields.priority"),
+              },
               { value: "manual" as const, label: t("settings.fields.manual") },
             ]}
           />
@@ -732,7 +916,9 @@ function OrderingSection({ settings, isAr, canEdit, commit }: BodyProps) {
             label="registration"
             disabled={d}
             checked={settings.customer_registration_enabled}
-            onChange={(v) => commit({ customer_registration_enabled: v }, "ordering")}
+            onChange={(v) =>
+              commit({ customer_registration_enabled: v }, "ordering")
+            }
           />
         </Row>
         <Row label={t("settings.fields.customerComments")}>
@@ -740,7 +926,9 @@ function OrderingSection({ settings, isAr, canEdit, commit }: BodyProps) {
             label="comments"
             disabled={d}
             checked={settings.customer_comments_enabled}
-            onChange={(v) => commit({ customer_comments_enabled: v }, "ordering")}
+            onChange={(v) =>
+              commit({ customer_comments_enabled: v }, "ordering")
+            }
           />
         </Row>
         <Row label={t("settings.fields.allowMultipleActiveOrders")}>
@@ -748,7 +936,9 @@ function OrderingSection({ settings, isAr, canEdit, commit }: BodyProps) {
             label="multiple orders"
             disabled={d}
             checked={settings.allow_multiple_active_orders}
-            onChange={(v) => commit({ allow_multiple_active_orders: v }, "ordering")}
+            onChange={(v) =>
+              commit({ allow_multiple_active_orders: v }, "ordering")
+            }
           />
         </Row>
       </Card>
@@ -756,16 +946,21 @@ function OrderingSection({ settings, isAr, canEdit, commit }: BodyProps) {
   );
 }
 
-
 type SecurityConfirmAction =
   | { kind: "two_factor_off" }
   | { kind: "restriction_none" }
   | { kind: "audit_log_off" };
 
-function SecuritySection({ settings, isAr, canEdit, commit }: BodyProps) {
+export function SecuritySection({
+  settings,
+  isAr,
+  canEdit,
+  commit,
+}: Omit<BodyProps, "section">) {
   const { t } = useI18n();
   const d = canEdit ? undefined : true;
-  const [pendingAction, setPendingAction] = useState<SecurityConfirmAction | null>(null);
+  const [pendingAction, setPendingAction] =
+    useState<SecurityConfirmAction | null>(null);
   const [busy, setBusy] = useState(false);
 
   const runConfirmed = useCallback(
@@ -781,7 +976,10 @@ function SecuritySection({ settings, isAr, canEdit, commit }: BodyProps) {
     [commit],
   );
 
-  const confirmCopy: Record<SecurityConfirmAction["kind"], { title: string; description: string }> = {
+  const confirmCopy: Record<
+    SecurityConfirmAction["kind"],
+    { title: string; description: string }
+  > = {
     two_factor_off: {
       title: t("settings.fields.turnOffTwoFactor"),
       description: t("settings.fields.turnOffTwoFactorDesc"),
@@ -800,7 +998,14 @@ function SecuritySection({ settings, isAr, canEdit, commit }: BodyProps) {
     <div className="flex flex-col gap-4">
       <Card title={t("settings.fields.sessionsAndPasswords")}>
         <Row label={t("settings.fields.sessionTimeout")}>
-          <NumberInput isAr={isAr} disabled={d} value={settings.session_timeout_minutes} min={15} max={10080} onCommit={(v) => commit({ session_timeout_minutes: v }, "security")} />
+          <NumberInput
+            isAr={isAr}
+            disabled={d}
+            value={settings.session_timeout_minutes}
+            min={15}
+            max={10080}
+            onCommit={(v) => commit({ session_timeout_minutes: v }, "security")}
+          />
         </Row>
         <Row label={t("settings.fields.passwordPolicy")}>
           <Segmented
@@ -808,7 +1013,10 @@ function SecuritySection({ settings, isAr, canEdit, commit }: BodyProps) {
             value={settings.password_policy}
             onChange={(v) => commit({ password_policy: v }, "security")}
             options={[
-              { value: "standard" as const, label: t("settings.fields.standard") },
+              {
+                value: "standard" as const,
+                label: t("settings.fields.standard"),
+              },
               { value: "strong" as const, label: t("settings.fields.strong") },
               { value: "strict" as const, label: t("settings.fields.strict") },
             ]}
@@ -843,23 +1051,45 @@ function SecuritySection({ settings, isAr, canEdit, commit }: BodyProps) {
             }}
             options={[
               { value: "none" as const, label: t("settings.fields.none") },
-              { value: "ip_allowlist" as const, label: t("settings.fields.ipAllowlist") },
-              { value: "business_hours" as const, label: t("settings.fields.businessHours") },
+              {
+                value: "ip_allowlist" as const,
+                label: t("settings.fields.ipAllowlist"),
+              },
+              {
+                value: "business_hours" as const,
+                label: t("settings.fields.businessHours"),
+              },
             ]}
           />
         </Row>
-        <Row label={t("settings.fields.allowedIpAddresses")} hint={t("settings.fields.commaSeparated")}>
+        <Row
+          label={t("settings.fields.allowedIpAddresses")}
+          hint={t("settings.fields.commaSeparated")}
+        >
           <TextInput
             isAr={isAr}
             disabled={d || settings.login_restriction !== "ip_allowlist"}
             value={settings.allowed_ip_addresses.join(", ")}
             validate={(v) => {
-              const items = v.split(",").map((x) => x.trim()).filter(Boolean);
-              const ok = items.every((ip) => /^(\d{1,3}\.){3}\d{1,3}(\/\d{1,2})?$/.test(ip));
+              const items = v
+                .split(",")
+                .map((x) => x.trim())
+                .filter(Boolean);
+              const ok = items.every((ip) =>
+                /^(\d{1,3}\.){3}\d{1,3}(\/\d{1,2})?$/.test(ip),
+              );
               return ok ? null : t("settings.fields.invalidIpAddress");
             }}
             onCommit={(v) =>
-              commit({ allowed_ip_addresses: v.split(",").map((x) => x.trim()).filter(Boolean) }, "security")
+              commit(
+                {
+                  allowed_ip_addresses: v
+                    .split(",")
+                    .map((x) => x.trim())
+                    .filter(Boolean),
+                },
+                "security",
+              )
             }
           />
         </Row>
@@ -882,7 +1112,9 @@ function SecuritySection({ settings, isAr, canEdit, commit }: BodyProps) {
       <ConfirmDialog
         open={pendingAction !== null}
         title={pendingAction ? confirmCopy[pendingAction.kind].title : ""}
-        description={pendingAction ? confirmCopy[pendingAction.kind].description : ""}
+        description={
+          pendingAction ? confirmCopy[pendingAction.kind].description : ""
+        }
         tone="danger"
         busy={busy}
         confirmLabel={t("common.confirm")}
@@ -890,12 +1122,14 @@ function SecuritySection({ settings, isAr, canEdit, commit }: BodyProps) {
         onCancel={() => setPendingAction(null)}
         onConfirm={() => {
           if (!pendingAction) return;
-          if (pendingAction.kind === "two_factor_off") void runConfirmed({ two_factor_required: false });
-          else if (pendingAction.kind === "restriction_none") void runConfirmed({ login_restriction: "none" });
-          else if (pendingAction.kind === "audit_log_off") void runConfirmed({ audit_log_enabled: false });
+          if (pendingAction.kind === "two_factor_off")
+            void runConfirmed({ two_factor_required: false });
+          else if (pendingAction.kind === "restriction_none")
+            void runConfirmed({ login_restriction: "none" });
+          else if (pendingAction.kind === "audit_log_off")
+            void runConfirmed({ audit_log_enabled: false });
         }}
       />
     </div>
   );
 }
-

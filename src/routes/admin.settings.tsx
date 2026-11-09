@@ -2,13 +2,16 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 
 import { useOrganization } from "@/providers/OrganizationProvider";
-import { CompanySettingsShell } from "@/features/company/settings/CompanySettingsShell";
+import { CafeSettings } from "@/features/company/settings/CafeSettings";
 
 export const Route = createFileRoute("/admin/settings")({
   head: () => ({
     meta: [
       { title: "Company Settings · KOB" },
-      { name: "description", content: "Manage your KOB company profile, team, and preferences." },
+      {
+        name: "description",
+        content: "Manage your KOB company profile, team, and preferences.",
+      },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -28,5 +31,5 @@ function SettingsPage() {
 
   if (!ready || role === "cashier") return null;
 
-  return <CompanySettingsShell />;
+  return <CafeSettings />;
 }

@@ -37,7 +37,7 @@ function AdminLayout() {
             ? organization?.nameAr || organization?.nameEn
             : organization?.nameEn || organization?.nameAr) || "KOB"
         }
-        subtitle={isRTL ? "بوابة الشركة" : "Company Portal"}
+        subtitle=""
         onSignOut={handleSignOut}
       >
         <Outlet />

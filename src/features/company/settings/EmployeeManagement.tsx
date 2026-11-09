@@ -24,7 +24,11 @@ import {
   type CompanyMemberRow,
 } from "@/services/company/company-members.service";
 import { listActivity } from "@/services/company/activity.service";
-import { inviteEmployee, removeEmployee, resetEmployeePassword } from "@/lib/company-employees.functions";
+import {
+  inviteEmployee,
+  removeEmployee,
+  resetEmployeePassword,
+} from "@/lib/company-employees.functions";
 import {
   Alert,
   Button,
@@ -58,17 +62,72 @@ const ROLE_LABEL: Record<CompanyMemberRole, [string, string]> = {
 };
 
 /** Effective capability matrix — mirrors the route guards and RLS policies in place today. */
-const CAPABILITIES: Array<{ key: string; ar: string; en: string; roles: CompanyMemberRole[] }> = [
-  { key: "dashboard", ar: "لوحة الأعمال", en: "Dashboard", roles: ["owner", "admin", "manager"] },
-  { key: "analytics", ar: "تحليلات الأعمال", en: "Business analytics", roles: ["owner", "admin", "manager"] },
-  { key: "customers", ar: "العملاء والاشتراكات", en: "Customers & subscriptions", roles: ["owner", "admin", "manager"] },
-  { key: "drinks", ar: "استوديو المشروبات", en: "Drink studio", roles: ["owner", "admin"] },
-  { key: "plans", ar: "خطط الاشتراك", en: "Subscription plans", roles: ["owner", "admin"] },
-  { key: "coupons", ar: "بيع الكوبونات", en: "Sell coupons", roles: ["owner", "admin", "manager", "cashier"] },
-  { key: "orders", ar: "اعتماد الطلبات", en: "Approve orders", roles: ["owner", "admin", "manager", "cashier"] },
-  { key: "branches", ar: "إدارة الفروع", en: "Manage branches", roles: ["owner", "admin"] },
-  { key: "employees", ar: "إدارة الموظفين", en: "Manage employees", roles: ["owner", "admin"] },
-  { key: "settings", ar: "إعدادات الشركة", en: "Company settings", roles: ["owner", "admin"] },
+const CAPABILITIES: Array<{
+  key: string;
+  ar: string;
+  en: string;
+  roles: CompanyMemberRole[];
+}> = [
+  {
+    key: "dashboard",
+    ar: "لوحة الأعمال",
+    en: "Dashboard",
+    roles: ["owner", "admin", "manager"],
+  },
+  {
+    key: "analytics",
+    ar: "تحليلات الأعمال",
+    en: "Business analytics",
+    roles: ["owner", "admin", "manager"],
+  },
+  {
+    key: "customers",
+    ar: "العملاء والاشتراكات",
+    en: "Customers & subscriptions",
+    roles: ["owner", "admin", "manager"],
+  },
+  {
+    key: "drinks",
+    ar: "استوديو المشروبات",
+    en: "Drink studio",
+    roles: ["owner", "admin"],
+  },
+  {
+    key: "plans",
+    ar: "خطط الاشتراك",
+    en: "Subscription plans",
+    roles: ["owner", "admin"],
+  },
+  {
+    key: "coupons",
+    ar: "بيع الكوبونات",
+    en: "Sell coupons",
+    roles: ["owner", "admin", "manager", "cashier"],
+  },
+  {
+    key: "orders",
+    ar: "اعتماد الطلبات",
+    en: "Approve orders",
+    roles: ["owner", "admin", "manager", "cashier"],
+  },
+  {
+    key: "branches",
+    ar: "إدارة الفروع",
+    en: "Manage branches",
+    roles: ["owner", "admin"],
+  },
+  {
+    key: "employees",
+    ar: "إدارة الموظفين",
+    en: "Manage employees",
+    roles: ["owner", "admin"],
+  },
+  {
+    key: "settings",
+    ar: "إعدادات الشركة",
+    en: "Company settings",
+    roles: ["owner", "admin"],
+  },
   { key: "audit", ar: "سجل النشاط", en: "Activity log", roles: ["owner"] },
 ];
 
@@ -99,7 +158,11 @@ const emptyDraft = (role: CompanyMemberRole): Draft => ({
   password: "",
 });
 
-function formatDate(value: string | null, isAr: boolean, neverLabel: string): string {
+function formatDate(
+  value: string | null,
+  isAr: boolean,
+  neverLabel: string,
+): string {
   if (!value) return neverLabel;
   return new Intl.DateTimeFormat(isAr ? "ar-SA" : "en-GB", {
     dateStyle: "medium",
@@ -122,21 +185,35 @@ export function EmployeeManagementSection({
     queryKey: ["company-members", organizationId],
     queryFn: () => listCompanyMembers(organizationId),
   });
-  const branches = useQuery({ queryKey: ["company-branches"], queryFn: () => listBranches() });
+  const branches = useQuery({
+    queryKey: ["company-branches"],
+    queryFn: () => listBranches(),
+  });
 
   const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState<"all" | CompanyMemberRole>("all");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [roleFilter, setRoleFilter] = useState<"all" | CompanyMemberRole>(
+    "all",
+  );
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "active" | "inactive"
+  >("all");
   const [busy, setBusy] = useState<string | null>(null);
   const [rowError, setRowError] = useState<string | null>(null);
 
   const [draft, setDraft] = useState<Draft | null>(null);
   const [draftError, setDraftError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [credential, setCredential] = useState<{ email: string; password: string } | null>(null);
-  const [permissionsFor, setPermissionsFor] = useState<CompanyMemberRow | null>(null);
+  const [credential, setCredential] = useState<{
+    email: string;
+    password: string;
+  } | null>(null);
+  const [permissionsFor, setPermissionsFor] = useState<CompanyMemberRow | null>(
+    null,
+  );
   const [activityFor, setActivityFor] = useState<CompanyMemberRow | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState<CompanyMemberRow | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<CompanyMemberRow | null>(
+    null,
+  );
 
   const rows = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -144,7 +221,14 @@ export function EmployeeManagementSection({
       if (roleFilter !== "all" && m.role !== roleFilter) return false;
       if (statusFilter !== "all" && m.status !== statusFilter) return false;
       if (!term) return true;
-      return [m.profile?.full_name, m.profile?.email, m.job_title, m.phone, m.branch?.name_en, m.branch?.name_ar]
+      return [
+        m.profile?.full_name,
+        m.profile?.email,
+        m.job_title,
+        m.phone,
+        m.branch?.name_en,
+        m.branch?.name_ar,
+      ]
         .filter(Boolean)
         .some((value) => String(value).toLowerCase().includes(term));
     });
@@ -156,14 +240,21 @@ export function EmployeeManagementSection({
     return {
       total: all.length,
       active: all.filter((m) => m.status === "active").length,
-      admins: all.filter((m) => m.role === "owner" || m.role === "admin").length,
-      recent: all.filter((m) => m.last_login_at && new Date(m.last_login_at).getTime() > weekAgo).length,
+      admins: all.filter((m) => m.role === "owner" || m.role === "admin")
+        .length,
+      recent: all.filter(
+        (m) => m.last_login_at && new Date(m.last_login_at).getTime() > weekAgo,
+      ).length,
     };
   }, [members.data]);
 
-  const hasFilters = Boolean(search.trim()) || roleFilter !== "all" || statusFilter !== "all";
+  const hasFilters =
+    Boolean(search.trim()) || roleFilter !== "all" || statusFilter !== "all";
 
-  const refresh = () => queryClient.invalidateQueries({ queryKey: ["company-members", organizationId] });
+  const refresh = () =>
+    queryClient.invalidateQueries({
+      queryKey: ["company-members", organizationId],
+    });
 
   const run = async (memberId: string, action: () => Promise<void>) => {
     setBusy(memberId);
@@ -181,7 +272,8 @@ export function EmployeeManagementSection({
   const submitDraft = async () => {
     if (!draft) return;
     setDraftError(null);
-    if (draft.fullName.trim().length < 2) return setDraftError(t("settings.employees.nameIsRequired"));
+    if (draft.fullName.trim().length < 2)
+      return setDraftError(t("settings.employees.nameIsRequired"));
     if (!draft.memberId && !EMAIL_RE.test(draft.email.trim()))
       return setDraftError(t("settings.employees.invalidEmailAddress"));
     if (draft.phone.trim() && !PHONE_RE.test(draft.phone.trim()))
@@ -197,8 +289,11 @@ export function EmployeeManagementSection({
           phone: draft.phone.trim() || null,
           branch_id: draft.branchId || null,
         });
-        if (draft.userId) await updateMemberProfileName(draft.userId, draft.fullName.trim());
-        const current = (members.data ?? []).find((m) => m.id === draft.memberId);
+        if (draft.userId)
+          await updateMemberProfileName(draft.userId, draft.fullName.trim());
+        const current = (members.data ?? []).find(
+          (m) => m.id === draft.memberId,
+        );
         if (current && current.role !== draft.role) {
           await updateMemberRole(organizationId, draft.memberId, draft.role);
         }
@@ -216,7 +311,10 @@ export function EmployeeManagementSection({
           },
         });
         if (result.temporaryPassword) {
-          setCredential({ email: draft.email.trim(), password: result.temporaryPassword });
+          setCredential({
+            email: draft.email.trim(),
+            password: result.temporaryPassword,
+          });
         }
       }
       await refresh();
@@ -233,7 +331,10 @@ export function EmployeeManagementSection({
       const result = await resetEmployeePassword({
         data: { organizationId, userId: member.user_id, password: null },
       });
-      setCredential({ email: member.profile?.email ?? "", password: result.temporaryPassword });
+      setCredential({
+        email: member.profile?.email ?? "",
+        password: result.temporaryPassword,
+      });
     });
   };
 
@@ -250,9 +351,18 @@ export function EmployeeManagementSection({
       header: t("settings.employees.employee"),
       render: (m) => (
         <div className="min-w-0">
-          <strong className="block">{m.profile?.full_name || m.profile?.email || m.user_id.slice(0, 8)}</strong>
-          <small className="block text-muted-foreground">{m.profile?.email}</small>
-          {m.job_title ? <small className="text-muted-foreground">{m.job_title}</small> : null}
+          <strong
+            className="block"
+            style={m.profile?.full_name ? undefined : { color: "#c8643b" }}
+          >
+            {m.profile?.full_name?.trim() || t("cafe.settings.unnamed")}
+          </strong>
+          <small className="block text-muted-foreground">
+            {m.profile?.email}
+          </small>
+          {m.job_title ? (
+            <small className="text-muted-foreground">{m.job_title}</small>
+          ) : null}
         </div>
       ),
     },
@@ -264,10 +374,18 @@ export function EmployeeManagementSection({
           disabled={d || busy === m.id}
           value={m.role}
           onChange={(e) =>
-            run(m.id, () => updateMemberRole(organizationId, m.id, e.target.value as CompanyMemberRole))
+            run(m.id, () =>
+              updateMemberRole(
+                organizationId,
+                m.id,
+                e.target.value as CompanyMemberRole,
+              ),
+            )
           }
         >
-          {ROLES.filter((r) => r !== "owner" || isOwner || m.role === "owner").map((r) => (
+          {ROLES.filter(
+            (r) => r !== "owner" || isOwner || m.role === "owner",
+          ).map((r) => (
             <option key={r} value={r}>
               {isAr ? ROLE_LABEL[r][0] : ROLE_LABEL[r][1]}
             </option>
@@ -283,7 +401,11 @@ export function EmployeeManagementSection({
           disabled={d || busy === m.id}
           value={m.branch_id ?? ""}
           onChange={(e) =>
-            run(m.id, () => updateMemberDetails(organizationId, m.id, { branch_id: e.target.value || null }))
+            run(m.id, () =>
+              updateMemberDetails(organizationId, m.id, {
+                branch_id: e.target.value || null,
+              }),
+            )
           }
         >
           <option value="">{t("settings.employees.allBranches")}</option>
@@ -298,7 +420,11 @@ export function EmployeeManagementSection({
     {
       key: "last_login",
       header: t("settings.employees.lastLogin"),
-      render: (m) => <span className="text-muted-foreground">{formatDate(m.last_login_at, isAr, t("settings.employees.never"))}</span>,
+      render: (m) => (
+        <span className="text-muted-foreground">
+          {formatDate(m.last_login_at, isAr, t("settings.employees.never"))}
+        </span>
+      ),
     },
     {
       key: "active",
@@ -308,7 +434,11 @@ export function EmployeeManagementSection({
           label={t("common.status.active")}
           disabled={d || busy === m.id}
           checked={m.status === "active"}
-          onChange={(v) => run(m.id, () => setMemberStatus(organizationId, m.id, v ? "active" : "inactive"))}
+          onChange={(v) =>
+            run(m.id, () =>
+              setMemberStatus(organizationId, m.id, v ? "active" : "inactive"),
+            )
+          }
         />
       ),
     },
@@ -338,10 +468,17 @@ export function EmployeeManagementSection({
           >
             <Pencil className="h-3.5 w-3.5" />
           </IconButton>
-          <IconButton label={t("settings.employees.permissionsAction")} disabled={d} onClick={() => setPermissionsFor(m)}>
+          <IconButton
+            label={t("settings.employees.permissionsAction")}
+            disabled={d}
+            onClick={() => setPermissionsFor(m)}
+          >
             <ShieldCheck className="h-3.5 w-3.5" />
           </IconButton>
-          <IconButton label={t("settings.employees.activity")} onClick={() => setActivityFor(m)}>
+          <IconButton
+            label={t("settings.employees.activity")}
+            onClick={() => setActivityFor(m)}
+          >
             <Activity className="h-3.5 w-3.5" />
           </IconButton>
           <IconButton
@@ -367,8 +504,16 @@ export function EmployeeManagementSection({
   return (
     <div className="flex flex-col gap-4">
       <StatGrid>
-        <StatCard icon={<Users className="h-4 w-4" />} label={t("settings.employees.teamSize")} value={stats.total} />
-        <StatCard icon={<BadgeCheck className="h-4 w-4" />} label={t("settings.employees.active")} value={stats.active} />
+        <StatCard
+          icon={<Users className="h-4 w-4" />}
+          label={t("settings.employees.teamSize")}
+          value={stats.total}
+        />
+        <StatCard
+          icon={<BadgeCheck className="h-4 w-4" />}
+          label={t("settings.employees.active")}
+          value={stats.active}
+        />
         <StatCard
           icon={<ShieldCheck className="h-4 w-4" />}
           label={t("settings.employees.administrators")}
@@ -385,9 +530,7 @@ export function EmployeeManagementSection({
         open={Boolean(credential)}
         onClose={() => setCredential(null)}
         title={t("settings.employees.temporarySignInDetails")}
-        description={
-          t("settings.employees.copyThisPasswordNowAndHand")
-        }
+        description={t("settings.employees.copyThisPasswordNowAndHand")}
       >
         {credential ? (
           <div className="flex flex-col gap-2 rounded-lg bg-muted p-3 font-mono text-sm">
@@ -399,16 +542,19 @@ export function EmployeeManagementSection({
 
       <Card
         title={t("settings.employees.team")}
-        description={
-          t("settings.employees.addEmployeesManageRolesBranchesAnd")
-        }
+        description={t("settings.employees.addEmployeesManageRolesBranchesAnd")}
         aside={
           canEdit ? (
             <Button
               leadingIcon={<UserPlus className="h-4 w-4" />}
               onClick={() => {
                 setDraftError(null);
-                setDraft(emptyDraft((settings.default_employee_role as CompanyMemberRole) || "cashier"));
+                setDraft(
+                  emptyDraft(
+                    (settings.default_employee_role as CompanyMemberRole) ||
+                      "cashier",
+                  ),
+                );
               }}
             >
               {t("settings.employees.addEmployee")}
@@ -422,7 +568,10 @@ export function EmployeeManagementSection({
             onValueChange={setSearch}
             placeholder={t("settings.employees.searchNameEmailOrBranch")}
           />
-          <Select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value as any)}>
+          <Select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value as any)}
+          >
             <option value="all">{t("settings.employees.allRoles")}</option>
             {ROLES.map((r) => (
               <option key={r} value={r}>
@@ -430,15 +579,24 @@ export function EmployeeManagementSection({
               </option>
             ))}
           </Select>
-          <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as any)}>
+          <Select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as any)}
+          >
             <option value="all">{t("settings.employees.allStatuses")}</option>
             <option value="active">{t("common.status.active")}</option>
-            <option value="inactive">{t("settings.employees.suspended")}</option>
+            <option value="inactive">
+              {t("settings.employees.suspended")}
+            </option>
           </Select>
         </div>
 
         {rowError ? (
-          <Alert tone="danger" onDismiss={() => setRowError(null)} dismissLabel={t("settings.employees.dismiss")}>
+          <Alert
+            tone="danger"
+            onDismiss={() => setRowError(null)}
+            dismissLabel={t("settings.employees.dismiss")}
+          >
             {rowError}
           </Alert>
         ) : null}
@@ -449,7 +607,9 @@ export function EmployeeManagementSection({
           hasFilters ? (
             <NoResultsState
               title={t("settings.employees.noMatchingEmployees")}
-              description={t("settings.employees.tryAdjustingYourSearchOrFilters")}
+              description={t(
+                "settings.employees.tryAdjustingYourSearchOrFilters",
+              )}
             />
           ) : (
             <EmptyState
@@ -486,9 +646,18 @@ export function EmployeeManagementSection({
             value={settings.employee_invite_mode}
             onChange={(v) => commit({ employee_invite_mode: v }, "employees")}
             options={[
-              { value: "admin_only" as const, label: t("settings.employees.adminsOnly") },
-              { value: "managers_allowed" as const, label: t("settings.employees.managersToo") },
-              { value: "disabled" as const, label: t("settings.employees.disabled") },
+              {
+                value: "admin_only" as const,
+                label: t("settings.employees.adminsOnly"),
+              },
+              {
+                value: "managers_allowed" as const,
+                label: t("settings.employees.managersToo"),
+              },
+              {
+                value: "disabled" as const,
+                label: t("settings.employees.disabled"),
+              },
             ]}
           />
         </Row>
@@ -498,8 +667,14 @@ export function EmployeeManagementSection({
             value={settings.password_reset_policy}
             onChange={(v) => commit({ password_reset_policy: v }, "employees")}
             options={[
-              { value: "self_service" as const, label: t("settings.employees.selfService") },
-              { value: "admin_only" as const, label: t("settings.employees.adminOnly") },
+              {
+                value: "self_service" as const,
+                label: t("settings.employees.selfService"),
+              },
+              {
+                value: "admin_only" as const,
+                label: t("settings.employees.adminOnly"),
+              },
             ]}
           />
         </Row>
@@ -524,7 +699,10 @@ export function EmployeeManagementSection({
                 <tr key={cap.key}>
                   <td>{isAr ? cap.ar : cap.en}</td>
                   {ROLES.map((r) => (
-                    <td key={r} data-on={cap.roles.includes(r) ? "true" : "false"}>
+                    <td
+                      key={r}
+                      data-on={cap.roles.includes(r) ? "true" : "false"}
+                    >
                       {cap.roles.includes(r) ? "●" : "—"}
                     </td>
                   ))}
@@ -538,10 +716,18 @@ export function EmployeeManagementSection({
       <FormDialog
         open={Boolean(draft)}
         onClose={() => setDraft(null)}
-        title={draft?.memberId ? (t("settings.employees.editEmployee")) : t("settings.employees.addEmployee")}
+        title={
+          draft?.memberId
+            ? t("settings.employees.editEmployee")
+            : t("settings.employees.addEmployee")
+        }
         onSubmit={submitDraft}
         busy={saving}
-        submitLabel={draft?.memberId ? (t("common.actions.save")) : t("settings.employees.createAccount")}
+        submitLabel={
+          draft?.memberId
+            ? t("common.actions.save")
+            : t("settings.employees.createAccount")
+        }
         cancelLabel={t("common.actions.cancel")}
       >
         {draft ? (
@@ -572,7 +758,12 @@ export function EmployeeManagementSection({
             <Select
               label={t("settings.employees.role")}
               value={draft.role}
-              onChange={(e) => setDraft({ ...draft, role: e.target.value as CompanyMemberRole })}
+              onChange={(e) =>
+                setDraft({
+                  ...draft,
+                  role: e.target.value as CompanyMemberRole,
+                })
+              }
             >
               {ROLES.filter((r) => r !== "owner" || isOwner).map((r) => (
                 <option key={r} value={r}>
@@ -596,8 +787,12 @@ export function EmployeeManagementSection({
               <Input
                 label={t("settings.employees.initialPasswordOptional")}
                 value={draft.password}
-                placeholder={t("settings.employees.generatedAutomaticallyWhenLeftBlank")}
-                onChange={(e) => setDraft({ ...draft, password: e.target.value })}
+                placeholder={t(
+                  "settings.employees.generatedAutomaticallyWhenLeftBlank",
+                )}
+                onChange={(e) =>
+                  setDraft({ ...draft, password: e.target.value })
+                }
               />
             ) : null}
             {draftError ? <Alert tone="danger">{draftError}</Alert> : null}
@@ -664,13 +859,15 @@ function PermissionsModal({
   const { t } = useI18n();
   const base = useMemo(
     () =>
-      Object.fromEntries(CAPABILITIES.map((cap) => [cap.key, cap.roles.includes(member.role)])) as Record<
-        string,
-        boolean
-      >,
+      Object.fromEntries(
+        CAPABILITIES.map((cap) => [cap.key, cap.roles.includes(member.role)]),
+      ) as Record<string, boolean>,
     [member.role],
   );
-  const [values, setValues] = useState<Record<string, boolean>>({ ...base, ...(member.permissions ?? {}) });
+  const [values, setValues] = useState<Record<string, boolean>>({
+    ...base,
+    ...(member.permissions ?? {}),
+  });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -680,9 +877,12 @@ function PermissionsModal({
     try {
       const overrides: Record<string, boolean> = {};
       for (const cap of CAPABILITIES) {
-        if (values[cap.key] !== base[cap.key]) overrides[cap.key] = Boolean(values[cap.key]);
+        if (values[cap.key] !== base[cap.key])
+          overrides[cap.key] = Boolean(values[cap.key]);
       }
-      await updateMemberDetails(organizationId, member.id, { permissions: overrides });
+      await updateMemberDetails(organizationId, member.id, {
+        permissions: overrides,
+      });
       onSaved();
       onClose();
     } catch (err: any) {
@@ -710,7 +910,9 @@ function PermissionsModal({
             label={isAr ? cap.ar : cap.en}
             disabled={!canEdit}
             checked={Boolean(values[cap.key])}
-            onCheckedChange={(v) => setValues((prev) => ({ ...prev, [cap.key]: v }))}
+            onCheckedChange={(v) =>
+              setValues((prev) => ({ ...prev, [cap.key]: v }))
+            }
           />
         ))}
         {error ? <Alert tone="danger">{error}</Alert> : null}
@@ -735,7 +937,8 @@ function ActivityModal({
   const { t } = useI18n();
   const activity = useQuery({
     queryKey: ["member-activity", organizationId, member.user_id],
-    queryFn: () => listActivity(organizationId, { actorUserId: member.user_id, limit: 60 }),
+    queryFn: () =>
+      listActivity(organizationId, { actorUserId: member.user_id, limit: 60 }),
   });
 
   return (
@@ -753,7 +956,12 @@ function ActivityModal({
               : member.branch.name_en
             : t("settings.employees.allBranches")}
           <span>·</span>
-          {t("settings.employees.lastLoginLabel")} {formatDate(member.last_login_at, isAr, t("settings.employees.never"))}
+          {t("settings.employees.lastLoginLabel")}{" "}
+          {formatDate(
+            member.last_login_at,
+            isAr,
+            t("settings.employees.never"),
+          )}
         </div>
         {activity.isLoading ? (
           <LoadingState label={t("common.loading")} />
@@ -770,7 +978,13 @@ function ActivityModal({
                   <strong>{row.action}</strong>
                   {row.entity_label ? <small>{row.entity_label}</small> : null}
                 </div>
-                <time>{formatDate(row.created_at, isAr, t("settings.employees.never"))}</time>
+                <time>
+                  {formatDate(
+                    row.created_at,
+                    isAr,
+                    t("settings.employees.never"),
+                  )}
+                </time>
               </li>
             ))}
           </ol>
