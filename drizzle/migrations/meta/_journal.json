@@ -183,6 +183,13 @@
       "when": 1794274140311,
       "tag": "0025_open_balance_plans",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1794274602424,
+      "tag": "0026_open_balance_plan_validation",
+      "breakpoints": true
     }
   ]
 }
