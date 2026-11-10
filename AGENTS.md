@@ -17,3 +17,6 @@ All social providers sign in through the generated `lovable.auth.signInWithOAuth
 ## Offline orders
 - Verify customer QR tokens using Web Crypto against immutable registered device keys; refresh branch-scoped key caches while online so unregistered or modified tokens cannot redeem offline.
 - Serialize offline synchronization using the subscription row lock and count pending plus approved orders on the served Riyadh date so retries and concurrent cashiers respect plan limits.
+
+- Public pages never read `branches` directly (anon has no access); use `scan_list_public_branches` / `scan_resolve_qr` RPCs. Why: the table holds QR tokens.
+- Cashiers create customers only via `cashier_register_customer`; direct inserts require manager rights. Why: validation and duplicate prevention live in the function.
