@@ -1002,8 +1002,8 @@ function CoffeeOrderCard({
           {" · "}
           {order.subscription?.cups_total != null
             ? (() => {
-                const total = order.subscription.cups_total ?? 0;
-                const rest = Math.max(total - (order.subscription.cups_used ?? 0), 0);
+                const total = order.subscription?.cups_total ?? 0;
+                const rest = Math.max(total - (order.subscription?.cups_used ?? 0), 0);
                 return rest > 0
                   ? t("cafe.cashier.balanceLeft", { left: fmtNum(rest), total: fmtNum(total) })
                   : t("cafe.cashier.balanceOut");
