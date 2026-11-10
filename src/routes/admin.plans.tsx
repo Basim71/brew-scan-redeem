@@ -117,9 +117,7 @@ function PlansPage() {
               <div className="pr">
                 {fmtNum(Number(plan.price))}{" "}
                 <small>
-                  {t("cafe.plans.perDuration", {
-                    days: fmtNum(plan.duration_days),
-                  })}
+                  {open ? t("cafe.plans.perCups", { n: fmtNum(plan.max_redemptions_per_period ?? plan.max_drinks_per_day) }) : t("cafe.plans.perDuration", { days: fmtNum(plan.duration_days) })}
                 </small>
               </div>
               <ul>
