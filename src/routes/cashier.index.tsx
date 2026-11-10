@@ -244,12 +244,12 @@ function CashierQueuePage() {
     const rich = `id, status, created_at, order_date, selected_options, customer_note,
            fulfillment_stage, handover_declined_at, order_number,
            drink:drink_types(name_en, name_ar, image_url),
-           customer:customers(name, phone),
+           customer:customers(name, phone, member_number),
            branch:branches(name_en, name_ar),
            subscription:subscriptions(id, end_date, cups_total, cups_used, plan:plans(name, name_ar, name_en, duration_days, max_drinks_per_day))`;
     const plain = `id, status, created_at, order_date, selected_options, customer_note,
            drink:drink_types(name_en, name_ar),
-           customer:customers(name, phone),
+           customer:customers(name, phone, member_number),
            subscription:subscriptions(id, end_date, plan:plans(name, duration_days))`;
 
     try {
