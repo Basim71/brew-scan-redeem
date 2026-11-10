@@ -1460,6 +1460,8 @@
       "emptyRegs": "No registrations",
       "emptyTitle": "No orders",
       "left": "{left} of {total} left today",
+      "balanceLeft": "{left} of {total} cups",
+      "balanceOut": "Balance used up",
       "loading": "Loading the queue…",
       "noBranch": "This account is not tied to a branch yet. Ask the café owner to assign one.",
       "now": "At the branch now",
