@@ -927,6 +927,7 @@ export type Database = {
           offline_served_at: string | null
           offline_sync_id: string | null
           order_date: string
+          order_number: number | null
           organization_id: string
           picked_up_at: string | null
           placed_via: string | null
@@ -953,6 +954,7 @@ export type Database = {
           offline_served_at?: string | null
           offline_sync_id?: string | null
           order_date?: string
+          order_number?: number | null
           organization_id?: string
           picked_up_at?: string | null
           placed_via?: string | null
@@ -979,6 +981,7 @@ export type Database = {
           offline_served_at?: string | null
           offline_sync_id?: string | null
           order_date?: string
+          order_number?: number | null
           organization_id?: string
           picked_up_at?: string | null
           placed_via?: string | null
