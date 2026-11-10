@@ -994,7 +994,7 @@ function CoffeeOrderCard({
         <div className="ph" />
       )}
       <div className="info">
-        <div className="name">{order.order_number ? `#${order.order_number} · ` : ""}{order.customer?.name || "—"}{order.customer?.member_number ? ` · عضو ${String(order.customer.member_number).padStart(2, "0")}` : ""}</div>
+        <div className="name">{order.order_number ? `#${order.order_number} · ` : ""}{order.customer?.name || "—"}{order.customer?.member_number ? ` · №${String(order.customer.member_number).padStart(2, "0")}` : ""}</div>
         <div className="cafe-muted">
           <span className="cafe-status">{t("cafe.cashier.coffee")}</span>
         </div>
