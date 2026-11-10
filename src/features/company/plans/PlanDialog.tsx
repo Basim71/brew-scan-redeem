@@ -449,9 +449,7 @@ export function PlanDialog({
           <div className="pr">
             {draft.price ? fmtNum(Number(draft.price)) : "—"}{" "}
             <small>
-              {t("cafe.plans.perDuration", {
-                days: fmtNum(draft.duration_days),
-              })}
+              {draft.kind === "open" ? t("cafe.plans.perCups", { n: fmtNum(draft.totalCups) }) : t("cafe.plans.perDuration", { days: fmtNum(draft.duration_days) })}
             </small>
           </div>
           <ul>

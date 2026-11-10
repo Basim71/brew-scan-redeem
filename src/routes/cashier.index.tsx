@@ -72,6 +72,7 @@ type OrderRow = {
   status: "pending" | "approved" | "rejected";
   created_at: string;
   fulfillment_stage?: FulfillmentStage | null;
+  order_number?: number | null;
   handover_declined_at?: string | null;
   order_date?: string | null;
   selected_options: Array<{
@@ -241,7 +242,7 @@ function CashierQueuePage() {
     setError(null);
 
     const rich = `id, status, created_at, order_date, selected_options, customer_note,
-           fulfillment_stage, handover_declined_at,
+           fulfillment_stage, handover_declined_at, order_number,
            drink:drink_types(name_en, name_ar, image_url),
            customer:customers(name, phone),
            branch:branches(name_en, name_ar),
@@ -993,7 +994,7 @@ function CoffeeOrderCard({
         <div className="ph" />
       )}
       <div className="info">
-        <div className="name">{order.customer?.name || "—"}</div>
+        <div className="name">{order.order_number ? `#${order.order_number} · ` : ""}{order.customer?.name || "—"}</div>
         <div className="cafe-muted">
           <span className="cafe-status">{t("cafe.cashier.coffee")}</span>
         </div>
@@ -1101,6 +1102,7 @@ function InProgressOrderCard({
           >
             <Coffee className="h-3.5 w-3.5" /> {t(`cashier.stage.${stage}`)}
           </Badge>
+          {order.order_number ? <b className="kob-order-no">#{order.order_number}</b> : null}
           <span className="kob-queue-time">{timeLabel}</span>
         </div>
 

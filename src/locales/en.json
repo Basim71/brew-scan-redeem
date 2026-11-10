@@ -1605,6 +1605,7 @@
       "paused": "Paused",
       "perDay": "Cups per day",
       "perDuration": "SAR / {days} days",
+      "perCups": "SAR / {n} cups",
       "pick": "Choose",
       "popular": "Most popular",
       "preview": "How it looks in the app",

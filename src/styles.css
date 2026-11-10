@@ -16037,3 +16037,4 @@ a, button, input, select, textarea, [role="button"], [role="switch"], [role="tab
 .kob-scan-stages li span { width:2rem; height:2rem; border-radius:999px; display:grid; place-items:center; border:1px solid currentColor; font-weight:700; }
 .kob-scan-stages li[data-state="done"], .kob-scan-stages li[data-state="active"] { opacity:1; color: var(--kob-gold, var(--primary)); }
 .kob-scan-stages li[data-state="active"] span { box-shadow: 0 0 18px color-mix(in oklab, currentColor 45%, transparent); }
+.kob-order-no{font-size:1.4rem;color:var(--primary);margin-inline-start:auto}
