@@ -1694,11 +1694,13 @@ export type Database = {
           name_ar: string
           name_en: string
           organization_id: string
+          plan_type: string
           price: number
           redemption_frequency: string
           redemption_frequency_days: number | null
           redemption_window_end: string | null
           redemption_window_start: string | null
+          total_cups: number | null
         }
         Insert: {
           allow_comments?: boolean
@@ -1733,11 +1735,13 @@ export type Database = {
           name_ar: string
           name_en: string
           organization_id?: string
+          plan_type?: string
           price: number
           redemption_frequency?: string
           redemption_frequency_days?: number | null
           redemption_window_end?: string | null
           redemption_window_start?: string | null
+          total_cups?: number | null
         }
         Update: {
           allow_comments?: boolean
@@ -1772,11 +1776,13 @@ export type Database = {
           name_ar?: string
           name_en?: string
           organization_id?: string
+          plan_type?: string
           price?: number
           redemption_frequency?: string
           redemption_frequency_days?: number | null
           redemption_window_end?: string | null
           redemption_window_start?: string | null
+          total_cups?: number | null
         }
         Relationships: [
           {
@@ -2105,6 +2111,8 @@ export type Database = {
           branch_id: string
           coupon_id: string
           created_at: string
+          cups_total: number | null
+          cups_used: number
           customer_id: string
           end_date: string
           id: string
@@ -2120,6 +2128,8 @@ export type Database = {
           branch_id: string
           coupon_id: string
           created_at?: string
+          cups_total?: number | null
+          cups_used?: number
           customer_id: string
           end_date: string
           id?: string
@@ -2135,6 +2145,8 @@ export type Database = {
           branch_id?: string
           coupon_id?: string
           created_at?: string
+          cups_total?: number | null
+          cups_used?: number
           customer_id?: string
           end_date?: string
           id?: string

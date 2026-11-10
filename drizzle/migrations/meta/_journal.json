@@ -176,6 +176,13 @@
       "when": 1794202384779,
       "tag": "0024_offline_device_keys_and_daily_limit",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1794274140311,
+      "tag": "0025_open_balance_plans",
+      "breakpoints": true
     }
   ]
 }
