@@ -83,7 +83,7 @@ type OrderRow = {
   }>;
   customer_note: string | null;
   drink: { name_en: string; name_ar: string; image_url?: string | null } | null;
-  customer: { name: string; phone: string } | null;
+  customer: { name: string; phone: string; member_number?: number | null } | null;
   branch?: { name_en?: string | null; name_ar?: string | null } | null;
   subscription: {
     id: string;
@@ -244,12 +244,12 @@ function CashierQueuePage() {
     const rich = `id, status, created_at, order_date, selected_options, customer_note,
            fulfillment_stage, handover_declined_at, order_number,
            drink:drink_types(name_en, name_ar, image_url),
-           customer:customers(name, phone),
+           customer:customers(name, phone, member_number),
            branch:branches(name_en, name_ar),
            subscription:subscriptions(id, end_date, cups_total, cups_used, plan:plans(name, name_ar, name_en, duration_days, max_drinks_per_day))`;
     const plain = `id, status, created_at, order_date, selected_options, customer_note,
            drink:drink_types(name_en, name_ar),
-           customer:customers(name, phone),
+           customer:customers(name, phone, member_number),
            subscription:subscriptions(id, end_date, plan:plans(name, duration_days))`;
 
     try {
@@ -994,7 +994,7 @@ function CoffeeOrderCard({
         <div className="ph" />
       )}
       <div className="info">
-        <div className="name">{order.order_number ? `#${order.order_number} · ` : ""}{order.customer?.name || "—"}</div>
+        <div className="name">{order.order_number ? `#${order.order_number} · ` : ""}{order.customer?.name || "—"}{order.customer?.member_number ? ` · №${String(order.customer.member_number).padStart(2, "0")}` : ""}</div>
         <div className="cafe-muted">
           <span className="cafe-status">{t("cafe.cashier.coffee")}</span>
         </div>

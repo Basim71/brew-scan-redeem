@@ -646,6 +646,7 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          member_number: number | null
           name: string
           organization_id: string
           phone: string
@@ -655,6 +656,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          member_number?: number | null
           name: string
           organization_id?: string
           phone: string
@@ -664,6 +666,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          member_number?: number | null
           name?: string
           organization_id?: string
           phone?: string
