@@ -3236,6 +3236,15 @@ export type Database = {
           public_key: string
         }[]
       }
+      cashier_register_customer: {
+        Args: {
+          _email?: string
+          _name: string
+          _organization_id: string
+          _phone: string
+        }
+        Returns: string
+      }
       cashier_reject_registration: {
         Args: { _request_id: string }
         Returns: boolean
@@ -3387,6 +3396,14 @@ export type Database = {
         Returns: Json
       }
       scan_find_customer: { Args: { _phone: string }; Returns: string }
+      scan_list_public_branches: {
+        Args: never
+        Returns: {
+          id: string
+          name_ar: string
+          name_en: string
+        }[]
+      }
       scan_lookup: {
         Args: { _branch_id: string; _phone: string; _session_token?: string }
         Returns: Json
