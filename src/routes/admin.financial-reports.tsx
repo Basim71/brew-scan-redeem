@@ -1,6 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
-
-import { AnalyticsShell } from "@/features/company/analytics/AnalyticsShell";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/admin/financial-reports")({
   head: () => ({
@@ -8,14 +6,13 @@ export const Route = createFileRoute("/admin/financial-reports")({
       { title: "Business Analytics · KOB" },
       {
         name: "description",
-        content: "Complete analytics across subscriptions, drinks, revenue and customers.",
+        content:
+          "Complete analytics across subscriptions, drinks, revenue and customers.",
       },
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: BusinessAnalyticsPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/admin/reports" });
+  },
 });
-
-function BusinessAnalyticsPage() {
-  return <AnalyticsShell />;
-}

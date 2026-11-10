@@ -53,6 +53,9 @@ type FloatingIslandProps = {
   items: FloatingIslandItem[];
   accountLinks?: FloatingIslandLink[];
   onSignOut: () => void | Promise<void>;
+  avatarLabel?: string;
+  showBell?: boolean;
+  bellTo?: string;
 };
 
 export function FloatingIsland({
@@ -63,6 +66,9 @@ export function FloatingIsland({
   items,
   accountLinks,
   onSignOut,
+  avatarLabel,
+  showBell = true,
+  bellTo,
 }: FloatingIslandProps) {
   const { t, lang } = useI18n();
   const [open, setOpen] = useState(false);
@@ -78,7 +84,10 @@ export function FloatingIsland({
   const [, setClockTick] = useState(0);
 
   useEffect(() => {
-    const timer = window.setInterval(() => setClockTick((tick) => tick + 1), 30_000);
+    const timer = window.setInterval(
+      () => setClockTick((tick) => tick + 1),
+      30_000,
+    );
     return () => window.clearInterval(timer);
   }, []);
 
@@ -134,11 +143,18 @@ export function FloatingIsland({
   } as const;
 
   const relativeUpdatedAt = (() => {
-    if (!updatedAt) return isAr ? "بانتظار أول تحديث" : "Waiting for first update";
-    const seconds = Math.max(0, Math.floor((Date.now() - updatedAt.getTime()) / 1000));
+    if (!updatedAt)
+      return isAr ? "بانتظار أول تحديث" : "Waiting for first update";
+    const seconds = Math.max(
+      0,
+      Math.floor((Date.now() - updatedAt.getTime()) / 1000),
+    );
     if (seconds < 60) return isAr ? "تم التحديث الآن" : "Updated just now";
     const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return isAr ? `تم التحديث قبل ${minutes} د` : `Updated ${minutes} min ago`;
+    if (minutes < 60)
+      return isAr
+        ? `تم التحديث قبل ${minutes} د`
+        : `Updated ${minutes} min ago`;
     const hours = Math.floor(minutes / 60);
     return isAr ? `تم التحديث قبل ${hours} س` : `Updated ${hours} hr ago`;
   })();
@@ -160,7 +176,11 @@ export function FloatingIsland({
 
   return (
     <header className="app-island-anchor">
-      <div className="app-island" data-open={open ? "true" : "false"} data-scrolled={scrolled ? "true" : "false"}>
+      <div
+        className="app-island"
+        data-open={open ? "true" : "false"}
+        data-scrolled={scrolled ? "true" : "false"}
+      >
         <div className="app-island-zone app-island-zone-brand">
           <Link
             to={homeTo as never}
@@ -171,7 +191,11 @@ export function FloatingIsland({
               setActiveGroup(null);
             }}
           >
-            <span className="app-island-logo" data-image={logoUrl ? "true" : "false"} aria-hidden="true">
+            <span
+              className="app-island-logo"
+              data-image={logoUrl ? "true" : "false"}
+              aria-hidden="true"
+            >
               {logoUrl ? <img src={logoUrl} alt="" loading="lazy" /> : "K"}
             </span>
             <span className="app-island-brand-copy">
@@ -181,72 +205,100 @@ export function FloatingIsland({
           </Link>
         </div>
 
-        <nav className="app-island-zone app-island-zone-nav app-island-nav" aria-label={title} ref={groupWrapRef}>
-          {items.map((item) => {
-            if (isGroup(item)) {
-              const Icon = item.icon;
-              const isActive = item.children.some((c) => matchPath(pathname, c.to, c.exact));
-              const isOpen = activeGroup === item.label;
-              return (
-                <div key={`group:${item.label}`} className="app-island-group" data-open={isOpen ? "true" : "false"}>
-                  <button
-                    type="button"
-                    className={"app-island-link app-island-group-trigger" + (isActive ? " app-island-link-active" : "")}
-                    aria-haspopup="menu"
-                    aria-expanded={isOpen}
-                    onClick={() => {
-                      setAccountOpen(false);
-                      setActiveGroup((cur) => (cur === item.label ? null : item.label));
-                    }}
+        {items.length ? (
+          <nav
+            className="app-island-zone app-island-zone-nav app-island-nav"
+            aria-label={title}
+            ref={groupWrapRef}
+          >
+            {items.map((item) => {
+              if (isGroup(item)) {
+                const Icon = item.icon;
+                const isActive = item.children.some((c) =>
+                  matchPath(pathname, c.to, c.exact),
+                );
+                const isOpen = activeGroup === item.label;
+                return (
+                  <div
+                    key={`group:${item.label}`}
+                    className="app-island-group"
+                    data-open={isOpen ? "true" : "false"}
                   >
-                    <Icon className="h-4 w-4" />
-                    <span>{item.label}</span>
-                    <ChevronDown className="app-island-chevron h-3.5 w-3.5" />
-                  </button>
-                  <div className="app-island-dropdown" role="menu" data-open={isOpen ? "true" : "false"}>
-                    {item.children.map((child) => {
-                      const ChildIcon = child.icon;
-                      return (
-                        <Link
-                          key={child.to + (child.hash ?? "")}
-                          to={child.to as never}
-                          hash={child.hash as never}
-                          role="menuitem"
-                          activeOptions={{ exact: Boolean(child.exact) }}
-                          className="app-island-dropdown-item"
-                          activeProps={{ className: "app-island-dropdown-item app-island-dropdown-item-active" }}
-                          onClick={() => {
-                            setActiveGroup(null);
-                            setOpen(false);
-                          }}
-                        >
-                          <ChildIcon className="h-4 w-4" />
-                          <span>{child.label}</span>
-                        </Link>
-                      );
-                    })}
+                    <button
+                      type="button"
+                      className={
+                        "app-island-link app-island-group-trigger" +
+                        (isActive ? " app-island-link-active" : "")
+                      }
+                      aria-haspopup="menu"
+                      aria-expanded={isOpen}
+                      onClick={() => {
+                        setAccountOpen(false);
+                        setActiveGroup((cur) =>
+                          cur === item.label ? null : item.label,
+                        );
+                      }}
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span>{item.label}</span>
+                      <ChevronDown className="app-island-chevron h-3.5 w-3.5" />
+                    </button>
+                    <div
+                      className="app-island-dropdown"
+                      role="menu"
+                      data-open={isOpen ? "true" : "false"}
+                    >
+                      {item.children.map((child) => {
+                        const ChildIcon = child.icon;
+                        return (
+                          <Link
+                            key={child.to + (child.hash ?? "")}
+                            to={child.to as never}
+                            hash={child.hash as never}
+                            role="menuitem"
+                            activeOptions={{ exact: Boolean(child.exact) }}
+                            className="app-island-dropdown-item"
+                            activeProps={{
+                              className:
+                                "app-island-dropdown-item app-island-dropdown-item-active",
+                            }}
+                            onClick={() => {
+                              setActiveGroup(null);
+                              setOpen(false);
+                            }}
+                          >
+                            <ChildIcon className="h-4 w-4" />
+                            <span>{child.label}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              );
-            }
+                );
+              }
 
-            const { to, label, icon: Icon, exact } = item;
-            return (
-              <Link
-                key={to}
-                to={to as never}
-                activeOptions={{ exact: Boolean(exact) }}
-                className="app-island-link"
-                activeProps={{ className: "app-island-link app-island-link-active" }}
-                title={label}
-                onClick={() => setOpen(false)}
-              >
-                <Icon className="h-4 w-4" />
-                <span>{label}</span>
-              </Link>
-            );
-          })}
-        </nav>
+              const { to, label, icon: Icon, exact } = item;
+              return (
+                <Link
+                  key={to}
+                  to={to as never}
+                  activeOptions={{ exact: Boolean(exact) }}
+                  className="app-island-link"
+                  activeProps={{
+                    className: "app-island-link app-island-link-active",
+                  }}
+                  title={label}
+                  onClick={() => setOpen(false)}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span>{label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        ) : (
+          <div ref={groupWrapRef} />
+        )}
 
         <div className="app-island-zone app-island-zone-actions app-island-actions">
           <div
@@ -267,23 +319,43 @@ export function FloatingIsland({
               }}
             >
               <span className="app-island-live-indicator" aria-hidden="true">
-                {liveState === "updating" ? <RefreshCw className="h-3.5 w-3.5" /> : null}
-                {liveState === "offline" ? <WifiOff className="h-3.5 w-3.5" /> : null}
-                {liveState === "error" ? <AlertCircle className="h-3.5 w-3.5" /> : null}
-                {liveState === "live" ? <Check className="h-3.5 w-3.5" /> : null}
+                {liveState === "updating" ? (
+                  <RefreshCw className="h-3.5 w-3.5" />
+                ) : null}
+                {liveState === "offline" ? (
+                  <WifiOff className="h-3.5 w-3.5" />
+                ) : null}
+                {liveState === "error" ? (
+                  <AlertCircle className="h-3.5 w-3.5" />
+                ) : null}
+                {liveState === "live" ? (
+                  <Check className="h-3.5 w-3.5" />
+                ) : null}
               </span>
               <span className="app-island-live-copy">
                 <strong>{statusLabels[liveState]}</strong>
-                <small>{liveState === "live" ? relativeUpdatedAt : statusDetail}</small>
+                <small>
+                  {liveState === "live" ? relativeUpdatedAt : statusDetail}
+                </small>
               </span>
             </button>
 
-            <div className="app-island-live-popover" role="dialog" data-open={statusOpen ? "true" : "false"}>
+            <div
+              className="app-island-live-popover"
+              role="dialog"
+              data-open={statusOpen ? "true" : "false"}
+            >
               <div className="app-island-live-heading">
                 <span className="app-island-live-indicator" aria-hidden="true">
-                  {liveState === "updating" ? <RefreshCw className="h-4 w-4" /> : null}
-                  {liveState === "offline" ? <WifiOff className="h-4 w-4" /> : null}
-                  {liveState === "error" ? <AlertCircle className="h-4 w-4" /> : null}
+                  {liveState === "updating" ? (
+                    <RefreshCw className="h-4 w-4" />
+                  ) : null}
+                  {liveState === "offline" ? (
+                    <WifiOff className="h-4 w-4" />
+                  ) : null}
+                  {liveState === "error" ? (
+                    <AlertCircle className="h-4 w-4" />
+                  ) : null}
                   {liveState === "live" ? <Check className="h-4 w-4" /> : null}
                 </span>
                 <span>
@@ -293,10 +365,20 @@ export function FloatingIsland({
               </div>
               <div className="app-island-live-meta">
                 <span>{isAr ? "حالة النظام" : "System status"}</span>
-                <strong>{liveState === "live" ? (isAr ? "متصل" : "Connected") : statusLabels[liveState]}</strong>
+                <strong>
+                  {liveState === "live"
+                    ? isAr
+                      ? "متصل"
+                      : "Connected"
+                    : statusLabels[liveState]}
+                </strong>
               </div>
               {liveState === "offline" || liveState === "error" ? (
-                <button type="button" className="app-island-live-retry" onClick={retry}>
+                <button
+                  type="button"
+                  className="app-island-live-retry"
+                  onClick={retry}
+                >
                   <RefreshCw className="h-4 w-4" />
                   <span>{isAr ? "إعادة المحاولة" : "Retry sync"}</span>
                 </button>
@@ -304,17 +386,41 @@ export function FloatingIsland({
             </div>
           </div>
 
-          <button
-            type="button"
-            className="app-island-quiet-button"
-            aria-label={lang === "ar" ? "الإشعارات" : "Notifications"}
-            title={lang === "ar" ? "الإشعارات" : "Notifications"}
-          >
-            <Bell className="h-4 w-4" />
-            <span className="app-island-notification-dot" aria-hidden="true" />
-          </button>
+          {showBell ? (
+            bellTo ? (
+              <Link
+                to={bellTo as never}
+                hash="alerts"
+                className="app-island-quiet-button"
+                aria-label={lang === "ar" ? "الإشعارات" : "Notifications"}
+              >
+                <Bell className="h-4 w-4" />
+                <span
+                  className="app-island-notification-dot"
+                  aria-hidden="true"
+                />
+              </Link>
+            ) : (
+              <button
+                type="button"
+                className="app-island-quiet-button"
+                aria-label={lang === "ar" ? "الإشعارات" : "Notifications"}
+                title={lang === "ar" ? "الإشعارات" : "Notifications"}
+              >
+                <Bell className="h-4 w-4" />
+                <span
+                  className="app-island-notification-dot"
+                  aria-hidden="true"
+                />
+              </button>
+            )
+          ) : null}
 
-          <div className="app-island-account" ref={accountRef} data-open={accountOpen ? "true" : "false"}>
+          <div
+            className="app-island-account"
+            ref={accountRef}
+            data-open={accountOpen ? "true" : "false"}
+          >
             <button
               type="button"
               className="app-island-account-trigger"
@@ -326,12 +432,20 @@ export function FloatingIsland({
               }}
             >
               <span className="app-island-avatar">
-                <UserRound className="h-4 w-4" />
+                {avatarLabel ? (
+                  avatarLabel.slice(0, 1)
+                ) : (
+                  <UserRound className="h-4 w-4" />
+                )}
               </span>
               <ChevronDown className="app-island-chevron h-3.5 w-3.5" />
             </button>
 
-            <div className="app-island-account-menu" role="menu" data-open={accountOpen ? "true" : "false"}>
+            <div
+              className="app-island-account-menu"
+              role="menu"
+              data-open={accountOpen ? "true" : "false"}
+            >
               <div className="app-island-account-heading">
                 <strong>{title}</strong>
                 <small>{subtitle}</small>

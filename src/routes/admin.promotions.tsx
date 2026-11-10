@@ -1,23 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Megaphone, Pencil, Plus, Trash2 } from "lucide-react";
 
-import {
-  Alert,
-  Badge,
-  Button,
-  ConfirmDialog,
-  EmptyState,
-  IconButton,
-  Input,
-  Modal,
-  PageHeader,
-  Select,
-  Toggle,
-  kobToast,
-} from "@/components/kob";
 import { useI18n } from "@/lib/i18n";
 import { useOrganization } from "@/providers/OrganizationProvider";
+import { CafeDialog, CafePage } from "@/features/company/cafe/ui";
+import { LogoUploader } from "@/features/company/settings/LogoUploader";
+import { getOrganizationProfile } from "@/services/company/company-settings.service";
+import { listPlans } from "@/services/company/plans.service";
 import {
   createPromotion,
   deletePromotion,
@@ -28,16 +17,8 @@ import {
   type PromotionRow,
   type ScanBranchOption,
 } from "@/services/company/promotions.service";
-import { LogoUploader } from "@/features/company/settings/LogoUploader";
 
 export const Route = createFileRoute("/admin/promotions")({
-  head: () => ({
-    meta: [
-      { title: "Scan Promotions — KOB" },
-      { name: "description", content: "Publish company promotions and offers on the customer scan page." },
-      { name: "robots", content: "noindex" },
-    ],
-  }),
   component: PromotionsPage,
 });
 
@@ -57,289 +38,399 @@ const EMPTY: PromotionInput = {
   ends_at: null,
 };
 
-function toInput(row: PromotionRow): PromotionInput {
-  return {
-    branch_id: row.branch_id,
-    title_ar: row.title_ar,
-    title_en: row.title_en,
-    body_ar: row.body_ar ?? "",
-    body_en: row.body_en ?? "",
-    image_url: row.image_url ?? "",
-    cta_label_ar: row.cta_label_ar ?? "",
-    cta_label_en: row.cta_label_en ?? "",
-    cta_url: row.cta_url ?? "",
-    is_active: row.is_active,
-    sort_order: row.sort_order,
-    starts_at: row.starts_at ? row.starts_at.slice(0, 10) : null,
-    ends_at: row.ends_at ? row.ends_at.slice(0, 10) : null,
-  };
-}
-
 function PromotionsPage() {
-  const { lang } = useI18n();
+  const { t, lang, fmtNum } = useI18n();
   const isAr = lang === "ar";
   const { organization } = useOrganization();
   const orgId = organization?.id ?? null;
-
   const [rows, setRows] = useState<PromotionRow[]>([]);
   const [branches, setBranches] = useState<ScanBranchOption[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState<{ id: string | null; draft: PromotionInput } | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [pendingDelete, setPendingDelete] = useState<PromotionRow | null>(null);
+  const [logo, setLogo] = useState<string | null>(null);
+  const [planName, setPlanName] = useState("");
+  const [color, setColor] = useState("#1f3b34");
   const [error, setError] = useState<string | null>(null);
+  const [menu, setMenu] = useState<string | null>(null);
+  const [editing, setEditing] = useState<{
+    id: string | null;
+    draft: PromotionInput;
+  } | null>(null);
+  const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
     if (!orgId) return;
-    setLoading(true);
     try {
-      const [promos, branchList] = await Promise.all([
+      const [promos, branchList, profile, plans] = await Promise.all([
         listPromotions(orgId),
         listOrganizationBranches(orgId),
+        getOrganizationProfile(orgId),
+        listPlans(),
       ]);
       setRows(promos);
       setBranches(branchList);
+      setLogo(profile?.logo_url ?? null);
+      setColor(profile?.primary_color || "#1f3b34");
+      const plan =
+        plans.find((item) => item.is_active && !item.archived_at) ?? plans[0];
+      setPlanName(
+        plan
+          ? isAr
+            ? plan.name_ar || plan.name_en
+            : plan.name_en || plan.name_ar
+          : "",
+      );
       setError(null);
-    } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Load failed.");
-    } finally {
-      setLoading(false);
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : t("cafe.promo.saveError"),
+      );
     }
-  }, [orgId]);
+  }, [isAr, orgId, t]);
 
   useEffect(() => {
     void load();
+    if (window.location.hash === "#new")
+      setEditing({ id: null, draft: { ...EMPTY } });
   }, [load]);
 
-  const branchName = useMemo(() => {
-    const map = new Map(branches.map((b) => [b.id, isAr ? b.name_ar : b.name_en]));
-    return (id: string | null) => (id ? map.get(id) ?? "—" : isAr ? "كل الفروع" : "All branches");
-  }, [branches, isAr]);
+  const preview = useMemo(
+    () => rows.find((row) => row.is_active) ?? rows[0] ?? null,
+    [rows],
+  );
+  const cafeName = isAr
+    ? organization?.nameAr || organization?.nameEn
+    : organization?.nameEn || organization?.nameAr;
 
-  async function save() {
-    if (!editing || !orgId) return;
-    const draft = editing.draft;
-    if (!draft.image_url?.trim()) {
-      kobToast.error(isAr ? "أضف صورة الدعاية." : "Add the promotion image.");
+  async function persist(id: string | null, draft: PromotionInput) {
+    if (!orgId) return;
+    if (!draft.title_ar.trim() || !draft.title_en.trim()) {
+      setError(t("cafe.promo.namesRequired"));
       return;
     }
-
-    setSaving(true);
+    setBusy(true);
     try {
-      const payload: PromotionInput = {
-        ...draft,
-        body_ar: draft.body_ar?.trim() || null,
-        body_en: draft.body_en?.trim() || null,
-        image_url: draft.image_url?.trim() || null,
-        cta_label_ar: draft.cta_label_ar?.trim() || null,
-        cta_label_en: draft.cta_label_en?.trim() || null,
-        cta_url: draft.cta_url?.trim() || null,
-        starts_at: draft.starts_at || null,
-        ends_at: draft.ends_at || null,
-      };
-      if (editing.id) await updatePromotion(editing.id, payload);
-      else await createPromotion(orgId, payload);
-      kobToast.success(isAr ? "تم الحفظ." : "Saved.");
+      if (id) await updatePromotion(id, draft);
+      else await createPromotion(orgId, { ...draft, sort_order: rows.length });
       setEditing(null);
       await load();
-    } catch (saveError) {
-      kobToast.error(saveError instanceof Error ? saveError.message : "Save failed.");
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : t("cafe.promo.saveError"),
+      );
     } finally {
-      setSaving(false);
+      setBusy(false);
     }
   }
 
-  async function toggleActive(row: PromotionRow) {
-    try {
-      await updatePromotion(row.id, { is_active: !row.is_active });
-      await load();
-    } catch (toggleError) {
-      kobToast.error(toggleError instanceof Error ? toggleError.message : "Update failed.");
-    }
+  async function move(row: PromotionRow, direction: -1 | 1) {
+    const index = rows.findIndex((item) => item.id === row.id);
+    const next = rows[index + direction];
+    if (!next) return;
+    await updatePromotion(row.id, { sort_order: next.sort_order });
+    await updatePromotion(next.id, { sort_order: row.sort_order });
+    setMenu(null);
+    await load();
   }
-
-  async function confirmDelete() {
-    if (!pendingDelete) return;
-    try {
-      await deletePromotion(pendingDelete.id);
-      kobToast.success(isAr ? "تم الحذف." : "Deleted.");
-      setPendingDelete(null);
-      await load();
-    } catch (deleteError) {
-      kobToast.error(deleteError instanceof Error ? deleteError.message : "Delete failed.");
-    }
-  }
-
-  const patch = (part: Partial<PromotionInput>) =>
-    setEditing((current) => (current ? { ...current, draft: { ...current.draft, ...part } } : current));
 
   return (
-    <div className="kob-stack" dir={isAr ? "rtl" : "ltr"}>
-      <PageHeader
-        eyebrow={isAr ? "صفحة العميل" : "Customer scan"}
-        title={isAr ? "الدعايات والعروض" : "Promotions & Offers"}
-        description={
-          isAr
-            ? "أضف الدعايات التي تظهر للعميل في صفحة السكان."
-            : "Publish the promotions customers see on the scan page."
-        }
-        action={
-          <Button
-            leadingIcon={<Plus className="h-4 w-4" />}
-            onClick={() => setEditing({ id: null, draft: { ...EMPTY, sort_order: rows.length } })}
-          >
-            {isAr ? "دعاية جديدة" : "New promotion"}
-          </Button>
-        }
-      />
-
-      {error && <Alert tone="danger">{error}</Alert>}
-
-      {!loading && rows.length === 0 && (
-        <EmptyState
-          icon={<Megaphone className="h-6 w-6" />}
-          title={isAr ? "لا توجد دعايات" : "No promotions yet"}
-          description={
-            isAr
-              ? "أضف أول دعاية لتظهر للعملاء عند مسح رمز الفرع."
-              : "Add your first promotion to show it on the customer scan page."
+    <CafePage
+      title={t("cafe.promo.title")}
+      subtitle={t("cafe.promo.subtitle")}
+      action={
+        <button
+          type="button"
+          className="cafe-btn"
+          onClick={() =>
+            setEditing({
+              id: null,
+              draft: { ...EMPTY, sort_order: rows.length },
+            })
           }
-        />
-      )}
-
-      <div className="kob-promo-admin-grid">
-        {rows.map((row) => (
-          <article key={row.id} className="kob-card" data-tone="raised">
-            <div className="kob-card-body kob-stack">
-              {row.image_url ? (
-                <img src={row.image_url} alt="" className="kob-promo-admin-image" loading="lazy" />
-              ) : null}
-              <div className="kob-promo-admin-head">
-                <h3>{row.title_ar || row.title_en || (isAr ? "دعاية" : "Promotion")}</h3>
-                <Badge tone={row.is_active ? "success" : "neutral"}>
-                  {row.is_active ? (isAr ? "منشورة" : "Live") : isAr ? "موقوفة" : "Paused"}
-                </Badge>
+        >
+          {t("cafe.promo.new")}
+        </button>
+      }
+    >
+      {error ? <div className="cafe-error">{error}</div> : null}
+      <div className="cafe-split">
+        <section className="cafe-card">
+          <h2>{t("cafe.promo.yours")}</h2>
+          {rows.length === 0 ? (
+            <div className="cafe-empty">{t("cafe.promo.empty")}</div>
+          ) : null}
+          {rows.map((row) => (
+            <article
+              key={row.id}
+              className="cafe-row"
+              draggable
+              onDragStart={(event) =>
+                event.dataTransfer.setData("text/plain", row.id)
+              }
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={(event) => {
+                const source = event.dataTransfer.getData("text/plain");
+                const from = rows.findIndex((item) => item.id === source);
+                const to = rows.findIndex((item) => item.id === row.id);
+                if (from < 0 || to < 0 || from === to) return;
+                void move(rows[from], to > from ? 1 : -1);
+              }}
+            >
+              <div
+                className="cafe-thumb"
+                style={{
+                  background: row.image_url
+                    ? `center/cover url(${row.image_url})`
+                    : "#f0e2d2",
+                  width: 72,
+                }}
+              />
+              <div className="n">
+                <b>{isAr ? row.title_ar : row.title_en}</b>
+                <div>
+                  <span
+                    className={
+                      row.is_active ? "cafe-status" : "cafe-status muted"
+                    }
+                  >
+                    {row.is_active
+                      ? t("cafe.promo.live")
+                      : t("cafe.promo.hidden")}
+                  </span>
+                  {" · "}
+                  {row.branch_id
+                    ? branches.find((branch) => branch.id === row.branch_id)?.[
+                        isAr ? "name_ar" : "name_en"
+                      ]
+                    : t("cafe.plans.allBranches")}
+                </div>
               </div>
-              <p className="kob-promo-admin-meta">{branchName(row.branch_id)}</p>
-              <div className="kob-promo-admin-actions">
-                <Toggle
-                  label={isAr ? "نشر" : "Published"}
-                  checked={row.is_active}
-                  onCheckedChange={() => void toggleActive(row)}
-                />
-                <div className="kob-promo-admin-icons">
-                  <IconButton
-                    label={isAr ? "تعديل" : "Edit"}
-                    onClick={() => setEditing({ id: row.id, draft: toInput(row) })}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </IconButton>
-                  <IconButton
-                    label={isAr ? "حذف" : "Delete"}
-                    variant="danger"
-                    onClick={() => setPendingDelete(row)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </IconButton>
+              <button
+                type="button"
+                className={row.is_active ? "cafe-switch" : "cafe-switch off"}
+                onClick={() =>
+                  void updatePromotion(row.id, {
+                    is_active: !row.is_active,
+                  }).then(load)
+                }
+              >
+                <i />
+                {row.is_active
+                  ? t("cafe.promo.visible")
+                  : t("cafe.promo.hidden")}
+              </button>
+              <div className="cafe-menu">
+                <button
+                  type="button"
+                  aria-label={t("cafe.more")}
+                  onClick={() => setMenu(menu === row.id ? null : row.id)}
+                >
+                  ⋯
+                </button>
+                {menu === row.id ? (
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditing({
+                          id: row.id,
+                          draft: {
+                            ...row,
+                            body_ar: row.body_ar ?? "",
+                            body_en: row.body_en ?? "",
+                            image_url: row.image_url ?? "",
+                            cta_label_ar: row.cta_label_ar ?? "",
+                            cta_label_en: row.cta_label_en ?? "",
+                            cta_url: row.cta_url ?? "",
+                          },
+                        });
+                        setMenu(null);
+                      }}
+                    >
+                      {t("cafe.edit")}
+                    </button>
+                    <button type="button" onClick={() => void move(row, -1)}>
+                      {t("cafe.promo.up")}
+                    </button>
+                    <button type="button" onClick={() => void move(row, 1)}>
+                      {t("cafe.promo.down")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void deletePromotion(row.id).then(load)}
+                    >
+                      {t("cafe.delete")}
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            </article>
+          ))}
+          <p className="cafe-note">{t("cafe.promo.reorder")}</p>
+        </section>
+        <section className="cafe-card">
+          <h2>{t("cafe.promo.previewTitle")}</h2>
+          <p className="cafe-muted">{t("cafe.promo.previewNote")}</p>
+          <div className="cafe-phone">
+            <div className="scr">
+              <div style={{ fontWeight: 800 }}>{t("cafe.promo.hello")}</div>
+              <div className="cafe-muted">{t("cafe.promo.yourSubs")}</div>
+              <div
+                className="bn"
+                style={{
+                  backgroundImage: preview?.image_url
+                    ? `url(${preview.image_url})`
+                    : undefined,
+                }}
+              />
+              <div className="cafe-note">
+                {t("cafe.promo.adFrom", { name: cafeName || "KOB" })}
+              </div>
+              <div className="cafe-subcard" style={{ background: color }}>
+                {logo ? (
+                  <img
+                    src={logo}
+                    alt=""
+                    style={{ height: 28, borderRadius: 6 }}
+                  />
+                ) : null}
+                <div style={{ fontWeight: 800, marginTop: 8 }}>
+                  {planName || t("cafe.plans.example")}
+                </div>
+                <div style={{ display: "flex", gap: 16, marginTop: 8 }}>
+                  <div>
+                    <b>{fmtNum(0)}</b>
+                    <div style={{ opacity: 0.8 }}>
+                      {t("cafe.promo.cupsToday")}
+                    </div>
+                  </div>
+                </div>
+                <div
+                  style={{
+                    marginTop: 12,
+                    textAlign: "center",
+                    background: "#c8924a",
+                    color: "#2b1a12",
+                    fontWeight: 800,
+                    borderRadius: 12,
+                    padding: 8,
+                  }}
+                >
+                  {t("cafe.promo.order")}
                 </div>
               </div>
             </div>
-          </article>
-        ))}
+          </div>
+        </section>
       </div>
-
-      <Modal
-        open={Boolean(editing)}
-        onClose={() => setEditing(null)}
-        title={
-          editing?.id
-            ? isAr
-              ? "تعديل الدعاية"
-              : "Edit promotion"
-            : isAr
-              ? "دعاية جديدة"
-              : "New promotion"
-        }
-        size="lg"
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setEditing(null)}>
-              {isAr ? "إلغاء" : "Cancel"}
-            </Button>
-            <Button loading={saving} onClick={() => void save()}>
-              {isAr ? "حفظ" : "Save"}
-            </Button>
-          </>
-        }
-      >
-        {editing && (
-          <div className="kob-stack">
+      {editing ? (
+        <CafeDialog
+          title={editing.id ? t("cafe.promo.edit") : t("cafe.promo.newTitle")}
+          onClose={() => setEditing(null)}
+          footer={
+            <>
+              <button
+                type="button"
+                className="cafe-btn ghost"
+                onClick={() => setEditing(null)}
+              >
+                {t("cafe.cancel")}
+              </button>
+              <button
+                type="button"
+                className="cafe-btn"
+                disabled={busy}
+                onClick={() => void persist(editing.id, editing.draft)}
+              >
+                {t("cafe.save")}
+              </button>
+            </>
+          }
+        >
+          <div>
+            <div className="cafe-two">
+              <label>
+                <span className="cafe-label">{t("cafe.drinks.nameAr")}</span>
+                <input
+                  className="cafe-input"
+                  value={editing.draft.title_ar}
+                  onChange={(event) =>
+                    setEditing({
+                      ...editing,
+                      draft: { ...editing.draft, title_ar: event.target.value },
+                    })
+                  }
+                />
+              </label>
+              <label>
+                <span className="cafe-label">{t("cafe.drinks.nameEn")}</span>
+                <input
+                  className="cafe-input"
+                  dir="ltr"
+                  value={editing.draft.title_en}
+                  onChange={(event) =>
+                    setEditing({
+                      ...editing,
+                      draft: { ...editing.draft, title_en: event.target.value },
+                    })
+                  }
+                />
+              </label>
+            </div>
+            <div style={{ marginTop: 12 }}>
+              <span className="cafe-label">{t("cafe.plans.branches")}</span>
+              <div className="cafe-chips">
+                <button
+                  type="button"
+                  className={
+                    !editing.draft.branch_id
+                      ? "cafe-chip mini on"
+                      : "cafe-chip mini"
+                  }
+                  onClick={() =>
+                    setEditing({
+                      ...editing,
+                      draft: { ...editing.draft, branch_id: null },
+                    })
+                  }
+                >
+                  {t("cafe.plans.allBranches")}
+                </button>
+                {branches.map((branch) => (
+                  <button
+                    key={branch.id}
+                    type="button"
+                    className={
+                      editing.draft.branch_id === branch.id
+                        ? "cafe-chip mini on"
+                        : "cafe-chip mini"
+                    }
+                    onClick={() =>
+                      setEditing({
+                        ...editing,
+                        draft: { ...editing.draft, branch_id: branch.id },
+                      })
+                    }
+                  >
+                    {isAr ? branch.name_ar : branch.name_en}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <aside className="cafe-preview">
             <LogoUploader
               isAr={isAr}
-              folder="promotions"
-              label={isAr ? "صورة الدعاية" : "Promotion image"}
+              folder={`promos/${orgId ?? "cafe"}`}
               value={editing.draft.image_url || null}
-              onChange={(url) => patch({ image_url: url ?? "" })}
+              onChange={(url) =>
+                setEditing({
+                  ...editing,
+                  draft: { ...editing.draft, image_url: url ?? "" },
+                })
+              }
             />
-            <Input
-              label={isAr ? "اسم داخلي (للإدارة فقط)" : "Internal name (admin only)"}
-              value={editing.draft.title_ar}
-              onChange={(e) => patch({ title_ar: e.target.value, title_en: e.target.value })}
-            />
-            <Input
-              label={isAr ? "رابط عند الضغط (اختياري)" : "Link on tap (optional)"}
-              dir="ltr"
-              value={editing.draft.cta_url ?? ""}
-              onChange={(e) => patch({ cta_url: e.target.value })}
-            />
-            <Select
-              label={isAr ? "الفرع" : "Branch"}
-              value={editing.draft.branch_id ?? ""}
-              onChange={(e) => patch({ branch_id: e.target.value || null })}
-            >
-              <option value="">{isAr ? "كل الفروع" : "All branches"}</option>
-              {branches.map((branch) => (
-                <option key={branch.id} value={branch.id}>
-                  {isAr ? branch.name_ar : branch.name_en}
-                </option>
-              ))}
-            </Select>
-            <Input
-              label={isAr ? "تاريخ البداية" : "Start date"}
-              type="date"
-              value={editing.draft.starts_at ?? ""}
-              onChange={(e) => patch({ starts_at: e.target.value || null })}
-            />
-            <Input
-              label={isAr ? "تاريخ النهاية" : "End date"}
-              type="date"
-              value={editing.draft.ends_at ?? ""}
-              onChange={(e) => patch({ ends_at: e.target.value || null })}
-            />
-            <Input
-              label={isAr ? "الترتيب" : "Sort order"}
-              type="number"
-              value={String(editing.draft.sort_order)}
-              onChange={(e) => patch({ sort_order: Number(e.target.value) || 0 })}
-            />
-            <Toggle
-              label={isAr ? "نشر على صفحة السكان" : "Publish on scan page"}
-              checked={editing.draft.is_active}
-              onCheckedChange={(next) => patch({ is_active: next })}
-            />
-          </div>
-        )}
-
-      </Modal>
-
-      <ConfirmDialog
-        open={Boolean(pendingDelete)}
-        onCancel={() => setPendingDelete(null)}
-        onConfirm={() => void confirmDelete()}
-        title={isAr ? "حذف الدعاية" : "Delete promotion"}
-        description={isAr ? "لن تظهر هذه الدعاية للعملاء بعد الحذف." : "This promotion will no longer be shown."}
-        tone="danger"
-      />
-    </div>
+          </aside>
+        </CafeDialog>
+      ) : null}
+    </CafePage>
   );
 }

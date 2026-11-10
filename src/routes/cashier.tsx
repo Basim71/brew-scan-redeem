@@ -1,5 +1,4 @@
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
-import { Inbox } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { AppWorkspace } from "@/layouts/AppWorkspace";
@@ -23,7 +22,7 @@ export const Route = createFileRoute("/cashier")({
 function CashierLayout() {
   const navigate = useNavigate();
   const { branchId } = useRole();
-  const { t, lang } = useI18n();
+  const { lang } = useI18n();
   const { organization, clearOrganization } = useOrganization();
   const [branchName, setBranchName] = useState("");
 
@@ -42,7 +41,11 @@ function CashierLayout() {
       .maybeSingle()
       .then(({ data }) => {
         if (cancelled || !data) return;
-        setBranchName(lang === "ar" ? data.name_ar || data.name_en : data.name_en || data.name_ar);
+        setBranchName(
+          lang === "ar"
+            ? data.name_ar || data.name_en
+            : data.name_en || data.name_ar,
+        );
       });
 
     return () => {
@@ -50,7 +53,7 @@ function CashierLayout() {
     };
   }, [branchId, lang]);
 
-  const items = [{ to: "/cashier", label: t("pending_orders"), icon: Inbox, exact: true }];
+  const items: [] = [];
 
   async function handleSignOut() {
     clearOrganization();
@@ -62,14 +65,19 @@ function CashierLayout() {
     <RoleGate allow="cashier">
       <AppWorkspace
         title={
+          branchName ||
           (lang === "ar"
             ? organization?.nameAr || organization?.nameEn
-            : organization?.nameEn || organization?.nameAr) || "KOB"
+            : organization?.nameEn || organization?.nameAr) ||
+          "KOB"
         }
-        subtitle={branchName || (lang === "ar" ? "الكاشير" : "Cashier")}
+        subtitle={lang === "ar" ? "الكاشير" : "Cashier"}
         homeTo="/cashier"
         items={items}
         onSignOut={handleSignOut}
+        shell="cashier"
+        avatarLabel={lang === "ar" ? "ك" : "C"}
+        showBell={false}
       >
         <Outlet />
       </AppWorkspace>

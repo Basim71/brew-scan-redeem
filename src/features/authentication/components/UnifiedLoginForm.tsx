@@ -45,7 +45,7 @@ export function UnifiedLoginForm({ onSubmit, busy, error }: Props) {
   }
 
   const labels = {
-    tagline: lang === "ar" ? "اشتراكات القهوة اليومية" : "Daily Coffee Subscriptions",
+    tagline: lang === "ar" ? "ابتسامة في كل كوب" : "Smile in every cup",
     signInDivider: lang === "ar" ? "تسجيل الدخول" : "Sign In",
     email: lang === "ar" ? "البريد الإلكتروني" : "Email address",
     password: lang === "ar" ? "كلمة المرور" : "Password",

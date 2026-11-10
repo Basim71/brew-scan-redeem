@@ -11,7 +11,10 @@ import {
 } from "lucide-react";
 
 import { AppWorkspace } from "@/layouts/AppWorkspace";
-import type { FloatingIslandItem, FloatingIslandLink } from "@/layouts/FloatingIsland";
+import type {
+  FloatingIslandItem,
+  FloatingIslandLink,
+} from "@/layouts/FloatingIsland";
 import { useI18n } from "@/lib/i18n";
 import { useOrganization } from "@/providers/OrganizationProvider";
 import { getOrganizationProfile } from "@/services/company/company-settings.service";
@@ -31,12 +34,38 @@ const PRIMARY: Array<{
   icon: any;
   exact?: boolean;
 }> = [
-  { to: "/admin", labelAr: "لوحة التحكم", labelEn: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/admin/customers", labelAr: "العملاء", labelEn: "Customers", icon: Users },
-  { to: "/admin/drinks", labelAr: "المشروبات", labelEn: "Drinks", icon: Coffee },
-  { to: "/admin/plans", labelAr: "الاشتراكات", labelEn: "Subscriptions", icon: Layers3 },
-  { to: "/admin/promotions", labelAr: "الدعايات", labelEn: "Promotions", icon: Megaphone },
-  { to: "/admin/reports", labelAr: "تحليلات الأعمال", labelEn: "Business Analytics", icon: BarChart3 },
+  {
+    to: "/admin",
+    labelAr: "الرئيسية",
+    labelEn: "Home",
+    icon: LayoutDashboard,
+    exact: true,
+  },
+  {
+    to: "/admin/customers",
+    labelAr: "المشتركين",
+    labelEn: "Subscribers",
+    icon: Users,
+  },
+  {
+    to: "/admin/drinks",
+    labelAr: "المشروبات",
+    labelEn: "Drinks",
+    icon: Coffee,
+  },
+  { to: "/admin/plans", labelAr: "الباقات", labelEn: "Plans", icon: Layers3 },
+  {
+    to: "/admin/promotions",
+    labelAr: "العروض",
+    labelEn: "Promotions",
+    icon: Megaphone,
+  },
+  {
+    to: "/admin/reports",
+    labelAr: "التقارير",
+    labelEn: "Reports",
+    icon: BarChart3,
+  },
 ];
 
 const ACCOUNT: Array<{
@@ -46,13 +75,23 @@ const ACCOUNT: Array<{
   icon: any;
   hash?: string;
 }> = [
-  { to: "/admin/support", labelAr: "الدعم الفني", labelEn: "Technical Support", icon: Headphones },
-  { to: "/admin/settings", labelAr: "إعدادات الشركة", labelEn: "Company Settings", icon: Settings },
+  {
+    to: "/admin/settings",
+    labelAr: "الإعدادات",
+    labelEn: "Settings",
+    icon: Settings,
+  },
+  {
+    to: "/admin/support",
+    labelAr: "الدعم",
+    labelEn: "Support",
+    icon: Headphones,
+  },
 ];
 
-export function CompanyLayout({ title, subtitle, onSignOut, children }: Props) {
+export function CompanyLayout({ title, onSignOut, children }: Props) {
   const { lang } = useI18n();
-  const { role, organization } = useOrganization();
+  const { role, organization, session } = useOrganization();
   const isAr = lang === "ar";
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
@@ -99,15 +138,24 @@ export function CompanyLayout({ title, subtitle, onSignOut, children }: Props) {
     [isAr, role],
   );
 
+  const who =
+    (session?.user?.user_metadata?.full_name as string | undefined) ||
+    session?.user?.email ||
+    title;
+  const avatarLabel = who.trim().slice(0, 1) || "K";
+
   return (
     <AppWorkspace
       title={title}
-      subtitle={subtitle}
+      subtitle=""
       homeTo="/admin"
       logoUrl={logoUrl}
       items={items}
       accountLinks={accountLinks}
       onSignOut={onSignOut}
+      shell="cafe"
+      avatarLabel={avatarLabel}
+      bellTo="/admin/settings"
     >
       {children}
     </AppWorkspace>

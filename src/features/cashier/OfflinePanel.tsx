@@ -1,9 +1,24 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { Camera, CloudOff, RefreshCw, ScanLine, Wifi } from "lucide-react";
 import { CameraScanner } from "./CameraScanner";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
-import { Alert, Badge, Button, Card, CardBody, CardHeader, Field, Select } from "@/components/kob";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Field,
+  Select,
+} from "@/components/kob";
 import {
   type CustomerToken,
   type QueuedOrder,
@@ -24,7 +39,20 @@ const NONCE_KEY = "kob.offline.nonces";
 type Drink = { id: string; name_ar: string; name_en: string };
 type Rejected = { id: string; reason: string };
 
-export function OfflinePanel({ branchId }: { branchId: string }) {
+export function OfflinePanel({
+  branchId,
+  children,
+}: {
+  branchId: string;
+  children?: (api: {
+    online: boolean;
+    raw: string;
+    setRaw: (value: string) => void;
+    readCode: (input?: string) => void;
+    openCamera: () => void;
+    queue: number;
+  }) => ReactNode;
+}) {
   const { t, lang, fmtNum } = useI18n();
   const [online, setOnline] = useState(true);
   const [queue, setQueue] = useState<QueuedOrder[]>([]);
@@ -65,47 +93,82 @@ export function OfflinePanel({ branchId }: { branchId: string }) {
     let cancelled = false;
     async function refreshCache() {
       try {
-        const { data: branch } = await supabase.from("branches").select("organization_id").eq("id", branchId).single();
+        const { data: branch } = await supabase
+          .from("branches")
+          .select("organization_id")
+          .eq("id", branchId)
+          .single();
         if (!branch?.organization_id) return;
-        const [{ data: menu }, { data: keys, error: keyError }] = await Promise.all([
-          supabase.from("drink_types").select("id, name_ar, name_en").eq("is_active", true).eq("organization_id", branch.organization_id).order("name_en"),
-          supabase.rpc("cashier_get_active_device_keys"),
-        ]);
+        const [{ data: menu }, { data: keys, error: keyError }] =
+          await Promise.all([
+            supabase
+              .from("drink_types")
+              .select("id, name_ar, name_en")
+              .eq("is_active", true)
+              .eq("organization_id", branch.organization_id)
+              .order("name_en"),
+            supabase.rpc("cashier_get_active_device_keys"),
+          ]);
         if (cancelled) return;
-        if (menu) { setDrinks(menu); saveJson(drinksKey, menu); }
+        if (menu) {
+          setDrinks(menu);
+          saveJson(drinksKey, menu);
+        }
         if (!keyError && keys) saveJson(keysKey, keys);
-      } catch { /* Preserve the last cache during a connection outage. */ }
+      } catch {
+        /* Preserve the last cache during a connection outage. */
+      }
     }
     void refreshCache();
     const interval = window.setInterval(() => void refreshCache(), 60000);
-    return () => { cancelled = true; window.clearInterval(interval); };
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
   }, [online, branchId, drinksKey, keysKey]);
 
-  const sync = useCallback(async (items: QueuedOrder[]) => {
-    if (!items.length || !navigator.onLine || syncBusy.current) return;
-    syncBusy.current = true;
-    setSyncing(true);
-    try {
-    const { data, error: err } = await supabase.rpc("cashier_sync_offline_orders" as never, {
-      _orders: items,
-    } as never);
-    if (err || !data) return; // keep queue, retry later
-    const res = data as unknown as {
-      synced: number;
-      results: { offline_sync_id: string; result: string; reason?: string }[];
-    };
-    const done = new Set(res.results.map((r) => r.offline_sync_id));
-    const rej = res.results
-      .filter((r) => r.result === "rejected")
-      .map((r) => ({ id: r.offline_sync_id, reason: r.reason ?? "" }));
-    const rest = loadJson<QueuedOrder[]>(QUEUE_KEY, []).filter((q) => !done.has(q.offline_sync_id));
-    saveJson(QUEUE_KEY, rest);
-    setQueue(rest);
-    if (rej.length) setRejected((p) => [...rej, ...p]);
-    if (res.synced) setNotice(t("cashier.offline.syncResult", { n: res.synced }));
-    } catch { /* Keep queued orders when the network fails. */ }
-    finally { syncBusy.current = false; setSyncing(false); }
-  }, [t]);
+  const sync = useCallback(
+    async (items: QueuedOrder[]) => {
+      if (!items.length || !navigator.onLine || syncBusy.current) return;
+      syncBusy.current = true;
+      setSyncing(true);
+      try {
+        const { data, error: err } = await supabase.rpc(
+          "cashier_sync_offline_orders" as never,
+          {
+            _orders: items,
+          } as never,
+        );
+        if (err || !data) return; // keep queue, retry later
+        const res = data as unknown as {
+          synced: number;
+          results: {
+            offline_sync_id: string;
+            result: string;
+            reason?: string;
+          }[];
+        };
+        const done = new Set(res.results.map((r) => r.offline_sync_id));
+        const rej = res.results
+          .filter((r) => r.result === "rejected")
+          .map((r) => ({ id: r.offline_sync_id, reason: r.reason ?? "" }));
+        const rest = loadJson<QueuedOrder[]>(QUEUE_KEY, []).filter(
+          (q) => !done.has(q.offline_sync_id),
+        );
+        saveJson(QUEUE_KEY, rest);
+        setQueue(rest);
+        if (rej.length) setRejected((p) => [...rej, ...p]);
+        if (res.synced)
+          setNotice(t("cashier.offline.syncResult", { n: res.synced }));
+      } catch {
+        /* Keep queued orders when the network fails. */
+      } finally {
+        syncBusy.current = false;
+        setSyncing(false);
+      }
+    },
+    [t],
+  );
 
   // Auto-sync on reconnect and every 30s.
   useEffect(() => {
@@ -124,10 +187,14 @@ export function OfflinePanel({ branchId }: { branchId: string }) {
     const tok = parseToken(typeof input === "string" ? input : raw);
     if (!tok) return setError(t("cashier.offline.invalid"));
     setVerifying(true);
-    const signatureProblem = await verifyTokenSignature(tok, loadJson<DeviceKey[]>(keysKey, []));
+    const signatureProblem = await verifyTokenSignature(
+      tok,
+      loadJson<DeviceKey[]>(keysKey, []),
+    );
     if (version !== readVersion.current) return;
     setVerifying(false);
-    if (signatureProblem) return setError(t(`cashier.offline.${signatureProblem}`));
+    if (signatureProblem)
+      return setError(t(`cashier.offline.${signatureProblem}`));
     const usage = loadJson<Record<string, number>>(USAGE_KEY, {});
     const nonces = loadJson<string[]>(NONCE_KEY, []);
     const problem = checkToken(tok, {
@@ -146,42 +213,141 @@ export function OfflinePanel({ branchId }: { branchId: string }) {
     serveBusy.current = true;
     setServing(true);
     try {
-    const signatureProblem = await verifyTokenSignature(token, loadJson<DeviceKey[]>(keysKey, []));
-    const problem = signatureProblem ?? checkToken(token, {
-      now: Date.now(), today: todayRiyadh(),
-      localUsed: loadJson<Record<string, number>>(USAGE_KEY, {})[`${token.day}:${token.sid}`] ?? 0,
-      usedNonces: loadJson<string[]>(NONCE_KEY, []),
-    });
-    if (problem) { setToken(null); setError(t(`cashier.offline.${problem}`)); return; }
-    const order: QueuedOrder = {
-      offline_sync_id: crypto.randomUUID(),
-      subscription_id: token.sid,
-      branch_id: branchId,
-      drink_type_id: drinkId,
-      served_at: new Date().toISOString(),
-      method: "offline_qr",
-      selected_options: [],
-      customer_note: null,
-    };
-    const usage = loadJson<Record<string, number>>(USAGE_KEY, {});
-    const k = `${token.day}:${token.sid}`;
-    usage[k] = Math.max(usage[k] ?? 0, token.used_today) + 1;
-    saveJson(USAGE_KEY, usage);
-    saveJson(NONCE_KEY, [token.nonce, ...loadJson<string[]>(NONCE_KEY, [])].slice(0, 500));
-    const next = [...loadJson<QueuedOrder[]>(QUEUE_KEY, []), order];
-    saveJson(QUEUE_KEY, next);
-    setQueue(next);
-    setToken(null);
-    setRaw("");
-    setNotice(navigator.onLine ? t("cashier.offline.servedOnline") : t("cashier.offline.servedQueued"));
-    if (navigator.onLine) await sync(next);
-    } catch { setError(t("cashier.offline.storageError")); }
-    finally { serveBusy.current = false; setServing(false); }
+      const signatureProblem = await verifyTokenSignature(
+        token,
+        loadJson<DeviceKey[]>(keysKey, []),
+      );
+      const problem =
+        signatureProblem ??
+        checkToken(token, {
+          now: Date.now(),
+          today: todayRiyadh(),
+          localUsed:
+            loadJson<Record<string, number>>(USAGE_KEY, {})[
+              `${token.day}:${token.sid}`
+            ] ?? 0,
+          usedNonces: loadJson<string[]>(NONCE_KEY, []),
+        });
+      if (problem) {
+        setToken(null);
+        setError(t(`cashier.offline.${problem}`));
+        return;
+      }
+      const order: QueuedOrder = {
+        offline_sync_id: crypto.randomUUID(),
+        subscription_id: token.sid,
+        branch_id: branchId,
+        drink_type_id: drinkId,
+        served_at: new Date().toISOString(),
+        method: "offline_qr",
+        selected_options: [],
+        customer_note: null,
+      };
+      const usage = loadJson<Record<string, number>>(USAGE_KEY, {});
+      const k = `${token.day}:${token.sid}`;
+      usage[k] = Math.max(usage[k] ?? 0, token.used_today) + 1;
+      saveJson(USAGE_KEY, usage);
+      saveJson(
+        NONCE_KEY,
+        [token.nonce, ...loadJson<string[]>(NONCE_KEY, [])].slice(0, 500),
+      );
+      const next = [...loadJson<QueuedOrder[]>(QUEUE_KEY, []), order];
+      saveJson(QUEUE_KEY, next);
+      setQueue(next);
+      setToken(null);
+      setRaw("");
+      setNotice(
+        navigator.onLine
+          ? t("cashier.offline.servedOnline")
+          : t("cashier.offline.servedQueued"),
+      );
+      if (navigator.onLine) await sync(next);
+    } catch {
+      setError(t("cashier.offline.storageError"));
+    } finally {
+      serveBusy.current = false;
+      setServing(false);
+    }
   }
 
   const localUsed = token
-    ? loadJson<Record<string, number>>(USAGE_KEY, {})[`${token.day}:${token.sid}`] ?? 0
+    ? (loadJson<Record<string, number>>(USAGE_KEY, {})[
+        `${token.day}:${token.sid}`
+      ] ?? 0)
     : 0;
+
+  const embedded = (
+    <>
+      {children?.({
+        online,
+        raw,
+        setRaw,
+        readCode: (input) => void readCode(input),
+        openCamera: () => setCameraOpen(true),
+        queue: queue.length,
+      })}
+      {!token && cameraOpen ? (
+        <CameraScanner
+          onResult={(text) => {
+            setCameraOpen(false);
+            setRaw(text);
+            void readCode(text);
+          }}
+          onError={() => {
+            setCameraOpen(false);
+            setError(t("cashier.offline.cameraError"));
+          }}
+        />
+      ) : null}
+      {token ? (
+        <div className="cafe-card">
+          <strong>{token.name}</strong>
+          <span> · {token.plan}</span>
+          <div className="cafe-muted">
+            {t("cashier.offline.cups")}:{" "}
+            {fmtNum(Math.max(token.used_today, localUsed))} /{" "}
+            {fmtNum(token.max)}
+          </div>
+          {drinks.length === 0 ? (
+            <Alert tone="warning">{t("cashier.offline.noDrinks")}</Alert>
+          ) : (
+            <Select
+              label={t("cashier.offline.drink")}
+              value={drinkId}
+              onChange={(event) => setDrinkId(event.target.value)}
+            >
+              {drinks.map((drink) => (
+                <option key={drink.id} value={drink.id}>
+                  {lang === "ar" ? drink.name_ar : drink.name_en}
+                </option>
+              ))}
+            </Select>
+          )}
+          <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+            <button
+              type="button"
+              className="cafe-btn"
+              disabled={!drinkId || serving}
+              onClick={() => void serve()}
+            >
+              {t("cashier.offline.serve")}
+            </button>
+            <button
+              type="button"
+              className="cafe-btn ghost"
+              onClick={() => setToken(null)}
+            >
+              {t("cashier.offline.cancel")}
+            </button>
+          </div>
+        </div>
+      ) : null}
+      {error ? <div className="cafe-error">{error}</div> : null}
+      {notice ? <div className="cafe-empty">{notice}</div> : null}
+    </>
+  );
+
+  if (children) return embedded;
 
   return (
     <Card>
@@ -190,13 +356,26 @@ export function OfflinePanel({ branchId }: { branchId: string }) {
         action={
           <div className="flex items-center gap-2">
             <Badge tone={online ? "success" : "warning"}>
-              {online ? <Wifi className="h-3.5 w-3.5" /> : <CloudOff className="h-3.5 w-3.5" />}{" "}
-              {online ? t("cashier.offline.online") : t("cashier.offline.offline")}
+              {online ? (
+                <Wifi className="h-3.5 w-3.5" />
+              ) : (
+                <CloudOff className="h-3.5 w-3.5" />
+              )}{" "}
+              {online
+                ? t("cashier.offline.online")
+                : t("cashier.offline.offline")}
             </Badge>
             {queue.length > 0 && (
-              <Button size="sm" variant="secondary" onClick={() => sync(queue)} disabled={!online || syncing}>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => sync(queue)}
+                disabled={!online || syncing}
+              >
                 <RefreshCw className="h-4 w-4" />
-                {syncing ? t("cashier.offline.syncing") : `${t("cashier.offline.syncNow")} (${fmtNum(queue.length)})`}
+                {syncing
+                  ? t("cashier.offline.syncing")
+                  : `${t("cashier.offline.syncNow")} (${fmtNum(queue.length)})`}
               </Button>
             )}
           </div>
@@ -213,26 +392,35 @@ export function OfflinePanel({ branchId }: { branchId: string }) {
           )}
 
           {!token ? (
-            <Field label={t("cashier.offline.scanLabel")} hint={t("cashier.offline.scanHint")}>
+            <Field
+              label={t("cashier.offline.scanLabel")}
+              hint={t("cashier.offline.scanHint")}
+            >
               {(fp) => (
-              <div className="flex gap-2">
-                <input
-                  id={fp.id}
-                  className="kob-input flex-1"
-                  value={raw}
-                  onChange={(e) => setRaw(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && readCode()}
-                  dir="ltr"
-                />
-                <Button onClick={() => void readCode()} disabled={!raw.trim() || verifying}>
-                  <ScanLine className="h-4 w-4" />
-                  {t("cashier.offline.read")}
-                </Button>
-                <Button variant="secondary" onClick={() => setCameraOpen((v) => !v)}>
-                  <Camera className="h-4 w-4" />
-                  {t("cashier.offline.camera")}
-                </Button>
-              </div>
+                <div className="flex gap-2">
+                  <input
+                    id={fp.id}
+                    className="kob-input flex-1"
+                    value={raw}
+                    onChange={(e) => setRaw(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && readCode()}
+                    dir="ltr"
+                  />
+                  <Button
+                    onClick={() => void readCode()}
+                    disabled={!raw.trim() || verifying}
+                  >
+                    <ScanLine className="h-4 w-4" />
+                    {t("cashier.offline.read")}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setCameraOpen((v) => !v)}
+                  >
+                    <Camera className="h-4 w-4" />
+                    {t("cashier.offline.camera")}
+                  </Button>
+                </div>
               )}
             </Field>
           ) : null}
@@ -255,23 +443,33 @@ export function OfflinePanel({ branchId }: { branchId: string }) {
                 <strong>{token.name}</strong>
                 <span>{token.plan}</span>
                 <Badge tone="gold">
-                  {t("cashier.offline.cups")}: {fmtNum(Math.max(token.used_today, localUsed))} / {fmtNum(token.max)}
+                  {t("cashier.offline.cups")}:{" "}
+                  {fmtNum(Math.max(token.used_today, localUsed))} /{" "}
+                  {fmtNum(token.max)}
                 </Badge>
               </div>
               {drinks.length === 0 ? (
                 <Alert tone="warning">{t("cashier.offline.noDrinks")}</Alert>
               ) : (
-                <Select label={t("cashier.offline.drink")} value={drinkId} onChange={(e) => setDrinkId(e.target.value)}>
-                    {drinks.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {lang === "ar" ? d.name_ar : d.name_en}
-                      </option>
-                    ))}
-                  </Select>
+                <Select
+                  label={t("cashier.offline.drink")}
+                  value={drinkId}
+                  onChange={(e) => setDrinkId(e.target.value)}
+                >
+                  {drinks.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {lang === "ar" ? d.name_ar : d.name_en}
+                    </option>
+                  ))}
+                </Select>
               )}
               <div className="flex gap-2">
-                <Button onClick={serve} disabled={!drinkId || serving}>{t("cashier.offline.serve")}</Button>
-                <Button variant="ghost" onClick={() => setToken(null)}>{t("cashier.offline.cancel")}</Button>
+                <Button onClick={serve} disabled={!drinkId || serving}>
+                  {t("cashier.offline.serve")}
+                </Button>
+                <Button variant="ghost" onClick={() => setToken(null)}>
+                  {t("cashier.offline.cancel")}
+                </Button>
               </div>
             </div>
           )}
@@ -280,11 +478,19 @@ export function OfflinePanel({ branchId }: { branchId: string }) {
             <Alert tone="danger">
               <div className="flex items-center justify-between gap-2">
                 <strong>{t("cashier.offline.rejected")}</strong>
-                <Button size="sm" variant="ghost" onClick={() => setRejected([])}>{t("cashier.offline.dismiss")}</Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setRejected([])}
+                >
+                  {t("cashier.offline.dismiss")}
+                </Button>
               </div>
               <ul>
                 {rejected.map((r) => (
-                  <li key={r.id} dir="ltr">{r.id.slice(0, 8)} — {r.reason}</li>
+                  <li key={r.id} dir="ltr">
+                    {r.id.slice(0, 8)} — {r.reason}
+                  </li>
                 ))}
               </ul>
             </Alert>

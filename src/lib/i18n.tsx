@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 
 import enLocale from "@/locales/en.json";
 import arLocale from "@/locales/ar.json";
@@ -49,20 +57,25 @@ const dict = {
     haveAccount: "Already have an account? Sign in",
     customersHint: "Customers don't need an account — go to scan.",
     goToScan: "go to scan",
-    staffOnlyNotice: "Staff access only. Cashier accounts are created by an admin.",
+    staffOnlyNotice:
+      "Staff access only. Cashier accounts are created by an admin.",
 
     // landing
     heroBadge: "Premium Subscription System",
     heroTitleA: "A daily cup,",
     heroTitleB: "served on subscription.",
-    heroBody: "KOB lets specialty coffee shops sell daily coffee coupons tied to a phone number. Customers scan, choose their brew, and the cashier approves — no plastic cards, no fuss.",
+    heroBody:
+      "KOB lets specialty coffee shops sell daily coffee coupons tied to a phone number. Customers scan, choose their brew, and the cashier approves — no plastic cards, no fuss.",
     tryCustomer: "Try the Customer Flow",
     staffDashboard: "Staff Dashboard",
     todaysCoupon: "Today's Coupon",
     remainingDays: "{n} / {total} days",
-    feat1_t: "Scan the branch code", feat1_b: "Customers tap in without accounts — just their phone number.",
-    feat2_t: "Pick today's brew",     feat2_b: "Every subscription drink is one tap away, in Arabic or English.",
-    feat3_t: "Cashier approves",       feat3_b: "The barista confirms and the day is marked used — instantly.",
+    feat1_t: "Scan the branch code",
+    feat1_b: "Customers tap in without accounts — just their phone number.",
+    feat2_t: "Pick today's brew",
+    feat2_b: "Every subscription drink is one tap away, in Arabic or English.",
+    feat3_t: "Cashier approves",
+    feat3_b: "The barista confirms and the day is marked used — instantly.",
     footer: "KOB · Est. 2026 · Brewed with care",
 
     // admin
@@ -108,13 +121,21 @@ const dict = {
     new_cashier: "New cashier",
     create_batch: "Create batch",
     assign_role: "Assign Role",
-    assign_hint: "The user must first sign up. Copy their user ID from the backend Users panel.",
+    assign_hint:
+      "The user must first sign up. Copy their user ID from the backend Users panel.",
     staff_members: "Staff Members",
     open_scan_link: "Open Scan Link",
 
-    f_phone: "Phone", f_customer: "Customer", f_plan: "Plan", f_days: "Days",
-    f_name: "Name", f_code: "Code", f_address: "Address",
-    f_user_id: "User ID (UUID)", f_role: "Role", f_branch: "Branch (cashier)",
+    f_phone: "Phone",
+    f_customer: "Customer",
+    f_plan: "Plan",
+    f_days: "Days",
+    f_name: "Name",
+    f_code: "Code",
+    f_address: "Address",
+    f_user_id: "User ID (UUID)",
+    f_role: "Role",
+    f_branch: "Branch (cashier)",
 
     btn_create: "Create",
     btn_assign: "Assign",
@@ -174,7 +195,10 @@ const dict = {
     newOrder: "New order",
 
     // time
-    ago_s: "{n}s ago", ago_m: "{n}m ago", ago_h: "{n}h ago", ago_d: "{n}d ago",
+    ago_s: "{n}s ago",
+    ago_m: "{n}m ago",
+    ago_h: "{n}h ago",
+    ago_d: "{n}d ago",
 
     // admin nav
     nav_dashboard: "Dashboard",
@@ -230,7 +254,8 @@ const dict = {
     sell_success: "Coupon sold. Subscription created.",
     sell_btn: "Sell",
     sell_active_title: "Active subscription found",
-    sell_active_body: "This phone number already has an active subscription. Do you want to add another one?",
+    sell_active_body:
+      "This phone number already has an active subscription. Do you want to add another one?",
     sell_add_another: "Add another",
     sell_phone_hint: "Saudi format: 05XXXXXXXX",
 
@@ -258,47 +283,50 @@ const dict = {
     plans_activated: "Plan activated.",
     plans_deactivated: "Plan deactivated.",
     plans_confirm_delete_title: "Delete this plan?",
-    plans_confirm_delete_body: "\"{name}\" will be permanently removed. Existing subscriptions on this plan are unaffected.",
+    plans_confirm_delete_body:
+      '"{name}" will be permanently removed. Existing subscriptions on this plan are unaffected.',
     plans_confirm_deactivate_title: "Deactivate this plan?",
-    plans_confirm_deactivate_body: "\"{name}\" will be hidden from new sales but existing subscriptions keep working.",
+    plans_confirm_deactivate_body:
+      '"{name}" will be hidden from new sales but existing subscriptions keep working.',
     plans_confirm_activate_title: "Activate this plan?",
-    plans_confirm_activate_body: "\"{name}\" will be available for new sales again.",
+    plans_confirm_activate_body:
+      '"{name}" will be available for new sales again.',
     home_story_beginning: "The beginning",
-home_story_subscription_title: "Your daily subscription...",
-home_story_subscription_body:
-  "Every cup begins with a smart, simple, premium subscription card.",
+    home_story_subscription_title: "Your daily subscription...",
+    home_story_subscription_body:
+      "Every cup begins with a smart, simple, premium subscription card.",
 
-home_story_transform: "Transformation",
-home_story_beans_title: "The card becomes coffee beans",
-home_story_beans_body:
-  "As you scroll, the subscription card gently breaks apart into coffee beans.",
+    home_story_transform: "Transformation",
+    home_story_beans_title: "The card becomes coffee beans",
+    home_story_beans_body:
+      "As you scroll, the subscription card gently breaks apart into coffee beans.",
 
-home_story_grinding: "Grinding",
-home_story_grinder_title: "Beans enter the grinder",
-home_story_grinder_body:
-  "The beans enter the grinder and become rich coffee powder.",
+    home_story_grinding: "Grinding",
+    home_story_grinder_title: "Beans enter the grinder",
+    home_story_grinder_body:
+      "The beans enter the grinder and become rich coffee powder.",
 
-home_story_brewing: "Brewing",
-home_story_machine_title: "Powder enters the machine",
-home_story_machine_body:
-  "The brewing begins, with warm steam filling the scene.",
+    home_story_brewing: "Brewing",
+    home_story_machine_title: "Powder enters the machine",
+    home_story_machine_body:
+      "The brewing begins, with warm steam filling the scene.",
 
-home_story_daily_cup: "The daily cup",
-home_story_final_title: "From your subscription to your daily cup",
-home_story_final_body:
-  "The ending is not a button — it is a finished cup served to the customer.",
+    home_story_daily_cup: "The daily cup",
+    home_story_final_title: "From your subscription to your daily cup",
+    home_story_final_body:
+      "The ending is not a button — it is a finished cup served to the customer.",
 
-home_card_label: "Premium Subscription",
-home_card_title: "Daily Coffee",
-home_card_plan: "Plan",
-home_card_duration: "Duration",
-home_card_duration_value: "30 Days",
-home_card_daily: "One cup every day",
+    home_card_label: "Premium Subscription",
+    home_card_title: "Daily Coffee",
+    home_card_plan: "Plan",
+    home_card_duration: "Duration",
+    home_card_duration_value: "30 Days",
+    home_card_daily: "One cup every day",
 
-home_beans_caption: "Subscription turns into beans",
-home_grinder_title: "KOB Grinder",
-home_grinder_subtitle: "Premium Blend",
-home_served: "Served",
+    home_beans_caption: "Subscription turns into beans",
+    home_grinder_title: "KOB Grinder",
+    home_grinder_subtitle: "Premium Blend",
+    home_served: "Served",
   },
   ar: {
     brand_tag: "شركة كوبونات القهوة",
@@ -319,19 +347,24 @@ home_served: "Served",
     haveAccount: "لديك حساب؟ سجّل الدخول",
     customersHint: "لا يحتاج العملاء إلى حساب — انتقل إلى المسح.",
     goToScan: "انتقل إلى المسح",
-    staffOnlyNotice: "الدخول للموظفين فقط. حسابات الكاشير يتم إنشاؤها من قبل المسؤول.",
+    staffOnlyNotice:
+      "الدخول للموظفين فقط. حسابات الكاشير يتم إنشاؤها من قبل المسؤول.",
 
     heroBadge: "نظام اشتراك متميز",
     heroTitleA: "قهوتك اليومية،",
     heroTitleB: "باشتراك مريح.",
-    heroBody: "يتيح KOB لمقاهي القهوة المختصة بيع كوبونات قهوة يومية مرتبطة برقم الهاتف. يمسح العميل، يختار مشروبه، ويوافق الكاشير — بدون بطاقات ولا تعقيد.",
+    heroBody:
+      "يتيح KOB لمقاهي القهوة المختصة بيع كوبونات قهوة يومية مرتبطة برقم الهاتف. يمسح العميل، يختار مشروبه، ويوافق الكاشير — بدون بطاقات ولا تعقيد.",
     tryCustomer: "جرّب تجربة العميل",
     staffDashboard: "لوحة الموظفين",
     todaysCoupon: "كوبون اليوم",
     remainingDays: "{n} / {total} يوم",
-    feat1_t: "امسح رمز الفرع",     feat1_b: "يدخل العميل بدون حساب — فقط رقم الهاتف.",
-    feat2_t: "اختر قهوة اليوم",     feat2_b: "كل مشروب اشتراك على بُعد نقرة، بالعربية أو الإنجليزية.",
-    feat3_t: "الكاشير يوافق",       feat3_b: "يؤكّد الباريستا ويُحتسب اليوم فوراً.",
+    feat1_t: "امسح رمز الفرع",
+    feat1_b: "يدخل العميل بدون حساب — فقط رقم الهاتف.",
+    feat2_t: "اختر قهوة اليوم",
+    feat2_b: "كل مشروب اشتراك على بُعد نقرة، بالعربية أو الإنجليزية.",
+    feat3_t: "الكاشير يوافق",
+    feat3_b: "يؤكّد الباريستا ويُحتسب اليوم فوراً.",
     footer: "KOB · تأسست ٢٠٢٦ · تُقدَّم بعناية",
 
     admin_title: "KOB · لوحة التحكم",
@@ -376,13 +409,21 @@ home_served: "Served",
     new_cashier: "كاشير جديد",
     create_batch: "إنشاء دفعة كوبونات",
     assign_role: "تعيين دور",
-    assign_hint: "يجب على المستخدم التسجيل أولاً. انسخ معرّفه من لوحة المستخدمين في الخلفية.",
+    assign_hint:
+      "يجب على المستخدم التسجيل أولاً. انسخ معرّفه من لوحة المستخدمين في الخلفية.",
     staff_members: "الموظفون",
     open_scan_link: "فتح رابط المسح",
 
-    f_phone: "الهاتف", f_customer: "العميل", f_plan: "الخطة", f_days: "الأيام",
-    f_name: "الاسم", f_code: "الرمز", f_address: "العنوان",
-    f_user_id: "معرّف المستخدم (UUID)", f_role: "الدور", f_branch: "الفرع (للكاشير)",
+    f_phone: "الهاتف",
+    f_customer: "العميل",
+    f_plan: "الخطة",
+    f_days: "الأيام",
+    f_name: "الاسم",
+    f_code: "الرمز",
+    f_address: "العنوان",
+    f_user_id: "معرّف المستخدم (UUID)",
+    f_role: "الدور",
+    f_branch: "الفرع (للكاشير)",
 
     btn_create: "إنشاء",
     btn_assign: "تعيين",
@@ -438,7 +479,10 @@ home_served: "Served",
     rejectedMsg: "تم رفض الطلب.",
     newOrder: "طلب جديد",
 
-    ago_s: "قبل {n} ث", ago_m: "قبل {n} د", ago_h: "قبل {n} س", ago_d: "قبل {n} ي",
+    ago_s: "قبل {n} ث",
+    ago_m: "قبل {n} د",
+    ago_h: "قبل {n} س",
+    ago_d: "قبل {n} ي",
 
     nav_dashboard: "لوحة التحكم",
     nav_plans: "الخطط",
@@ -491,7 +535,8 @@ home_served: "Served",
     sell_success: "تم بيع الكوبون وإنشاء الاشتراك.",
     sell_btn: "بيع",
     sell_active_title: "يوجد اشتراك نشط",
-    sell_active_body: "هذا الرقم لديه اشتراك نشط بالفعل. هل تريد إضافة اشتراك آخر؟",
+    sell_active_body:
+      "هذا الرقم لديه اشتراك نشط بالفعل. هل تريد إضافة اشتراك آخر؟",
     sell_add_another: "إضافة اشتراك",
     sell_phone_hint: "الصيغة السعودية: 05XXXXXXXX",
 
@@ -518,47 +563,47 @@ home_served: "Served",
     plans_activated: "تم تفعيل الخطة.",
     plans_deactivated: "تم تعطيل الخطة.",
     plans_confirm_delete_title: "حذف هذه الخطة؟",
-    plans_confirm_delete_body: "سيتم حذف \"{name}\" نهائياً. الاشتراكات الحالية على هذه الخطة لن تتأثر.",
+    plans_confirm_delete_body:
+      'سيتم حذف "{name}" نهائياً. الاشتراكات الحالية على هذه الخطة لن تتأثر.',
     plans_confirm_deactivate_title: "تعطيل هذه الخطة؟",
-    plans_confirm_deactivate_body: "سيتم إخفاء \"{name}\" من المبيعات الجديدة، مع استمرار الاشتراكات الحالية.",
+    plans_confirm_deactivate_body:
+      'سيتم إخفاء "{name}" من المبيعات الجديدة، مع استمرار الاشتراكات الحالية.',
     plans_confirm_activate_title: "تفعيل هذه الخطة؟",
-    plans_confirm_activate_body: "ستكون \"{name}\" متاحة للبيع من جديد.",
+    plans_confirm_activate_body: 'ستكون "{name}" متاحة للبيع من جديد.',
     home_story_beginning: "بداية الرحلة",
-home_story_subscription_title: "اشتراكك اليومي...",
-home_story_subscription_body:
-  "كل كوب يبدأ من بطاقة اشتراك ذكية، بسيطة، وفاخرة.",
+    home_story_subscription_title: "اشتراكك اليومي...",
+    home_story_subscription_body:
+      "كل كوب يبدأ من بطاقة اشتراك ذكية، بسيطة، وفاخرة.",
 
-home_story_transform: "التحوّل",
-home_story_beans_title: "الكرت يتحول إلى حبوب بن",
-home_story_beans_body:
-  "مع التمرير، يتفكك كرت الاشتراك بهدوء ويتحوّل إلى بداية القهوة.",
+    home_story_transform: "التحوّل",
+    home_story_beans_title: "الكرت يتحول إلى حبوب بن",
+    home_story_beans_body:
+      "مع التمرير، يتفكك كرت الاشتراك بهدوء ويتحوّل إلى بداية القهوة.",
 
-home_story_grinding: "الطحن",
-home_story_grinder_title: "الحبوب تدخل المطحنة",
-home_story_grinder_body:
-  "تبدأ الحبوب رحلتها داخل المطحنة لتتحول إلى بودرة غنية.",
+    home_story_grinding: "الطحن",
+    home_story_grinder_title: "الحبوب تدخل المطحنة",
+    home_story_grinder_body:
+      "تبدأ الحبوب رحلتها داخل المطحنة لتتحول إلى بودرة غنية.",
 
-home_story_brewing: "التحضير",
-home_story_machine_title: "البودرة تدخل ماكينة القهوة",
-home_story_machine_body:
-  "التحضير يبدأ، والبخار الدافئ يملأ المشهد.",
+    home_story_brewing: "التحضير",
+    home_story_machine_title: "البودرة تدخل ماكينة القهوة",
+    home_story_machine_body: "التحضير يبدأ، والبخار الدافئ يملأ المشهد.",
 
-home_story_daily_cup: "الكوب اليومي",
-home_story_final_title: "من اشتراكك... إلى كوبك اليومي",
-home_story_final_body:
-  "النهاية ليست زرًا، بل كوب قهوة جاهز يُقدّم للعميل.",
+    home_story_daily_cup: "الكوب اليومي",
+    home_story_final_title: "من اشتراكك... إلى كوبك اليومي",
+    home_story_final_body: "النهاية ليست زرًا، بل كوب قهوة جاهز يُقدّم للعميل.",
 
-home_card_label: "اشتراك مميز",
-home_card_title: "قهوة يومية",
-home_card_plan: "الخطة",
-home_card_duration: "المدة",
-home_card_duration_value: "٣٠ يوم",
-home_card_daily: "كوب واحد كل يوم",
+    home_card_label: "اشتراك مميز",
+    home_card_title: "قهوة يومية",
+    home_card_plan: "الخطة",
+    home_card_duration: "المدة",
+    home_card_duration_value: "٣٠ يوم",
+    home_card_daily: "كوب واحد كل يوم",
 
-home_beans_caption: "الاشتراك يتحول إلى حبوب بن",
-home_grinder_title: "مطحنة KOB",
-home_grinder_subtitle: "خلطة مميزة",
-home_served: "تم التقديم",
+    home_beans_caption: "الاشتراك يتحول إلى حبوب بن",
+    home_grinder_title: "مطحنة KOB",
+    home_grinder_subtitle: "خلطة مميزة",
+    home_served: "تم التقديم",
   },
 } as const;
 
@@ -573,6 +618,7 @@ type Ctx = {
   t: (k: TKey, vars?: Record<string, string | number>) => string;
   fmtNum: (n: number) => string;
   fmtDate: (d: string | Date) => string;
+  fmtDay: (d: string | Date) => string;
   fmtCurrency: (amount: number, currency?: string) => string;
   calendar: Calendar;
   setCalendar: (c: Calendar) => void;
@@ -610,7 +656,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   const setLang = useCallback((l: Lang) => {
     setLangState(l);
-    try { window.localStorage.setItem(STORAGE_KEY, l); } catch {}
+    try {
+      window.localStorage.setItem(STORAGE_KEY, l);
+    } catch {}
   }, []);
 
   const toggle = useCallback(() => {
@@ -619,7 +667,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   const setCalendar = useCallback((c: Calendar) => {
     setCalendarState(c);
-    try { window.localStorage.setItem(CALENDAR_KEY, c); } catch {}
+    try {
+      window.localStorage.setItem(CALENDAR_KEY, c);
+    } catch {}
   }, []);
 
   const value = useMemo<Ctx>(() => {
@@ -631,7 +681,14 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
           : "ar-SA-u-nu-arab-ca-gregory"
         : "en-US";
     const nf = new Intl.NumberFormat(numLocale);
-    const df = new Intl.DateTimeFormat(dateLocale, { dateStyle: "medium", timeStyle: "short" });
+    const df = new Intl.DateTimeFormat(dateLocale, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+    const dayFmt = new Intl.DateTimeFormat(dateLocale, {
+      day: "numeric",
+      month: "long",
+    });
     const t = (k: TKey, vars?: Record<string, string | number>) => {
       let s: string =
         files[lang][k as string] ??
@@ -639,11 +696,19 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         (dict[lang] as any)[k] ??
         (dict.en as any)[k] ??
         (k as string);
-      if (vars) for (const [key, v] of Object.entries(vars)) s = s.replaceAll(`{${key}}`, String(v));
+      if (vars)
+        for (const [key, v] of Object.entries(vars))
+          s = s.replaceAll(`{${key}}`, String(v));
       return s;
     };
     const fmtNum = (n: number) => nf.format(n);
     const fmtDate = (d: string | Date) => df.format(new Date(d));
+    const fmtDay = (d: string | Date) => {
+      const date = new Date(d);
+      return Number.isNaN(date.getTime())
+        ? String(d).slice(0, 10)
+        : dayFmt.format(date);
+    };
     const fmtCurrency = (amount: number, currency = "SAR") =>
       new Intl.NumberFormat(numLocale, {
         style: "currency",
@@ -657,7 +722,20 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       if (s < 86400) return t("ago_h", { n: fmtNum(Math.round(s / 3600)) });
       return t("ago_d", { n: fmtNum(Math.round(s / 86400)) });
     };
-    return { lang, dir, setLang, toggle, t, fmtNum, fmtDate, fmtCurrency, calendar, setCalendar, timeAgo };
+    return {
+      lang,
+      dir,
+      setLang,
+      toggle,
+      t,
+      fmtNum,
+      fmtDate,
+      fmtDay,
+      fmtCurrency,
+      calendar,
+      setCalendar,
+      timeAgo,
+    };
   }, [lang, dir, setLang, toggle, calendar, setCalendar]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
@@ -681,7 +759,9 @@ export function LanguageSwitcher({ className = "" }: { className?: string }) {
       >
         العربية
       </button>
-      <span aria-hidden className="opacity-30">|</span>
+      <span aria-hidden className="opacity-30">
+        |
+      </span>
       <button
         onClick={() => setLang("en")}
         className=""
