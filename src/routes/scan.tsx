@@ -466,12 +466,7 @@ function ScanPage() {
     const {
       data,
       error: branchesError,
-    } = await supabase
-      .from("branches")
-      .select(
-        "id,name_en,name_ar",
-      )
-      .order("name_en");
+    } = await supabase.rpc("scan_list_public_branches");
 
     if (branchesError) {
       console.error(
