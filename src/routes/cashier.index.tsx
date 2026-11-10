@@ -87,6 +87,8 @@ type OrderRow = {
   subscription: {
     id: string;
     end_date: string;
+    cups_total?: number | null;
+    cups_used?: number | null;
     plan: {
       name: string;
       name_ar?: string | null;
@@ -243,7 +245,7 @@ function CashierQueuePage() {
            drink:drink_types(name_en, name_ar, image_url),
            customer:customers(name, phone),
            branch:branches(name_en, name_ar),
-           subscription:subscriptions(id, end_date, plan:plans(name, name_ar, name_en, duration_days, max_drinks_per_day))`;
+           subscription:subscriptions(id, end_date, cups_total, cups_used, plan:plans(name, name_ar, name_en, duration_days, max_drinks_per_day))`;
     const plain = `id, status, created_at, order_date, selected_options, customer_note,
            drink:drink_types(name_en, name_ar),
            customer:customers(name, phone),
@@ -998,7 +1000,15 @@ function CoffeeOrderCard({
         <div style={{ marginTop: 6, fontWeight: 700, color: "#6b4226" }}>
           {t("cafe.cashier.plan", { name: planName })}
           {" · "}
-          {t("cafe.cashier.left", { left: fmtNum(left), total: fmtNum(limit) })}
+          {order.subscription?.cups_total != null
+            ? (() => {
+                const total = order.subscription?.cups_total ?? 0;
+                const rest = Math.max(total - (order.subscription?.cups_used ?? 0), 0);
+                return rest > 0
+                  ? t("cafe.cashier.balanceLeft", { left: fmtNum(rest), total: fmtNum(total) })
+                  : t("cafe.cashier.balanceOut");
+              })()
+            : t("cafe.cashier.left", { left: fmtNum(left), total: fmtNum(limit) })}
           {days != null ? ` · ${t("cafe.subs.days", { n: fmtNum(days) })}` : ""}
         </div>
         <div style={{ fontSize: 20, fontWeight: 800 }}>{drinkName || "—"}</div>

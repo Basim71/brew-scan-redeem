@@ -18,6 +18,8 @@ type SubscriptionRow = {
   created_at?: string | null;
   start_date?: string | null;
   end_date?: string | null;
+  cups_total?: number | null;
+  cups_used?: number | null;
 
   customer?: {
     name?: string | null;
@@ -185,6 +187,16 @@ function AdminSubscriptionsPage() {
 
                   <td className="text-cream">
                     {row.plan?.name ?? "—"}
+                    {row.cups_total != null
+                      ? ` · ${
+                          row.cups_total - (row.cups_used ?? 0) > 0
+                            ? t("cafe.cashier.balanceLeft", {
+                                left: Math.max(row.cups_total - (row.cups_used ?? 0), 0),
+                                total: row.cups_total,
+                              })
+                            : t("cafe.cashier.balanceOut")
+                        }`
+                      : ""}
                   </td>
 
                   <td className="text-cream-dim">

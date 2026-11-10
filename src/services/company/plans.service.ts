@@ -119,6 +119,12 @@ function toRow(payload: PlanInput) {
     redemption_frequency: payload.redemption_frequency,
     redemption_frequency_days: payload.redemption_frequency_days,
     max_redemptions_per_period: payload.max_redemptions_per_period,
+    plan_type:
+      payload.redemption_frequency !== "daily" && payload.max_redemptions_per_period
+        ? "open_balance"
+        : "daily",
+    total_cups:
+      payload.redemption_frequency !== "daily" ? payload.max_redemptions_per_period : null,
     max_drinks_per_day: payload.max_drinks_per_day,
     max_drinks_per_redemption: payload.max_drinks_per_redemption,
     carry_unused: payload.carry_unused,
