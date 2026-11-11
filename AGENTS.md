@@ -20,3 +20,5 @@ All social providers sign in through the generated `lovable.auth.signInWithOAuth
 
 - Public pages never read `branches` directly (anon has no access); use `scan_list_public_branches` / `scan_resolve_qr` RPCs. Why: the table holds QR tokens.
 - Cashiers create customers only via `cashier_register_customer`; direct inserts require manager rights. Why: validation and duplicate prevention live in the function.
+- Dashboard routes (/admin, /platform, /cashier) get CSP + frame-ancestors 'none' via request middleware in src/start.ts, production only. Why: the editor preview frames the dev server.
+- organization_settings.unified_qr_token is not column-granted to authenticated; read it only via org_unified_qr_token RPC (owner/admin). Why: prevents staff from copying the company QR.

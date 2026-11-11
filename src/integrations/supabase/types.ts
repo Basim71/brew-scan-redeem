@@ -3374,6 +3374,10 @@ export type Database = {
       next_ticket_number: { Args: never; Returns: string }
       order_push_claim: { Args: { _order_id: string }; Returns: Json }
       order_push_drop_token: { Args: { _token: string }; Returns: undefined }
+      org_unified_qr_token: {
+        Args: { _organization_id: string }
+        Returns: string
+      }
       platform_organization_id: { Args: never; Returns: string }
       resolve_login_organization: {
         Args: { login_identifier: string }
