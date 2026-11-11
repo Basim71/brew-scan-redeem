@@ -40,7 +40,7 @@ export function UnifiedLoginForm({ onSubmit, busy, error }: Props) {
     event.preventDefault();
     if (busy) return;
     const normalizedEmail = email.trim().toLowerCase();
-    if (!normalizedEmail || !password) return;
+    if (!normalizedEmail || password.length < 8) return;
     await onSubmit(normalizedEmail, password);
   }
 
@@ -101,7 +101,7 @@ export function UnifiedLoginForm({ onSubmit, busy, error }: Props) {
             <input
               type={showPassword ? "text" : "password"}
               required
-              minLength={6}
+              minLength={8}
               value={password}
               autoComplete="current-password"
               placeholder={labels.password}
