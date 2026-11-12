@@ -104,7 +104,7 @@ export function DisputesPanel({ branchId }: { branchId?: string | null }) {
   if (!rows.length) return null;
 
   const time = (value: string | null) =>
-    value ? fmtDate(value, { dateStyle: "medium", timeStyle: "short" } as Intl.DateTimeFormatOptions) : "—";
+    value ? `${fmtDate(value)} ${new Date(value).toLocaleTimeString(isAr ? "ar-SA" : "en-US", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Riyadh" })}` : "—";
 
   return (
     <Card tone="raised">
