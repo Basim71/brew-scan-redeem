@@ -239,6 +239,13 @@
       "when": 1794469336946,
       "tag": "0033_cashier_direct_handover",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1794469427424,
+      "tag": "0034_restrict_ai_settings_and_presence_reads",
+      "breakpoints": true
     }
   ]
 }
