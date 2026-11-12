@@ -510,7 +510,7 @@ function CashierQueuePage() {
 
     const { error: rpcError } = await supabase.rpc("cashier_set_order_stage", {
       _order_id: orderId,
-      _stage: "ready",
+      _stage: "preparing",
     });
 
     setBusyId(null);
@@ -1152,7 +1152,7 @@ function InProgressOrderCard({
           </div>
         ) : null}
 
-        {stage === "ready" && order.handover_declined_at ? (
+        {order.handover_declined_at && stage !== "handover" ? (
           <Alert tone="warning">
             <ShieldAlert className="h-4 w-4" /> {t("cashier.handoverDeclined")}
           </Alert>
@@ -1163,17 +1163,7 @@ function InProgressOrderCard({
         ) : null}
 
         <div className="kob-queue-actions">
-          {stage === "preparing" ? (
-            <Button
-              size="lg"
-              loading={busy}
-              disabled={busy}
-              onClick={onReady}
-              leadingIcon={!busy ? <Check className="h-5 w-5" /> : undefined}
-            >
-              {t("cashier.markReady")}
-            </Button>
-          ) : stage === "ready" ? (
+          {stage === "preparing" || stage === "ready" ? (
             <Button
               size="lg"
               loading={busy}

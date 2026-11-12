@@ -232,6 +232,13 @@
       "when": 1794468529054,
       "tag": "0032_pickup_confirmation_disputes",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1794469336946,
+      "tag": "0033_cashier_direct_handover",
+      "breakpoints": true
     }
   ]
 }
