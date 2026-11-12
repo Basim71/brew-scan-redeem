@@ -1735,5 +1735,20 @@
       "title": "Support",
       "write": "Tell us what happened"
     }
+  },
+  "disputes": {
+    "title": "Not-received reports",
+    "description": "The customer said they didn't get these orders. Review and decide.",
+    "order": "Order #{n}",
+    "reportedAt": "Reported: {time}",
+    "handedBy": "Handed over by: {name}",
+    "handedAt": "Handed over: {time}",
+    "previous": "Customer reports: {n}",
+    "refund": "Return the cup",
+    "delivered": "Delivered",
+    "refunded": "The cup was returned to the customer's balance.",
+    "markedDelivered": "The order was marked as picked up.",
+    "newDispute": "New report on order #{n}",
+    "unknown": "Unknown"
   }
 }
