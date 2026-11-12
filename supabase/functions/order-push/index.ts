@@ -171,6 +171,7 @@ Deno.serve(async (request) => {
             alert: { title, body },
             sound: "default",
             "thread-id": orderId,
+            ...(event === "handover" ? { category: "ORDER_HANDOVER" } : {}),
           },
           order_id: orderId,
           event,
