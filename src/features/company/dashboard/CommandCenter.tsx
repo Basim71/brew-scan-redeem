@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 
 import { useI18n } from "@/lib/i18n";
+import { DisputesPanel } from "@/features/orders/DisputesPanel";
 import {
   loadCafeCommerce,
   periodRange,
@@ -27,7 +28,8 @@ function greetingKey(now = new Date()) {
 function stageKey(status: string, stage: string | null) {
   if (status === "pending") return "cafe.home.stage.pending";
   if (stage === "ready" || stage === "handover") return "cafe.home.stage.ready";
-  if (stage === "picked_up") return "cafe.home.stage.done";
+  if (stage === "picked_up" || stage === "refunded") return "cafe.home.stage.done";
+  if (stage === "disputed") return "cafe.home.stage.ready";
   if (status === "approved") return "cafe.home.stage.preparing";
   return "cafe.home.stage.done";
 }
@@ -88,6 +90,7 @@ export default function CommandCenter() {
         </p>
       </div>
       {error ? <div className="cafe-error">{error}</div> : null}
+      <DisputesPanel />
       <div className="cafe-kpis">
         <article className="cafe-kpi main">
           <div className="l">{t("cafe.home.cups")}</div>

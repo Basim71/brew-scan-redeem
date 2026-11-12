@@ -40,6 +40,7 @@ import {
   Tabs,
 } from "@/components/kob";
 import { OfflinePanel } from "@/features/cashier/OfflinePanel";
+import { DisputesPanel } from "@/features/orders/DisputesPanel";
 
 export const Route = createFileRoute("/cashier/")({
   head: () => ({
@@ -872,6 +873,7 @@ function CashierQueuePage() {
         </div>
       </section>
 
+      <DisputesPanel branchId={activeBranch} />
       {inProgressOrders.length ? (
         <Card tone="raised">
           <CardHeader
