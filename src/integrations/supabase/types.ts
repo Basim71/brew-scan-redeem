@@ -921,9 +921,16 @@ export type Database = {
           created_at: string
           customer_id: string
           customer_note: string | null
+          dispute_handover_at: string | null
+          dispute_handover_by: string | null
+          dispute_resolution: string | null
+          dispute_resolved_at: string | null
+          dispute_resolved_by: string | null
+          disputed_at: string | null
           drink_type_id: string
           fulfillment_stage: string | null
           handover_at: string | null
+          handover_by: string | null
           handover_declined_at: string | null
           id: string
           is_offline_order: boolean
@@ -948,9 +955,16 @@ export type Database = {
           created_at?: string
           customer_id: string
           customer_note?: string | null
+          dispute_handover_at?: string | null
+          dispute_handover_by?: string | null
+          dispute_resolution?: string | null
+          dispute_resolved_at?: string | null
+          dispute_resolved_by?: string | null
+          disputed_at?: string | null
           drink_type_id: string
           fulfillment_stage?: string | null
           handover_at?: string | null
+          handover_by?: string | null
           handover_declined_at?: string | null
           id?: string
           is_offline_order?: boolean
@@ -975,9 +989,16 @@ export type Database = {
           created_at?: string
           customer_id?: string
           customer_note?: string | null
+          dispute_handover_at?: string | null
+          dispute_handover_by?: string | null
+          dispute_resolution?: string | null
+          dispute_resolved_at?: string | null
+          dispute_resolved_by?: string | null
+          disputed_at?: string | null
           drink_type_id?: string
           fulfillment_stage?: string | null
           handover_at?: string | null
+          handover_by?: string | null
           handover_declined_at?: string | null
           id?: string
           is_offline_order?: boolean
@@ -3228,6 +3249,13 @@ export type Database = {
         Args: { _coupon_id: string; _request_id: string; _start_date: string }
         Returns: string
       }
+      cashier_customer_dispute_counts: {
+        Args: { _customer_ids: string[] }
+        Returns: {
+          customer_id: string
+          disputes: number
+        }[]
+      }
       cashier_get_active_device_keys: {
         Args: never
         Returns: {
@@ -3248,6 +3276,10 @@ export type Database = {
       cashier_reject_registration: {
         Args: { _request_id: string }
         Returns: boolean
+      }
+      cashier_resolve_dispute: {
+        Args: { _order_id: string; _resolution: string }
+        Returns: string
       }
       cashier_set_order_stage: {
         Args: { _order_id: string; _stage: string }
